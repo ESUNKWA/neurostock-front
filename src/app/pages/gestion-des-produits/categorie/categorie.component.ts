@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ToastrService } from 'ngx-toastr';
 import { isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
+import Swal, { SweetAlertResult } from 'sweetalert2';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -223,31 +224,6 @@ export default class CategorieComponent implements OnInit {
             'Catégorie modifiée avec succès' : 
             'Catégorie ajoutée avec succès');
 
-          // Afficher la notification
-          // if (isPlatformBrowser(this.platformId)) {
-          //   const $ = (window as any).$;
-          //   if ($) {
-          //     $.notify({
-          //       icon: 'ri ri-check-line me-1',
-          //       message: this.isEditMode ? 
-          //         'La catégorie a été modifiée avec succès' : 
-          //         'La catégorie a été ajoutée avec succès'
-          //     }, {
-          //       type: 'success',
-          //       placement: {
-          //         from: 'top',
-          //         align: 'right'
-          //       },
-          //       delay: 3000,
-          //       z_index: 9999,
-          //       animate: {
-          //         enter: 'animated fadeInDown',
-          //         exit: 'animated fadeOutUp'
-          //       }
-          //     });
-          //   }
-          // }
-
           // Recharger la liste des catégories
           this.loadCategories();
 
@@ -261,29 +237,52 @@ export default class CategorieComponent implements OnInit {
       error: (error: any) => {
         console.error('Erreur lors de la sauvegarde:', error);
         this.toastr.error('Une erreur est survenue lors de la sauvegarde');
-        
-        // Afficher une notification d'erreur
-        // if (isPlatformBrowser(this.platformId)) {
-        //   const $ = (window as any).$;
-        //   if ($) {
-        //     $.notify({
-        //       icon: 'ri ri-close-circle-line me-1',
-        //       message: 'Une erreur est survenue lors de la sauvegarde'
-        //     }, {
-        //       type: 'danger',
-        //       placement: {
-        //         from: 'top',
-        //         align: 'right'
-        //       },
-        //       delay: 3000,
-        //       z_index: 9999,
-        //       animate: {
-        //         enter: 'animated fadeInDown',
-        //         exit: 'animated fadeOutUp'
-        //       }
-        //     });
-        //   }
-        // }
+      }
+    });
+  }
+
+  deleteCategorie(categorie: any): void {
+    Swal.fire({
+      title: 'Êtes-vous sûr?',
+      text: `Voulez-vous vraiment supprimer la catégorie "${categorie.nom}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer!',
+      cancelButtonText: 'Annuler'
+    }).then((result: SweetAlertResult) => {
+      if (result.isConfirmed) {
+        this.categorieService.deleteCategorie(categorie.id).subscribe({
+          next: (response: any) => {
+            if (response.affected === 1) {
+              this.toastr.success('La catégorie a été supprimée avec succès.');
+              this.loadCategories();
+              // Swal.fire(
+              //   'Supprimé!',
+              //   'La catégorie a été supprimée avec succès.',
+              //   'success'
+              // );
+              this.loadCategories();
+            } else {
+              this.toastr.error('La catégorie n\'a pas pu être supprimée.');
+              // Swal.fire(
+              //   'Erreur!',
+              //   'La catégorie n\'a pas pu être supprimée.',
+              //   'error'
+              // );
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors de la suppression:', error);
+            this.toastr.error('Une erreur est survenue lors de la suppression.');
+            // Swal.fire(
+            //   'Erreur!',
+            //   'Une erreur est survenue lors de la suppression.',
+            //   'error'
+            // );
+          }
+        });
       }
     });
   }
