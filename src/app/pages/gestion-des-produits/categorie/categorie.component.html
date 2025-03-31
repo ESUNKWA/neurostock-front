@@ -31,46 +31,28 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="text-center py-3">
-                        <div *ngIf="isLoading" class="spinner-border text-primary" role="status">
+                    <div class="text-center py-3" *ngIf="isLoading">
+                        <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
                     </div>
-
-                    <!-- DataTables init on table by adding .js-dataTable-buttons class -->
-                     <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
-                        <thead>
-                            <tr>
-                              <th>Nom</th>
-                              <th class="d-none d-sm-table-cell">Description</th>
-                              <th class="d-none d-sm-table-cell">Date de création</th>
-                              <th class="text-center" style="width: 15%;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let categorie of categories">
-                                <td class="fw-semibold">{{ categorie.nom | titlecase }}</td>
-                                <td class="d-none d-sm-table-cell">{{ categorie.description || 'Non définie' }}</td>
-                                <td class="d-none d-sm-table-cell">{{ categorie.created_at | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-center">
-                                  <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="visualiser" (click)="openViewCategorie(categorie)">
-                                      <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" (click)="openEditCategorie(categorie)">
-                                      <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" (click)="deleteCategorie(categorie)">
-                                      <i class="bi bi-trash"></i>
-                                    </button>
-                                  </div>
-                                </td>
-                            </tr>
-                            <tr *ngIf="categories.length === 0 && !isLoading">
-                                <td colspan="5" class="text-center">Aucune catégorie trouvée</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <hr>
+                    <!-- DataTable avec colonnes fixes -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
+                            <thead>
+                                <tr>
+                                  <th>Nom</th>
+                                  <th class="d-none d-sm-table-cell">Description</th>
+                                  <th class="d-none d-sm-table-cell">Date de création</th>
+                                  <th class="text-center" style="width: 15%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Contenu généré par DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
