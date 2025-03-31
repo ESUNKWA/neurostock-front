@@ -1,8 +1,114 @@
-<div class="container">
-    <div class="row">
-        <div class="col-md-6">
-            <h1>Login</h1>
+<main>
+  <div class="container-fluid p-0">
+    <div class="row g-0">
+      <!-- Colonne de gauche avec l'image de fond -->
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="login-background">
+          <img src="assets/img/bg/entrepot.webp" 
+               alt="Image d'un entrepôt de stockage" 
+               class="img-fluid h-100 w-100 object-fit-cover">
+          <div class="overlay">
+            <h2>Bienvenu(e) sur NeuroStock</h2>
+            <p>Votre solution intelligente de gestion de stock</p>
+          </div>
         </div>
-        <button class="col-md-6 btn btn-primary" (click)="login()">Login</button>
+      </div>
+
+      <!-- Colonne de droite avec le formulaire -->
+      <div class="col-lg-6">
+        <div class="login-form-container">
+          <div class="d-flex justify-content-center py-4">
+            <a href="index.html" class="logo d-flex align-items-center w-auto">
+              <img src="assets/img/logo.png" alt="">
+              <span class="d-none d-lg-block">NeuroStock</span>
+            </a>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <div class="pt-4 pb-2">
+                <h5 class="card-title text-center pb-0 fs-4">Se connecter à votre compte</h5>
+                <p class="text-center small">Entrer votre email et le mot de passe pour vous connecter</p>
+              </div>
+
+              <form novalidate class="row g-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                <div class="col-12">
+                  <label for="email" class="form-label">Email</label>
+                  <div class="input-group has-validation">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" 
+                        formControlName="email" 
+                        class="form-control" 
+                        id="email" 
+                        [ngClass]="{'is-invalid': submitted && f['email'].errors}">
+                        @if (submitted && f['email'].errors) {
+                            <div class="invalid-feedback">
+                                @if (f['email'].errors['required']) {
+                                    <div>L'email est requis</div>
+                                }
+                                @if (f['email'].errors['email']) {
+                                    <div>L'email doit être valide</div>
+                                }
+                            </div>
+                        }
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label for="password" class="form-label">Mot de passe</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input [type]="showPassword ? 'text' : 'password'" 
+                        formControlName="mot_de_passe" 
+                        class="form-control" 
+                        id="password"
+                        [ngClass]="{'is-invalid': submitted && f['mot_de_passe'].errors}">
+                        <button class="btn btn-outline-secondary" 
+                                type="button" 
+                                (click)="togglePasswordVisibility()">
+                        <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                        </button>
+                        @if (submitted && f['mot_de_passe'].errors) {
+                            <div class="invalid-feedback">
+                              @if (f['mot_de_passe'].errors['required']) {
+                                <div>Le mot de passe est requis</div>
+                              }
+                              @if (f['mot_de_passe'].errors['minlength']) {
+                                <div>Le mot de passe doit contenir au moins 4 caractères</div>
+                              }
+                            </div>
+                        }
+                  </div>
+                </div>
+
+                <!-- <div class="col-12">
+                  <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           formControlName="rememberMe" 
+                           id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
+                  </div>
+                </div> -->
+
+                <div class="col-12 mt-4">
+                  <button class="btn btn-primary w-100" type="submit">Se connecter</button>
+                </div>
+
+                <div class="col-12">
+                  <p class="small mb-0">Mot de passe oublié ? <a routerLink="/register">Réinitialiser le mot de passe</a></p>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="credits text-center mt-4">
+            Réalisé par <a href="#">NeuroStock</a>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+</main>
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
