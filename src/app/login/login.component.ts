@@ -3,7 +3,10 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
+import { AuthService } from '../services/auth/auth.service';
+import { finalize } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -19,17 +22,29 @@ export default class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   submitted = false;
   showPassword = false;
+  loading = false;
+  error = '';
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
+    // Rediriger vers le dashboard si déjà connecté
+    if (this.authService.isAuthenticated()) {
+      this.router.navigateByUrl('/dashboard');
+    }
+
+    this.initForm();
+  }
+  
+  initForm(): void {
     this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      mot_de_passe: ['', [Validators.required, Validators.minLength(4)]],
-      rememberMe: [false]
+      email: ['ndayste@gmail.com', [Validators.required, Validators.email]],
+      mot_de_passe: ['12345', [Validators.required, Validators.minLength(4)]]
     });
   }
 
@@ -42,14 +57,25 @@ export default class LoginComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
+    this.error = '';
 
     // arrêter ici si le formulaire est invalide
     if (this.loginForm.invalid) {
       return;
     }
 
-    // TODO: Implémenter la logique de connexion
-    console.log(this.loginForm.value);
-    // this.router.navigate(['/dashboard']);
+    this.loading = true;
+    this.authService.login(this.loginForm.value)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({
+        next: () => {
+          this.router.navigateByUrl('/dashboard');
+          this.toastr.success('Vous êtes connecté! Bienvenue sur NeuroStock');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.error = error.error?.message || 'Une erreur est survenue lors de la connexion';
+          this.toastr.error(this.error);
+        }
+      });
   }
 }

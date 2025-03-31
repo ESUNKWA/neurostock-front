@@ -31,26 +31,32 @@
                 <p class="text-center small">Entrer votre email et le mot de passe pour vous connecter</p>
               </div>
 
-              <form novalidate class="row g-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="row g-3">
+                @if (error) {
+                  <div class="col-12">
+                    <div class="alert alert-danger">{{ error }}</div>
+                  </div>
+                }
+
                 <div class="col-12">
                   <label for="email" class="form-label">Email</label>
                   <div class="input-group has-validation">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                     <input type="email" 
-                        formControlName="email" 
-                        class="form-control" 
-                        id="email" 
-                        [ngClass]="{'is-invalid': submitted && f['email'].errors}">
-                        @if (submitted && f['email'].errors) {
-                            <div class="invalid-feedback">
-                                @if (f['email'].errors['required']) {
-                                    <div>L'email est requis</div>
-                                }
-                                @if (f['email'].errors['email']) {
-                                    <div>L'email doit être valide</div>
-                                }
-                            </div>
+                           formControlName="email" 
+                           class="form-control" 
+                           id="email" 
+                           [ngClass]="{'is-invalid': submitted && f['email'].errors}">
+                    @if (submitted && f['email'].errors) {
+                      <div class="invalid-feedback">
+                        @if (f['email'].errors['required']) {
+                          <div>L'email est requis</div>
                         }
+                        @if (f['email'].errors['email']) {
+                          <div>L'email doit être valide</div>
+                        }
+                      </div>
+                    }
                   </div>
                 </div>
 
@@ -59,25 +65,25 @@
                   <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input [type]="showPassword ? 'text' : 'password'" 
-                        formControlName="mot_de_passe" 
-                        class="form-control" 
-                        id="password"
-                        [ngClass]="{'is-invalid': submitted && f['mot_de_passe'].errors}">
-                        <button class="btn btn-outline-secondary" 
-                                type="button" 
-                                (click)="togglePasswordVisibility()">
-                        <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-                        </button>
-                        @if (submitted && f['mot_de_passe'].errors) {
-                            <div class="invalid-feedback">
-                              @if (f['mot_de_passe'].errors['required']) {
-                                <div>Le mot de passe est requis</div>
-                              }
-                              @if (f['mot_de_passe'].errors['minlength']) {
-                                <div>Le mot de passe doit contenir au moins 4 caractères</div>
-                              }
-                            </div>
+                           formControlName="mot_de_passe" 
+                           class="form-control" 
+                           id="password"
+                           [ngClass]="{'is-invalid': submitted && f['mot_de_passe'].errors}">
+                    <button class="btn btn-outline-secondary" 
+                            type="button" 
+                            (click)="togglePasswordVisibility()">
+                      <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                    </button>
+                    @if (submitted && f['mot_de_passe'].errors) {
+                      <div class="invalid-feedback">
+                        @if (f['mot_de_passe'].errors['required']) {
+                          <div>Le mot de passe est requis</div>
                         }
+                        @if (f['mot_de_passe'].errors['minlength']) {
+                          <div>Le mot de passe doit contenir au moins 4 caractères</div>
+                        }
+                      </div>
+                    }
                   </div>
                 </div>
 
@@ -92,7 +98,16 @@
                 </div> -->
 
                 <div class="col-12 mt-4">
-                  <button class="btn btn-primary w-100" type="submit">Se connecter</button>
+                  <button class="btn btn-primary w-100" 
+                          type="submit" 
+                          [disabled]="loading">
+                    @if (loading) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      Connexion en cours...
+                    } @else {
+                      Se connecter
+                    }
+                  </button>
                 </div>
 
                 <div class="col-12">
