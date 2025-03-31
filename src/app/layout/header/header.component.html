@@ -3,7 +3,7 @@
 
   <div class="d-flex align-items-center justify-content-between">
     <a href="#" class="logo d-flex align-items-center">
-      <img src="assets/img/logo.png" alt="">
+      <img src="assets/img/logo.png" alt="logo NeuroStock" class="img-fluid">
       <span class="d-none d-lg-block">NeuroStock</span>
     </a>
     <i class="bi bi-list toggle-sidebar-btn" (click)="toggleSidebar()"></i>
@@ -29,7 +29,7 @@
           </li>
 
           <li>
-            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+            <a class="dropdown-item d-flex align-items-center" routerLink="#">
               <i class="bi bi-person"></i>
               <span>Profil</span>
             </a>
@@ -37,21 +37,6 @@
           <li>
             <hr class="dropdown-divider">
           </li>
-
-          <!-- <li>
-            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-              <i class="bi bi-gear"></i>
-              <span>Paramètres du compte</span>
-            </a>
-          </li> -->
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
           <li class="logout-hover">
             <a class="dropdown-item d-flex align-items-center" (click)="logout()">
               <i class="bi bi-box-arrow-right"></i>

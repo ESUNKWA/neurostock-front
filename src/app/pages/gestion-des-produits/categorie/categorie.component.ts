@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { isPlatformBrowser } from '@angular/common';
+import { first } from 'rxjs';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -16,215 +18,274 @@ declare var bootstrap: any;
   styleUrl: './categorie.component.scss',
   providers: [ToastrService]
 })
-export default class CategorieComponent implements OnInit, AfterViewInit {
-  @ViewChild('dataTable') dataTable!: ElementRef;
-  
+export default class CategorieComponent implements OnInit {
+  categories: any = [];
+  isLoading: boolean = false;
+  isEditMode: boolean = false;
+  selectedCategorie: any = null;
+  titleModal: string = 'AJOUTER UNE CATEGORIE';
+  buttonText: string = 'Enregistrer';
+  icon: string = 'ri ri-save-3-line';
   categorieForm: FormGroup;
-  categories: any[] = [];
-  isEditing = false;
-  selectedId: number | null = null;
-  private categorieModal: any;
-  private deleteModal: any;
-  private categorieToDelete: number | null = null;
+  isSubmitted: boolean = false; 
 
   constructor(
-    private fb: FormBuilder,
-    private categorieService: CategorieService,
-    private toastr: ToastrService
+    private fb: FormBuilder, 
+    private categorieService: CategorieService, 
+    private toastr: ToastrService,
+    @Inject(PLATFORM_ID) private platformId: any
   ) {
     this.categorieForm = this.fb.group({
-      nom: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', [Validators.required, Validators.minLength(10)]]
+      nom: ['', [Validators.required]],
+      description: ['', [Validators.required]]
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadCategories();
   }
 
-  ngAfterViewInit() {
-    this.initializeDataTable();
-    this.initializeModals();
-  }
+  // getter pour un accès facile aux champs du formulaire
+  get f() { return this.categorieForm.controls; }
 
-  private initializeModals() {
-    this.categorieModal = new bootstrap.Modal(document.getElementById('categorieModal'));
-    this.deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-  }
-
-  private initializeDataTable() {
-    $(this.dataTable.nativeElement).DataTable({
-      language: {
-        emptyTable: "Aucune donnée disponible dans le tableau",
-        info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-        infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
-        infoFiltered: "(filtré de _MAX_ entrées au total)",
-        infoThousands: ",",
-        loadingRecords: "Chargement...",
-        processing: "Traitement...",
-        search: "Rechercher :",
-        zeroRecords: "Aucun élément correspondant trouvé",
-        paginate: {
-          first: "Premier",
-          last: "Dernier",
-          next: "Suivant",
-          previous: "Précédent"
-        },
-        aria: {
-          sortAscending: ": activer pour trier la colonne par ordre croissant",
-          sortDescending: ": activer pour trier la colonne par ordre décroissant"
-        },
-        select: {
-          rows: {
-            _: "%d lignes sélectionnées",
-            1: "1 ligne sélectionnée"
-          }
-        }
-      },
-      dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>' +
-           '<"row"<"col-sm-12"tr>>' +
-           '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-      pageLength: 10,
-      buttons: [
-        {
-          extend: 'collection',
-          text: 'Exporter',
-          buttons: [
-            'excel',
-            'pdf',
-            'print'
-          ]
-        }
-      ],
-      data: this.categories,
-      columns: [
-        { data: 'id' },
-        { data: 'nom' },
-        { data: 'description' },
-        {
-          data: null,
-          render: (data: any) => `
-            <div class="d-flex justify-content-center">
-              <button class="btn btn-sm btn-primary me-2" onclick="editCategorie(${data.id})">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCategorie(${data.id})">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          `
-        }
-      ],
-      responsive: true,
-      autoWidth: false,
-      fixedHeader: true,
-      order: [[0, 'desc']]
-    });
-  }
-
-  loadCategories() {
+  loadCategories(): void {
+    this.isLoading = true;
     this.categorieService.getAllCategories().subscribe({
-      next: (data: any) => {
-        this.categories = data;
-        console.log('categories', this.categories);
-        
-        if ($.fn.DataTable.isDataTable(this.dataTable.nativeElement)) {
-          $(this.dataTable.nativeElement).DataTable().destroy();
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.categories = response.data;
+          // Attendre que le DOM soit mis à jour
+          setTimeout(() => {
+            if (isPlatformBrowser(this.platformId)) {
+              const $ = (window as any).$;
+              if ($ && $.fn.dataTable) {
+                try {
+                  // Détruire l'instance existante si elle existe
+                  const existingTable = $('.js-dataTable-buttons').DataTable();
+                  if (existingTable) {
+                    existingTable.destroy();
+                  }
+                  
+                  // Initialiser une nouvelle instance
+                  $('.js-dataTable-buttons').DataTable({
+                    language: {
+                      emptyTable: "Aucune donnée",
+                      info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                      infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
+                      infoFiltered: "(filtré de _MAX_ entrées au total)",
+                      infoThousands: ",",
+                      lengthMenu: "Afficher _MENU_ entrées",
+                      loadingRecords: "Chargement...",
+                      processing: "Traitement...",
+                      search: "Rechercher :",
+                      zeroRecords: "Aucun enregistrement trouvé",
+                      paginate: {
+                        first: '<i class="bi bi-chevron-double-left"></i>',
+                        last: '<i class="bi bi-chevron-double-right"></i>',
+                        next: '<i class="bi bi-chevron-right"></i>',
+                        previous: '<i class="bi bi-chevron-left"></i>'
+                      }
+                    },
+                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                         '<"row"<"col-sm-12"tr>>' +
+                         '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                    pageLength: 5,
+                    searching: true,
+                    info: true,
+                    lengthChange: true,
+                    responsive: true,
+                    pagingType: 'full_numbers'
+                  });
+                } catch (error) {
+                  console.error('Erreur lors de l\'initialisation de DataTable:', error);
+                }
+              }
+            }
+          }, 100);
         }
-        this.initializeDataTable();
+        this.isLoading = false;
       },
-      error: (error) => {
-        // console.log('error', error);
+      error: (error: any) => {
+        this.isLoading = false;
         this.toastr.error('Erreur lors du chargement des catégories');
       }
     });
   }
 
-  openAddModal() {
-    this.isEditing = false;
-    this.selectedId = null;
+  openNewModal(): void {
+    this.isEditMode = false;
+    this.selectedCategorie = null;
+    const title = 'Ajouter une catégorie';
+    this.titleModal = title.toUpperCase();
+    this.buttonText = 'Enregistrer';
+    this.icon = 'ri ri-save-3-line';
     this.categorieForm.reset();
-    this.categorieModal.show();
+    this.isSubmitted = false;
+
+    // Désactiver les champs du formulaire
+    this.categorieForm.get('nom')?.enable();
+    this.categorieForm.get('description')?.enable();
   }
 
-  onSubmit() {
-    if (this.categorieForm.valid) {
-      const categorie = this.categorieForm.value;
-      if (this.isEditing && this.selectedId) {
-        this.categorieService.updateCategorie(this.selectedId, categorie).subscribe({
-          next: () => {
-            this.toastr.success('Catégorie mise à jour avec succès');
-            this.categorieModal.hide();
-            this.loadCategories();
-          },
-          error: (error) => {
-            this.toastr.error('Erreur lors de la mise à jour de la catégorie');
-          }
-        });
-      } else {
-        this.categorieService.createCategorie(categorie).subscribe({
-          next: () => {
-            this.toastr.success('Catégorie créée avec succès');
-            this.categorieModal.hide();
-            this.loadCategories();
-          },
-          error: (error) => {
-            this.toastr.error('Erreur lors de la création de la catégorie');
-          }
-        });
-      }
-    } else {
-      Object.keys(this.categorieForm.controls).forEach(key => {
-        const control = this.categorieForm.get(key);
-        if (control?.errors) {
-          control.markAsTouched();
-        }
-      });
+  openViewCategorie(categorie: any): void {
+    this.selectedCategorie = categorie;
+    const title = `Visualiser la catégorie [${categorie?.nom}]`;
+    this.titleModal = title.toUpperCase();
+    this.buttonText = 'Fermer';
+    this.icon = 'ri ri-close-circle-line';
+    this.categorieForm.reset();
+    this.isSubmitted = false;
+
+    // Remplir le formulaire en lecture seule
+    this.categorieForm.patchValue({
+      nom: categorie.nom,
+      description: categorie.description || ''
+    });
+
+    // Désactiver les champs du formulaire
+    this.categorieForm.get('nom')?.disable();
+    this.categorieForm.get('description')?.disable();
+
+    const modal = document.getElementById('modal-fadein');
+    if (modal) {
+      const modalInstance = new (window as any).bootstrap.Modal(modal);
+      modalInstance.show();
     }
   }
 
-  editCategorie(id: number) {
-    this.isEditing = true;
-    this.selectedId = id;
-    this.categorieService.getCategorieById(id).subscribe({
-      next: (categorie: any) => {
-        this.categorieForm.patchValue(categorie);
-        this.categorieModal.show();
+  openEditCategorie(categorie: any): void {
+    this.isEditMode = !!categorie;
+    this.selectedCategorie = categorie || null;
+    this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
+    this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
+    const title = `Modifier la catégorie [${categorie?.nom}]`;
+    const defaultTitle = 'Ajouter une catégorie';
+    this.titleModal = this.isEditMode ? title.toUpperCase() : defaultTitle.toUpperCase();
+
+    // Désactiver les champs du formulaire
+    this.categorieForm.get('nom')?.enable();
+    this.categorieForm.get('description')?.enable();
+
+    if (this.isEditMode && categorie) {
+      // Remplir le formulaire avec les données de la catégorie
+      this.categorieForm.patchValue({
+        nom: categorie.nom,
+        description: categorie.description || ''
+      });
+    } else {
+      // Réinitialiser le formulaire pour une nouvelle catégorie
+      this.categorieForm.reset();
+    }
+
+    this.isSubmitted = false;
+
+    // Ouvrir le modal
+    const modal = document.getElementById('modal-fadein');
+    if (modal) {
+      const modalInstance = new (window as any).bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+  }
+
+  saveOrUpdateCategorie(): void {
+    this.isSubmitted = true;
+
+    // arrêter ici si le formulaire est invalide
+    if (this.categorieForm.invalid) {
+      return;
+    }
+
+    let request;
+    const categorie = this.categorieForm.value;
+    if (this.isEditMode && this.selectedCategorie) {
+      // Mode modification
+      request = this.categorieService.updateCategorie(this.selectedCategorie.id, categorie);
+    } else {
+      // Mode création
+      request = this.categorieService.createCategorie(categorie);
+    }
+
+    request.subscribe({
+      next: (response: any) => {
+        if (response.status === 'success') {
+          // Fermer le modal
+          if (this.isEditMode) {
+            const modal = document.getElementById('modal-fadein');
+            if (modal) {
+              const modalInstance = (window as any).bootstrap.Modal.getInstance(modal);
+              if (modalInstance) {
+                modalInstance.hide();
+              } 
+            }
+          }
+
+          this.toastr.success(this.isEditMode ? 
+            'Catégorie modifiée avec succès' : 
+            'Catégorie ajoutée avec succès');
+
+          // Afficher la notification
+          // if (isPlatformBrowser(this.platformId)) {
+          //   const $ = (window as any).$;
+          //   if ($) {
+          //     $.notify({
+          //       icon: 'ri ri-check-line me-1',
+          //       message: this.isEditMode ? 
+          //         'La catégorie a été modifiée avec succès' : 
+          //         'La catégorie a été ajoutée avec succès'
+          //     }, {
+          //       type: 'success',
+          //       placement: {
+          //         from: 'top',
+          //         align: 'right'
+          //       },
+          //       delay: 3000,
+          //       z_index: 9999,
+          //       animate: {
+          //         enter: 'animated fadeInDown',
+          //         exit: 'animated fadeOutUp'
+          //       }
+          //     });
+          //   }
+          // }
+
+          // Recharger la liste des catégories
+          this.loadCategories();
+
+          // Réinitialiser le formulaire et les états
+          this.categorieForm.reset();
+          this.isSubmitted = false;
+          this.isEditMode = false;
+          this.selectedCategorie = null;
+        }
       },
-      error: (error) => {
-        this.toastr.error('Erreur lors du chargement de la catégorie');
+      error: (error: any) => {
+        console.error('Erreur lors de la sauvegarde:', error);
+        this.toastr.error('Une erreur est survenue lors de la sauvegarde');
+        
+        // Afficher une notification d'erreur
+        // if (isPlatformBrowser(this.platformId)) {
+        //   const $ = (window as any).$;
+        //   if ($) {
+        //     $.notify({
+        //       icon: 'ri ri-close-circle-line me-1',
+        //       message: 'Une erreur est survenue lors de la sauvegarde'
+        //     }, {
+        //       type: 'danger',
+        //       placement: {
+        //         from: 'top',
+        //         align: 'right'
+        //       },
+        //       delay: 3000,
+        //       z_index: 9999,
+        //       animate: {
+        //         enter: 'animated fadeInDown',
+        //         exit: 'animated fadeOutUp'
+        //       }
+        //     });
+        //   }
+        // }
       }
     });
   }
 
-  deleteCategorie(id: number) {
-    this.categorieToDelete = id;
-    this.deleteModal.show();
-  }
-
-  confirmDelete() {
-    if (this.categorieToDelete) {
-      this.categorieService.deleteCategorie(this.categorieToDelete).subscribe({
-        next: () => {
-          this.toastr.success('Catégorie supprimée avec succès');
-          this.deleteModal.hide();
-          this.loadCategories();
-        },
-        error: (error) => {
-          this.toastr.error('Erreur lors de la suppression de la catégorie');
-        }
-      });
-    }
-  }
-
-  getErrorMessage(controlName: string): string {
-    const control = this.categorieForm.get(controlName);
-    if (control?.hasError('required')) {
-      return 'Ce champ est obligatoire';
-    }
-    if (control?.hasError('minlength')) {
-      return `La longueur minimale est de ${control.errors?.['minlength'].requiredLength} caractères`;
-    }
-    return '';
-  }
 }
