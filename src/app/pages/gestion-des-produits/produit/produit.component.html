@@ -1,1 +1,204 @@
-<p>produit works!</p>
+<div class="pagetitle">
+    <div class="d-flex justify-content-between">
+      <h1>Gestion des Produits</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/dashboard">
+            <i class="bi bi-house"></i> Accueil</a>
+          </li>
+          <li class="breadcrumb-item active">Gestion des Produits</li>
+        </ol>
+      </nav>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5 class="card-title mb-0 text-uppercase">Liste des produits</h5>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                              <i class="bi bi-plus-circle"></i> Nouveau Produit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (isLoading) {
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    }
+                    <hr>
+                    <!-- DataTable avec colonnes fixes -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prix d'achat</th>
+                                    <th>Prix de vente</th>
+                                    <th>Stock initial</th>
+                                    <th>Catégorie</th>
+                                    <th>Image</th>
+                                    <th>Date de création</th>
+                                    <th class="text-center" style="width: 15%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Contenu généré par DataTables -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal pour ajouter ou visualiser un produit -->
+<div class="modal fade" id="modal-fadein" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form novalidate [formGroup]="produitForm" (ngSubmit)="saveOrUpdateProduit()" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="block-content fs-sm">
+                        <!-- Informations principales -->
+                        <div class="mb-4">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="nom">Nom du produit</label>
+                                    <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                                    @if (isSubmitted && f['nom'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['nom'].errors['required']) {
+                                                <div>Le nom est obligatoire</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="categorie">Catégorie</label>
+                                    <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
+                                        <option value="">Sélectionner une catégorie</option>
+                                        @for (categorie of categories; track categorie.id) {
+                                            <option [value]="categorie.id">{{ categorie.nom }}</option>
+                                        }
+                                    </select>
+                                    @if (isSubmitted && f['categorie'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['categorie'].errors['required']) {
+                                                <div>La catégorie est obligatoire</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prix et Stock -->
+                        <div class="mb-4">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="prix_achat">Prix d'achat (FCFA)</label>
+                                    <input type="number" class="form-control" id="prix_achat" placeholder="Prix d'achat" formControlName="prix_achat" [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}">
+                                    @if (isSubmitted && f['prix_achat'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['prix_achat'].errors['required']) {
+                                                <div>Le prix d'achat est obligatoire</div>
+                                            }
+                                            @if (f['prix_achat'].errors['min']) {
+                                                <div>Le prix d'achat doit être supérieur à 0</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="prix_vente">Prix de vente (FCFA)</label>
+                                    <input type="number" class="form-control" id="prix_vente" placeholder="Prix de vente" formControlName="prix_vente" [ngClass]="{'is-invalid': isSubmitted && f['prix_vente'].errors}">
+                                    @if (isSubmitted && f['prix_vente'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['prix_vente'].errors['required']) {
+                                                <div>Le prix de vente est obligatoire</div>
+                                            }
+                                            @if (f['prix_vente'].errors['min']) {
+                                                <div>Le prix de vente doit être supérieur à 0</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="stock_initial">Stock initial</label>
+                                    <input type="number" class="form-control" id="stock_initial" placeholder="Stock initial" formControlName="stock_initial" [ngClass]="{'is-invalid': isSubmitted && f['stock_initial'].errors}">
+                                    @if (isSubmitted && f['stock_initial'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['stock_initial'].errors['required']) {
+                                                <div>Le stock initial est obligatoire</div>
+                                            }
+                                            @if (f['stock_initial'].errors['min']) {
+                                                <div>Le stock initial doit être supérieur à 0</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image et Prévisualisation -->
+                        <div class="mb-4">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="image">Image du produit</label>
+                                    <input type="file" class="form-control" id="image" (change)="onFileSelected($event)" accept="image/*" [ngClass]="{'is-invalid': isSubmitted && f['image'].errors}">
+                                    @if (isSubmitted && f['image'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['image'].errors['required']) {
+                                                <div>L'image est obligatoire</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Prévisualisation de l'image</label>
+                                    <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                                        @if (previewImageUrl) {
+                                            <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                        } @else if (selectedProduit?.image) {
+                                            <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                        } @else {
+                                            <div class="text-muted">
+                                                <i class="bi bi-image" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">Aucune image sélectionnée</p>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if (!titleModal.includes('VISUALISER')) {
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i [class]="icon"></i> {{ buttonText }}
+                        </button>
+                    }
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
