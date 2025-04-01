@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { LoaderService } from '../../services/loader/loader.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -9,5 +9,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './dashboard.component.scss'
 })
 export default class DashboardComponent {
+
+  constructor(private loaderService: LoaderService) {
+    this.loaderService.showLoading();
+    setTimeout(() => {
+      this.loaderService.hideLoading();
+    }, 1500);
+  }
 
 }

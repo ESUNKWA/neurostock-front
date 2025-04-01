@@ -70,11 +70,13 @@ export default class LoginComponent implements OnInit {
       .subscribe({
         next: () => {
           this.router.navigateByUrl('/dashboard');
-          this.toastr.success('Vous êtes connecté! Bienvenue sur NeuroStock');
+          setTimeout(() => {
+            this.toastr.success('Vous êtes connecté! Bienvenue sur NeuroStock');
+          }, 2000);
         },
         error: (error: HttpErrorResponse) => {
           this.error = error.error?.message || 'Une erreur est survenue lors de la connexion';
-          this.toastr.error(this.error);
+          // this.toastr.error(this.error);
         }
       });
   }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-
+import { LoaderService } from '../../services/loader/loader.service';
 
 @Component({
   selector: 'app-header',
@@ -17,7 +17,8 @@ export class HeaderComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private loaderService: LoaderService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +37,13 @@ export class HeaderComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigateByUrl('/login');
-    this.toastr.success('Vous êtes déconnecté!');
+    this.loaderService.showLoading();
+    setTimeout(() => {
+      this.loaderService.hideLoading();
+    }, 1500);
+    setTimeout(() => {
+      this.toastr.success('Vous êtes déconnecté!');
+    }, 2000);
   }
 
 }
