@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -7,25 +7,32 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class HttpClientService {
+  private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
   constructor(private http: HttpClient) { }
 
-  get<T>(url: string): Observable<T> {
-    return this.http.get<T>(url);
+  get(url: string, options: any = { headers: this.headers }) {
+    return this.http.get(url, options);
   }
 
-  post<T>(url: string, data: any): Observable<T> {
-    return this.http.post<T>(url, data);
+  getById(url: string, id: number) {
+    const link = `${url}/${id}`;
+    return this.http.get(link);
   }
 
-  getById<T>(url: string, id: number): Observable<T> {
-    return this.http.get<T>(`${url}/${id}`);
+  post(url: string, body: any, options: any = { headers: this.headers } ) {
+    return this.http.post(url, body, options);
   }
 
-  patch<T>(url: string, data: any): Observable<T> {
-    return this.http.patch<T>(url, data);
+  put(url: string, body: any, options: any = { headers: this.headers }) {
+    return this.http.put(url, body, options);
   }
 
-  delete(url: string): Observable<void> {
-    return this.http.delete<void>(url);
+  patch(url: string, body: any, options: any = { headers: this.headers }) {
+    return this.http.patch(url, body, options);
+  }
+
+  delete(url: string, options: any = { headers: this.headers }) {
+    return this.http.delete(url, options);
   }
 }

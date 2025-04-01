@@ -4,31 +4,31 @@ import { HttpClientService } from '../http-client/http-client.service';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
-export interface User {
-  id: number;
-  email: string;
-  nom: string;
-  prenoms: string;
-  profil: {
-    id: number;
-    nom: string;
-    description: string;
-  };
-  structure: any[];
-  boutique: any | null;
-}
+// export interface User {
+//   id: number;
+//   email: string;
+//   nom: string;
+//   prenoms: string;
+//   profil: {
+//     id: number;
+//     nom: string;
+//     description: string;
+//   };
+//   structure: any[];
+//   boutique: any | null;
+// }
 
-export interface AuthResponse {
-  utilisateur: User;
-  access_token: string;
-}
+// export interface AuthResponse {
+//   utilisateur: User;
+//   access_token: string;
+// }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly API_URL = environnement.API_URL;
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<any | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
@@ -42,10 +42,10 @@ export class AuthService {
     }
   }
 
-  login(credentials: { email: string; mot_de_passe: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/authentication`, credentials)
+  login(credentials: { email: string; mot_de_passe: string }) {
+    return this.http.post(`${this.API_URL}/authentication`, credentials)
       .pipe(
-        tap(response => {
+        tap((response: any) => {
           // Stocker le token
           localStorage.setItem('access_token', response.access_token);
           // Stocker les informations de l'utilisateur
@@ -70,7 +70,7 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
-  getUser(): User | null {
+  getUser(): any | null {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }

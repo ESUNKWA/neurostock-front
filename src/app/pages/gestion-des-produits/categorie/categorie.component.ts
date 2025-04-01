@@ -87,7 +87,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       try {
         $('.js-dataTable-buttons').DataTable({
-          data: this.categories, // Fournir les données directement
+          data: this.categories,
           columns: [
             { 
               data: 'nom',
@@ -135,7 +135,6 @@ export default class CategorieComponent implements OnInit, OnDestroy {
             infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
             infoFiltered: "(filtré de _MAX_ entrées au total)",
             infoThousands: ",",
-            lengthMenu: "Afficher _MENU_ entrées",
             loadingRecords: "Chargement...",
             processing: "Traitement...",
             search: "Rechercher :",
@@ -147,25 +146,40 @@ export default class CategorieComponent implements OnInit, OnDestroy {
               previous: '<i class="bi bi-chevron-left"></i>'
             }
           },
-          dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+          dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>' +
                '<"row"<"col-sm-12"tr>>' +
                '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          buttons: [
+            {
+              extend: 'excel',
+              text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+              className: 'btn btn-success btn-sm me-2',
+              exportOptions: {
+                columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
+              }
+            },
+            {
+              extend: 'pdf',
+              text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+              className: 'btn btn-danger btn-sm',
+              exportOptions: {
+                columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
+              }
+            }
+          ],
           pageLength: 5,
           searching: true,
           info: true,
-          lengthChange: true,
           responsive: true,
           ordering: true,
           pagingType: 'full_numbers',
-          stateSave: false, // Ne pas sauvegarder l'état
-          retrieve: false, // Forcer la création d'une nouvelle instance
-          autoWidth: false, // Désactiver l'ajustement automatique de la largeur pour plus de stabilité
+          stateSave: false,
+          retrieve: false,
+          autoWidth: false,
           drawCallback: () => {
-            // Réinitialiser les tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
           },
           createdRow: (row: any, data: any, dataIndex: any) => {
-            // Ajouter les gestionnaires d'événements pour les actions
             $(row).find('[data-action]').on('click', (e: any) => {
               const button = $(e.currentTarget);
               const action = button.data('action');
