@@ -8,7 +8,15 @@ export const routes: Routes = [
     { path: 'login', loadComponent: () => import('./login/login.component'), title: 'NeuroStock | Connexion' },
     { path: '', loadComponent: () => import('./home/home.component'), canActivate: [AuthGuard], children: [
         { path: 'dashboard', loadComponent: () => import('./layout/dashboard/dashboard.component'), title: 'NeuroStock | Tableau de bord' },
-        { path: 'gestion-des-produits', component: GestionDesProduitsComponent, children: produitRoutes, title: 'NeuroStock | Gestion des produits' }
-    ] },
+        { path: 'gestion-des-produits', component: GestionDesProduitsComponent, children: produitRoutes, title: 'NeuroStock | Gestion des produits' },
+        
+        // Gestion des utilisateurs
+        { 
+            path: 'gestion', 
+            loadChildren:()=> import('./pages/gestion-users/gestion.users.routes').then((u) => u.UsersRoutes),
+            title: 'NeuroStock | Profil' 
+        },
+    ] 
+    },
     { path: '**', redirectTo: 'dashboard' }
 ];
