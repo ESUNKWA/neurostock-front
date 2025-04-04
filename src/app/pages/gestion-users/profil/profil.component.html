@@ -31,11 +31,13 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="text-center py-3" hidden>
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Chargement...</span>
+                    @if (isLoading) {
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
                         </div>
-                    </div>
+                      }
                     <hr>
                     <!-- DataTable avec colonnes fixes -->
                     <div class="table-responsive">
@@ -67,17 +69,23 @@
             <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form >
+        <form [formGroup]="profilForm" (ngSubmit)="saveOrUpdate()" >
             <div class="modal-body">
                 <div class="block-content fs-sm">
                   <div class="mb-4">
                     <label class="form-label" for="nom">Nom</label>
-                    <input type="text" class="form-control" id="nom" placeholder="Nom de la catégorie" formControlName="nom">
-                    
+                    <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                    @if (isSubmitted && f['nom'].errors) {
+                        <div class="invalid-feedback">
+                          @if (f['nom'].errors['required']) {
+                            <div>Le nom est obligatoire</div>
+                          }
+                        </div>
+                      }
                   </div>
                   <div class="mb-4">
                     <label class="form-label" for="description">Description</label>
-                    <textarea class="form-control" id="description" rows="5" placeholder="Description de la catégorie" formControlName="description"></textarea>
+                    <textarea class="form-control" id="description" rows="5" formControlName="description"></textarea>
                     
                   </div>
                 </div>
