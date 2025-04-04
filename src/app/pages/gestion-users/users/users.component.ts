@@ -27,6 +27,7 @@ export class UsersComponent {
   users: any [] = [];
   usersData: any = {};
   profils: any[] = [];
+  selectedProfil: any = '';
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
@@ -56,10 +57,13 @@ export class UsersComponent {
   // getter pour un accès facile aux champs du formulaire
   get f() { return this.userForm.controls; }
 
+
+  
   ngOnInit(): void {
     
     this.userFind();
     this.profilFind();
+    
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
         if (isPlatformBrowser(this.platformId)) {
           setTimeout(() => {
@@ -71,6 +75,8 @@ export class UsersComponent {
   }
 
   openNewModal(): void {
+    this.userForm.reset();
+    this.userForm.enable();
     this.isEditMode = false;
     this.usersData = null;
     const title = 'Ajouter un nouveau user';
@@ -78,18 +84,17 @@ export class UsersComponent {
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
     this.isSubmitted = false;
-    this.userForm.reset();
+    
   }
 
   openView(user: any): void {
-    console.log(user);
-    
+    this.userForm.disable();
     this.usersData = user;
     const title = `Visualiser le user [ ${user?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
-    this.userForm.reset();
+    
     this.isSubmitted = false;
     
     this.userForm.patchValue(user);
@@ -111,7 +116,7 @@ export class UsersComponent {
     this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
     const title = `Modifier le user [${user?.nom}]`;
     this.titleModal = title;
-
+    
     this.isSubmitted = false;
 
     // Ouvrir le modal
@@ -158,6 +163,9 @@ export class UsersComponent {
   
 
   saveOrUpdate(): void {
+
+    console.log('this.selectedProfil', this.selectedProfil);
+    
     this.isSubmitted = true;
    
     // arrêter ici si le formulaire est invalide
@@ -169,6 +177,7 @@ export class UsersComponent {
     //const user = this.userForm.value;
     if (this.isEditMode && this.usersData) {
       // Mode modification
+      
       request = this.userService.update(this.userForm.value, this.usersData.id);
     } else {
       // Mode création
@@ -380,9 +389,20 @@ export class UsersComponent {
     );
   }
 
+   
+
+  ngAfterViewInit() {
+    $('#modal-fadein').on('shown.bs.modal', () => {
+      $('.js-example-basic-single').select2({
+        dropdownParent: $('#modal-fadein') // IMPORTANT : Attache le dropdown à la modale
+      }).val(null).trigger('change'); // Met la valeur par défaut;
+    });
+  }
+
   ngOnDestroy(): void {
     this.souscription.unsubscribe();
   }
+
 
 
   

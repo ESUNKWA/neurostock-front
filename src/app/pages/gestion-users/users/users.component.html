@@ -112,15 +112,16 @@
                         </div>
                       }
                   </div>
+                  
                   <div class="row">
                     <div class="col mb-4">
                         <label class="form-label" for="email">Profil</label>
-                        <select class="form-control js-example-tags" formControlName="profil">
+                        <select class="form-control js-example-basic-single form-control" formControlName="profil">
                             <option selected="selected">---Selectionnez le profil---</option>
                             @for (item of profils; track $index) {
                                 <option value="{{item.id}}" >{{item.nom}}</option>
                             }
-                          </select>
+                        </select>
                     </div>
                     <div class="col mb-4">
                         <label class="form-label " for="email">Boutique</label>
