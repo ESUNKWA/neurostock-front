@@ -5,9 +5,21 @@ export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full', title: 'NeuroStock | Connexion' },
     { path: 'login', loadComponent: () => import('./login/login.component'), title: 'NeuroStock | Connexion' },
     { path: '', loadComponent: () => import('./home/home.component'), canActivate: [AuthGuard], children: [
-        { path: 'dashboard', loadComponent: () => import('./layout/dashboard/dashboard.component'), title: 'NeuroStock | Tableau de bord' },
-        { path: 'gestion-des-produits', loadChildren: () => import('./pages/gestion-des-produits/routes'), title: 'NeuroStock | Gestion des produits' },
-        { path: 'gestion-des-achats', loadChildren: () => import('./pages/gestion-des-achats/routes'), title: 'NeuroStock | Gestion des achats' },
+        { 
+            path: 'dashboard', 
+            loadComponent: () => import('./layout/dashboard/dashboard.component'), 
+            title: 'NeuroStock | Tableau de bord' 
+        },
+        { 
+            path: 'gestion-des-produits', 
+            loadChildren: () => import('./pages/gestion-des-produits/routes'), 
+            title: 'NeuroStock | Gestion des produits' 
+        },
+        { 
+            path: 'gestion-des-approvisionnements', 
+            loadChildren: () => import('./pages/gestion-des-achats/routes'), 
+            title: 'NeuroStock | Gestion des approvisionnements' 
+        },
                 
         // Gestion des utilisateurs
         { 

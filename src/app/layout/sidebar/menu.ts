@@ -63,18 +63,18 @@ export const Menu: any = [
         menu: [
             {
                 
-                libelle: 'Gestions des Achats',
+                libelle: 'Gestions des Approvisionnements',
                 icon: 'bi bi-cart4',
                 target: 'achats-nav',
                 sousMenu: [
                     {
-                        libelle: 'Achats',
-                        lien: '/gestion-des-achats/achats',
+                        libelle: 'Approvisionnements',
+                        lien: '/gestion-des-approvisionnements/approvisionnement',
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Historique des Achats',
-                        lien: '/gestion-des-achats/historique-achats',
+                        libelle: 'Historique des Approvisionnements',
+                        lien: '/gestion-des-approvisionnements/historique-approvisionnements',
                         icon: 'bi bi-circle'
                     }
                 ]
