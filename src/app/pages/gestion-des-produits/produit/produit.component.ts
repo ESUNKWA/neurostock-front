@@ -67,6 +67,10 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
+  defaultStructure() {
+    
+  }
+
   ngOnDestroy(): void {
     this.destroyDataTable();
   }
