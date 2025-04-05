@@ -3,166 +3,56 @@
 
   <ul class="sidebar-nav" id="sidebar-nav"> 
 
-    <li class="nav-item">
+    <!-- <li class="nav-item">
       <a [class]="isActive" routerLink="/dashboard">
         <i class="bi bi-grid"></i>
         <span>Tableau de bord</span>
       </a>
-    </li>
+    </li> -->
 
-    <li class="nav-heading mt-4">Gestion</li>
+    @for (item of menu; track $index) {
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#products-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-menu-button-wide"></i><span>Gestion des Produits</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="products-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-        <li>
-          <a routerLink="/gestion-des-produits/categorie" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Catégories</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/gestion-des-produits/fournisseur" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Fournisseurs</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/gestion-des-produits/produit" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Produits</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Components Nav -->
+      <!-- Titre pour un ensemble de menu -->
+      @if (item?.titre) {
+        <li class="nav-heading mt-4">{{item?.titre}}</li>
+      }
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#achats-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-cart4"></i><span>Gestions des Achats</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="achats-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="forms-elements.html">
-            <i class="bi bi-circle"></i><span>Achats</span>
-          </a>
-        </li>
-        <li>
-          <a href="forms-layouts.html">
-            <i class="bi bi-circle"></i><span>Historique des Achats</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Forms Nav -->
+       
+          <!-- Affichage pour un seul menu -->
+          @if ( !item?.full) {
+            <li class="nav-item">
+              <a class="nav-link collapsed" [routerLink]="item?.menu[0]?.lien" [attr.data-bs-target]="'#' + item?.menu?.target" data-bs-toggle="collapse" href="#">
+                <i [attr.class]="item?.menu[0]?.icon" ></i><span>{{item?.menu[0]?.libelle}}</span>
+              </a>
+            </li>
+          }@else {
+            @for (items of item?.menu; track $index) {
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#ventes-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-cash-stack"></i><span>Gestion des ventes</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="ventes-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="tables-general.html">
-            <i class="bi bi-circle"></i><span>Ventes</span>
-          </a>
-        </li>
-        <li>
-          <a href="tables-data.html">
-            <i class="bi bi-circle"></i><span>Clients</span>
-          </a>
-        </li>
-        <li>
-          <a href="tables-data.html">
-            <i class="bi bi-circle"></i><span>Historique des ventes</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Tables Nav -->
+              <li class="nav-item">
+                <a class="nav-link collapsed" [attr.data-bs-target]="'#' + items?.target" data-bs-toggle="collapse" href="#">
+                  <i [attr.class]="items?.icon"></i><span>{{items?.libelle}}</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#stocks-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-pie-chart-fill"></i><span>Gestion des Stocks</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="stocks-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="charts-chartjs.html">
-            <i class="bi bi-circle"></i><span>Stocks</span>
-          </a>
-        </li>
-        <li>
-          <a href="charts-apexcharts.html">
-            <i class="bi bi-circle"></i><span>Inventaire</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Charts Nav -->
+                  <ul [attr.id]="items?.target" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                  
+                    @for (itemSubmenu of items?.sousMenu; track $index) {
+                   
+                      <li>
+                        <a [routerLink]="itemSubmenu?.lien" routerLinkActive="active">
+                          <i [attr.class]="itemSubmenu?.icon"></i><span>{{itemSubmenu?.libelle}}</span>
+                        </a>
+                      </li>
+                    }
+                    
+                  </ul>
+    
+              </li>
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#rapports-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-bar-chart-line"></i><span>Rapports et Statistiques</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="rapports-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="icons-bootstrap.html">
-            <i class="bi bi-circle"></i><span>Rapports de Ventes</span>
-          </a>
-        </li>
-        <li>
-          <a href="icons-remix.html">
-            <i class="bi bi-circle"></i><span>Rapports d'Achats</span>
-          </a>
-        </li>
-        <li>
-          <a href="icons-boxicons.html">
-            <i class="bi bi-circle"></i><span>Rapports de Stocks</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Icons Nav -->
+            }
+          }
 
-    <li class="nav-heading mt-4">Paramètres</li>
+    }
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#users-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-bar-chart-line"></i><span>Gestion des utilisateurs</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="users-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a routerLink="/utilisateurs/profils" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Profil</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/utilisateurs/list" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Utilisateurs</span>
-          </a>
-        </li>
-        
-      </ul>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#structure-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-bar-chart-line"></i><span>Gestion des boutiques</span><i class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="structure-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a routerLink="/structure/list" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Structure</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/structure/boutiques" routerLinkActive="active">
-            <i class="bi bi-circle"></i><span>Boutiques</span>
-          </a>
-        </li>
-        
-      </ul>
-    </li>
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="pages-faq.html">
-        <i class="bi bi-gear"></i>
-        <span>Configurations</span>
-      </a>
-    </li><!-- End F.A.Q Page Nav -->
   </ul>
 
 </aside><!-- End Sidebar-->

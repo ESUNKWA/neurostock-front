@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { Menu } from './menu';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,6 +11,8 @@ import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/ro
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
+
+  menu =  Menu;
 
   isActive = 'nav-link collapsed';
 
