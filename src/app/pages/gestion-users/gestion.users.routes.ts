@@ -3,7 +3,7 @@ import { ProfilComponent } from "./profil/profil.component";
 import { UsersComponent } from "./users/users.component";
 
 export const UsersRoutes: Routes = [
-    {path: "",redirectTo: "utilisateur",pathMatch: "full",},
-    {path: 'profil', component: ProfilComponent},
-    {path: 'utilisateur', component: UsersComponent},
+    {path: "",redirectTo: "list",pathMatch: "full",},
+    {path: 'list', component: UsersComponent},
+    {path: 'profils', component: ProfilComponent},
 ];

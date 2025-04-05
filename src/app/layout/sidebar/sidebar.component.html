@@ -125,13 +125,32 @@
       </a>
       <ul id="users-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         <li>
-          <a routerLink="/gestion/profil" routerLinkActive="active">
+          <a routerLink="/utilisateurs/profils" routerLinkActive="active">
             <i class="bi bi-circle"></i><span>Profil</span>
           </a>
         </li>
         <li>
-          <a routerLink="/gestion/utilisateur" routerLinkActive="active">
+          <a routerLink="/utilisateurs/list" routerLinkActive="active">
             <i class="bi bi-circle"></i><span>Utilisateurs</span>
+          </a>
+        </li>
+        
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#structure-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-bar-chart-line"></i><span>Gestion des boutiques</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="structure-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a routerLink="/structure/list" routerLinkActive="active">
+            <i class="bi bi-circle"></i><span>Structure</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/structure/boutiques" routerLinkActive="active">
+            <i class="bi bi-circle"></i><span>Boutiques</span>
           </a>
         </li>
         

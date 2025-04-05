@@ -12,8 +12,14 @@ export const routes: Routes = [
         
         // Gestion des utilisateurs
         { 
-            path: 'gestion', 
+            path: 'utilisateurs', 
             loadChildren:()=> import('./pages/gestion-users/gestion.users.routes').then((u) => u.UsersRoutes),
+            title: 'NeuroStock | Profil' 
+        },
+        // Gestion des boutiques
+        { 
+            path: 'structure', 
+            loadChildren:()=> import('./pages/gestion-boutiques/gestion.boutique.route').then((u) => u.boutiqueRoute),
             title: 'NeuroStock | Profil' 
         },
     ] 
