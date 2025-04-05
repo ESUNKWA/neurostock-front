@@ -17,14 +17,26 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-5">
                             <h5 class="card-title mb-0 text-uppercase">Liste des produits</h5>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
-                              <i class="bi bi-plus-circle"></i> Nouveau Produit
+                        <div class="col-md-7 text-end">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                                <i class="bi bi-plus-circle"></i> Nouveau Produit
                             </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <select class="form-select" (change)="onBoutiqueChange($event)">
+                                <option value="">Sélectionner une boutique</option>
+                                @for (boutique of boutiques; track boutique.id) {
+                                    <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                }
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -77,7 +89,7 @@
                         <!-- Informations principales -->
                         <div class="mb-4">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label" for="nom">Nom du produit</label>
                                     <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                                     @if (isSubmitted && f['nom'].errors) {
@@ -88,7 +100,7 @@
                                         </div>
                                     }
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label" for="categorie">Catégorie</label>
                                     <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
                                         <option value="">Sélectionner une catégorie</option>
@@ -100,6 +112,22 @@
                                         <div class="invalid-feedback">
                                             @if (f['categorie'].errors['required']) {
                                                 <div>La catégorie est obligatoire</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="boutique">Boutique</label>
+                                    <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                                        <option value="">Sélectionner une boutique</option>
+                                        @for (boutique of boutiques; track boutique.id) {
+                                            <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                        }
+                                    </select>
+                                    @if (isSubmitted && f['boutique'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['boutique'].errors['required']) {
+                                                <div>La boutique est obligatoire</div>
                                             }
                                         </div>
                                     }

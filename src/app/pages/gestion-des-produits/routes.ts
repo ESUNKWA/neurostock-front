@@ -6,3 +6,5 @@ export const produitRoutes: Routes = [
     { path: 'fournisseur', loadComponent: ()=> import('./fournisseur/fournisseur.component'), title: 'NeuroStock | Gestion des produits | Fournisseur' },
     { path: 'produit', loadComponent: ()=> import('./produit/produit.component'), title: 'NeuroStock | Gestion des produits | Produit' },
 ]
+
+export default produitRoutes;

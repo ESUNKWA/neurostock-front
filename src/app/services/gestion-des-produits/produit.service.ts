@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
-
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -10,8 +11,8 @@ export class ProduitService {
 
   constructor(private http: HttpClientService) { }
 
-  getProduits() {
-    return this.http.get(`${this.API_URL}/produit`);
+  getProduits(body: any = {}) {
+    return this.http.get(`${this.API_URL}/produit`, { params: body });
   }
 
   getProduitById(id: number) {  
