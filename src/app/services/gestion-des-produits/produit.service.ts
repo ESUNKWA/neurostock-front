@@ -10,8 +10,8 @@ export class ProduitService {
 
   constructor(private http: HttpClientService) { }
 
-  getProduits() {
-    return this.http.get(`${this.API_URL}/produit`);
+  getProduits(boutiqueId: string) {
+    return this.http.get(`${this.API_URL}/produit`, { boutiqueId });
   }
 
   getProduitById(id: number) {  

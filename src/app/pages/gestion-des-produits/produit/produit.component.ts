@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
@@ -20,6 +21,8 @@ declare var bootstrap: any;
 export default class ProduitComponent implements OnInit, OnDestroy {
   produits: any[] = [];
   categories: any[] = [];
+  boutiques: any[] = [];
+  selectedBoutique: any = null;
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedProduit: any = null;
@@ -35,6 +38,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private produitService: ProduitService,
     private categorieService: CategorieService,
+    private boutiqueService: BoutiqueService,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
@@ -44,13 +48,15 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: ['', [Validators.required, Validators.min(0)]],
       stock_initial: ['', [Validators.required, Validators.min(0)]],
       categorie: ['', Validators.required],
+      boutique: ['', Validators.required],
       image: [null]
     });
   }
 
   ngOnInit(): void {
-    this.loadProduits();
+    this.loadBoutiques();
     this.loadCategories();
+    this.loadProduits();
 
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -219,15 +225,53 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadBoutiques(): void {
+    this.boutiqueService.find('1').subscribe({
+      next: (response: any) => {
+        console.log('response', response);
+        
+        if (response.status === 'success' && response.data) {
+          this.boutiques = response.data;
+        }
+      },
+      error: (error: any) => {
+        this.toastr.error('Erreur lors du chargement des boutiques');
+      }
+    });
+  }
+
+  loadCategories(): void {
+    this.categorieService.getAllCategories().subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.categories = response.data;
+        }
+      },
+      error: (error: any) => {
+        this.toastr.error('Erreur lors du chargement des catégories');
+      }
+    });
+  }
+
+  onBoutiqueChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedBoutique = selectElement.value;
+    this.loadProduits();
+  }
+
   loadProduits(): void {
     this.isLoading = true;
+    if (!this.selectedBoutique) {
+      this.produits = [];
+      this.isLoading = false;
+      return;
+    }
 
-    this.produitService.getProduits().subscribe({
+    this.produitService.getProduits(this.selectedBoutique).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.produits = response.data;
           this.destroyDataTable();
-
           setTimeout(() => {
             if (isPlatformBrowser(this.platformId)) {
               try {
@@ -245,19 +289,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         this.isLoading = false;
         this.toastr.error('Erreur lors du chargement des produits');
-      }
-    });
-  }
-
-  loadCategories(): void {
-    this.categorieService.getAllCategories().subscribe({
-      next: (response: any) => {
-        if (response.status === 'success' && response.data) {
-          this.categories = response.data;
-        }
-      },
-      error: (error: any) => {
-        this.toastr.error('Erreur lors du chargement des catégories');
       }
     });
   }
