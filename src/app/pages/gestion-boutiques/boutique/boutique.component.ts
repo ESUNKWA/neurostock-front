@@ -2,63 +2,81 @@ import { Component, ElementRef, Inject, inject, PLATFORM_ID, ViewChild } from '@
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { first, Subscription } from 'rxjs';
-import { UserService } from '../../../services/user/user.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ProfilService } from '../../../services/profil/profil.service';
+import { StructureService } from '../../../services/structure/structure.service';
 declare var $: any;
 declare var bootstrap: any;
 
 @Component({
-  selector: 'app-users',
+  selector: 'app-boutique',
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './users.component.html',
-  styleUrl: './users.component.scss'
+  templateUrl: './boutique.component.html',
+  styleUrl: './boutique.component.scss'
 })
-export class UsersComponent {
+export class BoutiqueComponent {
+
   souscription: Subscription = new Subscription();
-  userForm: FormGroup;
+  boutiqueForm: FormGroup;
 
   //Injection des services
-  userService: any = inject(UserService);
-  profilService: any = inject(ProfilService);
+  boutiqueService: any = inject(BoutiqueService);
   fb: any = inject(FormBuilder);
+  structure: any = inject(StructureService);
   toastr = inject(ToastrService)
 
   users: any [] = [];
-  usersData: any = {};
-  profils: any[] = [];
-  selectedProfil: any = '';
+  structureData: any = {};
+  structures: any[] = [];
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
-  titleModal: string = 'AJOUTER UN NOUVEAU UTILISATEUR';
+  titleModal: string = 'AJOUTER UNE NOUVELLE BOUTIQUE';
   buttonText: string = 'Enregistrer';
   icon: string = 'ri ri-save-3-line';
 
   
   isSubmitted: boolean = false;
 
+  previewImageUrl: string | null = null;
+  selectedProduit: any = null;
+  selectedFile: File | null = null;
+
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
+  structureId: any = '';
   
   constructor(@Inject(PLATFORM_ID) private platformId: any){
-    this.userForm = this.fb.group({
+    this.boutiqueForm = this.fb.group({
       nom: ['', [Validators.required]],
-      prenoms: ['', [Validators.required]],
-      email: ['', [Validators.required]],
-      mot_de_passe: this.fb.control('12345', { nonNullable: true }),
-      profil: ['', []],
-      boutique: ['', []],
-      description: ['', []]
+      telephone: ['', []],
+      rccm: ['', []],
+      email: ['', []],
+      structure: [null],
+      situation_geo: ['', []],
+      logo: [null],
     })
   }
 
   // getter pour un accès facile aux champs du formulaire
-  get f() { return this.userForm.controls; }
+  get f() { return this.boutiqueForm.controls; }
   
   ngOnInit(): void {
+
+    this.structure.find().subscribe({
+      next: (structure: any) => {
+        this.structureId = structure.data[0].id;
+        
+        // Mise à jour du champ dans le formulaire
+        this.boutiqueForm.patchValue({ structure: this.structureId });
     
-    this.userFind();
-    this.profilFind();
+        // Maintenant que la valeur est bien mise à jour, tu peux appeler boutiqueFind()
+        this.boutiqueFind();
+      },
+      error: (err: any) => {
+        console.error('Erreur lors de la récupération des structures :', err);
+      }
+    });
+    
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
         if (isPlatformBrowser(this.platformId)) {
@@ -70,11 +88,27 @@ export class UsersComponent {
         }
   }
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.boutiqueForm.patchValue({
+        logo: file
+      });
+      
+      // Créer une URL pour la prévisualisation
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewImageUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
   openNewModal(): void {
-    this.userForm.reset();
-    this.userForm.enable();
+    this.boutiqueForm.reset();
+    this.boutiqueForm.enable();
     this.isEditMode = false;
-    this.usersData = null;
+    this.structureData = null;
     const title = 'Ajouter un nouveau user';
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Enregistrer';
@@ -84,8 +118,8 @@ export class UsersComponent {
   }
 
   openView(user: any): void {
-    this.userForm.disable();
-    this.usersData = user;
+    this.boutiqueForm.disable();
+    this.structureData = user;
     const title = `Visualiser le user [ ${user?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
@@ -93,8 +127,8 @@ export class UsersComponent {
     
     this.isSubmitted = false;
     
-    this.userForm.patchValue(user);
-    this.userForm.disable();
+    this.boutiqueForm.patchValue(user);
+    this.boutiqueForm.disable();
 
     const modal = document.getElementById('modal-fadein');
     if (modal) {
@@ -104,9 +138,9 @@ export class UsersComponent {
   }
 
   openEdit(user: any): void {
-    this.usersData = user;
-    this.userForm.patchValue(user);
-    this.userForm.enable();
+    this.structureData = user;
+    this.boutiqueForm.patchValue(user);
+    this.boutiqueForm.enable();
     this.isEditMode = !!user;
     this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
     this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
@@ -123,12 +157,12 @@ export class UsersComponent {
     }
   }
 
-  public userFind() {
+  public boutiqueFind() {
     
     this.isLoading = true;
 
     this.souscription.add(
-      this.userService.find().subscribe({
+      this.boutiqueService.find(this.boutiqueForm.value.structure).subscribe({
         next: (response: any) => {
           this.users = response.data;
           // D'abord, détruisons l'instance DataTable sans vider la table
@@ -160,24 +194,34 @@ export class UsersComponent {
 
   saveOrUpdate(): void {
 
-    console.log('this.selectedProfil', this.selectedProfil);
-    
     this.isSubmitted = true;
    
     // arrêter ici si le formulaire est invalide
-    if (this.userForm.invalid) {
+    if (this.boutiqueForm.invalid) {
       return;
     }
-    
+    this.boutiqueForm.value.structure = this.structureId;
+    const formData = new FormData();
+    const structure = this.boutiqueForm.value;
+
+    // Ajouter les champs au FormData
+    Object.keys(structure).forEach(key => {
+      if (key === 'logo' && this.selectedFile) {
+        formData.append('logo', this.selectedFile);
+      } else {
+        formData.append(key, structure[key]);
+      }
+    });
+
     let request;
-    //const user = this.userForm.value;
-    if (this.isEditMode && this.usersData) {
+    //const user = this.boutiqueForm.value;
+    if (this.isEditMode && this.structureData) {
       // Mode modification
       
-      request = this.userService.update(this.userForm.value, this.usersData.id);
+      request = this.boutiqueService.update(this.boutiqueForm.value, this.structureData.id);
     } else {
       // Mode création
-      request = this.userService.create(this.userForm.value);
+      request = this.boutiqueService.create(this.boutiqueForm.value);
     }
 
     // Afficher l'indicateur de chargement sans masquer le tableau
@@ -200,13 +244,13 @@ export class UsersComponent {
             'user ajoutée avec succès');
 
           // Recharger les données sans détruire complètement le tableau
-          this.userFind();
+          this.boutiqueFind();
 
           // Réinitialiser le formulaire et les états
-          this.userForm.reset();
+          this.boutiqueForm.reset();
           this.isSubmitted = false;
           this.isEditMode = false;
-          this.usersData = null;
+          this.structureData = null;
         } else {
           this.isLoading = false;
           this.toastr.error('Une erreur est survenue lors de la sauvegarde');
@@ -248,19 +292,19 @@ export class UsersComponent {
               render: (data: any) => `<span class="fw-semibold">${data.toUpperCase() || ''}</span>` 
             },
             { 
-              data: 'prenoms',
+              data: 'telephone',
               className: 'd-none d-sm-table-cell',
               render: (data: any) => data || 'Non définie' 
             },
             { 
-              data: 'profil',
+              data: 'email',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.nom || 'Non définie' 
+              render: (data: any) => data || 'Non définie' 
             },
             { 
-              data: 'boutique',
+              data: 'rccm',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data?.boutique || 'Non définie' 
+              render: (data: any) => data || 'Non définie' 
             },
             { 
               data: 'created_at',
@@ -375,18 +419,7 @@ export class UsersComponent {
       }
     }
   }
-
-
-  profilFind(){
-    this.souscription.add(
-      this.profilService.find().subscribe({
-        next: (response: any = {})=> { this.profils = response.data;}
-      })
-    );
-  }
-
-   
-
+ 
   ngAfterViewInit() {
     $('#modal-fadein').on('shown.bs.modal', () => {
       $('.js-example-basic-single').select2({
@@ -399,7 +432,4 @@ export class UsersComponent {
     this.souscription.unsubscribe();
   }
 
-
-
-  
 }

@@ -12,9 +12,7 @@ export interface Profil {
   providedIn: 'root'
 })
 export class ProfilService {
-
   
-
   private readonly API_URL = environnement.API_URL;
   readonly http = inject(HttpClient);
   readonly profils: any = signal<Profil[]>([]); // Typage correct du signal
