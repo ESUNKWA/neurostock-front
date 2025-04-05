@@ -89,7 +89,7 @@
                         <!-- Informations principales -->
                         <div class="mb-4">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label" for="nom">Nom du produit</label>
                                     <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                                     @if (isSubmitted && f['nom'].errors) {
@@ -100,7 +100,23 @@
                                         </div>
                                     }
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="categorie">Catégorie</label>
+                                    <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
+                                        <option value="">Sélectionner une catégorie</option>
+                                        @for (categorie of categories; track categorie.id) {
+                                            <option [value]="categorie.id">{{ categorie.nom }}</option>
+                                        }
+                                    </select>
+                                    @if (isSubmitted && f['categorie'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['categorie'].errors['required']) {
+                                                <div>La catégorie est obligatoire</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label" for="boutique">Boutique</label>
                                     <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
                                         <option value="">Sélectionner une boutique</option>

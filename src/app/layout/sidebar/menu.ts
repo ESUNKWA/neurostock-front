@@ -69,12 +69,12 @@ export const Menu: any = [
                 sousMenu: [
                     {
                         libelle: 'Achats',
-                        lien: '',
+                        lien: '/gestion-des-achats/achats',
                         icon: 'bi bi-circle'
                     },
                     {
                         libelle: 'Historique des Achats',
-                        lien: '/',
+                        lien: '/gestion-des-achats/historique-achats',
                         icon: 'bi bi-circle'
                     }
                 ]

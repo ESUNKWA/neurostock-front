@@ -12,6 +12,10 @@ export class BoutiqueService {
   readonly http = inject(HttpClient);
   readonly boutiques: any = signal([]); // Typage correct du signal
 
+  getDefaultStructure() {
+    return this.http.get(`${this.API_URL}/structure`);
+  }
+
   //récupère tous les boutiques
   find(id: string): Observable<any> {
     return this.http.get(`${this.API_URL}/boutique/all/${+id}`)

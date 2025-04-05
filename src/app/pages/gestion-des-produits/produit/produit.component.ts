@@ -22,7 +22,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   produits: any[] = [];
   categories: any[] = [];
   boutiques: any[] = [];
-  selectedBoutique: any = null;
+  selectedBoutique: string = '';
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedProduit: any = null;
@@ -54,9 +54,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadBoutiques();
+    this.defaultStructure();
     this.loadCategories();
-    this.loadProduits();
 
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -64,11 +63,19 @@ export default class ProduitComponent implements OnInit, OnDestroy {
           trigger: 'hover'
         });
       }, 500);
-    }
+    }           
   }
 
   defaultStructure() {
-    
+    this.boutiqueService.getDefaultStructure().subscribe({
+      next: (response: any) => {
+        const idBoutique = response.data[0].id;
+        this.loadBoutiques(idBoutique);
+      },
+      error: (error: any) => {
+        console.log('error', error);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -229,11 +236,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadBoutiques(): void {
-    this.boutiqueService.find('1').subscribe({
+  loadBoutiques(idBoutique: string): void {
+    this.boutiqueService.find(idBoutique).subscribe({
       next: (response: any) => {
-        console.log('response', response);
-        
         if (response.status === 'success' && response.data) {
           this.boutiques = response.data;
         }
@@ -270,8 +275,11 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       return;
     }
+    const body: any = {
+      boutique: this.selectedBoutique
+    }
 
-    this.produitService.getProduits(this.selectedBoutique).subscribe({
+    this.produitService.getProduits(body).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.produits = response.data;
@@ -292,6 +300,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
+        console.log('error', error);
         this.toastr.error('Erreur lors du chargement des produits');
       }
     });
@@ -421,7 +430,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success') {
           const modal = document.getElementById('modal-fadein');
-          if (modal) {
+          if (this.isEditMode && modal) {
             const modalInstance = bootstrap.Modal.getInstance(modal);
             if (modalInstance) {
               modalInstance.hide();
