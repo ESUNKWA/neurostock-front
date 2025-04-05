@@ -3,13 +3,6 @@
 
   <ul class="sidebar-nav" id="sidebar-nav"> 
 
-    <!-- <li class="nav-item">
-      <a [class]="isActive" routerLink="/dashboard">
-        <i class="bi bi-grid"></i>
-        <span>Tableau de bord</span>
-      </a>
-    </li> -->
-
     @for (item of menu; track $index) {
 
       <!-- Titre pour un ensemble de menu -->
@@ -26,6 +19,7 @@
               </a>
             </li>
           }@else {
+            <!-- Affichage pour un ensemble menu -->
             @for (items of item?.menu; track $index) {
 
               <li class="nav-item">
@@ -33,6 +27,7 @@
                   <i [attr.class]="items?.icon"></i><span>{{items?.libelle}}</span><i class="bi bi-chevron-down ms-auto"></i>
                 </a>
 
+                 <!-- Affichage sous-menu -->
                   <ul [attr.id]="items?.target" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                   
                     @for (itemSubmenu of items?.sousMenu; track $index) {
