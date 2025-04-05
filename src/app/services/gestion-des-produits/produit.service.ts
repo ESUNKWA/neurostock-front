@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -20,15 +21,23 @@ export class ProduitService {
   }
 
   createProduit(produit: any) {
-    return this.http.post(`${this.API_URL}/produit`, produit);
+    // Si c'est un FormData, ne pas ajouter l'en-tête Content-Type
+    const options = isFormData(produit) ? {} : undefined;
+    return this.http.post(`${this.API_URL}/produit`, produit, options);
   }
   
   updateProduit(id: number, produit: any) {
-    return this.http.put(`${this.API_URL}/produit/${id}`, produit);
+    // Si c'est un FormData, ne pas ajouter l'en-tête Content-Type
+    const options = isFormData(produit) ? {} : undefined;
+    return this.http.put(`${this.API_URL}/produit/${id}`, produit, options);
   }
 
   deleteProduit(id: number) {
     return this.http.delete(`${this.API_URL}/produit/${id}`);
   }
-  
+}
+
+// Fonction utilitaire pour vérifier si l'objet est un FormData
+function isFormData(value: any): boolean {
+  return value instanceof FormData;
 }
