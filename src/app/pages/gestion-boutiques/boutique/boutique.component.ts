@@ -275,7 +275,6 @@ export class BoutiqueComponent {
       }
     }
   }
-
   /**
    * Initialise une instance DataTable
    */
@@ -434,5 +433,4 @@ export class BoutiqueComponent {
   ngOnDestroy(): void {
     this.souscription.unsubscribe();
   }
-
 }
