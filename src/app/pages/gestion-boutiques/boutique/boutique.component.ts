@@ -25,16 +25,14 @@ export class BoutiqueComponent {
   structure: any = inject(StructureService);
   toastr = inject(ToastrService)
 
-  users: any [] = [];
+  boutiques: any [] = [];
   structureData: any = {};
-  structures: any[] = [];
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
   titleModal: string = 'AJOUTER UNE NOUVELLE BOUTIQUE';
   buttonText: string = 'Enregistrer';
   icon: string = 'ri ri-save-3-line';
-
   
   isSubmitted: boolean = false;
 
@@ -164,7 +162,7 @@ export class BoutiqueComponent {
     this.souscription.add(
       this.boutiqueService.find(this.boutiqueForm.value.structure).subscribe({
         next: (response: any) => {
-          this.users = response.data;
+          this.boutiques = response.data;
           // D'abord, détruisons l'instance DataTable sans vider la table
           this.destroyDataTable();
           
@@ -182,10 +180,10 @@ export class BoutiqueComponent {
           }, 50); // Temps d'attente réduit pour une mise à jour plus rapide
         },
         error: (err: any) => {
-          console.error('Erreur lors de la récupération des users :', err);
+          console.error('Erreur lors de la récupération des boutiques :', err);
         },
         complete: () => {
-          console.log('Récupération des users terminée.');
+          console.log('Récupération des boutiques terminée.');
         }
       })
     );
@@ -285,7 +283,7 @@ export class BoutiqueComponent {
     if (isPlatformBrowser(this.platformId)) {
       try {
         $('.js-dataTable-buttons').DataTable({
-          data: this.users, // Fournir les données directement
+          data: this.boutiques, // Fournir les données directement
           columns: [
             { 
               data: 'nom',
@@ -307,14 +305,19 @@ export class BoutiqueComponent {
               render: (data: any) => data || 'Non définie' 
             },
             { 
-              data: 'created_at',
+              data: 'situation_geo',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => {
-                if (!data) return '';
-                const date = new Date(data);
-                return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-              }
+              render: (data: any) => data || 'Non définie' 
             },
+            // { 
+            //   data: 'created_at',
+            //   className: 'd-none d-sm-table-cell',
+            //   render: (data: any) => {
+            //     if (!data) return '';
+            //     const date = new Date(data);
+            //     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            //   }
+            // },
             { 
               data: null,
               className: 'text-center',
@@ -395,17 +398,17 @@ export class BoutiqueComponent {
               const button = $(e.currentTarget);
               const action = button.data('action');
               const id = button.data('id');
-              const user = this.users.find((c: any) => c.id === id);
+              const boutique = this.boutiques.find((c: any) => c.id === id);
               
               
-              if (!user) return;
+              if (!boutique) return;
               
               switch (action) {
                 case 'view':
-                  this.openView(user);
+                  this.openView(boutique);
                   break;
                 case 'edit':
-                  this.openEdit(user);
+                  this.openEdit(boutique);
                   break;
                 case 'delete':
                   //this.deleteCategorie(categorie);

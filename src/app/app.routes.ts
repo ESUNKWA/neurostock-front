@@ -6,7 +6,6 @@ export const routes: Routes = [
     { path: 'login', loadComponent: () => import('./login/login.component'), title: 'NeuroStock | Connexion' },
     { path: '', loadComponent: () => import('./home/home.component'), canActivate: [AuthGuard], children: [
         { path: 'dashboard', loadComponent: () => import('./layout/dashboard/dashboard.component'), title: 'NeuroStock | Tableau de bord' },
-        { path: 'gestion-entreprise', loadChildren: () => import('./pages/gestion-entreprise/routes'), title: 'NeuroStock | Gestion de l\'entreprise' },
         { path: 'gestion-des-produits', loadChildren: () => import('./pages/gestion-des-produits/routes'), title: 'NeuroStock | Gestion des produits' },
                 
         // Gestion des utilisateurs
