@@ -48,7 +48,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: ['', [Validators.required, Validators.min(0)]],
       stock_initial: ['', [Validators.required, Validators.min(0)]],
       categorie: ['', Validators.required],
-      boutique: ['', Validators.required],
+      bootique: ['', Validators.required],
       image: [null]
     });
   }
@@ -412,10 +412,15 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     Object.keys(produit).forEach(key => {
       if (key === 'image' && this.selectedFile) {
         formData.append('image', this.selectedFile);
-      } else {
+      } else if (produit[key] !== null && produit[key] !== undefined) {
         formData.append(key, produit[key]);
       }
     });
+
+    // Si une boutique est sélectionnée, utilisez-la
+    if (this.selectedBoutique && !formData.has('bootique')) {
+      formData.append('bootique', this.selectedBoutique);
+    }
 
     let request;
     if (this.isEditMode && this.selectedProduit) {

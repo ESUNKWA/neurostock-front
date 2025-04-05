@@ -118,15 +118,15 @@
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label" for="boutique">Boutique</label>
-                                    <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                                    <select class="form-select" id="boutique" formControlName="bootique" [ngClass]="{'is-invalid': isSubmitted && f['bootique'].errors}">
                                         <option value="">Sélectionner une boutique</option>
                                         @for (boutique of boutiques; track boutique.id) {
                                             <option [value]="boutique.id">{{ boutique.nom }}</option>
                                         }
                                     </select>
-                                    @if (isSubmitted && f['boutique'].errors) {
+                                    @if (isSubmitted && f['bootique'].errors) {
                                         <div class="invalid-feedback">
-                                            @if (f['boutique'].errors['required']) {
+                                            @if (f['bootique'].errors['required']) {
                                                 <div>La boutique est obligatoire</div>
                                             }
                                         </div>
