@@ -5,6 +5,7 @@ import { first, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user/user.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProfilService } from '../../../services/profil/profil.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
 declare var $: any;
 declare var bootstrap: any;
 
@@ -21,12 +22,14 @@ export class UsersComponent {
   //Injection des services
   userService: any = inject(UserService);
   profilService: any = inject(ProfilService);
+  boutiqueService: any = inject(BoutiqueService);
   fb: any = inject(FormBuilder);
   toastr = inject(ToastrService)
 
   users: any [] = [];
   usersData: any = {};
   profils: any[] = [];
+  boutiques: any[] = [];
   selectedProfil: any = '';
 
   isLoading: boolean = false;
@@ -39,6 +42,7 @@ export class UsersComponent {
   isSubmitted: boolean = false;
 
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
+
   
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.userForm = this.fb.group({
@@ -59,6 +63,7 @@ export class UsersComponent {
     
     this.userFind();
     this.profilFind();
+    this.boutiqueFind();
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
         if (isPlatformBrowser(this.platformId)) {
@@ -376,7 +381,6 @@ export class UsersComponent {
     }
   }
 
-
   profilFind(){
     this.souscription.add(
       this.profilService.find().subscribe({
@@ -385,7 +389,13 @@ export class UsersComponent {
     );
   }
 
-   
+  boutiqueFind(){
+    this.souscription.add(
+      this.boutiqueService.find().subscribe({
+        next: (response: any = {})=> { this.boutiques = response.data;}
+      })
+    );
+  }
 
   ngAfterViewInit() {
     $('#modal-fadein').on('shown.bs.modal', () => {

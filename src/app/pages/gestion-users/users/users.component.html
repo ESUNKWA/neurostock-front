@@ -127,7 +127,9 @@
                         <label class="form-label " for="email">Boutique</label>
                         <select class="form-control js-example-tags">
                             <option selected="selected">---Selectionnez la boutique---</option>
-                          
+                            @for (item of boutiques; track $index) {
+                              <option value="{{item.id}}" >{{item.nom}}</option>
+                            }
                           </select>
                     </div>
                   </div>
