@@ -29,7 +29,7 @@ export class ProduitService {
   updateProduit(id: number, produit: any) {
     // Si c'est un FormData, ne pas ajouter l'en-tête Content-Type
     const options = isFormData(produit) ? {} : undefined;
-    return this.http.put(`${this.API_URL}/produit/${id}`, produit, options);
+    return this.http.patch(`${this.API_URL}/produit/${id}`, produit, options);
   }
 
   deleteProduit(id: number) {

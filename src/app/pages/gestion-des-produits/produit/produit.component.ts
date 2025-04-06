@@ -48,7 +48,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: ['', [Validators.required, Validators.min(0)]],
       stock_initial: ['', [Validators.required, Validators.min(0)]],
       categorie: ['', Validators.required],
-      bootique: ['', Validators.required],
+      boutique: ['', Validators.required],
       image: [null]
     });
   }
@@ -124,7 +124,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               render: (data: any) => data?.nom || 'Non définie' 
             },
             { 
-              data: 'image',
+              data: 'imageUrl',
               render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
             },
             { 
@@ -418,8 +418,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     });
 
     // Si une boutique est sélectionnée, utilisez-la
-    if (this.selectedBoutique && !formData.has('bootique')) {
-      formData.append('bootique', this.selectedBoutique);
+    if (this.selectedBoutique && !formData.has('boutique')) {
+      formData.append('boutique', this.selectedBoutique);
     }
 
     let request;
