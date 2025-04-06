@@ -104,6 +104,10 @@ export default class ProduitComponent implements OnInit, OnDestroy {
           data: this.produits,
           columns: [
             { 
+              data: 'imageUrl',
+              render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
+            },
+            { 
               data: 'nom',
               render: (data: any) => `<span class="fw-semibold">${data.toUpperCase() || ''}</span>` 
             },
@@ -122,10 +126,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
             { 
               data: 'categorie',
               render: (data: any) => data?.nom || 'Non définie' 
-            },
-            { 
-              data: 'imageUrl',
-              render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
             },
             { 
               data: 'created_at',
@@ -382,13 +382,18 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       this.produitForm.get(key)?.enable();
     });
 
+    console.log('produit', produit);
+    
+
     // Remplir le formulaire avec les données du produit
     this.produitForm.patchValue({
       nom: produit.nom,
       prix_achat: produit.prix_achat,
       prix_vente: produit.prix_vente,
       stock_initial: produit.stock_initial,
-      categorie: produit.categorie?.id
+      categorie: produit.categorie?.id,
+      boutique: produit.boutique?.id,
+      image: produit.image
     });
 
     const modal = document.getElementById('modal-fadein');
