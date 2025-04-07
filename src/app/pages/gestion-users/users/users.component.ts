@@ -163,7 +163,6 @@ export class UsersComponent {
       this.userService.find().subscribe({
         next: (response: any) => {
           this.users = response.data;
-          console.log('users', this.users);       
           // D'abord, détruisons l'instance DataTable sans vider la table
           this.destroyDataTable();
           
@@ -491,8 +490,5 @@ export class UsersComponent {
   ngOnDestroy(): void {
     this.souscription.unsubscribe();
   }
-
-
-
   
 }

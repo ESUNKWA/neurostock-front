@@ -73,8 +73,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-      console.log('currentUser', this.currentUser);
-      
+      // console.log('currentUser', this.currentUser);
     });
   }
 
@@ -250,16 +249,17 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(idStructure: string): void {
-    this.boutiqueService.find().subscribe({
-      next: (response: any) => {
-        if (response.status === 'success' && response.data) {
-          this.boutiques = response.data;
-        }
-      },
-      error: (error: any) => {
-        this.toastr.error('Erreur lors du chargement des boutiques');
-      }
-    });
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
+    }
   }
 
   loadCategories(): void {
@@ -291,8 +291,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         return;
       }
     } else {
-      this.selectedBoutique = this.currentUser.structure.id;
+      this.selectedBoutique = this.currentUser.boutique.id;
     }
+    
     const body: any = {
       boutique: this.selectedBoutique
     }
@@ -372,7 +373,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_achat: produit.prix_achat,
       prix_vente: produit.prix_vente,
       stock_initial: produit.stock_initial,
-      categorie: produit.categorie?.id
+      categorie: produit.categorie?.id,
+      boutique: produit.boutique?.id
     });
 
     // Désactiver les champs du formulaire
