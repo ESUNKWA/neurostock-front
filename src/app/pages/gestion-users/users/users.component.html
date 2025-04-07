@@ -115,22 +115,36 @@
                   
                   <div class="row">
                     <div class="col mb-4">
-                        <label class="form-label" for="email">Profil</label>
-                        <select class="form-control js-example-basic-single" formControlName="profil">
-                            <option selected="selected">---Selectionnez le profil---</option>
+                        <label class="form-label" for="profil">Profil</label>
+                        <select class="form-control js-example-basic-single" id="profil" formControlName="profil" [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
+                            <option value="">---Selectionnez le profil---</option>
                             @for (item of profils; track $index) {
-                                <option value="{{item.id}}" >{{item.nom}}</option>
+                                <option value="{{item.id}}">{{item.nom}}</option>
                             }
                         </select>
+                        @if (isSubmitted && f['profil'].errors) {
+                          <div class="invalid-feedback">
+                            @if (f['profil'].errors['required']) {
+                              <div>Le profil est obligatoire</div>
+                            }
+                          </div>
+                        }
                     </div>
                     <div class="col mb-4">
-                        <label class="form-label " for="email">Boutique</label>
-                        <select class="form-control js-example-tags">
-                            <option selected="selected">---Selectionnez la boutique---</option>
-                            @for (item of boutiques; track $index) {
-                              <option value="{{item.id}}" >{{item.nom}}</option>
+                        <label class="form-label" for="boutique">Boutique</label>
+                        <select class="form-control js-example-tags" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                          <option value="">---Selectionnez la boutique---</option>
+                          @for (item of boutiques; track $index) {
+                            <option value="{{item.id}}">{{item.nom}}</option>
+                          }
+                        </select>
+                        @if (isSubmitted && f['boutique'].errors) {
+                          <div class="invalid-feedback">
+                            @if (f['boutique'].errors['required']) {
+                              <div>La boutique est obligatoire</div>
                             }
-                          </select>
+                          </div>
+                        }
                     </div>
                   </div>
                   <div class="mb-4">

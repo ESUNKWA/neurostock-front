@@ -7,6 +7,7 @@ import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
+import { AuthService } from '../../../services/auth/auth.service';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -33,12 +34,14 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   isSubmitted: boolean = false;
   selectedFile: File | null = null;
   previewImageUrl: string | null = null;
+  currentUser: any;
 
   constructor(
     private fb: FormBuilder,
     private produitService: ProduitService,
     private categorieService: CategorieService,
     private boutiqueService: BoutiqueService,
+    private authService: AuthService,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
@@ -54,6 +57,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.getCurrentUser();
     this.defaultStructure();
     this.loadCategories();
 
@@ -66,11 +70,20 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }           
   }
 
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      console.log('currentUser', this.currentUser);
+      
+    });
+  }
+
   defaultStructure() {
     this.boutiqueService.getDefaultStructure().subscribe({
       next: (response: any) => {
-        const idBoutique = response.data[0].id;
-        this.loadBoutiques(idBoutique);
+        const idStructure = response.data[0].id;
+        this.loadBoutiques(idStructure);
+        this.loadProduits();
       },
       error: (error: any) => {
         console.log('error', error);
@@ -236,8 +249,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadBoutiques(idBoutique: string): void {
-    this.boutiqueService.find(idBoutique).subscribe({
+  loadBoutiques(idStructure: string): void {
+    this.boutiqueService.find().subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.boutiques = response.data;
@@ -270,10 +283,15 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   loadProduits(): void {
     this.isLoading = true;
-    if (!this.selectedBoutique) {
-      this.produits = [];
-      this.isLoading = false;
-      return;
+
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      if (!this.selectedBoutique) {
+        this.produits = [];
+        this.isLoading = false;
+        return;
+      }
+    } else {
+      this.selectedBoutique = this.currentUser.structure.id;
     }
     const body: any = {
       boutique: this.selectedBoutique
@@ -381,9 +399,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     Object.keys(this.produitForm.controls).forEach(key => {
       this.produitForm.get(key)?.enable();
     });
-
-    console.log('produit', produit);
-    
 
     // Remplir le formulaire avec les données du produit
     this.produitForm.patchValue({

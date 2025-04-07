@@ -17,7 +17,7 @@ export class BoutiqueService {
   }
 
   //récupère tous les boutiques
-  find(id: string): Observable<any> {
+  find(): Observable<any> {
     return this.http.get(`${this.API_URL}/boutique`)
       .pipe(
         tap(data => this.boutiques.set(data)),

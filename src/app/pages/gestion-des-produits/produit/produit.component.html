@@ -28,18 +28,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <select class="form-select" (change)="onBoutiqueChange($event)">
-                                <option value="">Sélectionner une boutique</option>
-                                @for (boutique of boutiques; track boutique.id) {
-                                    <option [value]="boutique.id">{{ boutique.nom }}</option>
-                                }
-                            </select>
+                @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select class="form-select" (change)="onBoutiqueChange($event)">
+                                    <option value="">Sélectionner une boutique</option>
+                                    @for (boutique of boutiques; track boutique.id) {
+                                        <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
                 <div class="card-body">
                     @if (isLoading) {
                         <div class="text-center py-3">
