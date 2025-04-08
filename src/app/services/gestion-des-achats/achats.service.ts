@@ -10,10 +10,10 @@ export class AchatsService {
   constructor(private http: HttpClientService) { }
 
   getAllAchats() {
-    return this.http.get(`${this.API_URL}/achats`);
+    return this.http.get(`${this.API_URL}/achat`);
   }
   
   createAchat(achat: any) {
-    return this.http.post(`${this.API_URL}/achats`, achat);
+    return this.http.post(`${this.API_URL}/achat`, achat);
   }
 }

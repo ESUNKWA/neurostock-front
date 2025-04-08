@@ -58,7 +58,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.getCurrentUser();
-    this.defaultStructure();
+    this.loadBoutiques();
+    this.loadProduits();
     this.loadCategories();
 
     if (isPlatformBrowser(this.platformId)) {
@@ -74,19 +75,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
       // console.log('currentUser', this.currentUser);
-    });
-  }
-
-  defaultStructure() {
-    this.boutiqueService.getDefaultStructure().subscribe({
-      next: (response: any) => {
-        const idStructure = response.data[0].id;
-        this.loadBoutiques(idStructure);
-        this.loadProduits();
-      },
-      error: (error: any) => {
-        console.log('error', error);
-      }
     });
   }
 
@@ -248,7 +236,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadBoutiques(idStructure: string): void {
+  loadBoutiques(): void {
     if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {

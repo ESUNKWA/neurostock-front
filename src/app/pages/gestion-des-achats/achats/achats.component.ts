@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
+import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
+import { finalize } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-achats',
@@ -18,14 +24,24 @@ export default class AchatsComponent implements OnInit {
   fournisseurs: any[] = [];
   produits: any[] = [];
   isSubmitting = false;
+  currentUser: any;
+  boutiques: any[] = [];
+  selectedBoutique: string = '';
 
   constructor(
     private fb: FormBuilder,
-    private achatsService: AchatsService
+    private fournisseurService: FournisseurService,
+    private achatsService: AchatsService,
+    private authService: AuthService,
+    private boutiqueService: BoutiqueService,
+    private produitService: ProduitService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
+    this.getCurrentUser();
     this.initForm();
+    this.loadBoutiques();
     this.loadFournisseurs();
     this.loadProduits();
     
@@ -33,10 +49,18 @@ export default class AchatsComponent implements OnInit {
     this.addDetailAchat();
   }
 
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      // console.log('currentUser', this.currentUser);
+    });
+  }
+
   initForm(): void {
     this.achatForm = this.fb.group({
       libelle: ['', Validators.required],
       description: [''],
+      boutique: [null, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
       date_achat: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
@@ -57,8 +81,8 @@ export default class AchatsComponent implements OnInit {
   createDetailAchat(): FormGroup {
     return this.fb.group({
       produit: [null, Validators.required],
-      prix_unitaire: [0, [Validators.required, Validators.min(0)]],
-      quantite: [1, [Validators.required, Validators.min(1)]]
+      prix_unitaire: [null, [Validators.required, Validators.min(0)]],
+      quantite: [null, [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -86,18 +110,62 @@ export default class AchatsComponent implements OnInit {
     this.calculerMontantTotal();
   }
 
+  loadBoutiques(): void {
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
+      this.achatForm.patchValue({ boutique: this.currentUser.boutique.id });
+    }
+  }
+
+  onBoutiqueChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedBoutique = selectElement.value;
+    this.loadProduits();
+  }
+
   loadFournisseurs(): void {
-    // À implémenter avec le service
-    this.fournisseurs = [{ id: 1, nom: 'Fournisseur 1' }];
+    this.fournisseurService.getAllFournisseurs().subscribe({
+      next: (response: any) => {
+        this.fournisseurs = response.data;
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des fournisseurs', error);
+      }
+    });
   }
 
   loadProduits(): void {
-    // À implémenter avec le service
-    this.produits = [
-      { id: 43, nom: 'Produit 43' },
-      { id: 45, nom: 'Produit 45' },
-      { id: 46, nom: 'Produit 46' }
-    ];
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      if (!this.selectedBoutique) {
+        this.produits = [];
+        return;
+      }
+    } else {
+      this.selectedBoutique = this.currentUser.boutique.id;
+    }
+    
+    const body: any = {
+      boutique: this.selectedBoutique
+    }
+
+    this.produitService.getProduits(body).subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.produits = response.data;
+        }
+      },
+      error: (error: any) => {
+        console.log('error', error);
+      }
+    });
   }
 
   onSubmit(): void {
@@ -108,18 +176,20 @@ export default class AchatsComponent implements OnInit {
     }
 
     this.achatsService.createAchat(this.achatForm.value)
-      .subscribe({
-        next: (response: any) => {
-          console.log('Achat créé avec succès', response);
-          this.isSubmitting = false;
-          this.initForm(); // Réinitialiser le formulaire
-          this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
-        },
-        error: (error: any) => {
-          console.error('Erreur lors de la création de l\'achat', error);
-          this.isSubmitting = false;
-        }
-      });
+    .pipe(finalize(() => {this.isSubmitting = false;}))
+    .subscribe({
+      next: (response: any) => {
+        console.log('Achat créé avec succès', response);
+        this.isSubmitting = false;
+        this.initForm(); // Réinitialiser le formulaire
+        this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
+        this.toastr.success('Achat créé avec succès');
+      },
+      error: (error: any) => {
+        console.error('Erreur lors de la création de l\'achat', error);
+        this.isSubmitting = false;
+      }
+    });
   }
 
   markFormGroupTouched(formGroup: FormGroup): void {

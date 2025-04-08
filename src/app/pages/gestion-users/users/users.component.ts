@@ -30,7 +30,7 @@ export class UsersComponent {
   usersData: any = {};
   profils: any[] = [];
   boutiques: any[] = [];
-  selectedProfil: any = '';
+  // selectedProfil: any = '';
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
@@ -233,11 +233,10 @@ export class UsersComponent {
       })
     );
   }
-  
 
   saveOrUpdate(): void {
 
-    console.log('this.selectedProfil', this.selectedProfil);
+    // console.log('this.selectedProfil', this.selectedProfil);
     
     this.isSubmitted = true;
    

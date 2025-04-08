@@ -21,9 +21,9 @@
     <div class="card-body">
       <h5 class="card-title">Enregistrement d'un nouvel approvisionnement</h5>
       
-      <form class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
+      <form novalidate class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
         <!-- Informations générales -->
-        <div class="col-md-6">
+        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
           <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
           @if (isSubmitting && f['libelle'].errors) {
@@ -35,7 +35,7 @@
           }
         </div>
         
-        <div class="col-md-6">
+        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
           <label for="date_achat" class="form-label">Date d'achat <span class="text-danger">*</span></label>
           <input type="date" class="form-control" id="date_achat" formControlName="date_achat" [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
           @if (isSubmitting && f['date_achat'].errors) {
@@ -46,6 +46,26 @@
             </div>
           }
         </div>
+
+        @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+          <div class="col-md-4">
+            <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
+            <select class="form-select" (change)="onBoutiqueChange($event)">
+              <option value="">Sélectionner une boutique</option>
+              @for (boutique of boutiques; track boutique.id) {
+                <option [value]="boutique.id">{{ boutique.nom }}</option>
+              }
+          </select>
+            @if (isSubmitting && f['boutique'].errors) {
+              <div class="invalid-feedback">
+                @if (f['boutique'].errors['required']) {
+                  <div>La boutique est obligatoire</div>
+                }
+              </div>
+            }
+          </div>
+        }
+
         
         <div class="col-md-12">
           <label for="description" class="form-label">Description</label>
@@ -135,7 +155,7 @@
                 </div>
               </div>
               
-              <div class="col-md-1 d-flex align-items-end">
+              <div class="col-md-1 mt-5">
                 <button type="button" class="btn btn-danger" (click)="removeDetailAchat(i)">
                   <i class="bi bi-trash"></i>
                 </button>
@@ -173,7 +193,7 @@
           </button>
         </div>
       </form>
-      
+      <!-- <pre>{{ achatForm.value | json }}</pre> -->
     </div>
   </div>
 </section>
