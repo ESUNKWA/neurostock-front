@@ -3,7 +3,7 @@
 
   <ul class="sidebar-nav" id="sidebar-nav"> 
 
-    @for (item of menu; track $index) {
+    @for (item of filteredMenu; track $index) {
 
       <!-- Titre pour un ensemble de menu -->
       @if (item?.titre) {
