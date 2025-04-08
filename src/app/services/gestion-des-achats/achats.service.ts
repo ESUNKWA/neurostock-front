@@ -10,7 +10,7 @@ export class AchatsService {
   constructor(private http: HttpClientService) { }
 
   getAllAchats() {
-    return this.http.get(`${this.API_URL}/achat`);
+    return this.http.get(`${this.API_URL}/achat`, { params: { boutique: 1}});
   }
   
   createAchat(achat: any) {
