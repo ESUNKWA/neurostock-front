@@ -60,19 +60,84 @@ export class UsersComponent {
   get f() { return this.userForm.controls; }
   
   ngOnInit(): void {
-    
     this.userFind();
     this.profilFind();
     this.boutiqueFind();
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
-        if (isPlatformBrowser(this.platformId)) {
-          setTimeout(() => {
-            $('[data-bs-toggle="tooltip"]').tooltip({
-              trigger: 'hover'
-            });
-          }, 500);
-        }
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        $('[data-bs-toggle="tooltip"]').tooltip({
+          trigger: 'hover'
+        });
+      }, 500);
+      
+      // Écouter l'événement d'ouverture du modal pour initialiser/réinitialiser Select2
+      $(document).on('shown.bs.modal', '#modal-fadein', () => {
+        this.initializeSelect2();
+      });
+    }
+  }
+
+  /**
+   * Initialise ou réinitialise les composants Select2 dans le modal
+   */
+  private initializeSelect2(): void {
+    // Détruire les instances Select2 existantes si elles existent
+    if ($('.js-example-basic-single').data('select2')) {
+      $('.js-example-basic-single').select2('destroy');
+    }
+    if ($('.js-example-tags').data('select2')) {
+      $('.js-example-tags').select2('destroy');
+    }
+    
+    // Réinitialiser les Select2
+    $('.js-example-basic-single').select2({
+      dropdownParent: $('#modal-fadein'),
+      placeholder: 'Sélectionnez un profil',
+      allowClear: true
+    });
+    
+    $('.js-example-tags').select2({
+      dropdownParent: $('#modal-fadein'),
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true
+    });
+
+    // Gestionnaires d'événements pour les sélections
+    $('.js-example-basic-single').on('select2:select', (e: any) => {
+      const selectedValue = e.params.data.id;
+      this.userForm.get('profil')?.setValue(selectedValue);
+    });
+
+    $('.js-example-basic-single').on('select2:unselect select2:clear', (e: any) => {
+      this.userForm.get('profil')?.setValue('');
+    });
+
+    $('.js-example-tags').on('select2:select', (e: any) => {
+      const selectedValue = e.params.data.id;
+      this.userForm.get('boutique')?.setValue(selectedValue);
+    });
+
+    $('.js-example-tags').on('select2:unselect select2:clear', (e: any) => {
+      this.userForm.get('boutique')?.setValue('');
+    });
+
+    // Mettre à jour les valeurs sélectionnées en fonction du formulaire
+    if (this.isEditMode && this.usersData) {
+      const profilId = this.userForm.get('profil')?.value;
+      const boutiqueId = this.userForm.get('boutique')?.value;
+      
+      if (profilId) {
+        $('.js-example-basic-single').val(profilId).trigger('change');
+      }
+      if (boutiqueId) {
+        $('.js-example-tags').val(boutiqueId).trigger('change');
+      }
+    } else {
+      $('.js-example-basic-single').val('').trigger('change');
+      $('.js-example-tags').val('').trigger('change');
+    }
   }
 
   openNewModal(): void {
@@ -85,16 +150,6 @@ export class UsersComponent {
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
     this.isSubmitted = false;
-    
-    // Si le modal est déjà ouvert, réinitialiser manuellement les sélections Select2
-    setTimeout(() => {
-      if ($('.js-example-basic-single').data('select2')) {
-        $('.js-example-basic-single').val('').trigger('change');
-      }
-      if ($('.js-example-tags').data('select2')) {
-        $('.js-example-tags').val('').trigger('change');
-      }
-    }, 100);
   }
 
   openView(user: any): void {
@@ -142,16 +197,6 @@ export class UsersComponent {
     if (modal) {
       const modalInstance = new bootstrap.Modal(modal);
       modalInstance.show();
-      
-      // Mettre à jour les sélections de Select2 après l'ouverture du modal
-      setTimeout(() => {
-        if ($('.js-example-basic-single').data('select2')) {
-          $('.js-example-basic-single').val(user.profil?.id || '').trigger('change');
-        }
-        if ($('.js-example-tags').data('select2')) {
-          $('.js-example-tags').val(user.boutique?.id || '').trigger('change');
-        }
-      }, 300);
     }
   }
 
@@ -422,69 +467,6 @@ export class UsersComponent {
         next: (response: any = {})=> { this.boutiques = response.data;}
       })
     );
-  }
-
-  ngAfterViewInit() {
-    $('#modal-fadein').on('shown.bs.modal', () => {
-      // Initialiser Select2 pour les champs de sélection
-      $('.js-example-basic-single').select2({
-        dropdownParent: $('#modal-fadein'), // Attache le dropdown à la modale
-        placeholder: 'Sélectionnez un profil',
-        allowClear: true
-      });
-      
-      $('.js-example-tags').select2({
-        dropdownParent: $('#modal-fadein'), // Attache le dropdown à la modale
-        placeholder: 'Sélectionnez une boutique',
-        allowClear: true
-      });
-
-      // Gérer l'événement de sélection pour mettre à jour le formControl
-      $('.js-example-basic-single').on('select2:select', (e: any) => {
-        const selectedValue = e.params.data.id;
-        this.userForm.get('profil')?.setValue(selectedValue);
-      });
-
-      // Gérer l'événement de désélection pour effacer le formControl
-      $('.js-example-basic-single').on('select2:unselect', (e: any) => {
-        this.userForm.get('profil')?.setValue('');
-      });
-
-      // Gérer l'événement de vidage complet (clear) pour le profil
-      $('.js-example-basic-single').on('select2:clear', (e: any) => {
-        this.userForm.get('profil')?.setValue('');
-      });
-
-      // Gérer l'événement de sélection pour mettre à jour le formControl
-      $('.js-example-tags').on('select2:select', (e: any) => {
-        const selectedValue = e.params.data.id;
-        this.userForm.get('boutique')?.setValue(selectedValue);
-      });
-
-      // Gérer l'événement de désélection pour effacer le formControl
-      $('.js-example-tags').on('select2:unselect', (e: any) => {
-        this.userForm.get('boutique')?.setValue('');
-      });
-
-      // Gérer l'événement de vidage complet (clear) pour la boutique
-      $('.js-example-tags').on('select2:clear', (e: any) => {
-        this.userForm.get('boutique')?.setValue('');
-      });
-
-      // Si nous avons des données à éditer, synchroniser Select2 avec les valeurs existantes
-      if (this.isEditMode && this.usersData) {
-        if (this.usersData.profil) {
-          $('.js-example-basic-single').val(this.usersData.profil.id).trigger('change');
-        }
-        if (this.usersData.boutique) {
-          $('.js-example-tags').val(this.usersData.boutique.id).trigger('change');
-        }
-      } else {
-        // Réinitialiser les sélections
-        $('.js-example-basic-single').val(null).trigger('change');
-        $('.js-example-tags').val(null).trigger('change');
-      }
-    });
   }
 
   ngOnDestroy(): void {
