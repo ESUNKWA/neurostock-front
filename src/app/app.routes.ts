@@ -2,36 +2,36 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'login', pathMatch: 'full', title: 'NeuroStock | Connexion' },
-    { path: 'login', loadComponent: () => import('./login/login.component'), title: 'NeuroStock | Connexion' },
+    { path: '', redirectTo: 'login', pathMatch: 'full', title: 'neurostock | Connexion' },
+    { path: 'login', loadComponent: () => import('./login/login.component'), title: 'neurostock | Connexion' },
     { path: '', loadComponent: () => import('./home/home.component'), canActivate: [AuthGuard], children: [
         { 
             path: 'dashboard', 
             loadComponent: () => import('./layout/dashboard/dashboard.component'), 
-            title: 'NeuroStock | Tableau de bord' 
+            title: 'neurostock | Tableau de bord' 
         },
         { 
             path: 'gestion-des-produits', 
             loadChildren: () => import('./pages/gestion-des-produits/routes'), 
-            title: 'NeuroStock | Gestion des produits' 
+            title: 'neurostock | Gestion des produits' 
         },
         { 
             path: 'gestion-des-approvisionnements', 
             loadChildren: () => import('./pages/gestion-des-achats/routes'), 
-            title: 'NeuroStock | Gestion des approvisionnements' 
+            title: 'neurostock | Gestion des approvisionnements' 
         },
                 
         // Gestion des utilisateurs
         { 
             path: 'utilisateurs', 
             loadChildren:()=> import('./pages/gestion-users/gestion.users.routes').then((u) => u.UsersRoutes),
-            title: 'NeuroStock | Profil' 
+            title: 'neurostock | Profil' 
         },
         // Gestion des boutiques
         { 
             path: 'structure', 
             loadChildren:()=> import('./pages/gestion-boutiques/gestion.boutique.route').then((u) => u.boutiqueRoute),
-            title: 'NeuroStock | Profil' 
+            title: 'neurostock | Gestion des boutiques' 
         },
     ] 
     },

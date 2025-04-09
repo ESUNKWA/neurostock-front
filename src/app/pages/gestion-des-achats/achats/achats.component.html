@@ -50,16 +50,16 @@
         @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
           <div class="col-md-4">
             <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
-            <select class="form-select" (change)="onBoutiqueChange($event)">
+            <select class="form-select" (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
               <option value="">Sélectionner une boutique</option>
               @for (boutique of boutiques; track boutique.id) {
                 <option [value]="boutique.id">{{ boutique.nom }}</option>
               }
-          </select>
+            </select>
             @if (isSubmitting && f['boutique'].errors) {
               <div class="invalid-feedback">
                 @if (f['boutique'].errors['required']) {
-                  <div>La boutique est obligatoire</div>
+                  <div>La boutique est requise</div>
                 }
               </div>
             }
