@@ -122,37 +122,57 @@
           <h5>Détails de l'achat</h5>
           
           <div formArrayName="detail_achat">
-            <div *ngFor="let detail of detailAchat.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom">
+            <div *ngFor="let detail of detailAchat.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-achat-item">
               <div class="col-md-5">
                 <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
                 <select class="form-select" [id]="'produit_' + i" formControlName="produit"
-                      [ngClass]="{'is-invalid': detail.get('produit')?.invalid && detail.get('produit')?.touched}">
+                    [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
                   <option [ngValue]="null" disabled>Sélectionnez un produit</option>
-                  <option *ngFor="let produit of produits" [ngValue]="produit.id">{{ produit.nom }}</option>
+                  <option *ngFor="let produit of produits" [ngValue]="produit.id">
+                    {{ produit.nom }}
+                  </option>
                 </select>
-                <div *ngIf="detail.get('produit')?.invalid && detail.get('produit')?.touched" class="invalid-feedback">
-                  Le produit est requis.
-                </div>
+                @if (isSubmitting && detail.get('produit')?.errors) {
+                  <div class="invalid-feedback">
+                    @if (detail.get('produit')?.errors?.['required']) {
+                      <span>Le produit est requis.</span>
+                    }
+                  </div>
+                }
               </div>
               
               <div class="col-md-3">
                 <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
                 <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire" 
                       (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': detail.get('prix_unitaire')?.invalid && detail.get('prix_unitaire')?.touched}">
-                <div *ngIf="detail.get('prix_unitaire')?.invalid && detail.get('prix_unitaire')?.touched" class="invalid-feedback">
-                  Le prix unitaire doit être supérieur à 0.
-                </div>
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
+                @if (isSubmitting && detail.get('prix_unitaire')?.errors) {
+                  <div class="invalid-feedback">
+                    @if (detail.get('prix_unitaire')?.errors?.['required']) {
+                      <span>Le prix unitaire est requis.</span>
+                    }
+                    @if (detail.get('prix_unitaire')?.errors?.['min']) {
+                      <span>Le prix unitaire doit être supérieur à 0.</span>
+                    }
+                  </div>
+                }
               </div>
               
               <div class="col-md-3">
                 <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
                 <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
                       (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': detail.get('quantite')?.invalid && detail.get('quantite')?.touched}">
-                <div *ngIf="detail.get('quantite')?.invalid && detail.get('quantite')?.touched" class="invalid-feedback">
-                  La quantité doit être supérieure à 0.
-                </div>
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
+                @if (isSubmitting && detail.get('quantite')?.errors) {
+                  <div class="invalid-feedback">
+                    @if (detail.get('quantite')?.errors?.['required']) {
+                      <span>La quantité est requise.</span>
+                    }
+                    @if (detail.get('quantite')?.errors?.['min']) {
+                      <span>La quantité doit être supérieure à 0.</span>
+                    }
+                  </div>
+                }
               </div>
               
               <div class="col-md-1 mt-5">
