@@ -27,6 +27,7 @@ export default class AchatsComponent implements OnInit {
   currentUser: any;
   boutiques: any[] = [];
   selectedBoutique: string = '';
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -175,15 +176,16 @@ export default class AchatsComponent implements OnInit {
       return;
     }
 
+    this.loading = true;
     this.achatsService.createAchat(this.achatForm.value)
-    .pipe(finalize(() => {this.isSubmitting = false;}))
+    .pipe(finalize(() => {this.loading = false;}))
     .subscribe({
       next: (response: any) => {
         console.log('Achat créé avec succès', response);
-        this.isSubmitting = false;
         this.initForm(); // Réinitialiser le formulaire
         this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
         this.toastr.success('Achat créé avec succès');
+        this.isSubmitting = false;
       },
       error: (error: any) => {
         console.error('Erreur lors de la création de l\'achat', error);

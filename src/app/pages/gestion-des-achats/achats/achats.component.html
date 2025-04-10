@@ -187,9 +187,13 @@
         </div>
         
         <div class="col-12 text-end">
-          <button type="submit" class="btn btn-success" [disabled]="isSubmitting">
-            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            <i class="ri ri-save-line"></i> Enregistrer l'approvisionnement
+          <button type="submit" class="btn btn-success" [disabled]="loading">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Enregistrement en cours...
+            } @else {
+              <i class="ri ri-save-line"></i> Enregistrer l'approvisionnement
+            }
           </button>
         </div>
       </form>
