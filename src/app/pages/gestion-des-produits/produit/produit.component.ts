@@ -72,7 +72,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   getCurrentUser() {
-    this.authService.currentUser$.subscribe((user) => {
+    this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
       // console.log('currentUser', this.currentUser);
     });
@@ -244,6 +244,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
             this.boutiques = response.data;
           }
         },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
       });
     } else {
       this.boutiques[0] = this.currentUser.boutique;

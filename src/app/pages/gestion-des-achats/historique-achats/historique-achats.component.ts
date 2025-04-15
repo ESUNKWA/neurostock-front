@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -18,16 +20,22 @@ declare var bootstrap: any;
 })
 export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   achats: any[] = [];
+  currentUser: any;
+  idBoutique: number = -1;
+  boutiques: any[] = [];
   isLoading: boolean = false;
-  
+
   constructor(
     private achatsService: AchatsService,
+    private authService: AuthService,
+    private boutiqueService: BoutiqueService,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
   ngOnInit(): void {
-    // Initialiser les données
+    this.getCurrentUser();
+    this.loadBoutiques();
     this.loadAchats();
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
@@ -42,6 +50,86 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyDataTable();
+  }
+
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user: any) => {
+      this.currentUser = user;
+    });
+  }
+
+  loadBoutiques(): void {
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
+    }
+  }
+
+  onBoutiqueChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.idBoutique = parseInt(selectElement.value);
+    this.loadAchats();
+  }
+
+  /**
+   * Recharge les données et rafraîchit le tableau
+   */
+  loadAchats(): void {
+    this.isLoading = true;
+
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+      if (!this.idBoutique) {
+        this.achats = [];
+        this.isLoading = false;
+        return;
+      }
+    } else {
+      this.idBoutique = this.currentUser.boutique.id;
+    }
+    
+    const body: any = {
+      boutique: this.idBoutique
+    }
+
+    this.achatsService.getAllAchats(body).subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.achats = response.data;
+          this.destroyDataTable();
+
+          // Donner le temps au DOM de se mettre à jour
+          setTimeout(() => {
+            if (isPlatformBrowser(this.platformId)) {
+              try {
+                // Réinitialiser le tableau avec les nouvelles données
+                this.initDataTable();
+              } catch (error) {
+                console.error('Erreur lors de la réinitialisation de DataTable:', error);
+              }
+              this.isLoading = false;
+            }
+          }, 50); // Temps d'attente réduit pour une mise à jour plus rapide
+        } else {
+          this.isLoading = false;
+          this.toastr.error('Erreur lors du chargement des achats');
+        }
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        this.toastr.error('Erreur lors du chargement des achats');
+        console.error(error);
+      }
+    });
   }
 
   /**
@@ -119,10 +207,10 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
               render: (data: any, type: any, row: any) => {
                 return `
                   <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="Détails" data-action="view" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
                       <i class="bi bi-printer"></i>
                     </button>
                   </div>
@@ -205,48 +293,6 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         console.error('Erreur lors de l\'initialisation de DataTable:', error);
       }
     }
-  }
-
-  /**
-   * Recharge les données et rafraîchit le tableau
-   */
-  loadAchats(): void {
-    this.isLoading = true;
-    
-    this.achatsService.getAllAchats().subscribe({
-      next: (response: any) => {
-        console.log('response', response);
-        if (response.status === 'success' && response.data) {
-          // Mise à jour des données
-          this.achats = response.data;
-          
-          
-          // D'abord, détruisons l'instance DataTable sans vider la table
-          this.destroyDataTable();
-          
-          // Donner le temps au DOM de se mettre à jour
-          setTimeout(() => {
-            if (isPlatformBrowser(this.platformId)) {
-              try {
-                // Réinitialiser le tableau avec les nouvelles données
-                this.initDataTable();
-              } catch (error) {
-                console.error('Erreur lors de la réinitialisation de DataTable:', error);
-              }
-              this.isLoading = false;
-            }
-          }, 50); // Temps d'attente réduit pour une mise à jour plus rapide
-        } else {
-          this.isLoading = false;
-          this.toastr.error('Erreur lors du chargement des achats');
-        }
-      },
-      error: (error: any) => {
-        this.isLoading = false;
-        this.toastr.error('Erreur lors du chargement des achats');
-        console.error(error);
-      }
-    });
   }
 
   /**

@@ -1,12 +1,12 @@
 <div class="pagetitle">
   <div class="d-flex justify-content-between">
-    <h1>Historique des Achats</h1>
+    <h1>Historique des Approvisionnements</h1>
     <nav>
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a routerLink="/dashboard">
           <i class="bi bi-house"></i> Accueil</a>
         </li>
-        <li class="breadcrumb-item">Gestion des Achats</li>
+        <li class="breadcrumb-item">Gestion des Approvisionnements</li>
         <li class="breadcrumb-item active">Historique</li>
       </ol>
     </nav>
@@ -31,6 +31,20 @@
             </div>
           </div>
         </div>
+        @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+          <div class="card-body">
+              <div class="row">
+                  <div class="col-md-4">
+                      <select class="form-select" (change)="onBoutiqueChange($event)">
+                        <option value="">Sélectionner une boutique</option>
+                        @for (boutique of boutiques; track boutique.id) {
+                          <option [value]="boutique.id">{{ boutique.nom }}</option>
+                        }
+                      </select>
+                  </div>
+              </div>
+          </div>
+        }
         <div class="card-body">
           @if (isLoading) {
             <div class="text-center py-3">
@@ -70,7 +84,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold">Détails de l'achat</h5>
+        <h5 class="modal-title fw-bold text-uppercase">Détails de l'approvisionnement</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -78,26 +92,26 @@
           <div class="col-md-6">
             <div class="card">
               <div class="card-header bg-light">
-                <h5 class="card-title mb-0">Informations générales</h5>
+                <h5 class="card-title mb-0 text-uppercase">Informations générales</h5>
               </div>
               <div class="card-body">
                 <div class="mb-2">
-                  <strong>Référence:</strong> <span id="detail-reference"></span>
+                  <span class="fw-bold">Référence: </span> <span id="detail-reference"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Libellé:</strong> <span id="detail-libelle"></span>
+                  <span class="fw-bold">Libellé: </span> <span id="detail-libelle"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Date d'achat:</strong> <span id="detail-date"></span>
+                  <span class="fw-bold">Date d'achat: </span> <span id="detail-date"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Montant total:</strong> <span id="detail-montant"></span>
+                  <span class="fw-bold">Montant total: </span> <span id="detail-montant"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Mode de paiement:</strong> <span id="detail-mode-paiement"></span>
+                  <span class="fw-bold">Mode de paiement: </span> <span id="detail-mode-paiement"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Statut:</strong> <span id="detail-statut"></span>
+                  <span class="fw-bold">Statut: </span> <span id="detail-statut"></span>
                 </div>
               </div>
             </div>
@@ -105,23 +119,23 @@
           <div class="col-md-6">
             <div class="card">
               <div class="card-header bg-light">
-                <h5 class="card-title mb-0">Informations du fournisseur</h5>
+                <h5 class="card-title mb-0 text-uppercase">Informations du fournisseur</h5>
               </div>
               <div class="card-body">
                 <div class="mb-2">
-                  <strong>Nom:</strong> <span id="detail-fournisseur-nom"></span>
+                  <span class="fw-bold">Nom: </span> <span id="detail-fournisseur-nom"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Adresse:</strong> <span id="detail-fournisseur-adresse"></span>
+                  <span class="fw-bold">Adresse: </span> <span id="detail-fournisseur-adresse"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Contact:</strong> <span id="detail-fournisseur-contact"></span>
+                  <span class="fw-bold">Contact: </span> <span id="detail-fournisseur-contact"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Email:</strong> <span id="detail-fournisseur-email"></span>
+                  <span class="fw-bold">Email: </span> <span id="detail-fournisseur-email"></span>
                 </div>
                 <div class="mb-2">
-                  <strong>Interlocuteur:</strong> <span id="detail-fournisseur-interlocuteur"></span>
+                  <span class="fw-bold">Interlocuteur: </span> <span id="detail-fournisseur-interlocuteur"></span>
                 </div>
               </div>
             </div>
@@ -130,7 +144,7 @@
         
         <div class="card mt-3">
           <div class="card-header bg-light">
-            <h5 class="card-title mb-0">Description</h5>
+            <h5 class="card-title mb-0 text-uppercase">Description</h5>
           </div>
           <div class="card-body">
             <p id="detail-description"></p>
