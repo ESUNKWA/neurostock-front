@@ -14,6 +14,10 @@ export class VentesService {
     return this.http.get(`${this.API_URL}/vente`, { params: body });
   }
 
+  getDetailVente(id: any) {
+    return this.http.get(`${this.API_URL}/vente/${id}`);
+  }
+
   saveVente(body: any) {
     return this.http.post(`${this.API_URL}/vente`, body);
   }

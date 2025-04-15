@@ -58,10 +58,15 @@ export default class VenteComponent implements OnInit {
   }
 
   initForm(): void {
+    // Vérifier si currentUser existe avant d'accéder à ses propriétés
+    const userId = this.currentUser ? this.currentUser.id : null;
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
+    
     this.venteForm = this.fb.group({
+      user: [userId, Validators.required],
       libelle: ['', Validators.required],
       description: [''],
-      boutique: [null, Validators.required],
+      boutique: [boutiqueId, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
       date_vente: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
@@ -80,10 +85,16 @@ export default class VenteComponent implements OnInit {
         
         // Supprimer les données du localStorage après les avoir récupérées
         localStorage.removeItem('editVenteData');
+
+        // console.log('editVenteData', this.editVenteData);
         
         // Charger les produits de la boutique associée à la vente
-        this.selectedBoutique = this.editVenteData.vente.boutique ? this.editVenteData.vente.boutique.id.toString() : '';
-        if (this.selectedBoutique) {
+        if (this.editVenteData.vente && this.editVenteData.vente.boutique) {
+          this.selectedBoutique = this.editVenteData.vente.boutique.id.toString();
+          this.loadProduits();
+        } else if (this.currentUser && this.currentUser.boutique) {
+          // Utiliser la boutique de l'utilisateur courant comme fallback
+          this.selectedBoutique = this.currentUser.boutique.id.toString();
           this.loadProduits();
         }
         
@@ -105,19 +116,27 @@ export default class VenteComponent implements OnInit {
     if (!this.editVenteData || !this.editVenteData.vente) return;
     
     const vente = this.editVenteData.vente;
+
+    console.log('vente', vente);
+    
     
     // Formater la date correctement (yyyy-MM-dd)
     let dateVente = new Date().toISOString().slice(0, 10);
-    if (vente.date_vente) {
-      const date = new Date(vente.date_vente);
+    if (vente.created_at) {
+      const date = new Date(vente.created_at);
       dateVente = date.toISOString().slice(0, 10);
     }
+    
+    // Vérifier que currentUser et boutique existent avant d'accéder à leurs propriétés
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
+    const userId = this.currentUser ? this.currentUser.id : null;
     
     // Mettre à jour les champs principaux du formulaire
     this.venteForm.patchValue({
       libelle: vente.libelle || '',
       description: vente.description || '',
-      boutique: this.currentUser.boutique.id,
+      boutique: boutiqueId,
+      user: userId,
       montant_total: vente.montant_total || 0,
       date_vente: dateVente,
       mode_paiement: vente.mode_paiement || 'espece',
@@ -197,7 +216,13 @@ export default class VenteComponent implements OnInit {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (!this.currentUser) {
+      return;
+    }
+    
+    if (this.currentUser.profil && 
+       (this.currentUser.profil.description.toLowerCase() === 'administrateur' || 
+        this.currentUser.profil.description.toLowerCase() === 'responsable structure')) {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
@@ -205,7 +230,7 @@ export default class VenteComponent implements OnInit {
           }
         },
       });
-    } else {
+    } else if (this.currentUser.boutique) {
       this.boutiques[0] = this.currentUser.boutique;
       this.venteForm.patchValue({ boutique: this.currentUser.boutique.id });
     }
@@ -218,13 +243,23 @@ export default class VenteComponent implements OnInit {
   }
 
   loadProduits(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (!this.currentUser) {
+      return;
+    }
+    
+    if (this.currentUser.profil && 
+       (this.currentUser.profil.description.toLowerCase() === 'administrateur' || 
+        this.currentUser.profil.description.toLowerCase() === 'responsable structure')) {
       if (!this.selectedBoutique) {
         this.produits = [];
         return;
       }
+    } else if (this.currentUser.boutique) {
+      this.selectedBoutique = this.currentUser.boutique.id.toString();
     } else {
-      this.selectedBoutique = this.currentUser.boutique.id;
+      // Si aucune boutique n'est disponible
+      this.produits = [];
+      return;
     }
     
     const body: any = {
@@ -268,7 +303,7 @@ export default class VenteComponent implements OnInit {
         next: (response: any) => {
           this.initForm(); // Réinitialiser le formulaire
           this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
-          this.toastr.success('Vente effectuée avec succès');
+          this.toastr.success('Enregistrement effectué avec succès');
           this.isSubmitting = false;
         },
         error: (error: any) => {
@@ -284,7 +319,7 @@ export default class VenteComponent implements OnInit {
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
-          this.toastr.success('Vente modifiée avec succès');
+          this.toastr.success('Modification effectuée avec succès');
           this.isSubmitting = false;
           
           // Réinitialiser le mode édition

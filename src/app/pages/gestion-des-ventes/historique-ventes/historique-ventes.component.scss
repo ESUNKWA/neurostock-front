@@ -1,0 +1,24 @@
+#modal-view-details {
+    .card {
+        margin-bottom: 5px;
+
+        .card-header {
+            border-radius: 0.25rem;
+
+            &.bg-primary {
+                background: linear-gradient(135deg, #4d8eef, #1b5dc1) !important;
+                padding: 1px 15px;
+              }
+              
+              &.bg-light {
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+                padding: 1px 15px;
+              }
+              
+              .card-title {
+                font-size: 0.95rem;
+                font-weight: 600;
+              }
+        }
+    }
+}

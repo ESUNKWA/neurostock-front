@@ -31,9 +31,164 @@
                       </div>
                     </div>
                 </div>
-
-
+                @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <select class="form-select" (change)="onBoutiqueChange($event)">
+                              <option value="">Sélectionner une boutique</option>
+                              @for (boutique of boutiques; track boutique.id) {
+                                <option [value]="boutique.id">{{ boutique.nom }}</option>
+                              }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                }
+                <div class="card-body">
+                  @if (isLoading) {
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                  }
+                  <hr>
+                  <!-- DataTable avec colonnes fixes -->
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
+                      <thead>
+                        <tr>
+                          <th>Référence</th>
+                          <th>Libellé</th>
+                          <th>Montant Total</th>
+                          <th>Statut</th>
+                          <th>Date de vente</th>
+                          <th class="text-center" style="width: 15%;">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Contenu généré par DataTables -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Modal pour visualiser les détails d'une vente -->
+<div class="modal fade" id="modal-view-details" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-uppercase">Détails de la vente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-light">
+                <h5 class="card-title mb-0 text-uppercase">Informations générales</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-2">
+                  <span class="fw-bold">Référence: </span> <span id="detail-reference"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Libellé: </span> <span id="detail-libelle"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Date de vente: </span> <span id="detail-date"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Montant total: </span> <span id="detail-montant"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Mode de paiement: </span> <span id="detail-mode-paiement"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Statut: </span> <span id="detail-statut"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-light">
+                <h5 class="card-title mb-0 text-uppercase">Informations du client</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-2">
+                  <span class="fw-bold">Nom: </span> <span id="detail-client-nom"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Adresse: </span> <span id="detail-client-adresse"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Contact: </span> <span id="detail-client-contact"></span>
+                </div>
+                <div class="mb-2">
+                  <span class="fw-bold">Email: </span> <span id="detail-client-email"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mt-3">
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0 text-uppercase">Description</h5>
+          </div>
+          <div class="card-body">
+            <p id="detail-description"></p>
+          </div>
+        </div>
+
+        <!-- Nouvelle section pour les détails des produits -->
+        <div class="card mt-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0 text-uppercase">Détails des produits</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Produit</th>
+                    <th>Prix unitaire</th>
+                    <th>Quantité</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody id="detail-produits-body">
+                  <!-- Les détails des produits seront ajoutés ici dynamiquement -->
+                  <tr *ngIf="!detailsVente || detailsVente.length === 0">
+                    <td colspan="5" class="text-center py-3">Aucun détail disponible</td>
+                  </tr>
+                </tbody>
+                <tfoot class="table-light">
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Montant Total :</td>
+                    <td class="fw-bold" id="detail-total-montant"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="ri ri-close-circle-line"></i> Fermer
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-print-detail">
+          <i class="bi bi-printer"></i> Imprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
