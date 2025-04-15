@@ -21,10 +21,10 @@ declare var bootstrap: any;
 export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   achats: any[] = [];
   currentUser: any;
-  idBoutique: number = -1;
+  idBoutique: number = 0;
   boutiques: any[] = [];
   isLoading: boolean = false;
-
+  detailsAchat: any;
   constructor(
     private achatsService: AchatsService,
     private authService: AuthService,
@@ -307,11 +307,94 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     }
   }
 
+  getDetailsAchat(id: any) {
+    this.achatsService.getDetailsAchat(id).subscribe({
+      next: (response: any) => {
+        this.detailsAchat = response.data.detail_achat;
+        console.log('detailsAchat', this.detailsAchat);
+        
+        // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
+        this.updateProduitsTable();
+      },
+      error: (error: any) => {
+        console.error('Erreur lors de la récupération des détails de l\'achat:', error);
+      }
+    });
+  }
+
+  /**
+   * Met à jour le tableau des produits avec les détails
+   */
+  updateProduitsTable(): void {
+    const tableBody = document.getElementById('detail-produits-body');
+    const totalElement = document.getElementById('detail-total-montant');
+    
+    if (!tableBody || !this.detailsAchat) return;
+    
+    // Vider le tableau
+    tableBody.innerHTML = '';
+    
+    // Si aucun détail n'est disponible
+    if (this.detailsAchat.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center py-3">Aucun détail disponible</td>
+        </tr>
+      `;
+      if (totalElement) totalElement.textContent = '0 FCFA';
+      return;
+    }
+    
+    // Calculer le montant total
+    let montantTotal = 0;
+    
+    // Ajouter les détails au tableau
+    this.detailsAchat.forEach((detail: any, index: number) => {
+      const produit = detail.produit;
+      const prixUnitaire = detail.prix_unitaire;
+      const quantite = detail.quantite;
+      const total = prixUnitaire * quantite;
+      
+      montantTotal += total;
+      
+      const row = document.createElement('tr');
+      row.className = 'align-middle';
+      row.innerHTML = `
+        <td class="text-center">${index + 1}</td>
+        <td>
+          <div class="d-flex align-items-center">
+            <!-- ${produit.image ? 
+              `<img src="${produit.image}" alt="${produit.nom}" class="me-2 rounded product-thumbnail" width="40">` : 
+              '<div class="product-icon me-2"><i class="bi bi-box-seam fs-4"></i></div>'
+            } -->
+            <div>
+              <div class="fw-semibold">${produit.nom}</div>
+              <small class="text-muted">${produit.description || ''}</small>
+            </div>
+          </div>
+        </td>
+        <td class="text-end">${prixUnitaire.toLocaleString()} FCFA</td>
+        <td class="text-center">
+          <span class="badge bg-light text-dark">${quantite}</span>
+        </td>
+        <td class="text-end">${total.toLocaleString()} FCFA</td>
+      `;
+      
+      tableBody.appendChild(row);
+    });
+    
+    // Mettre à jour le montant total
+    if (totalElement) {
+      totalElement.textContent = `${montantTotal.toLocaleString()} FCFA`;
+    }
+  }
+
   /**
    * Afficher les détails d'un achat
    */
   viewDetails(achat: any): void {
-    console.log('Voir les détails de l\'achat:', achat);
+    // Récupérer les détails de l'achat (sera traité de manière asynchrone)
+    this.getDetailsAchat(achat.id);
     
     // Formater la date d'achat
     const dateAchat = achat.date_achat ? new Date(achat.date_achat) : null;
@@ -372,6 +455,24 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
       // Remplir la description
       document.getElementById('detail-description')!.textContent = achat.description || 'Aucune description disponible';
       
+      // Initialiser le tableau des produits (sera mis à jour par la méthode updateProduitsTable)
+      const tableBody = document.getElementById('detail-produits-body');
+      if (tableBody) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+              Chargement des détails...
+            </td>
+          </tr>
+        `;
+      }
+      
+      // Mettre à jour le tableau si les détails sont déjà disponibles
+      if (this.detailsAchat && this.detailsAchat.length > 0) {
+        this.updateProduitsTable();
+      }
+      
       // Configurer le bouton d'impression
       const btnPrint = document.getElementById('btn-print-detail');
       if (btnPrint) {
@@ -411,6 +512,66 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
       `${dateAchat.getDate().toString().padStart(2, '0')}/${(dateAchat.getMonth() + 1).toString().padStart(2, '0')}/${dateAchat.getFullYear()}` : 
       'Non définie';
     
+    // Générer le HTML pour les détails des produits
+    let produitsHTML = '';
+    let totalGeneral = 0;
+    
+    if (this.detailsAchat && this.detailsAchat.length > 0) {
+      produitsHTML = `
+        <div class="products-section">
+          <div class="info-title">Détails des produits</div>
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Produit</th>
+                <th>Prix unitaire</th>
+                <th>Quantité</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      this.detailsAchat.forEach((detail: any, index: number) => {
+        const produit = detail.produit;
+        const prixUnitaire = detail.prix_unitaire;
+        const quantite = detail.quantite;
+        const total = prixUnitaire * quantite;
+        
+        totalGeneral += total;
+        
+        produitsHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${produit.nom}</td>
+            <td>${prixUnitaire.toLocaleString()} FCFA</td>
+            <td>${quantite}</td>
+            <td>${total.toLocaleString()} FCFA</td>
+          </tr>
+        `;
+      });
+      
+      produitsHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-right">Montant Total :</td>
+                <td>${totalGeneral.toLocaleString()} FCFA</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    } else {
+      produitsHTML = `
+        <div class="products-section">
+          <div class="info-title">Détails des produits</div>
+          <p class="no-data">Aucun détail de produit disponible</p>
+        </div>
+      `;
+    }
+    
     // Création du contenu HTML pour l'impression
     const printContent = `
       <!DOCTYPE html>
@@ -420,12 +581,19 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; }
           .header { text-align: center; margin-bottom: 30px; }
-          .info-container { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .info-container { display: flex; justify-content: space-between; margin: 20px; }
           .info-section { width: 48%; }
-          .info-title { font-weight: bold; background-color: #f0f0f0; padding: 5px; }
+          .info-title { font-weight: bold; background-color: #f0f0f0; padding: 5px; margin-bottom: 10px; }
           .info-item { margin: 10px 0; }
           .info-label { font-weight: bold; display: inline-block; width: 150px; }
-          .description-section { margin-top: 20px; }
+          .description-section { margin-top: 20px; margin: 20px; }
+          .products-section { margin: 20px; }
+          .products-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          .products-table th, .products-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          .products-table th { background-color: #f0f0f0; }
+          .products-table tfoot { font-weight: bold; }
+          .text-right { text-align: right; }
+          .no-data { text-align: center; color: #777; padding: 20px; }
           .footer { margin-top: 50px; text-align: center; font-size: 12px; }
           @media print {
             body { margin: 0; }
@@ -435,7 +603,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
       </head>
       <body>
         <div class="header">
-          <h2>DÉTAILS DE L'ACHAT</h2>
+          <h2>DÉTAILS DE L'APPROVISIONNEMENT</h2>
           <h3>${achat.reference || ''}</h3>
         </div>
         
@@ -488,23 +656,24 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
           <p>${achat.description || 'Aucune description disponible'}</p>
         </div>
         
+        ${produitsHTML}
+        
         <div class="footer">
-          <p>Document généré le ${new Date().toLocaleString()}</p>
-          <button onclick="window.print();">Imprimer</button>
+          <p>Document généré le ${new Date().toLocaleDateString()} à ${new Date().toLocaleTimeString()}</p>
         </div>
       </body>
       </html>
     `;
     
-    // Écriture du contenu dans la fenêtre d'impression
+    // Écrire le contenu dans la fenêtre d'impression
     printWindow.document.open();
     printWindow.document.write(printContent);
     printWindow.document.close();
     
-    // Laisser le temps au navigateur de charger le contenu
-    setTimeout(() => {
-      printWindow.focus();
-      // printWindow.print(); // Décommentez pour imprimer automatiquement
-    }, 500);
+    // Attendre que le contenu soit chargé avant d'imprimer
+    printWindow.onload = function() {
+      printWindow.print();
+      // printWindow.close(); // Commenter cette ligne pour permettre à l'utilisateur de fermer la fenêtre lui-même
+    };
   }
 }

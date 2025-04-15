@@ -12,6 +12,10 @@ export class AchatsService {
   getAllAchats(body: any) {
     return this.http.get(`${this.API_URL}/achat`, { params: body });
   }
+
+  getDetailsAchat(id: any) {
+    return this.http.get(`${this.API_URL}/achat/${id}`);
+  }
   
   createAchat(achat: any) {
     return this.http.post(`${this.API_URL}/achat`, achat);
