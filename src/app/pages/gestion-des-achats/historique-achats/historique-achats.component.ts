@@ -313,7 +313,6 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     this.achatsService.getDetailsAchat(id).subscribe({
       next: (response: any) => {
         this.detailsAchat = response.data.detail_achat;
-        console.log('detailsAchat', this.detailsAchat);
         
         // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
         this.updateProduitsTable();
