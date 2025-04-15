@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
@@ -30,6 +30,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
     private toastr: ToastrService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
@@ -486,7 +487,30 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   }
 
   editAchat(achat: any): void {
-    console.log('Modifier l\'achat:', achat);
+    this.isLoading = true;
+    this.achatsService.getDetailsAchat(achat.id).subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          // Stocker temporairement les données de l'approvisionnement dans le localStorage
+          // Cela permet de les récupérer après redirection
+          localStorage.setItem('editAchatData', JSON.stringify({
+            id: achat.id,
+            achat: response.data
+          }));
+          
+          // Rediriger vers la page d'approvisionnement pour modification
+          this.router.navigate(['/gestion-des-approvisionnements/approvisionnement']);
+        } else {
+          this.toastr.error('Erreur lors de la récupération des données de l\'approvisionnement');
+        }
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Erreur lors de la récupération des détails de l\'achat:', error);
+        this.toastr.error('Erreur lors de la récupération des données de l\'approvisionnement');
+        this.isLoading = false;
+      }
+    });
   }
 
   deleteAchat(achat: any): void {

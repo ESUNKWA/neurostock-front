@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 
 @Component({
   selector: 'app-achats',
@@ -28,6 +28,11 @@ export default class AchatsComponent implements OnInit {
   boutiques: any[] = [];
   selectedBoutique: string = '';
   loading = false;
+  
+  // Variables pour le mode édition
+  isEditMode = false;
+  editAchatId: number | null = null;
+  editAchatData: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -46,8 +51,8 @@ export default class AchatsComponent implements OnInit {
     this.loadFournisseurs();
     this.loadProduits();
     
-    // Ajouter un détail d'achat par défaut
-    this.addDetailAchat();
+    // Vérifier s'il y a des données d'édition dans le localStorage
+    this.checkForEditData();
   }
 
   getCurrentUser() {
@@ -69,6 +74,94 @@ export default class AchatsComponent implements OnInit {
       statut: ['payer', Validators.required],
       detail_achat: this.fb.array([])
     });
+  }
+
+  checkForEditData(): void {
+    const editDataStr = localStorage.getItem('editAchatData');
+    if (editDataStr) {
+      try {
+        this.editAchatData = JSON.parse(editDataStr);
+        this.isEditMode = true;
+        this.editAchatId = this.editAchatData.id;
+        
+        // Supprimer les données du localStorage après les avoir récupérées
+        localStorage.removeItem('editAchatData');
+        
+        // Charger les produits de la boutique associée à l'achat
+        this.selectedBoutique = this.editAchatData.achat.boutique ? this.editAchatData.achat.boutique.id.toString() : '';
+        if (this.selectedBoutique) {
+          this.loadProduits();
+        }
+        
+        // Attendre que les produits soient chargés avant de remplir le formulaire
+        setTimeout(() => {
+          this.populateFormWithEditData();
+        }, 1000);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données d\'édition:', error);
+        localStorage.removeItem('editAchatData');
+      }
+    } else {
+      // Si pas en mode édition, ajouter un détail d'achat par défaut
+      this.addDetailAchat();
+    }
+  }
+
+  populateFormWithEditData(): void {
+    if (!this.editAchatData || !this.editAchatData.achat) return;
+    
+    const achat = this.editAchatData.achat;
+    
+    // Formater la date correctement (yyyy-MM-dd)
+    let dateAchat = new Date().toISOString().slice(0, 10);
+    if (achat.date_achat) {
+      const date = new Date(achat.date_achat);
+      dateAchat = date.toISOString().slice(0, 10);
+    }
+
+    
+    // Mettre à jour les champs principaux du formulaire
+    this.achatForm.patchValue({
+      libelle: achat.libelle || '',
+      description: achat.description || '',
+      boutique: this.currentUser.boutique.id,
+      montant_total: achat.montant_total || 0,
+      date_achat: dateAchat,
+      mode_paiement: achat.mode_paiement || 'espece',
+      fournisseur: achat.fournisseur ? achat.fournisseur.id : null,
+      statut: achat.statut || 'payer'
+    });
+    
+    // Vider le FormArray des détails d'achat existants
+    while (this.detailAchat.length > 0) {
+      this.detailAchat.removeAt(0);
+    }
+    
+    // Ajouter les détails d'achat
+    if (achat.detail_achat && achat.detail_achat.length > 0) {
+      achat.detail_achat.forEach((detail: any) => {
+        const detailGroup = this.fb.group({
+          produit: [detail.produit.id, Validators.required],
+          prix_unitaire: [detail.prix_unitaire, [Validators.required, Validators.min(0)]],
+          quantite: [detail.quantite, [Validators.required, Validators.min(1)]]
+        });
+        this.detailAchat.push(detailGroup);
+      });
+    } else {
+      // Si aucun détail n'est présent, ajouter une ligne vide
+      this.addDetailAchat();
+    }
+    
+    // Calculer le montant total
+    this.calculerMontantTotal();
+    
+    // Mettre à jour le titre du composant pour indiquer le mode édition
+    setTimeout(() => {
+      const cardTitle = document.querySelector('.card-title');
+      if (cardTitle) {
+        cardTitle.textContent = `Modification de l'approvisionnement #${achat.reference || ''}`;
+      }
+    }, 0);
   }
 
   get f() {
@@ -171,26 +264,73 @@ export default class AchatsComponent implements OnInit {
 
   onSubmit(): void {
     this.isSubmitting = true;
+    
     if (this.achatForm.invalid) {
+      // Marquer tous les champs comme touchés pour afficher les erreurs
       // this.markFormGroupTouched(this.achatForm);
       return;
     }
 
     this.loading = true;
+    
+    // Si on est en mode édition, appeler la méthode de mise à jour
+    if (this.isEditMode && this.editAchatId) {
+      this.updateAchat();
+    } else {
+      // Sinon, création d'un nouvel approvisionnement
+      this.createAchat();
+    }
+  }
+  
+  createAchat(): void {
     this.achatsService.createAchat(this.achatForm.value)
-    .pipe(finalize(() => {this.loading = false;}))
-    .subscribe({
-      next: (response: any) => {
-        this.initForm(); // Réinitialiser le formulaire
-        this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
-        this.toastr.success('Approvisionnement effectué avec succès');
-        this.isSubmitting = false;
-      },
-      error: (error: any) => {
-        console.error('Erreur lors de la création de l\'achat', error);
-        this.isSubmitting = false;
-      }
-    });
+      .pipe(finalize(() => { this.loading = false; }))
+      .subscribe({
+        next: (response: any) => {
+          this.initForm(); // Réinitialiser le formulaire
+          this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
+          this.toastr.success('Approvisionnement effectué avec succès');
+          this.isSubmitting = false;
+        },
+        error: (error: any) => {
+          console.error('Erreur lors de la création de l\'achat', error);
+          this.toastr.error('Erreur lors de la création de l\'approvisionnement');
+          this.isSubmitting = false;
+        }
+      });
+  }
+  
+  updateAchat(): void {
+    this.achatsService.updateAchat(this.editAchatId, this.achatForm.value)
+      .pipe(finalize(() => { this.loading = false; }))
+      .subscribe({
+        next: (response: any) => {
+          this.toastr.success('Approvisionnement modifié avec succès');
+          this.isSubmitting = false;
+          
+          // Réinitialiser le mode édition
+          this.isEditMode = false;
+          this.editAchatId = null;
+          this.editAchatData = null;
+          
+          // Réinitialiser le formulaire
+          this.initForm();
+          this.addDetailAchat();
+          
+          // Mettre à jour le titre
+          setTimeout(() => {
+            const cardTitle = document.querySelector('.card-title');
+            if (cardTitle) {
+              cardTitle.textContent = 'Enregistrement d\'un nouvel approvisionnement';
+            }
+          }, 0);
+        },
+        error: (error: any) => {
+          console.error('Erreur lors de la modification de l\'achat', error);
+          this.toastr.error('Erreur lors de la modification de l\'approvisionnement');
+          this.isSubmitting = false;
+        }
+      });
   }
 
   markFormGroupTouched(formGroup: FormGroup): void {

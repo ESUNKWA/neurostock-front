@@ -20,4 +20,8 @@ export class AchatsService {
   createAchat(achat: any) {
     return this.http.post(`${this.API_URL}/achat`, achat);
   }
+
+  updateAchat(id: any, achat: any) {
+    return this.http.patch(`${this.API_URL}/achat/${id}`, achat);
+  }
 }

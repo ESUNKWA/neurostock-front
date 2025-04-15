@@ -19,7 +19,7 @@
 <section class="section">
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Enregistrement d'un nouvel approvisionnement</h5>
+      <h5 class="card-title">{{ isEditMode ? 'Modification d\'un approvisionnement' : 'Enregistrement d\'un nouvel approvisionnement' }}</h5>
       
       <form novalidate class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
         <!-- Informations générales -->
@@ -210,9 +210,9 @@
           <button type="submit" class="btn btn-success" [disabled]="loading">
             @if (loading) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              Enregistrement en cours...
+              {{ isEditMode ? 'Mise à jour en cours...' : 'Enregistrement en cours...' }}
             } @else {
-              <i class="ri ri-save-line"></i> Enregistrer l'approvisionnement
+              <i class="ri ri-save-line"></i> {{ isEditMode ? 'Mettre à jour l\'approvisionnement' : 'Enregistrer l\'approvisionnement' }}
             }
           </button>
         </div>
