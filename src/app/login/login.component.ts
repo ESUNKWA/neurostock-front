@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth/auth.service';
 import { finalize } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -40,7 +41,7 @@ export default class LoginComponent implements OnInit {
 
     this.initForm();
   }
-  
+
   initForm(): void {
     this.loginForm = this.formBuilder.group({
       email: ['ndayste@gmail.com', [Validators.required, Validators.email]],
