@@ -30,7 +30,6 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user: any) => {
-      // console.log('user', user);
       if (user && user.profil) {
         this.currentUserProfile = user.profil.nom?.toLowerCase() || '';
         this.filterMenuByProfile();
@@ -58,8 +57,6 @@ export class SidebarComponent implements OnInit {
       
       // 2. Parcourir les sections restantes pour filtrer les sous-menus spécifiques
       this.filteredMenu.forEach((menuItem: any) => {
-        console.log('menuItem', menuItem);
-        
         if (menuItem.menu) {
           // Filtrer les menus de niveau 2
           menuItem.menu = menuItem.menu.filter((submenu: any) => {

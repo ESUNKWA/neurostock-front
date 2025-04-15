@@ -86,7 +86,7 @@ export const Menu: any = [
                 sousMenu: [
                     {
                         libelle: 'Ventes',
-                        lien: '',
+                        lien: '/gestion-des-ventes/vente',
                         icon: 'bi bi-circle'
                     },
                     {
@@ -96,7 +96,7 @@ export const Menu: any = [
                     },
                     {
                         libelle: 'Historique des ventes',
-                        lien: '',
+                        lien: '/gestion-des-ventes/historique-ventes',
                         icon: 'bi bi-circle'
                     }
                 ]

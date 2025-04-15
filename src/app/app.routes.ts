@@ -20,6 +20,11 @@ export const routes: Routes = [
             loadChildren: () => import('./pages/gestion-des-achats/routes'), 
             title: 'neurostock | Gestion des approvisionnements' 
         },
+        { 
+            path: 'gestion-des-ventes', 
+            loadChildren: () => import('./pages/gestion-des-ventes/routes'), 
+            title: 'neurostock | Gestion des ventes' 
+        },
                 
         // Gestion des utilisateurs
         { 
