@@ -181,10 +181,9 @@ export default class AchatsComponent implements OnInit {
     .pipe(finalize(() => {this.loading = false;}))
     .subscribe({
       next: (response: any) => {
-        console.log('Achat créé avec succès', response);
         this.initForm(); // Réinitialiser le formulaire
         this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
-        this.toastr.success('Achat créé avec succès');
+        this.toastr.success('Approvisionnement effectué avec succès');
         this.isSubmitting = false;
       },
       error: (error: any) => {

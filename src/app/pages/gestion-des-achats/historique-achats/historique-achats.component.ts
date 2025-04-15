@@ -210,8 +210,14 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
                     <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm btn-warning me-2" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
                       <i class="bi bi-printer"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
+                      <i class="bi bi-trash"></i>
                     </button>
                   </div>
                 `;
@@ -284,6 +290,12 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
                   break;
                 case 'print':
                   this.printAchat(achat);
+                  break;
+                case 'edit':
+                  this.editAchat(achat);
+                  break;
+                case 'delete':
+                  this.deleteAchat(achat);
                   break;
               }
             });
@@ -370,6 +382,14 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
       const modalInstance = new bootstrap.Modal(modal);
       modalInstance.show();
     }
+  }
+
+  editAchat(achat: any): void {
+    console.log('Modifier l\'achat:', achat);
+  }
+
+  deleteAchat(achat: any): void {
+    console.log('Supprimer l\'achat:', achat);
   }
 
   /**
