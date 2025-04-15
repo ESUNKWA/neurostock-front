@@ -86,8 +86,6 @@ export default class VenteComponent implements OnInit {
         // Supprimer les données du localStorage après les avoir récupérées
         localStorage.removeItem('editVenteData');
 
-        // console.log('editVenteData', this.editVenteData);
-        
         // Charger les produits de la boutique associée à la vente
         if (this.editVenteData.vente && this.editVenteData.vente.boutique) {
           this.selectedBoutique = this.editVenteData.vente.boutique.id.toString();
@@ -116,9 +114,6 @@ export default class VenteComponent implements OnInit {
     if (!this.editVenteData || !this.editVenteData.vente) return;
     
     const vente = this.editVenteData.vente;
-
-    console.log('vente', vente);
-    
     
     // Formater la date correctement (yyyy-MM-dd)
     let dateVente = new Date().toISOString().slice(0, 10);
