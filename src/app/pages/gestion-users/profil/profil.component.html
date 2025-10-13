@@ -73,6 +73,17 @@
             <div class="modal-body">
                 <div class="block-content fs-sm">
                   <div class="mb-4">
+                    <label class="form-label" for="code">Code</label>
+                    <input type="text" class="form-control" id="code" formControlName="code" [ngClass]="{'is-invalid': isSubmitted && f['code'].errors}">
+                    @if (isSubmitted && f['code'].errors) {
+                        <div class="invalid-feedback">
+                          @if (f['code'].errors['required']) {
+                            <div>Le code est obligatoire</div>
+                          }
+                        </div>
+                      }
+                  </div>
+                  <div class="mb-4">
                     <label class="form-label" for="nom">Nom</label>
                     <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                     @if (isSubmitted && f['nom'].errors) {

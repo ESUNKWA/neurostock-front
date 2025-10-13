@@ -194,7 +194,13 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               render: (data: any) => {
                 if (!data) return '';
                 const date = new Date(data);
-                return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+                return `${date.getDate().toString().padStart(2, '0')}/` +
+                      `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
+                      `${date.getFullYear()} ` +
+                      ` à ${date.getHours().toString().padStart(2, '0')}:` +
+                      `${date.getMinutes().toString().padStart(2, '0')}:` +
+                      `${date.getSeconds().toString().padStart(2, '0')}`;
+
               }
             },
             { 
@@ -392,9 +398,13 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     this.getDetailsVente(vente.id);
     
     // Formater la date de vente
-    const dateVente = vente.date_vente ? new Date(vente.date_vente) : null;
+    const dateVente = vente.created_at ? new Date(vente.created_at) : null;
+
     const dateFormatee = dateVente ? 
-      `${dateVente.getDate().toString().padStart(2, '0')}/${(dateVente.getMonth() + 1).toString().padStart(2, '0')}/${dateVente.getFullYear()}` : 
+      `${dateVente.getDate().toString().padStart(2, '0')}/${(dateVente.getMonth() + 1).toString().padStart(2, '0')}/${dateVente.getFullYear()}` +
+                      ` à ${dateVente.getHours().toString().padStart(2, '0')}:` +
+                      `${dateVente.getMinutes().toString().padStart(2, '0')}:` +
+                      `${dateVente.getSeconds().toString().padStart(2, '0')}`: 
       'Non définie';
     
     // Formater le montant

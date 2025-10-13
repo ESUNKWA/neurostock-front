@@ -41,6 +41,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
 
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.profilForm = this.fb.group({
+      code: ['', Validators.required],
       nom: ['', [Validators.required]],
       description: ['', []]
     })

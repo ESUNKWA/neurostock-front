@@ -50,6 +50,7 @@ export class SidebarComponent implements OnInit {
     
     // Si l'utilisateur a un profil restreint
     if (restrictedProfiles.includes(this.currentUserProfile)) {
+      
       // 1. Filtrer la section "Gestion des utilisateurs"
       this.filteredMenu = this.filteredMenu.filter((menuItem: any) => 
         menuItem.titre !== 'Gestion des utilisateurs'

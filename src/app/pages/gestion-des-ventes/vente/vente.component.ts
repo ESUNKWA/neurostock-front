@@ -17,6 +17,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './vente.component.scss'
 })
 export default class VenteComponent implements OnInit {
+
   venteForm!: FormGroup;
   modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte'];
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
@@ -64,15 +65,24 @@ export default class VenteComponent implements OnInit {
     
     this.venteForm = this.fb.group({
       user: [userId, Validators.required],
-      libelle: ['', Validators.required],
+      libelle: [''],
       description: [''],
       boutique: [boutiqueId, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
       date_vente: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
       statut: ['payer', Validators.required],
-      detail_vente: this.fb.array([])
+      detail_vente: this.fb.array([]),
+      clientdata: this.fb.group({
+        nom: [],
+        telephone: [],
+        email: [],
+      })
     });
+  }
+
+  get detail_vente(): FormArray {
+    return this.venteForm.get('detail_vente') as FormArray;
   }
 
   checkForEditData(): void {
@@ -108,6 +118,22 @@ export default class VenteComponent implements OnInit {
       // Si pas en mode édition, ajouter un détail de vente par défaut
       this.addDetailVente();
     }
+  }
+
+  selectProduit(event: Event, index: number) {
+    const idProduit = Number((event.target as HTMLSelectElement).value);
+    const produit = this.produits.find(p => p.id === idProduit);
+
+    if (produit) {
+      const ligne = this.detail_vente.at(index) as FormGroup;
+      ligne.patchValue({ 
+        prix_unitaire_vente: produit.prix_vente,
+        image: produit.imageUrl,
+        stock: produit.stock_disponible
+      });
+      console.log(produit);
+    }
+    
   }
 
   populateFormWithEditData(): void {
@@ -180,6 +206,9 @@ export default class VenteComponent implements OnInit {
 
   createDetailVente(): FormGroup {
     return this.fb.group({
+      image: [''],
+      stock:[],
+      image_produit: [],
       produit: [null, Validators.required],
       prix_unitaire_vente: [null, [Validators.required, Validators.min(0)]],
       quantite: [null, [Validators.required, Validators.min(1)]]
@@ -289,6 +318,7 @@ export default class VenteComponent implements OnInit {
       // Sinon, création d'une nouvelle vente
       this.createVente();
     }
+
   }
   
   createVente(): void {
@@ -300,6 +330,10 @@ export default class VenteComponent implements OnInit {
           this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
           this.toastr.success('Enregistrement effectué avec succès');
           this.isSubmitting = false;
+          // attendre 3 secondes avant de recharger la page
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
         },
         error: (error: any) => {
           console.error('Erreur lors de la création de la vente', error);

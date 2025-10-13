@@ -83,13 +83,17 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold text-uppercase">Détails de la vente</h5>
+        <h5 class="modal-title fw-bold">Détails vente - Réf:<span class="text-danger"> {{ventes[0]?.reference}} </span>&nbsp;&nbsp;&nbsp;&nbsp; Total: <span class="text-success" >{{ventes[0]?.montant_total| number:'1.0-0' }} FCFA</span> </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row">
+
+          <div class="col-md-12 text-success"><p>Cette vente a été enregistré par: <span class="text-primary fw-bold" >{{ventes[0]?.user?.nom}} {{ventes[0]?.user?.prenoms}}</span></p></div>
+
           <div class="col-md-6">
             <div class="card">
+
               <div class="card-header bg-light">
                 <h5 class="card-title mb-0 text-uppercase">Informations générales</h5>
               </div>

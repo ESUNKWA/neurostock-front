@@ -1,0 +1,161 @@
+:host ::ng-deep .stock-alert-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px;
+}
+
+:host ::ng-deep .stock-alert {
+  position: relative;
+}
+
+/* Cloche animée 🔔 */
+:host ::ng-deep .bell-icon {
+  font-size: 48px;
+  color: #ff3b30;
+  animation: swing 1.2s ease-in-out infinite;
+  transform-origin: top center;
+  display: inline-block;
+}
+
+/* Petit badge rouge 🔴 */
+:host ::ng-deep .bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background-color: red;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Message d'alerte 🚨 */
+:host ::ng-deep .alert-message {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 500;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.8s ease-out;
+}
+
+/* Animation du balancement gauche-droite */
+@keyframes swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(20deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-20deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Animation d'apparition du message */
+@keyframes slideIn {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.top-ventes-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin: 0px 0;
+}
+
+.top-ventes-container h3 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.top-ventes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-ventes-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rank {
+  width: 24px;
+  font-weight: bold;
+  color: #ff8c00;
+}
+
+.product-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.product-name {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+.bar-container {
+  flex: 3;
+  background-color: #f0f0f0;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ff8c00, #ffd700);
+  border-radius: 6px;
+}
+
+.quantites {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 90px;
+}
+
+.quantite, .total-vente {
+  font-weight: 500;
+  color: #555;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}

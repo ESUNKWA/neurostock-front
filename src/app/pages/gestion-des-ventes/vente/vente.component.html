@@ -12,16 +12,189 @@
     </div>
 </div>
 
-<hr>
-
 <section class="section">
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">{{ isEditMode ? 'Modification d\'une vente' : 'Enregistrement d\'une nouvelle vente' }}</h5>
+
+
       
       <form novalidate class="row g-3" [formGroup]="venteForm" (ngSubmit)="onSubmit()">
+
+        <div class="row">
+
+          <div class="col-md-8">
+            <h5  class="mb-3">Détails de la vente</h5>
+            
+            <div formArrayName="detail_vente">
+              <div *ngFor="let detail of detailVente.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-vente-item">
+
+                @if (detail.get('image')?.value) {
+                  <div class="col-md-2">
+                      <div class="image-produit" *ngIf="detail.get('image')?.value">
+                      <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
+                      <p class="stock-info">
+                        🏷️ Stock disponible : 
+                        <strong>{{ detail.get('stock')?.value }}</strong>
+                      </p>
+                    </div>
+                  </div>
+                }
+
+                <div class="col">
+                  <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
+                  <select class="form-select" [id]="'produit_' + i" formControlName="produit"
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}" (change)="selectProduit($event,i)">
+                    <option [ngValue]="null" disabled>---Sélectionnez un produit---</option>
+                    <option *ngFor="let produit of produits" [value]="produit.id">
+                      {{ produit.nom }}
+                    </option>
+                  </select>
+                  
+                  @if (isSubmitting && detail.get('produit')?.errors) {
+                    <div class="invalid-feedback">
+                      @if (detail.get('produit')?.errors?.['required']) {
+                        <span>Le produit est requis.</span>
+                      }
+                    </div>
+                  }
+                </div>
+                
+                <div class="col">
+                  <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire_vente" 
+                        (input)="onPrixOuQuantiteChange()"
+                        [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
+                  @if (isSubmitting && detail.get('prix_unitaire_vente')?.errors) {
+                    <div class="invalid-feedback">
+                      @if (detail.get('prix_unitaire_vente')?.errors?.['required']) {
+                        <span>Le prix unitaire est requis.</span>
+                      }
+                      @if (detail.get('prix_unitaire_vente')?.errors?.['min']) {
+                        <span>Le prix unitaire doit être supérieur à 0.</span>
+                      }
+                    </div>
+                  }
+                </div>
+                
+                <div class="col-md-2">
+                  <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
+                        (input)="onPrixOuQuantiteChange()"
+                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
+                  @if (isSubmitting && detail.get('quantite')?.errors) {
+                    <div class="invalid-feedback">
+                      @if (detail.get('quantite')?.errors?.['required']) {
+                        <span>La quantité est requise.</span>
+                      }
+                      @if (detail.get('quantite')?.errors?.['min']) {
+                        <span>La quantité doit être supérieure à 0.</span>
+                      }
+                    </div>
+                  }
+                </div>
+                
+                <div class="col-md-1 mt-5">
+                  <button type="button" class="btn btn-danger" (click)="removeDetailVente(i)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="text-center mb-3" *ngIf="detailVente.length === 0">
+                <p class="text-muted">Aucun produit ajouté. Utilisez le bouton ci-dessous pour ajouter des produits à la vente.</p>
+              </div>
+              
+              <div class="col-12 mb-3">
+                <button type="button" class="btn btn-primary" (click)="addDetailVente()">
+                  <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+                </button>
+              </div>
+            </div>
+
+            <div class="col-md-6 offset-md-6">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h5 class="card-title">Montant total</h5>
+                  <div class="input-group">
+                    <span class="input-group-text">FCFA</span>
+                    <input type="text" class="form-control" formControlName="montant_total" readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+
+          <div class="col-md-4">
+
+
+            <div class="row mt-5">
+                  <div class="col-md-12">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
+                  </div>
+                    
+                  <div class="col">
+                    <label for="mode_paiement" class="form-label">Mode de paiement <span class="text-danger">*</span></label>
+                    <select class="form-select" id="mode_paiement" formControlName="mode_paiement" [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+                      <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
+                    </select>
+                    @if (isSubmitting && f['mode_paiement'].errors) {
+                      <div class="invalid-feedback">
+                        @if (f['mode_paiement'].errors['required']) {
+                          <div>Le mode de paiement est requis</div>
+                        }
+                      </div>
+                    }
+                  </div>
+            
+                  <div class="col-md-6">
+                    <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
+                    <select class="form-select" id="statut" formControlName="statut" [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
+                      <option *ngFor="let statut of statuts" [value]="statut">
+                        {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : 'Paiement partiel' }}
+                      </option>
+                    </select>
+                    @if (isSubmitting && f['statut'].errors) {
+                      <div class="invalid-feedback">
+                        @if (f['statut'].errors['required']) {
+                          <div>Le statut est requis</div>
+                        }
+                      </div>
+                    }
+                  </div>
+
+              </div>
+
+
+              <div formGroupName="clientdata">
+                <div class="col">
+                  <label for="nom" class="form-label">Nom du client<span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="nom">
+                </div>
+                <div class="col">
+                  <label for="telephone" class="form-label">Numéro de téléphone<span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" formControlName="telephone">
+                </div>
+                <div class="col">
+                  <label for="email" class="form-label">Email<span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="email">
+                </div>
+              </div>
+
+          </div>
+
+        </div>
+
+
+
+
+
+
+
         <!-- Informations générales -->
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
+        <!-- <div hidden [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
           <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
           @if (isSubmitting && f['libelle'].errors) {
@@ -33,7 +206,7 @@
           }
         </div>
         
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
+        <div hidden [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
           <label for="date_vente" class="form-label">Date de vente <span class="text-danger">*</span></label>
           <input type="date" class="form-control" id="date_vente" formControlName="date_vente" [ngClass]="{'is-invalid': isSubmitting && f['date_vente'].errors}">
           @if (isSubmitting && f['date_vente'].errors) {
@@ -62,122 +235,11 @@
               </div>
             }
           </div>
-        }
-
+        } -->
         
-        <div class="col-md-12">
-          <label for="description" class="form-label">Description</label>
-          <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
-        </div>
-                
-        <div class="col-md-6">
-          <label for="mode_paiement" class="form-label">Mode de paiement <span class="text-danger">*</span></label>
-          <select class="form-select" id="mode_paiement" formControlName="mode_paiement" [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
-            <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
-          </select>
-          @if (isSubmitting && f['mode_paiement'].errors) {
-            <div class="invalid-feedback">
-              @if (f['mode_paiement'].errors['required']) {
-                <div>Le mode de paiement est requis</div>
-              }
-            </div>
-          }
-        </div>
         
-        <div class="col-md-6">
-          <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
-          <select class="form-select" id="statut" formControlName="statut" [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
-            <option *ngFor="let statut of statuts" [value]="statut">
-              {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : 'Paiement partiel' }}
-            </option>
-          </select>
-          @if (isSubmitting && f['statut'].errors) {
-            <div class="invalid-feedback">
-              @if (f['statut'].errors['required']) {
-                <div>Le statut est requis</div>
-              }
-            </div>
-          }
-        </div>
         
-        <div class="col-md-12">
-          <hr>
-          <h5>Détails de la vente</h5>
-          
-          <div formArrayName="detail_vente">
-            <div *ngFor="let detail of detailVente.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-vente-item">
-              <div class="col-md-5">
-                <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                <select class="form-select" [id]="'produit_' + i" formControlName="produit"
-                    [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                  <option [ngValue]="null" disabled>Sélectionnez un produit</option>
-                  <option *ngFor="let produit of produits" [ngValue]="produit.id">
-                    {{ produit.nom }}
-                  </option>
-                </select>
-                @if (isSubmitting && detail.get('produit')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('produit')?.errors?.['required']) {
-                      <span>Le produit est requis.</span>
-                    }
-                  </div>
-                }
-              </div>
-              
-              <div class="col-md-3">
-                <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire_vente" 
-                      (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
-                @if (isSubmitting && detail.get('prix_unitaire_vente')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('prix_unitaire_vente')?.errors?.['required']) {
-                      <span>Le prix unitaire est requis.</span>
-                    }
-                    @if (detail.get('prix_unitaire_vente')?.errors?.['min']) {
-                      <span>Le prix unitaire doit être supérieur à 0.</span>
-                    }
-                  </div>
-                }
-              </div>
-              
-              <div class="col-md-3">
-                <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
-                      (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
-                @if (isSubmitting && detail.get('quantite')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('quantite')?.errors?.['required']) {
-                      <span>La quantité est requise.</span>
-                    }
-                    @if (detail.get('quantite')?.errors?.['min']) {
-                      <span>La quantité doit être supérieure à 0.</span>
-                    }
-                  </div>
-                }
-              </div>
-              
-              <div class="col-md-1 mt-5">
-                <button type="button" class="btn btn-danger" (click)="removeDetailVente(i)">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-            
-            <div class="text-center mb-3" *ngIf="detailVente.length === 0">
-              <p class="text-muted">Aucun produit ajouté. Utilisez le bouton ci-dessous pour ajouter des produits à la vente.</p>
-            </div>
-            
-            <div class="col-12 mb-3">
-              <button type="button" class="btn btn-primary" (click)="addDetailVente()">
-                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-6 offset-md-6">
+        <!-- <div class="col-md-6 offset-md-6">
           <div class="card bg-light">
             <div class="card-body">
               <h5 class="card-title">Montant total</h5>
@@ -187,7 +249,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
         
         <div class="col-12 text-end">
           <button type="submit" class="btn btn-success" [disabled]="loading">

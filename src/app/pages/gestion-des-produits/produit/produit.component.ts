@@ -100,6 +100,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   private initDataTable(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
+        console.log(this.produits);
+        
         $('.js-dataTable-buttons').DataTable({
           data: this.produits,
           columns: [
@@ -120,7 +122,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               render: (data: any) => `${data} FCFA` 
             },
             { 
-              data: 'stock_initial',
+              data: 'stock_disponible',
               render: (data: any) => data 
             },
             { 
