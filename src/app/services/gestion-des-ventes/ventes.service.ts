@@ -14,6 +14,10 @@ export class VentesService {
     return this.http.get(`${this.API_URL}/vente`, { params: body });
   }
 
+  getAllVentesByBoutik(idBoutique: number) {
+    return this.http.get(`${this.API_URL}/vente?boutique=${idBoutique}`);
+  }
+
   getDetailVente(id: any) {
     return this.http.get(`${this.API_URL}/vente/${id}`);
   }

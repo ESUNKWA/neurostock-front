@@ -9,7 +9,21 @@
 </div><!-- End Page Title -->
 
 <section class="section dashboard">
+
+
+
   <div class="row">
+    <div class="col-md-4">
+        <select class="form-select" id="mySelect">
+          <option value="">Sélectionner une boutique</option>
+          @for (boutique of boutiques; track boutique.id) {
+            <option [value]="boutique.id">{{ boutique.nom }}</option>
+          }
+        </select>
+    </div>
+  </div>
+
+  <div class="row mt-3">
 
     <!-- Left side columns -->
     <div class="col-lg-8">
@@ -129,84 +143,54 @@
             </div>
 
           </div>
+
+          
         </div><!-- End Reports -->
 
         <!-- Recent Sales -->
-        <div class="col-12" hidden>
-          <div class="card recent-sales overflow-auto">
-
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6>Filter</h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Today</a></li>
-                <li><a class="dropdown-item" href="#">This Month</a></li>
-                <li><a class="dropdown-item" href="#">This Year</a></li>
-              </ul>
+        <div class="col-12">
+          <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-danger text-white d-flex align-items-center justify-content-between">
+              <h5 class="mb-0">📉 Produits les moins vendus du mois</h5>
             </div>
-
             <div class="card-body">
-              <h5 class="card-title">Recent Sales <span>| Today</span></h5>
+              <div class="row" *ngIf="stats?.dash?.vente?.dix_moins_vendu?.length; else noData">
+                <div 
+                  class="col-md-6 col-lg-4 mb-3" 
+                  *ngFor="let produit of stats.dash.vente?.dix_moins_vendu"
+                >
+                  <div class="card border-light shadow-sm p-2 d-flex flex-row align-items-center">
+                    <img 
+                      [src]="'http://localhost:3000/' + produit.image" 
+                      alt="{{ produit.nom }}" 
+                      class="rounded me-3" 
+                      style="object-fit: cover; width: 80px; height: 80px;"
+                    >
+                    <div class="card-body p-0">
+                      <h6 class="card-title text-dark mb-1">{{ produit.nom }}</h6>
+                      <p class="mb-1 small">
+                        <strong>Quantité vendue :</strong> 
+                        <span class="text-danger">{{ produit.quantite_vendue || 0 }}</span>
+                      </p>
+                      <p class="mb-0 small">
+                        <strong>Montant total :</strong> 
+                        <span>{{ produit.montant_total | number:'1.0-0' }} F CFA</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <table class="table table-borderless datatable">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Customer</th>
-                    <th scope="col">Product</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row"><a href="#">#2457</a></th>
-                    <td>Brandon Jacob</td>
-                    <td><a href="#" class="text-primary">At praesentium minu</a></td>
-                    <td>$64</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><a href="#">#2147</a></th>
-                    <td>Bridie Kessler</td>
-                    <td><a href="#" class="text-primary">Blanditiis dolor omnis similique</a></td>
-                    <td>$47</td>
-                    <td><span class="badge bg-warning">Pending</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><a href="#">#2049</a></th>
-                    <td>Ashleigh Langosh</td>
-                    <td><a href="#" class="text-primary">At recusandae consectetur</a></td>
-                    <td>$147</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><a href="#">#2644</a></th>
-                    <td>Angus Grady</td>
-                    <td><a href="#" class="text-primar">Ut voluptatem id earum et</a></td>
-                    <td>$67</td>
-                    <td><span class="badge bg-danger">Rejected</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><a href="#">#2644</a></th>
-                    <td>Raheem Lehner</td>
-                    <td><a href="#" class="text-primary">Sunt similique distinctio</a></td>
-                    <td>$165</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                  </tr>
-                </tbody>
-              </table>
-
+              <ng-template #noData>
+                <p class="text-muted text-center mt-3">Aucune donnée de vente pour ce mois.</p>
+              </ng-template>
             </div>
-
           </div>
-        </div><!-- End Recent Sales -->
+        </div>
+<!-- End Recent Sales -->
 
         <!-- Top Selling -->
-        <div class="col-12" hidden>
+        <div class="col-12" >
           <div class="card top-selling overflow-auto">
 
             <div class="filter">
@@ -347,6 +331,7 @@
             </ul>
 
         </div>
+
 
       <!-- Website Traffic -->
       <div class="card" hidden>

@@ -1,7 +1,7 @@
-import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -50,7 +50,25 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     }
   }
 
+   ngAfterViewInit() {
+    // Initialisation de Select2
+    ($('#mySelect') as any).select2({
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true,
+      width: 'resolve',
+    });
+
+    // Gérer les changements
+    ($('#mySelect') as any).on('change', (e: any) => {
+      const idBoutique = ($('#mySelect') as any).val();
+      this.idBoutique = parseInt(idBoutique);
+    this.loadVentes();
+    });
+  }
+
   ngOnDestroy(): void {
+    // Nettoyage pour éviter les fuites mémoire
+    ($('#mySelect') as any).select2('destroy');
     this.destroyDataTable();
   }
 
@@ -61,7 +79,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (this.currentUser.profil.code.toLowerCase() == 'admin' || this.currentUser.profil.code.toLowerCase() == 'gerant') {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
@@ -77,19 +95,20 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     }
   }
 
-  onBoutiqueChange(event: Event): void {
+  /* onBoutiqueChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     this.idBoutique = parseInt(selectElement.value);
     this.loadVentes();
-  }
+  } */
 
   /**
    * Recharge les données et rafraîchit le tableau
    */
   loadVentes(): void {
     this.isLoading = true;
-
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    console.log(this.idBoutique);
+    
+    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'gerant') {
       if (!this.idBoutique) {
         this.ventes = [];
         this.isLoading = false;

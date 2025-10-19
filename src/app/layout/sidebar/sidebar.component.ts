@@ -31,7 +31,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user && user.profil) {
-        this.currentUserProfile = user.profil.nom?.toLowerCase() || '';
+        this.currentUserProfile = user.profil.code?.toLowerCase() || '';
         this.filterMenuByProfile();
       } else {
         this.filteredMenu = this.menu;
@@ -43,7 +43,7 @@ export class SidebarComponent implements OnInit {
    * Filtre les éléments du menu en fonction du profil de l'utilisateur
    */
   filterMenuByProfile(): void {
-    const restrictedProfiles = ['gestionnaire de vente', 'gestionnaire des achats', 'autres'];
+    const restrictedProfiles = ['user', 'autre'];
     
     // Clone du menu original
     this.filteredMenu = JSON.parse(JSON.stringify(this.menu));

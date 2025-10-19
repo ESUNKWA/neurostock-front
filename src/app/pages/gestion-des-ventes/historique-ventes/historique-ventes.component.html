@@ -15,6 +15,8 @@
 
 <hr>
 
+
+
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
@@ -31,19 +33,19 @@
                       </div>
                     </div>
                 </div>
-                @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <select class="form-select" (change)="onBoutiqueChange($event)">
-                              <option value="">Sélectionner une boutique</option>
-                              @for (boutique of boutiques; track boutique.id) {
-                                <option [value]="boutique.id">{{ boutique.nom }}</option>
-                              }
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'gerant') {
+                  <div class="card-body mt-3">
+                      <div class="row">
+                          <div class="col-md-4">
+                              <select class="form-select" id="mySelect">
+                                <option value="">Sélectionner une boutique</option>
+                                @for (boutique of boutiques; track boutique.id) {
+                                  <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                }
+                              </select>
+                          </div>
+                      </div>
+                  </div>
                 }
                 <div class="card-body">
                   @if (isLoading) {
@@ -54,8 +56,14 @@
                     </div>
                   }
                   <hr>
+
+                  <select class="form-select" id="mySelect" hidden>
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                  </select>
                   <!-- DataTable avec colonnes fixes -->
-                  <div class="table-responsive">
+                  <div class="table-responsive mt-4">
                     <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                       <thead>
                         <tr>
@@ -80,7 +88,7 @@
 
 <!-- Modal pour visualiser les détails d'une vente -->
 <div class="modal fade" id="modal-view-details" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Détails vente - Réf:<span class="text-danger"> {{ventes[0]?.reference}} </span>&nbsp;&nbsp;&nbsp;&nbsp; Total: <span class="text-success" >{{ventes[0]?.montant_total| number:'1.0-0' }} FCFA</span> </h5>

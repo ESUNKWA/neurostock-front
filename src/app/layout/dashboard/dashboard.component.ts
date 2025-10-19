@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoaderService } from '../../services/loader/loader.service';
 import { Chart, registerables} from 'chart.js';
 import { DashService } from '../../services/dash/dash.service';
+import { BoutiqueService } from '../../services/boutique/boutique.service';
+import { AuthService } from '../../services/auth/auth.service';
+
+declare var $: any;
 
 Chart.register(...registerables);
 
@@ -33,6 +37,15 @@ export default class DashboardComponent implements OnInit{
     { mois: 'Décembre', montant: 350000 }
   ];
 
+  
+  boutiques: any = [];
+  idBoutique: number = 0;
+  currentUser: any = {};
+
+  boutiqueService = inject(BoutiqueService);
+  authService = inject(AuthService);
+  chart: Chart | null = null; // 👈 stocke l’instance du graphique
+
   constructor(private loaderService: LoaderService, private dashService: DashService) {
     this.loaderService.showLoading();
     setTimeout(() => {
@@ -42,16 +55,42 @@ export default class DashboardComponent implements OnInit{
 
 
   ngOnInit(): void {
-    this.loadStats();
+    this.getCurrentUser();
+    this.loadBoutiques();
+  }
+
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user: any) => {
+      this.currentUser = user;
+    });
+  }
+
+  loadBoutiques(): void {
+    if (this.currentUser.profil.code.toLowerCase() == 'admin' || this.currentUser.profil.code.toLowerCase() == 'gerant') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
+    }
   }
 
   loadStats(): void {
-    const boutiqueId = 3;
+    const boutiqueId = this.idBoutique;
     this.dashService.find(boutiqueId).subscribe({
       next: (response) => {
         
         this.stats = response;
          this.ventesParMois = this.stats.dash.vente_par_mois;
+         console.log(this.stats?.dash);
+         
         this.createChart();
       },
       error: (err) => {
@@ -61,8 +100,20 @@ export default class DashboardComponent implements OnInit{
   }
 
 
-   ngAfterViewInit(): void {
-    
+   ngAfterViewInit() {
+    // Initialisation de Select2
+    ($('#mySelect') as any).select2({
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true,
+      width: 'resolve',
+    });
+
+    // Gérer les changements
+    ($('#mySelect') as any).on('change', (e: any) => {
+      const idBoutique = ($('#mySelect') as any).val();
+      this.idBoutique = parseInt(idBoutique);
+      this.loadStats();
+    });
   }
 
   createChart(): void {
@@ -72,7 +123,12 @@ export default class DashboardComponent implements OnInit{
       return;
     }
 
-    new Chart(ctx, {
+    // ✅ Détruire le graphique précédent s’il existe
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    this.chart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: this.ventesParMois.map(v => v.mois), // noms des mois

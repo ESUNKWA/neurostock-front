@@ -31,11 +31,11 @@
             </div>
           </div>
         </div>
-        @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'gerant') {
           <div class="card-body">
               <div class="row">
                   <div class="col-md-4">
-                      <select class="form-select" (change)="onBoutiqueChange($event)">
+                      <select class="form-select" id="mySelect" (change)="onBoutiqueChange($event)">
                         <option value="">Sélectionner une boutique</option>
                         @for (boutique of boutiques; track boutique.id) {
                           <option [value]="boutique.id">{{ boutique.nom }}</option>
@@ -81,7 +81,7 @@
 
 <!-- Modal pour visualiser les détails d'un achat -->
 <div class="modal fade" id="modal-view-details" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold text-uppercase">Détails de l'approvisionnement</h5>

@@ -38,7 +38,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadBoutiques();
-    this.loadAchats();
+    //this.loadAchats();
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
     if (isPlatformBrowser(this.platformId)) {
@@ -81,6 +81,22 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     const selectElement = event.target as HTMLSelectElement;
     this.idBoutique = parseInt(selectElement.value);
     this.loadAchats();
+  }
+
+  ngAfterViewInit() {
+    // Initialisation de Select2
+    ($('#mySelect') as any).select2({
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true,
+      width: 'resolve',
+    });
+
+    // Gérer les changements
+    ($('#mySelect') as any).on('change', (e: any) => {
+      const idBoutique = ($('#mySelect') as any).val();
+      this.idBoutique = parseInt(idBoutique);
+    this.loadAchats();
+    });
   }
 
   /**
