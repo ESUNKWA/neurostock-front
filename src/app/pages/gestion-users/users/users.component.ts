@@ -314,6 +314,7 @@ export class UsersComponent {
    * Initialise une instance DataTable
    */
   private initDataTable(): void {
+    
     if (isPlatformBrowser(this.platformId)) {
       try {
         $('.js-dataTable-buttons').DataTable({
@@ -331,12 +332,32 @@ export class UsersComponent {
             { 
               data: 'profil',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.nom || 'Non définie' 
+              render: (data: any) => {
+                if (!data) return '<span class="badge bg-secondary">Non défini</span>';
+
+                let badgeClass = 'bg-secondary';
+                switch (data.code) {
+                  case 'admin':
+                    badgeClass = 'bg-danger'; // rouge
+                    break;
+                  case 'responsable_structure':
+                    badgeClass = 'bg-primary'; // bleu
+                    break;
+                  case 'gerant':
+                    badgeClass = 'bg-success'; // vert
+                    break;
+                  case 'user':
+                    badgeClass = 'bg-warning text-dark'; // jaune
+                    break;
+                }
+
+                return `<span class="badge ${badgeClass}">${data.nom}</span>`;
+              }
             },
             { 
               data: 'boutique',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data?.nom || 'Non définie' 
+              render: (data: any) => data?.nom || '-' 
             },
             { 
               data: 'created_at',

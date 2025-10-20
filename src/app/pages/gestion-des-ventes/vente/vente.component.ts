@@ -8,6 +8,7 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+declare var $: any;
 
 @Component({
   selector: 'app-vente',
@@ -50,6 +51,27 @@ export default class VenteComponent implements OnInit {
     
     // Vérifier s'il y a des données d'édition dans le localStorage
     this.checkForEditData();
+  }
+
+  ngAfterViewInit() {
+    // Initialisation de Select2
+    ($('.mySelect') as any).select2({
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true,
+      width: 'resolve',
+    });
+
+    // Gérer les changements
+    // Événement change sur le dernier select uniquement
+    // Event delegation : écoute tous les select, même futurs
+    $(document).on('change', '.mySelect', (e: any) => {
+      const select = $(e.target);
+      const idProduit = select.val();
+      const index = select.closest('.detail-vente-item').index();
+
+      this.selectProduit(idProduit, index);
+    });
+    
   }
 
   getCurrentUser() {
@@ -120,21 +142,26 @@ export default class VenteComponent implements OnInit {
     }
   }
 
-  selectProduit(event: Event, index: number) {
-    const idProduit = Number((event.target as HTMLSelectElement).value);
-    const produit = this.produits.find(p => p.id === idProduit);
-
+  selectProduit(id_produit: number, index: number) {
+    const idProduit = id_produit;
+   
+    const produit = this.produits.find(p => p.id === +idProduit);
     if (produit) {
       const ligne = this.detail_vente.at(index) as FormGroup;
+      console.log(ligne.value);
+      
       ligne.patchValue({ 
+        produit: produit.id,
         prix_unitaire_vente: produit.prix_vente,
         image: produit.imageUrl,
         stock: produit.stock_disponible
       });
-      console.log(produit);
+     
     }
     
   }
+
+
 
   populateFormWithEditData(): void {
     if (!this.editVenteData || !this.editVenteData.vente) return;
@@ -218,6 +245,19 @@ export default class VenteComponent implements OnInit {
   addDetailVente(): void {
     this.detailVente.push(this.createDetailVente());
     this.calculerMontantTotal();
+
+    // Attendre que Angular rende la nouvelle ligne
+    setTimeout(() => {
+      const selects = $('.mySelect');          // tous les selects
+      const lastSelect = selects[selects.length - 1]; // dernier select ajouté
+      $(lastSelect).select2({
+        placeholder: 'Sélectionnez une boutique',
+        allowClear: true,
+        width: 'resolve',
+      });
+
+      
+    }, 0);
   }
 
   removeDetailVente(index: number): void {
@@ -270,16 +310,19 @@ export default class VenteComponent implements OnInit {
     if (!this.currentUser) {
       return;
     }
-    
-    if (this.currentUser.profil && 
-       (this.currentUser.profil.description.toLowerCase() === 'administrateur' || 
-        this.currentUser.profil.description.toLowerCase() === 'responsable structure')) {
+    console.log(this.currentUser);
+   
+    this.selectedBoutique = this.currentUser.boutique.id.toString();
+     console.log('btk',this.selectedBoutique);
+     
+    if (this.currentUser.profil && (this.currentUser.profil.code.toLowerCase() === 'administrateur' || this.currentUser.profil.code.toLowerCase() === 'responsable structure')) {
       if (!this.selectedBoutique) {
         this.produits = [];
         return;
       }
     } else if (this.currentUser.boutique) {
       this.selectedBoutique = this.currentUser.boutique.id.toString();
+       
     } else {
       // Si aucune boutique n'est disponible
       this.produits = [];

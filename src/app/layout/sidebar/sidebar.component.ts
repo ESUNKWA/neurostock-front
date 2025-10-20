@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth/auth.service';
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent implements OnInit {
-
+  userRole: string = ''; 
   menu = Menu;
   filteredMenu: any[] = [];
   isActive = 'nav-link collapsed';
@@ -32,18 +32,64 @@ export class SidebarComponent implements OnInit {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user && user.profil) {
         this.currentUserProfile = user.profil.code?.toLowerCase() || '';
-        this.filterMenuByProfile();
+        console.log('Profil utilisateur:', this.currentUserProfile);
+        this.filteredMenu = this.filterMenuByRole(this.menu, this.currentUserProfile);
       } else {
         this.filteredMenu = this.menu;
       }
     });
   }
   
+
+  /**
+   * 🔒 Filtrer le menu selon le rôle de l'utilisateur
+   */
+  filterMenuByRole(menu: any[], role: string): any[] {
+    // Clone du menu de base pour éviter les mutations
+    const filteredMenu = JSON.parse(JSON.stringify(menu));
+
+    if (role === 'admin') {
+      return filteredMenu; // L’admin voit tout
+    }
+
+    if (role === 'responsable_structure') {
+      // Retirer les sous-menus Profil et Structure
+      filteredMenu.forEach((section: { menu: any[]; }) => {
+        section.menu?.forEach((item: any) => {
+          if (item.sousMenu) {
+            item.sousMenu = item.sousMenu.filter((s: any) => 
+              s.libelle !== 'Profil' && s.libelle !== 'Structure'
+            );
+          }
+        });
+      });
+    }
+
+    if (role === 'gerant' || role === 'user') {
+      // Supprimer le menu Gestion des utilisateurs et Gestion des boutiques
+      return filteredMenu
+        .filter((section: { titre: string; }) => section.titre !== 'Gestion des utilisateurs' && section.titre !== 'Paramétrages' )
+        .map((section: { menu: any[]; }) => {
+          // Supprimer les sous-menus Catégories et Fournisseurs s’ils existent
+          section.menu?.forEach((item: any) => {
+            if (item.sousMenu) {
+              item.sousMenu = item.sousMenu.filter((s: any) => 
+                s.libelle !== 'Catégories' && s.libelle !== 'Fournisseurs' && s.libelle !== 'Structure'
+              );
+            }
+          });
+          return section;
+        });
+    }
+
+    return filteredMenu;
+  }
+  
   /**
    * Filtre les éléments du menu en fonction du profil de l'utilisateur
    */
   filterMenuByProfile(): void {
-    const restrictedProfiles = ['user', 'autre'];
+    const restrictedProfiles = ['user', 'autre', 'responsable_structure'];
     
     // Clone du menu original
     this.filteredMenu = JSON.parse(JSON.stringify(this.menu));

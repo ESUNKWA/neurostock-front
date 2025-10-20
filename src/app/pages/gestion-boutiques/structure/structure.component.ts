@@ -47,10 +47,16 @@ export class StructureComponent {
     this.structureForm = this.fb.group({
       nom: ['', [Validators.required]],
       telephone: ['', []],
-      rccm: ['', [Validators.required]],
+      rccm: ['', ],
       email: ['', [Validators.required]],
       situation_geo: ['', []],
       logo: [null],
+      responsable: this.fb.group({
+        nom: ['', [Validators.required]],
+        prenoms: ['', [Validators.required]],
+        email: ['', [Validators.required]],
+        mot_de_passe: this.fb.control('12345', { nonNullable: true })
+      })
     })
   }
 
@@ -173,6 +179,16 @@ export class StructureComponent {
       })
     );
   }
+
+
+  get d() {
+  return this.structureForm.controls;
+}
+
+get r() {
+  return (this.structureForm.get('responsable') as FormGroup).controls;
+}
+
   
 
   saveOrUpdate(): void {

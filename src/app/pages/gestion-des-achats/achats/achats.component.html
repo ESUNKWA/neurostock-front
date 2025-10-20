@@ -23,7 +23,7 @@
       
       <form novalidate class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
         <!-- Informations générales -->
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
+        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'gerant' ? 'col-md-4' : 'col-md-6'">
           <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
           @if (isSubmitting && f['libelle'].errors) {
@@ -35,7 +35,7 @@
           }
         </div>
         
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
+        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'gerant' ? 'col-md-4' : 'col-md-6'">
           <label for="date_achat" class="form-label">Date d'achat <span class="text-danger">*</span></label>
           <input type="date" class="form-control" id="date_achat" formControlName="date_achat" [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
           @if (isSubmitting && f['date_achat'].errors) {
@@ -47,10 +47,10 @@
           }
         </div>
 
-        @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
+        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'gerant') {
           <div class="col-md-4">
             <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
-            <select class="form-select" (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">
+            <select class="form-select " (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">
               <option value="">Sélectionner une boutique</option>
               @for (boutique of boutiques; track boutique.id) {
                 <option [value]="boutique.id">{{ boutique.nom }}</option>
@@ -74,7 +74,7 @@
         
         <div class="col-md-4">
           <label for="fournisseur" class="form-label">Fournisseur <span class="text-danger">*</span></label>
-          <select class="form-select" id="fournisseur" formControlName="fournisseur" [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
+          <select class="form-select " id="fournisseur" formControlName="fournisseur" [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
             <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
             <option *ngFor="let fournisseur of fournisseurs" [ngValue]="fournisseur.id">{{ fournisseur.nom }}</option>
           </select>
@@ -89,7 +89,7 @@
         
         <div class="col-md-4">
           <label for="mode_paiement" class="form-label">Mode de paiement <span class="text-danger">*</span></label>
-          <select class="form-select" id="mode_paiement" formControlName="mode_paiement" [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+          <select class="form-select " id="mode_paiement" formControlName="mode_paiement" [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
             <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
           </select>
           @if (isSubmitting && f['mode_paiement'].errors) {
@@ -103,7 +103,7 @@
         
         <div class="col-md-4">
           <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
-          <select class="form-select" id="statut" formControlName="statut" [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
+          <select class="form-select " id="statut" formControlName="statut" [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
             <option *ngFor="let statut of statuts" [value]="statut">
               {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : 'Paiement partiel' }}
             </option>
@@ -123,9 +123,22 @@
           
           <div formArrayName="detail_achat">
             <div *ngFor="let detail of detailAchat.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-achat-item">
-              <div class="col-md-5">
+
+              @if (detail.get('image')?.value) {
+                  <div class="col-md-2">
+                      <div class="image-produit" *ngIf="detail.get('image')?.value">
+                      <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
+                      <p class="stock-info">
+                        🏷️ Stock disponible : 
+                        <strong>{{ detail.get('stock')?.value }}</strong>
+                      </p>
+                    </div>
+                  </div>
+                }
+
+              <div class="col">
                 <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                <select class="form-select" [id]="'produit_' + i" formControlName="produit"
+                <select class="form-select " [id]="'produit_' + i" formControlName="produit"
                     [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
                   <option [ngValue]="null" disabled>Sélectionnez un produit</option>
                   <option *ngFor="let produit of produits" [ngValue]="produit.id">
@@ -141,7 +154,7 @@
                 }
               </div>
               
-              <div class="col-md-3">
+              <div class="col">
                 <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
                 <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire" 
                       (input)="onPrixOuQuantiteChange()"
@@ -158,7 +171,7 @@
                 }
               </div>
               
-              <div class="col-md-3">
+              <div class="col">
                 <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
                 <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
                       (input)="onPrixOuQuantiteChange()"

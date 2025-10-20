@@ -57,6 +57,7 @@ export default class DashboardComponent implements OnInit{
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadBoutiques();
+    
   }
 
   getCurrentUser() {
@@ -66,19 +67,30 @@ export default class DashboardComponent implements OnInit{
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.code.toLowerCase() == 'admin' || this.currentUser.profil.code.toLowerCase() == 'gerant') {
-      this.boutiqueService.find().subscribe({
-        next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
+
+    switch(this.currentUser.profil.code.toLowerCase()){
+
+      case 'admin':
+        
+        this.boutiqueService.find().subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
           }
-        },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des boutiques:', error);
-        }
-      });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
+        });
+        break;
+
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0].boutique;
+      
+        break;
+
+        default:
+          this.boutiques[0] = this.currentUser.boutique;
     }
   }
 
@@ -89,7 +101,6 @@ export default class DashboardComponent implements OnInit{
         
         this.stats = response;
          this.ventesParMois = this.stats.dash.vente_par_mois;
-         console.log(this.stats?.dash);
          
         this.createChart();
       },

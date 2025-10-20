@@ -65,90 +65,143 @@
 
 <!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form [formGroup]="structureForm" (ngSubmit)="saveOrUpdate()" enctype="multipart/form-data" >
-            <div class="modal-body">
-                <div class="block-content fs-sm">
+            <div class="container my-4">
+                    <div class="modal-body">
 
-                    <div class="mb-4">
-                        <label class="form-label" for="nom">Nom de la structure</label>
-                        <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                        @if (isSubmitted && f['nom'].errors) {
-                            <div class="invalid-feedback">
-                                @if (f['nom'].errors['required']) {
-                                <div>Le nom est obligatoire</div>
-                                }
-                            </div>
-                            }
-                    </div>
+                        <fieldset class="border border-success border-2 rounded p-3 mb-3">
+                            <legend class="w-auto px-2"><i class="bi bi-building me-2"></i>Structure</legend>
+                                
+                                <div class="block-content fs-sm">
 
-                    <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label" for="telephone">Téléphone</label>
-                            <input type="text" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
-                            @if (isSubmitted && f['telephone'].errors) {
-                                <div class="invalid-feedback">
-                                    @if (f['telephone'].errors['required']) {
-                                    <div>Le telephone est obligatoire</div>
+                                    <div class="mb-4">
+                                        <label class="form-label" for="nom">Nom de la structure</label>
+                                        <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                                        @if (isSubmitted && f['nom'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['nom'].errors['required']) {
+                                                <div>Le nom est obligatoire</div>
+                                                }
+                                            </div>
+                                            }
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <label class="form-label" for="telephone">Téléphone</label>
+                                            <input type="text" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+                                            @if (isSubmitted && f['telephone'].errors) {
+                                                <div class="invalid-feedback">
+                                                    @if (f['telephone'].errors['required']) {
+                                                    <div>Le telephone est obligatoire</div>
+                                                    }
+                                                </div>
+                                                }
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <label class="form-label" for="email">Adresse email</label>
+                                            <input type="email" class="form-control" id="email" formControlName="email">
+                                        </div>
+                        
+                                        <div class="col-md-4 mb-4">
+                                            <label class="form-label" for="rccm">RCCM</label>
+                                            <input type="text" class="form-control" id="rccm" formControlName="rccm">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label" for="situation_geo">Situation géographique</label>
+                                        <input type="text" class="form-control" id="situation_geo" formControlName="situation_geo">
+                                    </div>
+                                
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label" for="logo">Image du produit</label>
+                                            <input type="file" class="form-control" id="logo" (change)="onFileSelected($event)" accept="logo/*">
+                                            
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Prévisualisation de l'image</label>
+                                            <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                @if (previewImageUrl) {
+                                                    <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                                } @else if (selectedProduit?.image) {
+                                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                                } @else {
+                                                    <div class="text-muted">
+                                                        <i class="bi bi-image" style="font-size: 2rem;"></i>
+                                                        <p class="mb-0 mt-2">Aucune image sélectionnée</p>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                            
+                                </div>
+                        </fieldset>
+
+                        <fieldset class="border border-info border-2 rounded p-3 mb-3" formGroupName="responsable">
+                            <legend class="w-auto px-2"> <i class="bi bi-person-fill me-2"></i> Responsable</legend>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label" for="nom">Nom</label>
+                                    <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && r['nom'].errors}">
+                                    @if (isSubmitted && r['nom'].errors) {
+                                        <div class="invalid-feedback">
+                                        @if (r['nom'].errors['required']) {
+                                            <div>Le nom est obligatoire</div>
+                                        }
+                                        </div>
                                     }
                                 </div>
-                                }
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label" for="email">Adresse email</label>
-                            <input type="email" class="form-control" id="email" formControlName="email">
-                          </div>
-        
-                          <div class="col-md-4 mb-4">
-                            <label class="form-label" for="rccm">RCCM</label>
-                            <input type="text" class="form-control" id="rccm" formControlName="rccm">
-                          </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label" for="situation_geo">Situation géographique</label>
-                        <input type="text" class="form-control" id="situation_geo" formControlName="situation_geo">
-                    </div>
-                  
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" for="logo">Image du produit</label>
-                            <input type="file" class="form-control" id="logo" (change)="onFileSelected($event)" accept="logo/*">
-                            
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Prévisualisation de l'image</label>
-                            <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                                @if (previewImageUrl) {
-                                    <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                } @else if (selectedProduit?.image) {
-                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                } @else {
-                                    <div class="text-muted">
-                                        <i class="bi bi-image" style="font-size: 2rem;"></i>
-                                        <p class="mb-0 mt-2">Aucune image sélectionnée</p>
-                                    </div>
-                                }
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label" for="prenoms">Prenoms</label>
+                                    <input type="text" class="form-control" id="prenoms" formControlName="prenoms" [ngClass]="{'is-invalid': isSubmitted && r['prenoms'].errors}">
+                                    @if (isSubmitted && r['prenoms'].errors) {
+                                        <div class="invalid-feedback">
+                                        @if (r['prenoms'].errors['required']) {
+                                            <div>Le prenoms est obligatoire</div>
+                                        }
+                                        </div>
+                                    }
+                                </div>
                             </div>
+
+                        
+                        <div class="mb-4">
+                            <label class="form-label" for="email">Adresse email</label>
+                            <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+                            @if (isSubmitted && f['email'].errors) {
+                                <div class="invalid-feedback">
+                                @if (f['email'].errors['required']) {
+                                    <div>L'adresse email est obligatoire</div>
+                                }
+                                </div>
+                            }
                         </div>
-                    </div>
-             
+
+                        </fieldset>
+
+
+                        <div class="modal-footer">
+                            @if (!titleModal.includes('VISUALISER')) {
+                                <button type="submit" class="btn btn-primary me-2">
+                                <i [class]="icon"></i> {{ buttonText }}
+                                </button>
+                            }
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+                            </button>
+                        </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                @if (!titleModal.includes('VISUALISER')) {
-                    <button type="submit" class="btn btn-primary me-2">
-                      <i [class]="icon"></i> {{ buttonText }}
-                    </button>
-                  }
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
-                </button>
             </div>
         </form>
       </div>

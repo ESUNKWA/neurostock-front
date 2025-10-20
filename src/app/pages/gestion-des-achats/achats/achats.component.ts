@@ -9,6 +9,7 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
+declare var $: any;
 
 @Component({
   selector: 'app-achats',
@@ -53,6 +54,26 @@ export default class AchatsComponent implements OnInit {
     
     // Vérifier s'il y a des données d'édition dans le localStorage
     this.checkForEditData();
+  }
+
+  ngAfterViewInit() {
+    // Initialisation de Select2
+    ($('.mySelect') as any).select2({
+      placeholder: 'Sélectionnez une boutique',
+      allowClear: true,
+      width: 'resolve',
+    });
+
+    // Gérer les changements
+    // Événement change sur le dernier select uniquement
+    // Event delegation : écoute tous les select, même futurs
+    $(document).on('change', '.mySelect', (e: any) => {
+      const select = $(e.target);
+      const idProduit = select.val();
+      const index = select.closest('.detail-vente-item').index();
+      console.log(idProduit);
+      
+    });
   }
 
   getCurrentUser() {
@@ -183,6 +204,19 @@ export default class AchatsComponent implements OnInit {
   addDetailAchat(): void {
     this.detailAchat.push(this.createDetailAchat());
     this.calculerMontantTotal();
+
+    // Attendre que Angular rende la nouvelle ligne
+    setTimeout(() => {
+      const selects = $('.mySelect');          // tous les selects
+      const lastSelect = selects[selects.length - 1]; // dernier select ajouté
+      $(lastSelect).select2({
+        placeholder: 'Sélectionnez une boutique',
+        allowClear: true,
+        width: 'resolve',
+      });
+
+      
+    }, 0);
   }
 
   removeDetailAchat(index: number): void {
@@ -264,6 +298,7 @@ export default class AchatsComponent implements OnInit {
 
   onSubmit(): void {
     this.isSubmitting = true;
+    console.log("dddd");
     
     if (this.achatForm.invalid) {
       // Marquer tous les champs comme touchés pour afficher les erreurs

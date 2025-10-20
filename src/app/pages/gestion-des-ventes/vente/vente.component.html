@@ -43,8 +43,8 @@
 
                 <div class="col">
                   <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                  <select class="form-select" [id]="'produit_' + i" formControlName="produit"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}" (change)="selectProduit($event,i)">
+                  <select class="form-select mySelect" [id]="'produit_' + i" formControlName="produit"
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}" >
                     <option [ngValue]="null" disabled>---Sélectionnez un produit---</option>
                     <option *ngFor="let produit of produits" [value]="produit.id">
                       {{ produit.nom }}
