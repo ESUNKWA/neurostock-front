@@ -1,10 +1,12 @@
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
+import { AuthService } from '../../../services/auth/auth.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -26,7 +28,14 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   icon: string = 'ri ri-save-3-line';
   fournisseurForm: FormGroup;
   isSubmitted: boolean = false;
+  currentUser: any = {};
+  authService = inject(AuthService);
 
+    boutiques: any = [];
+    idBoutique: number = 0;
+  
+    boutiqueService = inject(BoutiqueService);
+  
   constructor(
     private fb: FormBuilder,
     private fournisseurService: FournisseurService,
@@ -44,8 +53,10 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadFournisseurs();
-
+    this.getCurrentUser();
+    //this.loadFournisseurs();
+    this.loadBoutiques();
+     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -56,8 +67,43 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     }
   }
 
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user: any) => {
+      this.currentUser = user;
+    });
+  }
+
   ngOnDestroy(): void {
     this.destroyDataTable();
+  }
+
+  loadBoutiques(): void {
+    
+    switch(this.currentUser.profil.code.toLowerCase()){
+
+      case 'admin':
+        
+        this.boutiqueService.find().subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
+          }
+        });
+        break;
+
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0].boutique;
+      
+        break;
+
+        default:
+          this.boutiques[0] = this.currentUser.boutique;
+    }
+    
   }
 
   // getter pour un accès facile aux champs du formulaire
@@ -228,10 +274,16 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadFournisseurs(): void {
-    this.isLoading = true;
+  selectFournisseurs(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const fournisseurId = +selectElement.value;
+    this.loadFournisseurs(fournisseurId);
+  }
 
-    this.fournisseurService.getAllFournisseurs().subscribe({
+  loadFournisseurs(id: number): void {
+    this.isLoading = true;
+    
+    this.fournisseurService.getFournisseursByBoutik(id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.fournisseurs = response.data;
@@ -371,6 +423,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     }
 
     let request;
+    this.fournisseurForm.value.boutique = this.currentUser.boutique.id;
     const fournisseur = this.fournisseurForm.value;
     if (this.isEditMode && this.selectedFournisseur) {
       // Mode modification
@@ -400,7 +453,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             'Fournisseur ajouté avec succès');
 
           // Recharger les données sans détruire complètement le tableau
-          this.loadFournisseurs();
+          this.loadFournisseurs(this.currentUser.boutique.id);
 
           // Réinitialiser le formulaire et les états
           this.fournisseurForm.reset();
@@ -439,7 +492,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             if (response.affected === 1) {
               this.toastr.success('Le fournisseur a été supprimé avec succès.');
               // Recharger les données sans détruire complètement le tableau
-              this.loadFournisseurs();
+              this.loadFournisseurs(this.currentUser.boutique.id);
             } else {
               this.toastr.error('Le fournisseur n\'a pas pu être supprimé.');
               this.isLoading = false;

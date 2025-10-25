@@ -81,7 +81,7 @@
                   <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
                   <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
                         (input)="onPrixOuQuantiteChange()"
-                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
+                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}" min="1">
                   @if (isSubmitting && detail.get('quantite')?.errors) {
                     <div class="invalid-feedback">
                       @if (detail.get('quantite')?.errors?.['required']) {

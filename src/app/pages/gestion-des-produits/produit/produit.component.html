@@ -28,19 +28,22 @@
                         </div>
                     </div>
                 </div>
-                @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <select class="form-select" (change)="onBoutiqueChange($event)">
-                                    <option value="">Sélectionner une boutique</option>
-                                    @for (boutique of boutiques; track boutique.id) {
-                                        <option [value]="boutique.id">{{ boutique.nom }}</option>
-                                    }
-                                </select>
+                
+                @if (currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+                   @if (boutiques.length >= 1) {
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select" (change)="onBoutiqueChange($event)">
+                                        <option value="">Sélectionner une boutique</option>
+                                        @for (boutique of boutiques; track boutique.id) {
+                                            <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                   }
                 }
                 <div class="card-body">
                     @if (isLoading) {
@@ -106,8 +109,8 @@
                                     <label class="form-label" for="categorie">Catégorie</label>
                                     <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
                                         <option value="">Sélectionner une catégorie</option>
-                                        @for (categorie of categories; track categorie.id) {
-                                            <option [value]="categorie.id">{{ categorie.nom }}</option>
+                                        @for (categorie of categories; track categorie?.id) {
+                                            <option [value]="categorie?.id">{{ categorie?.nom }}</option>
                                         }
                                     </select>
                                     @if (isSubmitted && f['categorie'].errors) {

@@ -14,6 +14,10 @@ export class CategorieService {
     return this.http.get(`${this.API_URL}/categorie`);
   }
 
+  getCategoriesByBoutik(id: number) {
+    return this.http.get(`${this.API_URL}/categorie/boutique?boutiqueId=${id}`);
+  }
+
   createCategorie(categorie: any) {
     return this.http.post(`${this.API_URL}/categorie`, categorie);
   }

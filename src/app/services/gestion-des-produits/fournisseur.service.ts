@@ -14,6 +14,10 @@ export class FournisseurService {
     return this.http.get(`${this.API_URL}/fournisseur`);
   }
 
+  getFournisseursByBoutik(id: number) {
+    return this.http.get(`${this.API_URL}/fournisseur/boutique?boutiqueId=${id}`);
+  }
+
   addFournisseur(fournisseur: any) {
     return this.http.post(`${this.API_URL}/fournisseur`, fournisseur);
   }

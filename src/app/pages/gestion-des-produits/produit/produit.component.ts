@@ -100,7 +100,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   private initDataTable(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        console.log(this.produits);
         
         $('.js-dataTable-buttons').DataTable({
           data: this.produits,
@@ -239,24 +238,37 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
-      this.boutiqueService.find().subscribe({
-        next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
+
+    switch(this.currentUser.profil.code.toLowerCase()){
+
+      case 'admin':
+        
+        this.boutiqueService.find().subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
           }
-        },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des boutiques:', error);
-        }
-      });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
+        });
+        break;
+
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0].boutique;
+      
+        break;
+
+        default:
+          this.boutiques[0] = this.currentUser.boutique;
     }
+    
   }
 
   loadCategories(): void {
-    this.categorieService.getAllCategories().subscribe({
+    
+    this.categorieService.getCategoriesByBoutik(this.currentUser.boutique.id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.categories = response.data;
@@ -277,7 +289,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   loadProduits(): void {
     this.isLoading = true;
 
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
       if (!this.selectedBoutique) {
         this.produits = [];
         this.isLoading = false;

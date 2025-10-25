@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
+import { AuthService } from '../../../services/auth/auth.service';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -29,7 +30,9 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   icon: string = 'ri ri-save-3-line';
   categorieForm: FormGroup;
   isSubmitted: boolean = false;
-  
+
+   currentUser: any;
+  authService = inject(AuthService);
   constructor(
     private fb: FormBuilder, 
     private categorieService: CategorieService, 
@@ -43,6 +46,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.getCurrentUser();
     // Initialiser les données
     this.loadCategories();
     
@@ -54,6 +58,13 @@ export default class CategorieComponent implements OnInit, OnDestroy {
         });
       }, 500);
     }
+  }
+
+  getCurrentUser() {
+    this.authService.currentUser$.subscribe((user: any) => {
+      this.currentUser = user;
+      // console.log('currentUser', this.currentUser);
+    });
   }
 
   ngOnDestroy(): void {
@@ -214,7 +225,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   loadCategories(): void {
     this.isLoading = true;
     
-    this.categorieService.getAllCategories().subscribe({
+    this.categorieService.getCategoriesByBoutik(this.currentUser.boutique.id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           // Mise à jour des données
@@ -338,6 +349,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     }
 
     let request;
+    this.categorieForm.value.boutique = this.currentUser.boutique.id;
     const categorie = this.categorieForm.value;
     if (this.isEditMode && this.selectedCategorie) {
       // Mode modification

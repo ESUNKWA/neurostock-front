@@ -21,11 +21,26 @@
                         <div class="col-md-6">
                             <h5 class="card-title mb-0 text-uppercase">Liste des fournisseurs</h5>
                         </div>
+                        
                         <div class="col-md-6 text-end">
                             <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
                               <i class="bi bi-plus-circle"></i> Nouveau Fournisseur
                             </button>
                         </div>
+                    </div>
+                    <div class="row">
+                        @if (boutiques.length >= 1) {
+                     
+                            <div class="col-md-4">
+                                <select class="form-select" id="mySelect" (change)="selectFournisseurs($event)" >
+                                    <option value="">Sélectionner une boutique</option>
+                                    @for (boutique of boutiques; track boutique.id) {
+                                    <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                    }
+                                </select>
+                        
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="card-body">

@@ -8,7 +8,7 @@
               <i class="bi bi-house"></i> Accueil
             </a>
           </li>
-          <li class="breadcrumb-item active">Gestion des Approvisionnements</li>
+          <li class="breadcrumb-item active">Approvisionnements</li>
         </ol>
       </nav>
     </div>
@@ -23,7 +23,7 @@
       
       <form novalidate class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
         <!-- Informations générales -->
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'gerant' ? 'col-md-4' : 'col-md-6'">
+        <!-- <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'responsable_structure' ? 'col-md-4' : 'col-md-6'">
           <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
           @if (isSubmitting && f['libelle'].errors) {
@@ -33,9 +33,9 @@
               }
             </div>
           }
-        </div>
+        </div> -->
         
-        <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'gerant' ? 'col-md-4' : 'col-md-6'">
+        <div class="col-md-6">
           <label for="date_achat" class="form-label">Date d'achat <span class="text-danger">*</span></label>
           <input type="date" class="form-control" id="date_achat" formControlName="date_achat" [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
           @if (isSubmitting && f['date_achat'].errors) {
@@ -47,7 +47,7 @@
           }
         </div>
 
-        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'gerant') {
+        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
           <div class="col-md-4">
             <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
             <select class="form-select " (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">

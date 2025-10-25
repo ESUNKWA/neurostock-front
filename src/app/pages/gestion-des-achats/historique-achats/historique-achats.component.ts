@@ -61,19 +61,29 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
-      this.boutiqueService.find().subscribe({
-        next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
+    switch(this.currentUser.profil.code.toLowerCase()){
+
+      case 'admin':
+        
+        this.boutiqueService.find().subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
           }
-        },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des boutiques:', error);
-        }
-      });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
+        });
+        break;
+
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0].boutique;
+      
+        break;
+
+        default:
+          this.boutiques[0] = this.currentUser.boutique;
     }
   }
 

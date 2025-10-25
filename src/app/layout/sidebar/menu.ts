@@ -63,17 +63,17 @@ export const Menu: any = [
         menu: [
             {
                 
-                libelle: 'Gestions des Approvisionnements',
+                libelle: 'Approvisionnements',
                 icon: 'bi bi-cart4',
                 target: 'achats-nav',
                 sousMenu: [
                     {
-                        libelle: 'Approvisionnements',
+                        libelle: 'Nouveau',
                         lien: '/gestion-des-approvisionnements/approvisionnement',
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Historique des Approvisionnements',
+                        libelle: 'Consulter',
                         lien: '/gestion-des-approvisionnements/historique-approvisionnements',
                         icon: 'bi bi-circle'
                     }
@@ -85,7 +85,7 @@ export const Menu: any = [
                 target: 'ventes-nav',
                 sousMenu: [
                     {
-                        libelle: 'Ventes',
+                        libelle: 'Nouvelle ventes',
                         lien: '/gestion-des-ventes/vente',
                         icon: 'bi bi-circle'
                     },

@@ -239,18 +239,32 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
-      this.boutiqueService.find().subscribe({
-        next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
+    
+    switch(this.currentUser.profil.code.toLowerCase()){
+
+      case 'admin':
+        
+        this.boutiqueService.find().subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
           }
-        },
-      });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
-      this.achatForm.patchValue({ boutique: this.currentUser.boutique.id });
+        });
+        break;
+
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0].boutique;
+      
+        break;
+
+        default:
+          this.boutiques[0] = this.currentUser.boutique;
     }
+
   }
 
   onBoutiqueChange(event: Event): void {
@@ -260,7 +274,7 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadFournisseurs(): void {
-    this.fournisseurService.getAllFournisseurs().subscribe({
+    this.fournisseurService.getFournisseursByBoutik(this.currentUser.boutique.id).subscribe({
       next: (response: any) => {
         this.fournisseurs = response.data;
       },
@@ -271,7 +285,7 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadProduits(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (this.currentUser.profil.description.toLowerCase() === 'admin' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
       if (!this.selectedBoutique) {
         this.produits = [];
         return;
@@ -298,7 +312,6 @@ export default class AchatsComponent implements OnInit {
 
   onSubmit(): void {
     this.isSubmitting = true;
-    console.log("dddd");
     
     if (this.achatForm.invalid) {
       // Marquer tous les champs comme touchés pour afficher les erreurs

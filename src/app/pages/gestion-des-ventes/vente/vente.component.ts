@@ -69,7 +69,20 @@ export default class VenteComponent implements OnInit {
       const idProduit = select.val();
       const index = select.closest('.detail-vente-item').index();
 
-      this.selectProduit(idProduit, index);
+      // Vérifier si le produit existe déjà
+      const existe = this.detail_vente.value.some((p: { produit: any; }) => p.produit == idProduit);
+
+      if (!existe) {
+        this.selectProduit(idProduit, index);
+      } else {
+        alert('⚠️ Ce produit existe déjà dans la liste !');
+        return
+      }
+
+      
+
+       console.log(this.detail_vente.value);
+
     });
     
   }
@@ -148,7 +161,7 @@ export default class VenteComponent implements OnInit {
     const produit = this.produits.find(p => p.id === +idProduit);
     if (produit) {
       const ligne = this.detail_vente.at(index) as FormGroup;
-      console.log(ligne.value);
+     
       
       ligne.patchValue({ 
         produit: produit.id,
@@ -310,12 +323,10 @@ export default class VenteComponent implements OnInit {
     if (!this.currentUser) {
       return;
     }
-    console.log(this.currentUser);
    
     this.selectedBoutique = this.currentUser.boutique.id.toString();
-     console.log('btk',this.selectedBoutique);
      
-    if (this.currentUser.profil && (this.currentUser.profil.code.toLowerCase() === 'administrateur' || this.currentUser.profil.code.toLowerCase() === 'responsable structure')) {
+    if (this.currentUser.profil && (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'responsable_structure')) {
       if (!this.selectedBoutique) {
         this.produits = [];
         return;
