@@ -32,7 +32,11 @@ export class SidebarComponent implements OnInit {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user && user.profil) {
         this.currentUserProfile = user.profil.code?.toLowerCase() || '';
+<<<<<<< HEAD
    
+=======
+      
+>>>>>>> develop
         this.filteredMenu = this.filterMenuByRole(this.menu, this.currentUserProfile);
       } else {
         this.filteredMenu = this.menu;

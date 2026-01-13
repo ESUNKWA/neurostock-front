@@ -44,9 +44,9 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   ) {
     this.fournisseurForm = this.fb.group({
       nom: ['', Validators.required],
-      addresse_geo: ['', Validators.required],
+      addresse_geo: [''],
       contact: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', []],
       interlocuteur: ['', Validators.required],
       contact_interlocuteur: ['', Validators.required],
     });

@@ -238,30 +238,19 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-
-    switch(this.currentUser.profil.code.toLowerCase()){
-
-      case 'admin':
-        
-        this.boutiqueService.find().subscribe({
-          next: (response: any) => {
-            if (response.status === 'success' && response.data) {
-              this.boutiques = response.data;
-            }
-          },
-          error: (error: any) => {
-            console.error('Erreur lors du chargement des boutiques:', error);
+    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
           }
-        });
-        break;
-
-      case 'responsable_structure':
-        this.boutiques = this.currentUser.structure[0].boutique;
-      
-        break;
-
-        default:
-          this.boutiques[0] = this.currentUser.boutique;
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
     }
     
   }
@@ -272,6 +261,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.categories = response.data;
+          
         }
       },
       error: (error: any) => {
@@ -324,7 +314,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
-        console.log('error', error);
         this.toastr.error('Erreur lors du chargement des produits');
       }
     });

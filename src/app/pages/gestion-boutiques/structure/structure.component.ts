@@ -46,7 +46,6 @@ export class StructureComponent {
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.structureForm = this.fb.group({
       nom: ['', [Validators.required]],
-      telephone: ['', []],
       rccm: ['', ],
       email: ['', [Validators.required]],
       situation_geo: ['', []],
@@ -55,7 +54,8 @@ export class StructureComponent {
         nom: ['', [Validators.required]],
         prenoms: ['', [Validators.required]],
         email: ['', [Validators.required]],
-        mot_de_passe: this.fb.control('12345', { nonNullable: true })
+        mot_de_passe: this.fb.control('12345', { nonNullable: true }),
+        telephone: ['', []],
       })
     })
   }
@@ -297,11 +297,6 @@ get r() {
             },
             { 
               data: 'email',
-              className: 'd-none d-sm-table-cell',
-              render: (data: any) => data || 'Non définie' 
-            },
-            { 
-              data: 'rccm',
               className: 'd-none d-sm-table-cell',
               render: (data: any) => data || 'Non définie' 
             },
