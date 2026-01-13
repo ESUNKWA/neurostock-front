@@ -100,7 +100,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   private initDataTable(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        console.log(this.produits);
         
         $('.js-dataTable-buttons').DataTable({
           data: this.produits,
@@ -239,7 +238,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable structure') {
+    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
@@ -260,6 +259,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.categories = response.data;
+          
         }
       },
       error: (error: any) => {
@@ -312,7 +312,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
-        console.log('error', error);
         this.toastr.error('Erreur lors du chargement des produits');
       }
     });

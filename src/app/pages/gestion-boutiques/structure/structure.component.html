@@ -47,7 +47,6 @@
                                   <th>nom</th>
                                   <th>telephone</th>
                                   <th class="d-none d-sm-table-cell">email</th>
-                                  <th class="d-none d-sm-table-cell">rccm</th>
                                   <th class="d-none d-sm-table-cell">Date de création</th>
                                   <th class="text-center" style="width: 15%;">Actions</th>
                                 </tr>
@@ -92,33 +91,19 @@
                                             }
                                     </div>
 
-                                    <div class="row">
-                                        <div class="col-md-4 mb-4">
-                                            <label class="form-label" for="telephone">Téléphone</label>
-                                            <input type="text" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
-                                            @if (isSubmitted && f['telephone'].errors) {
-                                                <div class="invalid-feedback">
-                                                    @if (f['telephone'].errors['required']) {
-                                                    <div>Le telephone est obligatoire</div>
-                                                    }
-                                                </div>
-                                                }
-                                        </div>
-                                        <div class="col-md-4 mb-4">
+                                    <div class="row mb-4">
+                                        
+                                        <div class="col-md-4 ">
                                             <label class="form-label" for="email">Adresse email</label>
                                             <input type="email" class="form-control" id="email" formControlName="email">
                                         </div>
-                        
-                                        <div class="col-md-4 mb-4">
-                                            <label class="form-label" for="rccm">RCCM</label>
-                                            <input type="text" class="form-control" id="rccm" formControlName="rccm">
+                                        <div class="col-md-8">
+                                            <label class="form-label" for="situation_geo">Situation géographique</label>
+                                            <input type="text" class="form-control" id="situation_geo" formControlName="situation_geo">
                                         </div>
                                     </div>
                                     
-                                    <div class="mb-4">
-                                        <label class="form-label" for="situation_geo">Situation géographique</label>
-                                        <input type="text" class="form-control" id="situation_geo" formControlName="situation_geo">
-                                    </div>
+                                    
                                 
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -176,17 +161,32 @@
                             </div>
 
                         
-                        <div class="mb-4">
-                            <label class="form-label" for="email">Adresse email</label>
-                            <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
-                            @if (isSubmitted && f['email'].errors) {
-                                <div class="invalid-feedback">
-                                @if (f['email'].errors['required']) {
-                                    <div>L'adresse email est obligatoire</div>
-                                }
+                            <div class="row">
+                                <div class=" col-md-6 mb-4">
+                                    <label class="form-label" for="email">Adresse email</label>
+                                    <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+                                    @if (isSubmitted && f['email'].errors) {
+                                        <div class="invalid-feedback">
+                                        @if (f['email'].errors['required']) {
+                                            <div>L'adresse email est obligatoire</div>
+                                        }
+                                        </div>
+                                    }
                                 </div>
-                            }
-                        </div>
+
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label" for="telephone">Téléphone</label>
+                                    <input type="text" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+                                    @if (isSubmitted && f['telephone'].errors) {
+                                        <div class="invalid-feedback">
+                                            @if (f['telephone'].errors['required']) {
+                                            <div>Le telephone est obligatoire</div>
+                                            }
+                                        </div>
+                                        }
+                                </div>
+                            </div>
+                        
 
                         </fieldset>
 
