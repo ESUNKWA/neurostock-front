@@ -5,6 +5,7 @@ import { Chart, registerables} from 'chart.js';
 import { DashService } from '../../services/dash/dash.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { environnement } from '../../environnement/environnement';
 
 declare var $: any;
 
@@ -45,6 +46,8 @@ export default class DashboardComponent implements OnInit{
   boutiqueService = inject(BoutiqueService);
   authService = inject(AuthService);
   chart: Chart | null = null; // 👈 stocke l’instance du graphique
+
+  api_url: string = environnement.API_URL;
 
   constructor(private loaderService: LoaderService, private dashService: DashService) {
     this.loaderService.showLoading();

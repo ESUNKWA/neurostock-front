@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'

@@ -163,7 +163,7 @@
                 >
                   <div class="card border-light shadow-sm p-2 d-flex flex-row align-items-center">
                     <img 
-                      [src]="'http://localhost:3000/' + produit.image" 
+                      [src]=" api_url + '/' + produit.image" 
                       alt="{{ produit.nom }}" 
                       class="rounded me-3" 
                       style="object-fit: cover; width: 80px; height: 80px;"
@@ -224,7 +224,7 @@
 
                     <div class="news mt-2">
                       <div class="post-item clearfix">
-                        <img src="http://localhost:3000/{{item.path}}" alt="image">
+                        <img src="{{api_url}}/{{item.path}}" alt="image">
                         <h4><a href="#">{{item?.nom}}</a></h4>
                         <p>Stock disponible: <strong class="text-danger h6" >{{item?.stock_disponible}}</strong></p>
                       </div>
@@ -246,7 +246,7 @@
             <ul class="top-ventes-list">
               <li *ngFor="let produit of stats?.dash?.vente?.top_dix; let i = index">
                 <span class="rank">{{ i + 1 }}</span>
-                <img src="http://localhost:3000/{{produit.image}}" alt="{{ produit.nom }}" class="product-image">
+                <img src="{{api_url}}/{{produit.image}}" alt="{{ produit.nom }}" class="product-image">
                 <span class="product-name">{{ produit.nom }}</span>
                 <div class="bar-container">
                   <div class="bar" [style.width.%]="getBarWidth(produit.quantite_vendu)"></div>
