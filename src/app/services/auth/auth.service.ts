@@ -1,27 +1,9 @@
 import { Injectable } from '@angular/core';
-import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environnement } from '../../environnement/environnement';
 
-// export interface User {
-//   id: number;
-//   email: string;
-//   nom: string;
-//   prenoms: string;
-//   profil: {
-//     id: number;
-//     nom: string;
-//     description: string;
-//   };
-//   structure: any[];
-//   boutique: any | null;
-// }
-
-// export interface AuthResponse {
-//   utilisateur: User;
-//   access_token: string;
-// }
 
 @Injectable({
   providedIn: 'root'
