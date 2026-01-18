@@ -79,6 +79,7 @@ export default class DashboardComponent implements OnInit{
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
+              
             }
           },
           error: (error: any) => {
@@ -89,12 +90,15 @@ export default class DashboardComponent implements OnInit{
 
       case 'responsable_structure':
         this.boutiques = this.currentUser.structure[0].boutique;
-      
+         console.log(this.boutiques);
         break;
 
         default:
           this.boutiques[0] = this.currentUser.boutique;
     }
+
+   
+    
   }
 
   loadStats(): void {
@@ -117,7 +121,7 @@ export default class DashboardComponent implements OnInit{
    ngAfterViewInit() {
     // Initialisation de Select2
     ($('#mySelect') as any).select2({
-      placeholder: 'Sélectionnez une boutique',
+      placeholder: 'Sélectionner une boutique',
       allowClear: true,
       width: 'resolve',
     });
@@ -125,6 +129,8 @@ export default class DashboardComponent implements OnInit{
     // Gérer les changements
     ($('#mySelect') as any).on('change', (e: any) => {
       const idBoutique = ($('#mySelect') as any).val();
+      console.log(idBoutique);
+      
       this.idBoutique = parseInt(idBoutique);
       this.loadStats();
     });

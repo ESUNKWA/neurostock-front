@@ -91,7 +91,7 @@ export const Menu: any = [
                     },
                     {
                         libelle: 'Clients',
-                        lien: '',
+                        lien: '#',
                         icon: 'bi bi-circle'
                     },
                     {
@@ -108,7 +108,6 @@ export const Menu: any = [
         full: true,
         menu: [
             {
-                
                 libelle: 'Utilisateurs',
                 icon: 'bi bi-person-workspace',
                 target: 'users-nav',

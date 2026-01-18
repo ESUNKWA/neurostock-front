@@ -15,8 +15,8 @@ export class UserService {
   readonly profils: any = signal([]); // Typage correct du signal
 
   //récupère tous les profils
-  find(): Observable<any> {
-    return this.http.get(`${this.API_URL}/utilisateur`)
+  find(profilCode: string, boutique: string): Observable<any> {
+    return this.http.get(`${this.API_URL}/utilisateur?profil=${profilCode}&boutique=${boutique}`)
       .pipe(
         tap(data => this.profils.set(data)),
         catchError(error => {

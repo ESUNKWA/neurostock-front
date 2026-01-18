@@ -42,6 +42,7 @@ export class UsersComponent {
   isSubmitted: boolean = false;
 
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
+  currentUser: any
 
   
   constructor(@Inject(PLATFORM_ID) private platformId: any){
@@ -60,7 +61,11 @@ export class UsersComponent {
   get f() { return this.userForm.controls; }
   
   ngOnInit(): void {
-    this.userFind();
+
+    this.currentUser = localStorage.getItem('user');
+    console.log(JSON.parse(this.currentUser));
+    
+    this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique?.id);
     this.profilFind();
     this.boutiqueFind();
     
@@ -200,12 +205,12 @@ export class UsersComponent {
     }
   }
 
-  public userFind() {
+  public userFind(profilCode: string, boutiqueId: string) {
     
     this.isLoading = true;
 
     this.souscription.add(
-      this.userService.find().subscribe({
+      this.userService.find(profilCode, boutiqueId).subscribe({
         next: (response: any) => {
           this.users = response.data;
           // D'abord, détruisons l'instance DataTable sans vider la table
@@ -276,7 +281,7 @@ export class UsersComponent {
             'user ajoutée avec succès');
 
           // Recharger les données sans détruire complètement le tableau
-          this.userFind();
+          this.userFind(this.currentUser.profil.code, this.currentUser.boutique.id);
 
           // Réinitialiser le formulaire et les états
           this.userForm.reset();

@@ -42,6 +42,7 @@ export class StructureComponent {
   selectedFile: File | null = null;
 
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
+  boutiques: any;
   
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.structureForm = this.fb.group({
@@ -106,17 +107,19 @@ export class StructureComponent {
     
   }
 
-  openView(user: any): void {
+  openView(structure: any): void {
+    console.log(structure?.boutique);
+    this.boutiques =  structure?.boutique;
     this.structureForm.disable();
-    this.structureData = user;
-    const title = `Visualiser le user [ ${user?.nom} ]`;
+    this.structureData = structure;
+    const title = `Visualiser le user [ ${structure?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
     
     this.isSubmitted = false;
     
-    this.structureForm.patchValue(user);
+    this.structureForm.patchValue(structure);
     this.structureForm.disable();
 
     const modal = document.getElementById('modal-fadein');

@@ -113,11 +113,11 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Prévisualisation de l'image</label>
-                                            <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                                            <div class="border rounded p-2" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
                                                 @if (previewImageUrl) {
-                                                    <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                                    <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
                                                 } @else if (selectedProduit?.image) {
-                                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
                                                 } @else {
                                                     <div class="text-muted">
                                                         <i class="bi bi-image" style="font-size: 2rem;"></i>
@@ -186,7 +186,35 @@
                                         }
                                 </div>
                             </div>
+
+                        </fieldset>
+
+
+                        <fieldset class="border border-info border-2 rounded p-3 mb-3" formGroupName="responsable">
+                            <legend class="w-auto px-2"> <i class="bi bi-shop"></i> Liste des boutiques</legend>
                         
+
+                            <table class="table table-bordered table-striped table-vcenter">
+                                <thead>
+                                    <tr>
+                                    <th>Boutique</th>
+                                    <th>Situation géographique</th>
+                                    <th>telephone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (item of boutiques; track $index) {
+                                        <tr>
+                                            <td>{{item?.nom}}</td>
+                                            <td>{{item?.situation_geo}}</td>
+                                            <td>{{item?.telephone}}</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tbody>
+                                    <!-- Contenu généré par DataTables -->
+                                </tbody>
+                            </table>
 
                         </fieldset>
 

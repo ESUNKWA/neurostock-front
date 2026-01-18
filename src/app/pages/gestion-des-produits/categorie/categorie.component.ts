@@ -224,8 +224,9 @@ export default class CategorieComponent implements OnInit, OnDestroy {
    */
   loadCategories(): void {
     this.isLoading = true;
+    console.log(this.currentUser);
     
-    this.categorieService.getCategoriesByBoutik(this.currentUser.boutique.id).subscribe({
+    this.categorieService.getCategoriesByBoutik(this.currentUser?.boutique?.id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           // Mise à jour des données
