@@ -8,6 +8,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -15,7 +16,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-produit',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule, ThousandSeparatorDirective],
   templateUrl: './produit.component.html',
   styleUrl: './produit.component.scss'
 })
@@ -49,7 +50,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       nom: ['', Validators.required],
       prix_achat: ['', [Validators.required, Validators.min(0)]],
       prix_vente: ['', [Validators.required, Validators.min(0)]],
-      stock_initial: ['', [Validators.required, Validators.min(0)]],
+      stock_initial: [0, [Validators.required, Validators.min(0)]],
+      seuil_alert: [2, [Validators.required]],
       categorie: ['', Validators.required],
       boutique: ['', Validators.required],
       image: [null]
@@ -70,6 +72,21 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       }, 500);
     }           
   }
+
+  onPrixChange(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (!input) return;
+
+  const value = input.value.replace(/\s/g, '');
+  const numericValue = Number(value);
+
+  if (!isNaN(numericValue)) {
+    this.produitForm.patchValue({
+      prix_achat: numericValue
+    }, { emitEvent: false });
+  }
+}
+
 
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user: any) => {
@@ -122,7 +139,12 @@ export default class ProduitComponent implements OnInit, OnDestroy {
             },
             { 
               data: 'stock_disponible',
-              render: (data: any) => data 
+              render: (data: number, type: any, row: any) => {
+                if (data <= row.seuil_alert) {
+                  return `<span class="fw-semibold text-danger">${data} - Alert stock</span>`;
+                }
+                return data;
+              }
             },
             { 
               data: 'categorie',
@@ -368,7 +390,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: produit.prix_vente,
       stock_initial: produit.stock_initial,
       categorie: produit.categorie?.id,
-      boutique: produit.boutique?.id
+      boutique: produit.boutique?.id,
+      seuil_alert: produit.seuil_alert || 0
     });
 
     // Désactiver les champs du formulaire
@@ -404,7 +427,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       stock_initial: produit.stock_initial,
       categorie: produit.categorie?.id,
       boutique: produit.boutique?.id,
-      image: produit.image
+      image: produit.image,
+      seuil_alert: produit.seuil_alert || 0
     });
 
     const modal = document.getElementById('modal-fadein');
@@ -464,6 +488,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
           this.loadProduits();
           this.produitForm.reset();
+          this.previewImageUrl = null;
           this.selectedFile = null;
           this.isSubmitted = false;
           this.isEditMode = false;

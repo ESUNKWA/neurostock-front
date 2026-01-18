@@ -156,8 +156,8 @@
               
               <div class="col">
                 <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire" 
-                      (input)="onPrixOuQuantiteChange()"
+                <input type="text" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire" 
+                      (input)="onPrixOuQuantiteChange()" thousandSeparator
                       [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
                 @if (isSubmitting && detail.get('prix_unitaire')?.errors) {
                   <div class="invalid-feedback">

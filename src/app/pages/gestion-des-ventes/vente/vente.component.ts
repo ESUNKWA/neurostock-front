@@ -1,19 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
 declare var $: any;
 
 @Component({
   selector: 'app-vente',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ThousandSeparatorDirective],
   templateUrl: './vente.component.html',
   styleUrl: './vente.component.scss'
 })
@@ -33,6 +34,8 @@ export default class VenteComponent implements OnInit {
   isEditMode = false;
   editVenteId: number | null = null;
   editVenteData: any = null;
+
+  currentProduitSelect: any = {};
 
   constructor(
     private fb: FormBuilder,
@@ -56,7 +59,7 @@ export default class VenteComponent implements OnInit {
   ngAfterViewInit() {
     // Initialisation de Select2
     ($('.mySelect') as any).select2({
-      placeholder: 'Sélectionnez une boutique',
+      placeholder: 'Sélectionnez un produit',
       allowClear: true,
       width: 'resolve',
     });
@@ -104,6 +107,9 @@ export default class VenteComponent implements OnInit {
       description: [''],
       boutique: [boutiqueId, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
+      remise: ['', [Validators.required, Validators.min(0)]],
+      monnaie_rendu: ['', [Validators.required, Validators.min(0)]],
+      montant_recu: ['', [Validators.required, Validators.min(0)]],
       date_vente: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
       statut: ['payer', Validators.required],
@@ -169,6 +175,8 @@ export default class VenteComponent implements OnInit {
         image: produit.imageUrl,
         stock: produit.stock_disponible
       });
+
+      this.currentProduitSelect = ligne;
      
     }
     
@@ -278,19 +286,88 @@ export default class VenteComponent implements OnInit {
     this.calculerMontantTotal();
   }
 
-  calculerMontantTotal(): void {
+  /* calculerMontantTotal(): void {
     let total = 0;
     for (const detail of this.detailVente.controls) {
+      const stockActuel = detail.get('stock')?.value || 0;
       const quantite = detail.get('quantite')?.value || 0;
       const prix = detail.get('prix_unitaire_vente')?.value || 0;
+
+      if (quantite > stockActuel) {
+        this.toastr.error("Attention");
+        return
+      }
+      
+
       total += quantite * prix;
     }
     this.venteForm.patchValue({ montant_total: total });
+  } */
+
+  calculerMontantTotal(): void {
+  let total = 0;
+  let stockError = false;
+
+  for (const detail of this.detailVente.controls) {
+    const stock = Number(detail.get('stock')?.value || 0);
+    const quantite = Number(detail.get('quantite')?.value || 0);
+    const prix = Number(detail.get('prix_unitaire_vente')?.value || 0);
+
+    // Reset erreur
+    detail.get('quantite')?.setErrors(null);
+
+    if (quantite > stock) {
+      detail.get('quantite')?.setErrors({ stockExceeded: true });
+      stockError = true;
+    } else {
+      total += quantite * prix;
+    }
   }
+  
+
+  this.venteForm.patchValue({ montant_total: total });
+
+  // Toast une seule fois
+  if (stockError) {
+    this.toastr.error('La quantité dépasse le stock disponible');
+  }
+}
+
 
   onPrixOuQuantiteChange(): void {
     this.calculerMontantTotal();
   }
+
+  // Calcul de la monnaie rendue
+calculerMonnaieRendue(): void {
+  const total = Number(this.venteForm.get('montant_total')?.value || 0);
+  const recu = Number(this.venteForm.get('montant_recu')?.value || 0);
+  const rendu = Math.max(recu - total, 0);
+  this.venteForm.patchValue({ monnaie_rendu: rendu });
+  console.log('total ',total);
+  console.log('recu', recu);
+  console.log('rendu',rendu);
+  
+}
+
+// Calcul montant total après remise
+calculerMontantTotalApresRemise(): void {
+  let total = 0;
+  // ici, calcule à partir des lignes de vente
+  total = this.detailVente.controls.reduce((acc, detail) => {
+    const qte = Number(detail.get('quantite')?.value || 0);
+    const prix = Number(detail.get('prix_unitaire_vente')?.value || 0);
+    return acc + (qte * prix);
+  }, 0);
+
+  const remise = Number(this.venteForm.get('remise')?.value || 0);
+  total = total - remise;
+
+  this.venteForm.patchValue({ montant_total: total });
+
+  // Recalcul monnaie rendue si déjà saisie
+  this.calculerMonnaieRendue();
+}
 
   loadBoutiques(): void {
     if (!this.currentUser) {

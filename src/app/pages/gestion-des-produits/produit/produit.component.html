@@ -92,96 +92,146 @@
                 <div class="modal-body">
                     <div class="block-content fs-sm">
                         <!-- Informations principales -->
-                        <div class="mb-4">
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="nom">Nom du produit</label>
-                                    <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                                    @if (isSubmitted && f['nom'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['nom'].errors['required']) {
-                                                <div>Le nom est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="categorie">Catégorie</label>
-                                    <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
-                                        <option value="">Sélectionner une catégorie</option>
-                                        @for (categorie of categories; track categorie?.id) {
-                                            <option [value]="categorie?.id">{{ categorie?.nom }}</option>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="nom">Nom du produit</label>
+                                <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                                @if (isSubmitted && f['nom'].errors) {
+                                    <div class="invalid-feedback">
+                                        @if (f['nom'].errors['required']) {
+                                            <div>Le nom est obligatoire</div>
                                         }
-                                    </select>
-                                    @if (isSubmitted && f['categorie'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['categorie'].errors['required']) {
-                                                <div>La catégorie est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="boutique">Boutique</label>
-                                    <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
-                                        <option value="">Sélectionner une boutique</option>
-                                        @for (boutique of boutiques; track boutique.id) {
-                                            <option [value]="boutique.id">{{ boutique.nom }}</option>
-                                        }
-                                    </select>
-                                    @if (isSubmitted && f['boutique'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['boutique'].errors['required']) {
-                                                <div>La boutique est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
+                                    </div>
+                                }
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="categorie">Catégorie</label>
+                                <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
+                                    <option value="">Sélectionner une catégorie</option>
+                                    @for (categorie of categories; track categorie?.id) {
+                                        <option [value]="categorie?.id">{{ categorie?.nom }}</option>
+                                    }
+                                </select>
+                                @if (isSubmitted && f['categorie'].errors) {
+                                    <div class="invalid-feedback">
+                                        @if (f['categorie'].errors['required']) {
+                                            <div>La catégorie est obligatoire</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            
                         </div>
 
+                        
+
                         <!-- Prix et Stock -->
-                        <div class="mb-4">
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="prix_achat">Prix d'achat (FCFA)</label>
-                                    <input type="number" class="form-control" id="prix_achat" placeholder="Prix d'achat" formControlName="prix_achat" [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}">
-                                    @if (isSubmitted && f['prix_achat'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['prix_achat'].errors['required']) {
-                                                <div>Le prix d'achat est obligatoire</div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label" for="boutique">Boutique</label>
+                                        <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                                            <option value="">Sélectionner une boutique</option>
+                                            @for (boutique of boutiques; track boutique.id) {
+                                                <option [value]="boutique.id">{{ boutique.nom }}</option>
                                             }
-                                            @if (f['prix_achat'].errors['min']) {
-                                                <div>Le prix d'achat doit être supérieur à 0</div>
-                                            }
-                                        </div>
-                                    }
+                                        </select>
+                                        @if (isSubmitted && f['boutique'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['boutique'].errors['required']) {
+                                                    <div>La boutique est obligatoire</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="prix_vente">Prix de vente (FCFA)</label>
-                                    <input type="number" class="form-control" id="prix_vente" placeholder="Prix de vente" formControlName="prix_vente" [ngClass]="{'is-invalid': isSubmitted && f['prix_vente'].errors}">
-                                    @if (isSubmitted && f['prix_vente'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['prix_vente'].errors['required']) {
-                                                <div>Le prix de vente est obligatoire</div>
-                                            }
-                                            @if (f['prix_vente'].errors['min']) {
-                                                <div>Le prix de vente doit être supérieur à 0</div>
-                                            }
-                                        </div>
-                                    }
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="prix_achat">Prix d'achat (FCFA)</label>
+                                        <input type="text" class="form-control" id="prix_achat" placeholder="Prix d'achat" 
+                                        formControlName="prix_achat" [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}"
+                                        thousandSeparator>
+                                        @if (isSubmitted && f['prix_achat'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['prix_achat'].errors['required']) {
+                                                    <div>Le prix d'achat est obligatoire</div>
+                                                }
+                                                @if (f['prix_achat'].errors['min']) {
+                                                    <div>Le prix d'achat doit être supérieur à 0</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="prix_vente">Prix de vente (FCFA)</label>
+                                        <input type="text" class="form-control" id="prix_vente" placeholder="Prix de vente" formControlName="prix_vente" 
+                                        thousandSeparator [ngClass]="{'is-invalid': isSubmitted && f['prix_vente'].errors}">
+                                        @if (isSubmitted && f['prix_vente'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['prix_vente'].errors['required']) {
+                                                    <div>Le prix de vente est obligatoire</div>
+                                                }
+                                                @if (f['prix_vente'].errors['min']) {
+                                                    <div>Le prix de vente doit être supérieur à 0</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label" for="stock_initial">Stock initial</label>
-                                    <input type="number" class="form-control" id="stock_initial" placeholder="Stock initial" formControlName="stock_initial" [ngClass]="{'is-invalid': isSubmitted && f['stock_initial'].errors}">
-                                    @if (isSubmitted && f['stock_initial'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['stock_initial'].errors['required']) {
-                                                <div>Le stock initial est obligatoire</div>
-                                            }
-                                            @if (f['stock_initial'].errors['min']) {
-                                                <div>Le stock initial doit être supérieur à 0</div>
-                                            }
+                                <div class="row mb-3">
+                                   <div class="col-md-6">
+                                        <label class="form-label" for="stock_initial">Stock initial</label>
+                                        <input type="number" class="form-control" id="stock_initial" placeholder="Stock initial" 
+                                        min="0" formControlName="stock_initial" [ngClass]="{'is-invalid': isSubmitted && f['stock_initial'].errors}">
+                                        @if (isSubmitted && f['stock_initial'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['stock_initial'].errors['required']) {
+                                                    <div>Le stock initial est obligatoire</div>
+                                                }
+                                                @if (f['stock_initial'].errors['min']) {
+                                                    <div>Le stock initial doit être supérieur à 0</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="seuil_alert">Seuil d'alerte</label>
+                                        <input type="number" class="form-control" id="seuil_alert" placeholder="Stock seuil_alert" 
+                                        min="0" formControlName="seuil_alert" [ngClass]="{'is-invalid': isSubmitted && f['seuil_alert'].errors}">
+                                        @if (isSubmitted && f['seuil_alert'].errors) {
+                                            <div class="invalid-feedback">
+                                                @if (f['seuil_alert'].errors['required']) {
+                                                    <div>Le seuil d'alerte est obligatoire</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="image">Image du produit</label>
+                                <input type="file" class="form-control" id="image" (change)="onFileSelected($event)" accept="image/*" [ngClass]="{'is-invalid': isSubmitted && f['image'].errors}">
+                                @if (isSubmitted && f['image'].errors) {
+                                    <div class="invalid-feedback">
+                                        @if (f['image'].errors['required']) {
+                                            <div>L'image est obligatoire</div>
+                                        }
+                                    </div>
+                                }
+                                <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                                    @if (previewImageUrl) {
+                                        <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                    } @else if (selectedProduit?.imageUrl) {
+                                        <img [src]="selectedProduit.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                    } @else {
+                                        <div class="text-muted">
+                                            <i class="bi bi-image" style="font-size: 2rem;"></i>
+                                            <p class="mb-0 mt-2">Aucune image sélectionnée</p>
                                         </div>
                                     }
                                 </div>
@@ -189,36 +239,7 @@
                         </div>
 
                         <!-- Image et Prévisualisation -->
-                        <div class="mb-4">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="image">Image du produit</label>
-                                    <input type="file" class="form-control" id="image" (change)="onFileSelected($event)" accept="image/*" [ngClass]="{'is-invalid': isSubmitted && f['image'].errors}">
-                                    @if (isSubmitted && f['image'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['image'].errors['required']) {
-                                                <div>L'image est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Prévisualisation de l'image</label>
-                                    <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                                        @if (previewImageUrl) {
-                                            <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                        } @else if (selectedProduit?.imageUrl) {
-                                            <img [src]="selectedProduit.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                        } @else {
-                                            <div class="text-muted">
-                                                <i class="bi bi-image" style="font-size: 2rem;"></i>
-                                                <p class="mb-0 mt-2">Aucune image sélectionnée</p>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -48,6 +48,8 @@ export default class DashboardComponent implements OnInit{
   chart: Chart | null = null; // 👈 stocke l’instance du graphique
 
   api_url: string = environnement.API_URL;
+  variationJr: number = 0;
+  variationMois: number = 0;
 
   constructor(private loaderService: LoaderService, private dashService: DashService) {
     this.loaderService.showLoading();
@@ -62,6 +64,7 @@ export default class DashboardComponent implements OnInit{
     this.loadBoutiques();
     
   }
+  
 
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user: any) => {
@@ -90,7 +93,6 @@ export default class DashboardComponent implements OnInit{
 
       case 'responsable_structure':
         this.boutiques = this.currentUser.structure[0].boutique;
-         console.log(this.boutiques);
         break;
 
         default:
@@ -107,8 +109,16 @@ export default class DashboardComponent implements OnInit{
       next: (response) => {
         
         this.stats = response;
-         this.ventesParMois = this.stats.dash.vente_par_mois;
-         
+        this.ventesParMois = this.stats.dash.vente_par_mois;
+
+        //Calcul de la variation des ventes du jour
+        this.variationJr = ((this.stats?.dash?.vente?.total_vente_jr - this.stats?.dash?.vente?.total_vente_hier)/this.stats?.dash?.vente?.total_vente_hier) * 100;
+        this.variationJr = Math.round(this.variationJr);
+        
+        //Calcul de la variation des ventes du mois
+        this.variationMois = ((this.stats?.dash?.vente?.total_vente_mois - this.stats?.dash?.vente?.total_vente_mois_passe)/this.stats?.dash?.vente?.total_vente_mois_passe) * 100;
+        this.variationMois = Math.round(this.variationMois);
+
         this.createChart();
       },
       error: (err) => {
@@ -129,8 +139,7 @@ export default class DashboardComponent implements OnInit{
     // Gérer les changements
     ($('#mySelect') as any).on('change', (e: any) => {
       const idBoutique = ($('#mySelect') as any).val();
-      console.log(idBoutique);
-      
+
       this.idBoutique = parseInt(idBoutique);
       this.loadStats();
     });

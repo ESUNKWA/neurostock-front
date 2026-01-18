@@ -90,11 +90,6 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Clients',
-                        lien: '#',
-                        icon: 'bi bi-circle'
-                    },
-                    {
                         libelle: 'Historique des ventes',
                         lien: '/gestion-des-ventes/historique-ventes',
                         icon: 'bi bi-circle'

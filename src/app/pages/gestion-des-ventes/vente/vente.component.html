@@ -23,10 +23,10 @@
 
         <div class="row">
 
-          <div class="col-md-8">
+          <div class="col-md-9">
             <h5  class="mb-3">Détails de la vente</h5>
             
-            <div formArrayName="detail_vente">
+            <div class="row" formArrayName="detail_vente">
               <div *ngFor="let detail of detailVente.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-vente-item">
 
                 @if (detail.get('image')?.value) {
@@ -34,14 +34,14 @@
                       <div class="image-produit" *ngIf="detail.get('image')?.value">
                       <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
                       <p class="stock-info">
-                        🏷️ Stock disponible : 
+                        🏷️ Stock dispo : 
                         <strong>{{ detail.get('stock')?.value }}</strong>
                       </p>
                     </div>
                   </div>
                 }
 
-                <div class="col">
+                <div class="col-md-5">
                   <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
                   <select class="form-select mySelect" [id]="'produit_' + i" formControlName="produit"
                       [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}" >
@@ -60,10 +60,10 @@
                   }
                 </div>
                 
-                <div class="col">
-                  <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
-                  <input type="number" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire_vente" 
-                        (input)="onPrixOuQuantiteChange()"
+                <div class="col-md-2">
+                  <label [for]="'prix_' + i" class="form-label">Prix de vente <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire_vente" 
+                        (input)="onPrixOuQuantiteChange()" thousandSeparator
                         [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
                   @if (isSubmitting && detail.get('prix_unitaire_vente')?.errors) {
                     <div class="invalid-feedback">
@@ -81,7 +81,8 @@
                   <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
                   <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
                         (input)="onPrixOuQuantiteChange()"
-                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}" min="1">
+                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}"
+                        [attr.max]="detail.get('stock')?.value" min="1">
                   @if (isSubmitting && detail.get('quantite')?.errors) {
                     <div class="invalid-feedback">
                       @if (detail.get('quantite')?.errors?.['required']) {
@@ -90,6 +91,10 @@
                       @if (detail.get('quantite')?.errors?.['min']) {
                         <span>La quantité doit être supérieure à 0.</span>
                       }
+                      @if (detail.get('quantite')?.errors?.['stockExceeded']) {
+                        <span>La quantité dépasse le stock disponible.</span>
+                      }
+
                     </div>
                   }
                 </div>
@@ -112,21 +117,80 @@
               </div>
             </div>
 
-            <div class="col-md-6 offset-md-6">
+            <div class="col-12">
               <div class="card bg-light">
                 <div class="card-body">
-                  <h5 class="card-title">Montant total</h5>
-                  <div class="input-group">
-                    <span class="input-group-text">FCFA</span>
-                    <input type="text" class="form-control" formControlName="montant_total" readonly>
+                  <h5 class="card-title mb-3">Résumé de la vente</h5>
+
+                  <div class="row g-3">
+
+                    <!-- Remise -->
+                    <div class="col-md-4">
+                      <label class="form-label">Remise</label>
+                      <div class="input-group">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text" style="font-weight: bold; color: orange;"
+                              class="form-control"
+                              formControlName="remise"
+                              (input)="calculerMontantTotalApresRemise()"
+                              thousandSeparator>
+                      </div>
+                    </div>
+
+                    <!-- Montant reçu -->
+                    <div class="col-md-4">
+                      <label class="form-label">Montant reçu</label>
+                      <div class="input-group">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text"
+                            style="font-weight: bold;"
+                              class="form-control"
+                              formControlName="montant_recu"
+                              (input)="calculerMonnaieRendue()" thousandSeparator>
+                      </div>
+                    </div>
+
+                    <!-- Monnaie rendue -->
+                    <div class="col-md-4">
+                      <label class="form-label">Monnaie rendue</label>
+                      <div class="input-group">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text"
+                            style="font-weight: bold;"
+                              class="form-control"
+                              formControlName="monnaie_rendu"
+                              readonly thousandSeparator>
+                      </div>
+                    </div>
+
+                    
+
                   </div>
+
+                  <div class="row mt-3">
+                    <!-- Montant total -->
+                    <div class="col-md-8">
+                      <label class="form-label">Montant total</label>
+                      <div class="input-group">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text"
+                        style="font-weight: bold; color: rgb(34, 146, 19);"
+                              class="form-control"
+                              [value]="venteForm.get('montant_total')?.value"
+                              readonly>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
+
+
             
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-3">
 
 
             <div class="row mt-5">
@@ -186,70 +250,6 @@
           </div>
 
         </div>
-
-
-
-
-
-
-
-        <!-- Informations générales -->
-        <!-- <div hidden [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
-          <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
-          @if (isSubmitting && f['libelle'].errors) {
-            <div class="invalid-feedback">
-              @if (f['libelle'].errors['required']) {
-                <div>Le libellé est requis</div>
-              }
-            </div>
-          }
-        </div>
-        
-        <div hidden [ngClass]="currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure' ? 'col-md-4' : 'col-md-6'">
-          <label for="date_vente" class="form-label">Date de vente <span class="text-danger">*</span></label>
-          <input type="date" class="form-control" id="date_vente" formControlName="date_vente" [ngClass]="{'is-invalid': isSubmitting && f['date_vente'].errors}">
-          @if (isSubmitting && f['date_vente'].errors) {
-            <div class="invalid-feedback">
-              @if (f['date_vente'].errors['required']) {
-                <div>La date de vente est requise</div>
-              }
-            </div>
-          }
-        </div>
-
-        @if (currentUser.profil.description.toLowerCase() === 'administrateur' || currentUser.profil.description.toLowerCase() === 'responsable structure') {
-          <div class="col-md-4">
-            <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
-            <select class="form-select" (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">
-              <option value="">Sélectionner une boutique</option>
-              @for (boutique of boutiques; track boutique.id) {
-                <option [value]="boutique.id">{{ boutique.nom }}</option>
-              }
-            </select>
-            @if (isSubmitting && f['boutique'].errors) {
-              <div class="invalid-feedback">
-                @if (f['boutique'].errors['required']) {
-                  <div>La boutique est requise</div>
-                }
-              </div>
-            }
-          </div>
-        } -->
-        
-        
-        
-        <!-- <div class="col-md-6 offset-md-6">
-          <div class="card bg-light">
-            <div class="card-body">
-              <h5 class="card-title">Montant total</h5>
-              <div class="input-group">
-                <span class="input-group-text">FCFA</span>
-                <input type="text" class="form-control" formControlName="montant_total" readonly>
-              </div>
-            </div>
-          </div>
-        </div> -->
         
         <div class="col-12 text-end">
           <button type="submit" class="btn btn-success" [disabled]="loading">

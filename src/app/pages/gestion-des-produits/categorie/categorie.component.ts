@@ -41,7 +41,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   ) {
     this.categorieForm = this.fb.group({
       nom: ['', [Validators.required]],
-      description: ['', [Validators.required]]
+      description: ['', []]
     });
   }
 
@@ -102,12 +102,12 @@ export default class CategorieComponent implements OnInit, OnDestroy {
           columns: [
             { 
               data: 'nom',
-              render: (data: any) => `<span class="fw-semibold">${data.toUpperCase() || ''}</span>` 
+              render: (data: any) => `<span class="fw-semibold">${data || ''}</span>` 
             },
             { 
               data: 'description',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.toUpperCase() || 'Non définie' 
+              render: (data: any) => data || 'Non définie' 
             },
             { 
               data: 'created_at',
@@ -224,7 +224,6 @@ export default class CategorieComponent implements OnInit, OnDestroy {
    */
   loadCategories(): void {
     this.isLoading = true;
-    console.log(this.currentUser);
     
     this.categorieService.getCategoriesByBoutik(this.currentUser?.boutique?.id).subscribe({
       next: (response: any) => {

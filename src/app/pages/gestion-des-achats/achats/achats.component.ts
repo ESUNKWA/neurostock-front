@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
@@ -9,12 +9,13 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
+import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
 declare var $: any;
 
 @Component({
   selector: 'app-achats',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective],
   templateUrl: './achats.component.html',
   styleUrl: './achats.component.scss'
 })
@@ -84,8 +85,13 @@ export default class AchatsComponent implements OnInit {
   }
 
   initForm(): void {
+    // Vérifier si currentUser existe avant d'accéder à ses propriétés
+    const userId = this.currentUser ? this.currentUser.id : null;
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
+    
     this.achatForm = this.fb.group({
-      libelle: ['', Validators.required],
+      user: [userId, Validators.required],
+      libelle: [''],
       description: [''],
       boutique: [null, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
@@ -312,10 +318,10 @@ export default class AchatsComponent implements OnInit {
 
   onSubmit(): void {
     this.isSubmitting = true;
-    
+      
     if (this.achatForm.invalid) {
       // Marquer tous les champs comme touchés pour afficher les erreurs
-      // this.markFormGroupTouched(this.achatForm);
+      this.markFormGroupTouched(this.achatForm);
       return;
     }
 

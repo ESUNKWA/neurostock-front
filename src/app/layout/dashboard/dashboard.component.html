@@ -10,7 +10,7 @@
 
 <section class="section dashboard">
 
-
+  
 
   @if (boutiques.length >= 1) {
     <div class="row">
@@ -44,7 +44,14 @@
                 </div>
                 <div class="ps-3">
                   <p class="fw-bold" >{{ stats?.dash?.vente?.total_vente_jr | number:'1.0-0' }} FCFA</p>
-                  <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
+
+                  @if (variationJr > 0) {
+                    <span class="text-success small pt-1 fw-bold">{{variationJr}}%</span> <span class="text-muted small pt-2 ps-1">Augmentation</span>
+                  }@else{
+                    <span class="text-danger small pt-1 fw-bold">{{variationJr}}%</span> <span class="text-muted small pt-2 ps-1">Baisse</span>
+                  }
+
+                  
 
                 </div>
               </div>
@@ -65,8 +72,12 @@
                   <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div class="ps-3">
-                  <p class="fw-bold" >{{ stats?.dash?.vente?.total_vente_mois | number:'1.0-0' }} fcfa</p>
-                  <span class="text-success small pt-1 fw-bold">8%</span> <span class="text-muted small pt-2 ps-1">increase</span>
+                  <p class="fw-bold" >{{ stats?.dash?.vente?.total_vente_mois | number:'1.0-0' }} FCFA</p>
+                  @if (variationJr > 0) {
+                    <span class="text-success small pt-1 fw-bold">{{variationJr}}%</span> <span class="text-muted small pt-2 ps-1">Augmentation</span>
+                  }@else{
+                    <span class="text-danger small pt-1 fw-bold">{{variationJr}}%</span> <span class="text-muted small pt-2 ps-1">Baisse</span>
+                  }
 
                 </div>
               </div>
@@ -91,9 +102,7 @@
                   <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div class="ps-3">
-                  <h6>1244</h6>
-                  <span class="text-danger small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">decrease</span>
-
+                  <p class="fw-bold" >{{ stats?.dash?.produit?.total_stock_dispo | number:'1.0-0' }} FCFA</p>
                 </div>
               </div>
 
@@ -105,19 +114,6 @@
         <!-- Reports -->
         <div class="col-12">
           <div class="card">
-
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6>Filter</h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Today</a></li>
-                <li><a class="dropdown-item" href="#">This Month</a></li>
-                <li><a class="dropdown-item" href="#">This Year</a></li>
-              </ul>
-            </div>
 
             <div class="card-body">
               <h5 class="card-title">Ventes <span>/année</span></h5>
@@ -186,13 +182,11 @@
 
     <!-- Right side columns -->
     <div class="col-lg-4">
-      @if(stats?.dash?.produit?.stock_alert) {
+      @if(stats?.dash?.produit?.stock_rupture) {
         <!-- Recent Activity -->
         <div class="card">
-          
-
           <div class="card-body">
-            <h5 class="card-title text-danger" hidden>Alerte Stock</h5>
+            <h5 class="card-title text-danger" hidden>Alerte rupture Stock</h5>
 
             <div class="stock-alert-container">
               <div class="stock-alert" >
@@ -204,34 +198,27 @@
                 <span>🚨 Rupture de stock détectée !</span>
               </div>
             </div>
-
-
-
             <div class="activity">
-
-              
-                  @for (item of stats?.dash?.produit?.stock_alert; track $index) {
-
-                    <div class="news mt-2">
-                      <div class="post-item clearfix">
-                        <img src="{{api_url}}/{{item.path}}" alt="image">
-                        <h4><a href="#">{{item?.nom}}</a></h4>
-                        <p>Stock disponible: <strong class="text-danger h6" >{{item?.stock_disponible}}</strong></p>
+                  @for (item of stats?.dash?.produit?.stock_rupture; track $index) {
+                    
+                        <div class="news mt-2">
+                        <div class="post-item clearfix">
+                          <img src="{{api_url}}/{{item.path}}" alt="image">
+                          <h4><a href="#">{{item?.nom}}</a></h4>
+                          <p>Stock disponible: <strong class="text-danger h6" >{{item?.stock_disponible}}</strong></p>
+                        </div>
                       </div>
-                    </div>
-
+                    
                   }
-              
-              
             </div>
 
           </div>
+
         </div><!-- End Recent Activity -->
       }
 
+      @if(stats?.dash?.vente.jamais_vendu_apres_un_mois) {
         <div class="card">
-          
-
           <div class="card-body">
             <h5 class="card-title text-danger" hidden>Produits dormants</h5>
 
@@ -249,7 +236,7 @@
 
             <div class="activity">
               
-                  @for (item of stats?.dash?.vente?.jamais_vendu; track $index) {
+                  @for (item of stats?.dash?.vente?.jamais_vendu_un_mois_apres_saisie; track $index) {
 
                     <div class="news mt-2">
                       <div class="post-item clearfix">
@@ -266,11 +253,11 @@
 
           </div>
         </div>
+      }
 
-
+      @if(stats?.dash?.produit?.stock_alert) {
         <div class="card">
           
-
           <div class="card-body">
             <h5 class="card-title text-danger">Alerte Stock</h5>
 
@@ -288,25 +275,26 @@
 
 
             <div class="activity">
-
-              
                   @for (item of stats?.dash?.produit?.stock_alert; track $index) {
 
-                    <div class="news mt-2">
-                      <div class="post-item clearfix">
-                        <img src="{{api_url}}/{{item.path}}" alt="image">
-                        <h4><a href="#">{{item?.nom}}</a></h4>
-                        <p>Stock disponible: <strong class="text-danger h6" >{{item?.stock_disponible}}</strong></p>
+                    @if (item?.stock_disponible <= item?.seuil_alert && item?.stock_disponible !== 0) {
+                        <div class="news mt-2">
+                        <div class="post-item clearfix">
+                          <img src="{{api_url}}/{{item.path}}" alt="image">
+                          <h4><a href="#">{{item?.nom}}</a></h4>
+                          <p>Stock disponible: <strong class="text-danger h6" >{{item?.stock_disponible}}</strong></p>
+                        </div>
                       </div>
-                    </div>
+                    }
 
                   }
-              
-              
             </div>
 
           </div>
         </div>
+      }
+
+        
       <!-- Recent Activity -->
 
       
