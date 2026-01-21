@@ -112,6 +112,18 @@
                         </div>
                       }
                   </div>
+
+                  <div class="mb-4">
+                    <label class="form-label" for="telephone">Numéro de téléphone</label>
+                    <input type="telephone" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+                    @if (isSubmitted && f['telephone'].errors) {
+                        <div class="invalid-feedback">
+                          @if (f['telephone'].errors['required']) {
+                            <div>L'adresse email est obligatoire</div>
+                          }
+                        </div>
+                      }
+                  </div>
                   
                   <div class="row">
                     <div class="col mb-4">

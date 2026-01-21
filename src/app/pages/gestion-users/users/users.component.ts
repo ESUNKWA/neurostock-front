@@ -50,6 +50,8 @@ export class UsersComponent {
       nom: ['', [Validators.required]],
       prenoms: ['', [Validators.required]],
       email: ['', [Validators.required]],
+      telephone: ['', [Validators.required]],
+      
       mot_de_passe: this.fb.control('12345', { nonNullable: true }),
       profil: ['', [Validators.required]],
       boutique: ['', [Validators.required]],

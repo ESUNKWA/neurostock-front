@@ -169,7 +169,7 @@
 
                   <div class="row mt-3">
                     <!-- Montant total -->
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                       <label class="form-label">Montant total</label>
                       <div class="input-group">
                         <span class="input-group-text">FCFA</span>
@@ -180,7 +180,21 @@
                               readonly>
                       </div>
                     </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label">Montant total après remise</label>
+                      <div class="input-group">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text"
+                        style="font-weight: bold; color: rgb(34, 146, 19);"
+                              class="form-control"
+                              [value]="venteForm.get('montant_total_apres_remise')?.value"
+                              readonly>
+                      </div>
+                    </div>
+
                   </div>
+                  
 
                 </div>
               </div>
@@ -252,7 +266,7 @@
         </div>
         
         <div class="col-12 text-end">
-          <button type="submit" class="btn btn-success" [disabled]="loading">
+          <button type="submit" class="btn btn-primary" [disabled]="loading" [disabled]="venteForm.value.montant_total_apres_remise > venteForm.value.montant_recu">
             @if (loading) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
               {{ isEditMode ? 'Mise à jour en cours...' : 'Enregistrement en cours...' }}

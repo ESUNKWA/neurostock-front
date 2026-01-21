@@ -9,6 +9,7 @@ import { VentesService } from '../../../services/gestion-des-ventes/ventes.servi
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
+import Swal from 'sweetalert2'
 declare var $: any;
 
 @Component({
@@ -29,6 +30,7 @@ export default class VenteComponent implements OnInit {
   boutiques: any[] = [];
   selectedBoutique: string = '';
   loading = false;
+
   
   // Variables pour le mode édition
   isEditMode = false;
@@ -47,6 +49,7 @@ export default class VenteComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    
     this.getCurrentUser();
     this.initForm();
     this.loadBoutiques();
@@ -82,10 +85,6 @@ export default class VenteComponent implements OnInit {
         return
       }
 
-      
-
-       console.log(this.detail_vente.value);
-
     });
     
   }
@@ -107,9 +106,10 @@ export default class VenteComponent implements OnInit {
       description: [''],
       boutique: [boutiqueId, Validators.required],
       montant_total: [0, [Validators.required, Validators.min(0)]],
-      remise: ['', [Validators.required, Validators.min(0)]],
-      monnaie_rendu: ['', [Validators.required, Validators.min(0)]],
-      montant_recu: ['', [Validators.required, Validators.min(0)]],
+      montant_total_apres_remise: [0, [Validators.required, Validators.min(0)]],
+      remise: [0, [Validators.required, Validators.min(0)]],
+      monnaie_rendu: [0, [Validators.required, Validators.min(0)]],
+      montant_recu: [0, [Validators.required, Validators.min(0)]],
       date_vente: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
       statut: ['payer', Validators.required],
@@ -324,12 +324,16 @@ export default class VenteComponent implements OnInit {
     }
   }
   
-
-  this.venteForm.patchValue({ montant_total: total });
+  this.venteForm.patchValue({ montant_total: total, montant_total_apres_remise: total });
 
   // Toast une seule fois
   if (stockError) {
-    this.toastr.error('La quantité dépasse le stock disponible');
+    //this.toastr.error('La quantité dépasse le stock disponible');
+    Swal.fire({
+      icon: "warning",
+      title: "Oops...",
+      text: "Le stock est épuisé"
+    });
   }
 }
 
@@ -340,13 +344,11 @@ export default class VenteComponent implements OnInit {
 
   // Calcul de la monnaie rendue
 calculerMonnaieRendue(): void {
-  const total = Number(this.venteForm.get('montant_total')?.value || 0);
+  const total = Number(this.venteForm.get('montant_total_apres_remise')?.value || 0);
   const recu = Number(this.venteForm.get('montant_recu')?.value || 0);
-  const rendu = Math.max(recu - total, 0);
+  const rendu = recu - total;
+  
   this.venteForm.patchValue({ monnaie_rendu: rendu });
-  console.log('total ',total);
-  console.log('recu', recu);
-  console.log('rendu',rendu);
   
 }
 
@@ -363,7 +365,7 @@ calculerMontantTotalApresRemise(): void {
   const remise = Number(this.venteForm.get('remise')?.value || 0);
   total = total - remise;
 
-  this.venteForm.patchValue({ montant_total: total });
+  this.venteForm.patchValue({ montant_total_apres_remise: total });
 
   // Recalcul monnaie rendue si déjà saisie
   this.calculerMonnaieRendue();
@@ -440,6 +442,17 @@ calculerMontantTotalApresRemise(): void {
       return;
     }
 
+    if (this.venteForm.value.montant_recu == 0) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Veuillez saisir le montant reçu de la part du client',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      });
+    }
+
+    
+
     this.loading = true;
     
     // Si on est en mode édition, appeler la méthode de mise à jour
@@ -459,12 +472,26 @@ calculerMontantTotalApresRemise(): void {
         next: (response: any) => {
           this.initForm(); // Réinitialiser le formulaire
           this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
-          this.toastr.success('Enregistrement effectué avec succès');
+          //this.toastr.success('Enregistrement effectué avec succès');
+          Swal.fire({
+            title: 'Vente effectuée avec succès',
+            text: 'Souhaitez-vous imprimer le reçu ?',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: '🖨️ Imprimer le reçu',
+            cancelButtonText: 'Fermer',
+            confirmButtonColor: '#198754', // vert Bootstrap
+            cancelButtonColor: '#6c757d'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              //this.imprimerRecu(); // 👉 fonction d'impression
+            }
+          });
           this.isSubmitting = false;
           // attendre 3 secondes avant de recharger la page
-          setTimeout(() => {
+          /* setTimeout(() => {
             window.location.reload();
-          }, 3000);
+          }, 3000); */
         },
         error: (error: any) => {
           console.error('Erreur lors de la création de la vente', error);
@@ -479,7 +506,21 @@ calculerMontantTotalApresRemise(): void {
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
-          this.toastr.success('Modification effectuée avec succès');
+          //this.toastr.success('Modification effectuée avec succès');
+          Swal.fire({
+            title: 'Vente effectuée avec succès',
+            text: 'Souhaitez-vous imprimer le reçu ?',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: '🖨️ Imprimer le reçu',
+            cancelButtonText: 'Fermer',
+            confirmButtonColor: '#198754', // vert Bootstrap
+            cancelButtonColor: '#6c757d'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              //this.imprimerRecu(); // 👉 fonction d'impression
+            }
+          });
           this.isSubmitting = false;
           
           // Réinitialiser le mode édition
@@ -523,4 +564,10 @@ calculerMontantTotalApresRemise(): void {
       }
     });
   }
+
+  imprimerRecu(urlRecuPdf: string) {
+  const url = urlRecuPdf; // ex: https://api.xxx/recus/123.pdf
+  window.open(url, '_blank');
+}
+
 }
