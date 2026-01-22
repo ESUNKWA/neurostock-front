@@ -57,18 +57,13 @@
                   }
                   <hr>
 
-                  <select class="form-select" id="mySelect" hidden>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="3">Option 3</option>
-                  </select>
+                 
                   <!-- DataTable avec colonnes fixes -->
                   <div class="table-responsive mt-4">
                     <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                       <thead>
                         <tr>
                           <th>Référence</th>
-                          <th>Libellé</th>
                           <th>Montant Total</th>
                           <th>Statut</th>
                           <th>Date de vente</th>
@@ -91,13 +86,13 @@
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold">Détails vente - Réf:<span class="text-danger"> {{ventes[0]?.reference}} </span>&nbsp;&nbsp;&nbsp;&nbsp; Total: <span class="text-success" >{{ventes[0]?.montant_total| number:'1.0-0' }} FCFA</span> </h5>
+        <h5 class="modal-title fw-bold">Détails vente - Réf:<span class="text-danger"> {{vente?.reference}} </span>&nbsp;&nbsp;&nbsp;&nbsp; Total: <span class="text-success" >{{vente?.montant_total_apres_remise| number:'1.0-0' }} FCFA</span> </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row">
 
-          <div class="col-md-12 text-success"><p>Cette vente a été enregistré par: <span class="text-primary fw-bold" >{{ventes[0]?.user?.nom}} {{ventes[0]?.user?.prenoms}}</span></p></div>
+          <div class="col-md-12 text-success"><p>Cette vente a été enregistré par: <span class="text-primary fw-bold" >{{vente?.user?.nom}} {{vente?.user?.prenoms}}</span></p></div>
 
           <div class="col-md-6">
             <div class="card">
@@ -186,6 +181,14 @@
                   <tr>
                     <td colspan="4" class="text-end fw-bold">Montant Total :</td>
                     <td class="fw-bold" id="detail-total-montant"></td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Rémise :</td>
+                    <td class="fw-bold" id="detail-total-remise" style="color: red;" ></td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Montant Total :</td>
+                    <td class="fw-bold" id="detail-total-montant-net" style="color: green;" ></td>
                   </tr>
                 </tfoot>
               </table>

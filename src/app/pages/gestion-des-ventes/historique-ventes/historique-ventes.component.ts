@@ -25,6 +25,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   boutiques: any[] = [];
   isLoading: boolean = false;
   detailsVente: any;
+  vente: any = {};
   
   constructor(
     private ventesService: VentesService,
@@ -184,11 +185,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               render: (data: any) => `<span class="fw-semibold">${data || ''}</span>` 
             },
             { 
-              data: 'libelle',
-              render: (data: any) => data || 'Non défini' 
-            },
-            { 
-              data: 'montant_total',
+              data: 'montant_total_apres_remise',
               render: (data: any) => `${data.toLocaleString()} FCFA` 
             },
             {
@@ -352,6 +349,9 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   updateProduitsTable(): void {
     const tableBody = document.getElementById('detail-produits-body');
     const totalElement = document.getElementById('detail-total-montant');
+    const totalNet = document.getElementById('detail-total-montant-net');
+    const remise = document.getElementById('detail-total-remise');
+    console.log('vente ', this.vente);
     
     if (!tableBody || !this.detailsVente) return;
     
@@ -366,6 +366,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
         </tr>
       `;
       if (totalElement) totalElement.textContent = '0 FCFA';
+      if (remise) remise.textContent = '0 FCFA';
       return;
     }
     
@@ -379,7 +380,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       const quantite = detail.quantite;
       const total = prixUnitaire * quantite;
       
-      montantTotal += total;
+      montantTotal = this.vente.montant_total;
       
       const row = document.createElement('tr');
       row.className = 'align-middle';
@@ -407,12 +408,21 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     if (totalElement) {
       totalElement.textContent = `${montantTotal.toLocaleString()} FCFA`;
     }
+    if (remise) {
+      remise.textContent = `${this.vente.remise.toLocaleString()} FCFA`;
+    }
+    if (totalNet) {
+      totalNet.textContent = `${this.vente.montant_total_apres_remise.toLocaleString()} FCFA`;
+    }
   }
 
   /**
    * Afficher les détails d'une vente
    */
   viewDetails(vente: any): void {
+
+    this.vente = vente;
+    
     // Récupérer les détails de la vente (sera traité de manière asynchrone)
     this.getDetailsVente(vente.id);
     
