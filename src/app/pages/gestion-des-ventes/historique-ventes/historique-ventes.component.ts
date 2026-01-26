@@ -81,7 +81,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
 
   loadBoutiques(): void {
     if (this.currentUser.profil.code.toLowerCase() == 'admin' || this.currentUser.profil.code.toLowerCase() == 'gerant') {
-      this.boutiqueService.find().subscribe({
+      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
@@ -387,18 +387,18 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       row.innerHTML = `
         <td class="text-center">${index + 1}</td>
         <td>
-          <div class="d-flex align-items-center">
+          <div class="d-flex ">
             <div>
               <div class="fw-semibold">${produit.nom}</div>
               <small class="text-muted">${produit.description || ''}</small>
             </div>
           </div>
         </td>
-        <td class="text-end">${prixUnitaire.toLocaleString()} FCFA</td>
-        <td class="text-center">
+        <td class="">${prixUnitaire.toLocaleString()} FCFA</td>
+        <td class="">
           <span class="badge bg-light text-dark">${quantite}</span>
         </td>
-        <td class="text-end">${total.toLocaleString()} FCFA</td>
+        <td class="">${total.toLocaleString()} FCFA</td>
       `;
       
       tableBody.appendChild(row);

@@ -1,3 +1,4 @@
+
 /* You can add global styles to this file, and also import other style files */
 /* From Uiverse.io by NourSafta */ 
 .loader {
@@ -139,5 +140,11 @@
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+  }
+
+
+
+  nz-select {
+    width: 200px;
   }
 }

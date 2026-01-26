@@ -64,7 +64,7 @@
 </section>
 
 <!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
-<div class="modal fade" id="modal-fadein" tabindex="-1">
+<div class="modal fade" id="modal-fadein" tabindex="-1" >
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -128,12 +128,27 @@
                   <div class="row">
                     <div class="col mb-4">
                         <label class="form-label" for="profil">Profil</label>
-                        <select class="form-control js-example-basic-single" id="profil" formControlName="profil" [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
+                        <!-- <select class="form-control js-example-basic-single" id="profil" formControlName="profil" [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
                             <option value="">---Selectionnez le profil---</option>
                             @for (item of profils; track $index) {
                                 <option value="{{item.id}}">{{item.nom}}</option>
                             }
+                        </select> -->
+                        <select 
+                            class="form-control js-example-basic-single" 
+                            id="profil" 
+                            formControlName="profil"
+                            [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
+                            
+                            <option value="">---Sélectionnez le profil---</option>
+
+                            <option *ngFor="let item of profils" [value]="item.id" [selected]="item.id === f['profil'].value">
+                                {{item.nom}}
+                            </option>
+
                         </select>
+
+                   
                         @if (isSubmitted && f['profil'].errors) {
                           <div class="invalid-feedback">
                             @if (f['profil'].errors['required']) {

@@ -1,24 +1,25 @@
-import { Component, ElementRef, Inject, inject, PLATFORM_ID, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, ElementRef, Inject, inject, PLATFORM_ID, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { first, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user/user.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProfilService } from '../../../services/profil/profil.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 declare var $: any;
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-users',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NzSelectModule],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
 export class UsersComponent {
   souscription: Subscription = new Subscription();
   userForm: FormGroup;
-
+   idBoutique: number = 0;
   //Injection des services
   userService: any = inject(UserService);
   profilService: any = inject(ProfilService);
@@ -51,7 +52,6 @@ export class UsersComponent {
       prenoms: ['', [Validators.required]],
       email: ['', [Validators.required]],
       telephone: ['', [Validators.required]],
-      
       mot_de_passe: this.fb.control('12345', { nonNullable: true }),
       profil: ['', [Validators.required]],
       boutique: ['', [Validators.required]],
@@ -63,16 +63,17 @@ export class UsersComponent {
   get f() { return this.userForm.controls; }
   
   ngOnInit(): void {
-
+    
     this.currentUser = localStorage.getItem('user');
-    console.log(JSON.parse(this.currentUser));
     
     this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique?.id);
     this.profilFind();
-    this.boutiqueFind();
+  
+    this.boutiqueFind(JSON.parse(this.currentUser)?.structure[0]?.id);
+    
     
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
-    if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId)){
       setTimeout(() => {
         $('[data-bs-toggle="tooltip"]').tooltip({
           trigger: 'hover'
@@ -148,6 +149,7 @@ export class UsersComponent {
   }
 
   openNewModal(): void {
+     this.profilFind();
     this.userForm.reset();
     this.userForm.enable();
     this.isEditMode = false;
@@ -483,14 +485,19 @@ export class UsersComponent {
   profilFind(){
     this.souscription.add(
       this.profilService.find().subscribe({
-        next: (response: any = {})=> { this.profils = response.data;}
+        next: (response: any = {})=> { 
+          this.profils = response.data;
+          
+        },error: (error: any) => {
+          console.error('Erreur lors du chargement des profils:', error);
+        }
       })
     );
   }
 
-  boutiqueFind(){
+  boutiqueFind(structure: number){
     this.souscription.add(
-      this.boutiqueService.find().subscribe({
+      this.boutiqueService.find(structure).subscribe({
         next: (response: any = {})=> { this.boutiques = response.data;}
       })
     );

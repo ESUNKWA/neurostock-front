@@ -6,6 +6,9 @@ import { DashService } from '../../services/dash/dash.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { environnement } from '../../environnement/environnement';
+import { FormsModule } from '@angular/forms';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 declare var $: any;
 
@@ -15,7 +18,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -38,7 +41,7 @@ export default class DashboardComponent implements OnInit{
     { mois: 'Décembre', montant: 350000 }
   ];
 
-  
+
   boutiques: any = [];
   idBoutique: number = 0;
   currentUser: any = {};
@@ -74,15 +77,14 @@ export default class DashboardComponent implements OnInit{
 
   loadBoutiques(): void {
 
-    switch(this.currentUser.profil.code.toLowerCase()){
+    switch(this.currentUser.is_admin){
 
-      case 'admin':
+      case true:
         
         this.boutiqueService.find().subscribe({
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
-              
             }
           },
           error: (error: any) => {
@@ -91,7 +93,7 @@ export default class DashboardComponent implements OnInit{
         });
         break;
 
-      case 'responsable_structure':
+      case false:
         this.boutiques = this.currentUser.structure[0].boutique;
         break;
 
@@ -105,19 +107,29 @@ export default class DashboardComponent implements OnInit{
 
   loadStats(): void {
     const boutiqueId = this.idBoutique;
+
     this.dashService.find(boutiqueId).subscribe({
       next: (response) => {
-        
         this.stats = response;
         this.ventesParMois = this.stats.dash.vente_par_mois;
 
         //Calcul de la variation des ventes du jour
-        this.variationJr = ((this.stats?.dash?.vente?.total_vente_jr - this.stats?.dash?.vente?.total_vente_hier)/this.stats?.dash?.vente?.total_vente_hier) * 100;
-        this.variationJr = Math.round(this.variationJr);
+        if (this.stats?.dash?.vente?.total_vente_jr == 0 && this.stats?.dash?.vente?.total_vente_hier == 0) {
+          this.variationJr = -100;
+        }else{
+          this.variationJr = ((this.stats?.dash?.vente?.total_vente_jr - this.stats?.dash?.vente?.total_vente_hier)/this.stats?.dash?.vente?.total_vente_hier) * 100;
+          this.variationJr = Math.round(this.variationJr);
+        }
+
+
+        if (this.stats?.dash?.vente?.total_vente_mois == 0 && this.stats?.dash?.vente?.total_vente_mois_passe == 0) {
+          this.variationMois = -100;
+        }else{
+          //Calcul de la variation des ventes du mois
+          this.variationMois = ((this.stats?.dash?.vente?.total_vente_mois - this.stats?.dash?.vente?.total_vente_mois_passe)/this.stats?.dash?.vente?.total_vente_mois_passe) * 100;
+          this.variationMois = Math.round(this.variationMois);
+        }
         
-        //Calcul de la variation des ventes du mois
-        this.variationMois = ((this.stats?.dash?.vente?.total_vente_mois - this.stats?.dash?.vente?.total_vente_mois_passe)/this.stats?.dash?.vente?.total_vente_mois_passe) * 100;
-        this.variationMois = Math.round(this.variationMois);
 
         this.createChart();
       },
@@ -127,23 +139,6 @@ export default class DashboardComponent implements OnInit{
     });
   }
 
-
-   ngAfterViewInit() {
-    // Initialisation de Select2
-    ($('#mySelect') as any).select2({
-      placeholder: 'Sélectionner une boutique',
-      allowClear: true,
-      width: 'resolve',
-    });
-
-    // Gérer les changements
-    ($('#mySelect') as any).on('change', (e: any) => {
-      const idBoutique = ($('#mySelect') as any).val();
-
-      this.idBoutique = parseInt(idBoutique);
-      this.loadStats();
-    });
-  }
 
   createChart(): void {
     const ctx = document.getElementById('myChart') as HTMLCanvasElement;
@@ -160,10 +155,10 @@ export default class DashboardComponent implements OnInit{
     this.chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: this.ventesParMois.map(v => v.mois), // noms des mois
+        labels: this.ventesParMois?.map(v => v.mois), // noms des mois
         datasets: [{
           label: 'Chiffre d’affaires (F CFA)',
-          data: this.ventesParMois.map(v => v.montant), // montants
+          data: this.ventesParMois?.map(v => v.montant), // montants
           fill: true,
           backgroundColor: 'rgba(54, 162, 235, 0.2)',
           borderColor: 'rgba(54, 162, 235, 1)',

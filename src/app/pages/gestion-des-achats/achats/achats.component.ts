@@ -248,7 +248,7 @@ export default class AchatsComponent implements OnInit {
     
     switch(this.currentUser.profil.code.toLowerCase()){
 
-      case 'admin':
+      case true:
         
         this.boutiqueService.find().subscribe({
           next: (response: any) => {
@@ -262,9 +262,8 @@ export default class AchatsComponent implements OnInit {
         });
         break;
 
-      case 'responsable_structure':
+      case false:
         this.boutiques = this.currentUser.structure[0].boutique;
-      
         break;
 
         default:

@@ -260,7 +260,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+
+    if (this.currentUser.is_admin === true) {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
@@ -271,8 +272,21 @@ export default class ProduitComponent implements OnInit, OnDestroy {
           console.error('Erreur lors du chargement des boutiques:', error);
         }
       });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
+    }else{
+      if (this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
+        this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
+          }
+        });
+      } else {
+        this.boutiques[0] = this.currentUser.boutique;
+      }
     }
     
   }

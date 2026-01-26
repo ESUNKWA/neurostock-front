@@ -10,17 +10,19 @@ import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
 import Swal from 'sweetalert2'
+import { NzSelectModule } from 'ng-zorro-antd/select';
 declare var $: any;
 
 @Component({
   selector: 'app-vente',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ThousandSeparatorDirective],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective, NzSelectModule],
   templateUrl: './vente.component.html',
   styleUrl: './vente.component.scss'
 })
 export default class VenteComponent implements OnInit {
 
+  idBoutique: any;
   venteForm!: FormGroup;
   modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte'];
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
@@ -59,35 +61,7 @@ export default class VenteComponent implements OnInit {
     this.checkForEditData();
   }
 
-  ngAfterViewInit() {
-    // Initialisation de Select2
-    ($('.mySelect') as any).select2({
-      placeholder: 'Sélectionnez un produit',
-      allowClear: true,
-      width: 'resolve',
-    });
-
-    // Gérer les changements
-    // Événement change sur le dernier select uniquement
-    // Event delegation : écoute tous les select, même futurs
-    $(document).on('change', '.mySelect', (e: any) => {
-      const select = $(e.target);
-      const idProduit = select.val();
-      const index = select.closest('.detail-vente-item').index();
-
-      // Vérifier si le produit existe déjà
-      const existe = this.detail_vente.value.some((p: { produit: any; }) => p.produit == idProduit);
-
-      if (!existe) {
-        this.selectProduit(idProduit, index);
-      } else {
-        alert('⚠️ Ce produit existe déjà dans la liste !');
-        return
-      }
-
-    });
-    
-  }
+ 
 
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user) => {
@@ -161,28 +135,32 @@ export default class VenteComponent implements OnInit {
     }
   }
 
-  selectProduit(id_produit: number, index: number) {
-    const idProduit = id_produit;
-   
-    const produit = this.produits.find(p => p.id === +idProduit);
-    if (produit) {
-      const ligne = this.detail_vente.at(index) as FormGroup;
-     
-      
-      ligne.patchValue({ 
-        produit: produit.id,
-        prix_unitaire_vente: produit.prix_vente,
-        image: produit.imageUrl,
-        stock: produit.stock_disponible
-      });
+  selectProduit(ligne: FormGroup, idProduit: number) {
+  const produit = this.produits.find(p => p.id === idProduit);
+ 
+    // Vérifier si le produit existe déjà
+      const existe = this.detail_vente.value.some((p: { produit: any; }) => p.produit == idProduit);
 
-      this.currentProduitSelect = ligne;
-     
-    }
-    
-  }
+      if (!existe) {
+        //this.selectProduit(idProduit, index);
+      } else {
+       
+        Swal.fire({
+          icon: "warning",
+          title: "Oops...",
+          text: "⚠️ Ce produit existe déjà dans la liste !"
+        });
+        return
+      }
+  if (!produit) return;
 
-
+  ligne.patchValue({
+    prix_unitaire_vente: produit.prix_vente,
+    image: produit.imageUrl,
+    stock: produit.stock_disponible
+  });
+}
+  
 
   populateFormWithEditData(): void {
     if (!this.editVenteData || !this.editVenteData.vente) return;
@@ -253,7 +231,7 @@ export default class VenteComponent implements OnInit {
   }
 
   createDetailVente(): FormGroup {
-    return this.fb.group({
+    const ligne =  this.fb.group({
       image: [''],
       stock:[],
       image_produit: [],
@@ -261,6 +239,14 @@ export default class VenteComponent implements OnInit {
       prix_unitaire_vente: [null, [Validators.required, Validators.min(0)]],
       quantite: [null, [Validators.required, Validators.min(1)]]
     });
+
+    // 🔥 Écoute du produit sélectionné
+  ligne.get('produit')?.valueChanges.subscribe((idProduit: any) => {
+    this.selectProduit(ligne, idProduit);
+  });
+
+  return ligne;
+    
   }
 
   addDetailVente(): void {
@@ -376,19 +362,32 @@ calculerMontantTotalApresRemise(): void {
       return;
     }
     
-    if (this.currentUser.profil && 
-       (this.currentUser.profil.description.toLowerCase() === 'administrateur' || 
-        this.currentUser.profil.description.toLowerCase() === 'responsable structure')) {
+    if (this.currentUser.is_admin === true) {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
           }
         },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
       });
-    } else if (this.currentUser.boutique) {
-      this.boutiques[0] = this.currentUser.boutique;
-      this.venteForm.patchValue({ boutique: this.currentUser.boutique.id });
+    }else{
+      if (this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+        this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
+          }
+        });
+      } else {
+        this.boutiques[0] = this.currentUser.boutique;
+      }
     }
   }
 

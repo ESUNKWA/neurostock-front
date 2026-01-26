@@ -28,6 +28,18 @@ export class BoutiqueService {
       );
   }
 
+  //récupère tous les boutiques
+  findByStructure(structure: string): Observable<any> {
+    return this.http.get(`${this.API_URL}/boutique?structure=${structure}`)
+      .pipe(
+        tap(data => this.boutiques.set(data)),
+        catchError(error => {
+          console.error('Erreur lors du chargement des boutiques', error);
+          return of([]); // Retourne un tableau vide en cas d'erreur
+        })
+      );
+  }
+
   create(body: any): Observable<any>{
     return this.http.post(`${this.API_URL}/boutique`, body);
   }

@@ -43,13 +43,19 @@
 
                 <div class="col-md-5">
                   <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                  <select class="form-select mySelect" [id]="'produit_' + i" formControlName="produit"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}" >
-                    <option [ngValue]="null" disabled>---Sélectionnez un produit---</option>
-                    <option *ngFor="let produit of produits" [value]="produit.id">
-                      {{ produit.nom }}
-                    </option>
-                  </select>
+                  <nz-select
+                    nzShowSearch
+                    nzAllowClear
+                    nzPlaceHolder="Sélectionner un produit"
+                    formControlName="produit">
+                    @for (produit of produits; track produit.id) {
+                      <nz-option
+                        [nzLabel]="produit.nom"
+                        [nzValue]="produit.id">
+                      </nz-option>
+                    }
+                  </nz-select>
+
                   
                   @if (isSubmitting && detail.get('produit')?.errors) {
                     <div class="invalid-feedback">
