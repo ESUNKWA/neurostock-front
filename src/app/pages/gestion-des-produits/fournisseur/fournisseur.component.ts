@@ -7,6 +7,7 @@ import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -14,7 +15,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-fournisseur',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule, NzSelectModule],
   templateUrl: './fournisseur.component.html',
   styleUrl: './fournisseur.component.scss'
 })
@@ -79,7 +80,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
 
   loadBoutiques(): void {
     
-    switch(this.currentUser.profil.code.toLowerCase()){
+    switch(this.currentUser.is_admin){
 
       case true:
         

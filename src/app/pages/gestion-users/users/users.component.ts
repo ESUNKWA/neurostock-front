@@ -187,6 +187,7 @@ export class UsersComponent {
       nom: user.nom,
       prenoms: user.prenoms,
       email: user.email,
+      telephone: user.telephone,
       description: user.description,
       profil: user.profil?.id || '',
       boutique: user.boutique?.id || ''
@@ -272,6 +273,7 @@ export class UsersComponent {
       next: (response: any) => {
         if (response.status === 'success') {
           // Fermer le modal
+          this.isLoading = false;
           const modal = document.getElementById('modal-fadein');
           if (modal) {
             const modalInstance = bootstrap.Modal.getInstance(modal);
@@ -283,9 +285,9 @@ export class UsersComponent {
           this.toastr.success(this.isEditMode ? 
             'user modifiée avec succès' : 
             'user ajoutée avec succès');
-
+            
           // Recharger les données sans détruire complètement le tableau
-          this.userFind(this.currentUser.profil.code, this.currentUser.boutique.id);
+          this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique?.id);
 
           // Réinitialiser le formulaire et les états
           this.userForm.reset();

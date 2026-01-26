@@ -80,8 +80,8 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    if (this.currentUser.profil.code.toLowerCase() == 'admin' || this.currentUser.profil.code.toLowerCase() == 'gerant') {
-      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+    if (this.currentUser.is_admin === true) {
+      this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
@@ -91,8 +91,21 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
           console.error('Erreur lors du chargement des boutiques:', error);
         }
       });
-    } else {
-      this.boutiques[0] = this.currentUser.boutique;
+    }else{
+      if (this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
+        this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+          next: (response: any) => {
+            if (response.status === 'success' && response.data) {
+              this.boutiques = response.data;
+            }
+          },
+          error: (error: any) => {
+            console.error('Erreur lors du chargement des boutiques:', error);
+          }
+        });
+      } else {
+        this.boutiques[0] = this.currentUser.boutique;
+      }
     }
   }
 
@@ -332,7 +345,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.detailsVente = response.data.detail_vente;
-          
+           console.log(this.detailsVente );
           // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
           this.updateProduitsTable();
         }
@@ -351,7 +364,6 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     const totalElement = document.getElementById('detail-total-montant');
     const totalNet = document.getElementById('detail-total-montant-net');
     const remise = document.getElementById('detail-total-remise');
-    console.log('vente ', this.vente);
     
     if (!tableBody || !this.detailsVente) return;
     
@@ -420,7 +432,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
    * Afficher les détails d'une vente
    */
   viewDetails(vente: any): void {
-
+    
     this.vente = vente;
     
     // Récupérer les détails de la vente (sera traité de manière asynchrone)

@@ -61,7 +61,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    switch(this.currentUser.profil.code.toLowerCase()){
+    switch(this.currentUser.is_admin){
 
       case true:
         
@@ -79,8 +79,6 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
 
       case false:
         this.boutiques = this.currentUser.structure[0].boutique;
-        break;
-      
         break;
 
         default:
@@ -548,7 +546,6 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
    * Imprimer un achat
    */
   printAchat(achat: any): void {
-    console.log('Imprimer l\'achat:', achat);
     
     // Création d'une fenêtre d'impression
     const printWindow = window.open('', '_blank');
