@@ -10,12 +10,14 @@ import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
+import { NzOptionComponent, NzSelectModule } from "ng-zorro-antd/select";
+import Swal from 'sweetalert2';
 declare var $: any;
 
 @Component({
   selector: 'app-achats',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective, NzSelectModule],
   templateUrl: './achats.component.html',
   styleUrl: './achats.component.scss'
 })
@@ -55,26 +57,6 @@ export default class AchatsComponent implements OnInit {
     
     // Vérifier s'il y a des données d'édition dans le localStorage
     this.checkForEditData();
-  }
-
-  ngAfterViewInit() {
-    // Initialisation de Select2
-    ($('.mySelect') as any).select2({
-      placeholder: 'Sélectionnez une boutique',
-      allowClear: true,
-      width: 'resolve',
-    });
-
-    // Gérer les changements
-    // Événement change sur le dernier select uniquement
-    // Event delegation : écoute tous les select, même futurs
-    $(document).on('change', '.mySelect', (e: any) => {
-      const select = $(e.target);
-      const idProduit = select.val();
-      const index = select.closest('.detail-vente-item').index();
-      console.log(idProduit);
-      
-    });
   }
 
   getCurrentUser() {
@@ -200,11 +182,21 @@ export default class AchatsComponent implements OnInit {
   }
 
   createDetailAchat(): FormGroup {
-    return this.fb.group({
+    
+    const ligne = this.fb.group({
+      image: [''],
+      stock:[],
       produit: [null, Validators.required],
       prix_unitaire: [null, [Validators.required, Validators.min(0)]],
       quantite: [null, [Validators.required, Validators.min(1)]]
     });
+
+     // 🔥 Écoute du produit sélectionné
+    ligne.get('produit')?.valueChanges.subscribe((idProduit: any) => {
+      this.selectProduit(ligne, idProduit);
+    });
+
+    return ligne;
   }
 
   addDetailAchat(): void {
@@ -400,6 +392,33 @@ export default class AchatsComponent implements OnInit {
           }
         });
       }
+    });
+  }
+
+  selectProduit(ligne: FormGroup, idProduit: number) {
+    const produit = this.produits.find(p => p.id === idProduit);
+   
+      // Vérifier si le produit existe déjà
+        const existe = this.detailAchat.value.some((p: { produit: any; }) => p.produit == idProduit);
+  
+        if (!existe) {
+          //this.selectProduit(idProduit, index);
+        } else {
+         
+          Swal.fire({
+            icon: "warning",
+            title: "Oops...",
+            text: "⚠️ Ce produit existe déjà dans la liste !"
+          });
+          return
+        }
+    if (!produit) return;
+  
+    ligne.patchValue({
+      prix_unitaire_vente: produit.prix_vente,
+      image: produit.imageUrl,
+      stock: produit.stock_disponible,
+      nom: produit.nom
     });
   }
 }

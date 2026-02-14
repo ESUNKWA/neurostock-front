@@ -28,6 +28,10 @@ export class VentesService {
 
   updateVente(id: any, body: any) {
     return this.http.patch(`${this.API_URL}/vente/${id}`, body);
-  }  
+  } 
+  
+  imprimerRecu(body: any) {
+    return this.http.post(`${this.API_URL}/pdf/facture/pdf`, body);
+  } 
   
 }

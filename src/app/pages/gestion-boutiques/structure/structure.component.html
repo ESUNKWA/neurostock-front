@@ -4,9 +4,9 @@
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a routerLink="/dashboard">
-                <i class="bi bi-house"></i> Gestion des Boutiques</a>
+                <i class="bi bi-house"></i> Gestion des boutiques</a>
             </li>
-            <li class="breadcrumb-item active">Structure</li>
+            <li class="breadcrumb-item active">structures</li>
           </ol>
         </nav>
     </div>
@@ -44,7 +44,8 @@
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
-                                  <th>nom</th>
+                                  <th>Logo</th>
+                                  <th>Structure</th>
                                   <th>telephone</th>
                                   <th class="d-none d-sm-table-cell">email</th>
                                   <th class="d-none d-sm-table-cell">Date de création</th>
@@ -116,8 +117,8 @@
                                             <div class="border rounded p-2" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
                                                 @if (previewImageUrl) {
                                                     <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
-                                                } @else if (selectedProduit?.image) {
-                                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                                                } @else if (structureData?.imageUrl) {
+                                                    <img [src]="structureData.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
                                                 } @else {
                                                     <div class="text-muted">
                                                         <i class="bi bi-image" style="font-size: 2rem;"></i>

@@ -26,6 +26,10 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   detailsVente: any;
   vente: any = {};
+  facture: any = {
+    vente: {},
+      details: []
+  };
   
   constructor(
     private ventesService: VentesService,
@@ -345,7 +349,11 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.detailsVente = response.data.detail_vente;
-           console.log(this.detailsVente );
+           
+           this.vente.detail_vente = this.detailsVente;
+          this.facture = this.vente
+           console.log(this.facture );
+           
           // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
           this.updateProduitsTable();
         }
@@ -562,7 +570,6 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
    * Imprimer une vente
    */
   printVente(vente: any): void {
-    console.log('Imprimer la vente:', vente);
     
     // Création d'une fenêtre d'impression
     const printWindow = window.open('', '_blank');

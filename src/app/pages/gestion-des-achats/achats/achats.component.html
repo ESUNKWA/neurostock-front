@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<hr>
+
 
 <section class="section">
   <div class="card">
@@ -48,7 +48,7 @@
         </div>
 
         @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
             <select class="form-select " (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">
               <option value="">Sélectionner une boutique</option>
@@ -117,15 +117,17 @@
           }
         </div>
         
-        <div class="col-md-12">
-          <hr>
-          <h5>Détails de l'achat</h5>
+        <div class="col-md-12 details-section">
+          
+          <div class="details-header">
+            <h5>Détails de l'achat</h5>
+          </div>
           
           <div formArrayName="detail_achat">
             <div *ngFor="let detail of detailAchat.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-achat-item">
 
               @if (detail.get('image')?.value) {
-                  <div class="col-md-2">
+                  <div class="col-md-1">
                       <div class="image-produit" *ngIf="detail.get('image')?.value">
                       <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
                       <p class="stock-info">
@@ -138,13 +140,26 @@
 
               <div class="col">
                 <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                <select class="form-select " [id]="'produit_' + i" formControlName="produit"
+                <!-- <select class="form-select " [id]="'produit_' + i" formControlName="produit"
                     [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
                   <option [ngValue]="null" disabled>Sélectionnez un produit</option>
                   <option *ngFor="let produit of produits" [ngValue]="produit.id">
                     {{ produit.nom }}
                   </option>
-                </select>
+                </select> -->
+                <br>
+                <nz-select
+                    nzShowSearch
+                    nzAllowClear
+                    nzPlaceHolder="Sélectionner un produit"
+                    formControlName="produit">
+                    @for (produit of produits; track produit.id) {
+                      <nz-option
+                        [nzLabel]="produit.nom"
+                        [nzValue]="produit.id">
+                      </nz-option>
+                    }
+                  </nz-select>
                 @if (isSubmitting && detail.get('produit')?.errors) {
                   <div class="invalid-feedback">
                     @if (detail.get('produit')?.errors?.['required']) {

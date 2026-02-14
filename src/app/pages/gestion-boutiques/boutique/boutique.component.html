@@ -44,7 +44,8 @@
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
-                                  <th>nom</th>
+                                  <th>Logo</th>
+                                  <th>Boutique</th>
                                   <th>telephone</th>
                                   <th class="d-none d-sm-table-cell">email</th>
                                   <th class="d-none d-sm-table-cell">rccm</th>
@@ -126,8 +127,8 @@
                             <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
                                 @if (previewImageUrl) {
                                     <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                } @else if (selectedProduit?.image) {
-                                    <img [src]="selectedProduit.image" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
+                                } @else if (boutiqueData?.imageUrl) {
+                                    <img [src]="boutiqueData.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
                                 } @else {
                                     <div class="text-muted">
                                         <i class="bi bi-image" style="font-size: 2rem;"></i>

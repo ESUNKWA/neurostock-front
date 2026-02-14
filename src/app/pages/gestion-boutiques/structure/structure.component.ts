@@ -108,11 +108,10 @@ export class StructureComponent {
   }
 
   openView(structure: any): void {
-    console.log(structure?.boutique);
     this.boutiques =  structure?.boutique;
     this.structureForm.disable();
     this.structureData = structure;
-    const title = `Visualiser le user [ ${structure?.nom} ]`;
+    const title = `Visualiser la structure [ ${structure?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
@@ -129,14 +128,14 @@ export class StructureComponent {
     }
   }
 
-  openEdit(user: any): void {
-    this.structureData = user;
-    this.structureForm.patchValue(user);
+  openEdit(structure: any): void {
+    this.structureData = structure;
+    this.structureForm.patchValue(structure);
     this.structureForm.enable();
-    this.isEditMode = !!user;
+    this.isEditMode = !!structure;
     this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
     this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
-    const title = `Modifier le user [${user?.nom}]`;
+    const title = `Modifier la structure [${structure?.nom}]`;
     this.titleModal = title;
     
     this.isSubmitted = false;
@@ -205,7 +204,7 @@ get r() {
     
     const formData = new FormData();
     const structure = this.structureForm.value;
-
+    
     // Ajouter les champs au FormData
     Object.keys(structure).forEach(key => {
       if (key === 'logo' && this.selectedFile) {
@@ -219,11 +218,10 @@ get r() {
     //const user = this.structureForm.value;
     if (this.isEditMode && this.structureData) {
       // Mode modification
-      
-      request = this.structureService.update(this.structureForm.value, this.structureData.id);
+      request = this.structureService.update(formData, this.structureData.id);
     } else {
       // Mode création
-      request = this.structureService.create(this.structureForm.value);
+      request = this.structureService.create(formData);
     }
 
     // Afficher l'indicateur de chargement sans masquer le tableau
@@ -289,6 +287,10 @@ get r() {
         $('.js-dataTable-buttons').DataTable({
           data: this.users, // Fournir les données directement
           columns: [
+             { 
+              data: 'imageUrl',
+              render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
+            },
             { 
               data: 'nom',
               render: (data: any) => `<span class="fw-semibold">${data.toUpperCase() || ''}</span>` 

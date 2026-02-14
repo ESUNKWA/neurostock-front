@@ -51,7 +51,7 @@ export default class VenteComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    
+
     this.getCurrentUser();
     this.initForm();
     this.loadBoutiques();
@@ -137,7 +137,7 @@ export default class VenteComponent implements OnInit {
 
   selectProduit(ligne: FormGroup, idProduit: number) {
   const produit = this.produits.find(p => p.id === idProduit);
- 
+    
     // Vérifier si le produit existe déjà
       const existe = this.detail_vente.value.some((p: { produit: any; }) => p.produit == idProduit);
 
@@ -157,7 +157,8 @@ export default class VenteComponent implements OnInit {
   ligne.patchValue({
     prix_unitaire_vente: produit.prix_vente,
     image: produit.imageUrl,
-    stock: produit.stock_disponible
+    stock: produit.stock_disponible,
+    nom: produit.nom
   });
 }
   
@@ -233,6 +234,7 @@ export default class VenteComponent implements OnInit {
   createDetailVente(): FormGroup {
     const ligne =  this.fb.group({
       image: [''],
+      nom: [''],
       stock:[],
       image_produit: [],
       produit: [null, Validators.required],
@@ -252,7 +254,7 @@ export default class VenteComponent implements OnInit {
   addDetailVente(): void {
     this.detailVente.push(this.createDetailVente());
     this.calculerMontantTotal();
-
+    
     // Attendre que Angular rende la nouvelle ligne
     setTimeout(() => {
       const selects = $('.mySelect');          // tous les selects
@@ -272,28 +274,10 @@ export default class VenteComponent implements OnInit {
     this.calculerMontantTotal();
   }
 
-  /* calculerMontantTotal(): void {
-    let total = 0;
-    for (const detail of this.detailVente.controls) {
-      const stockActuel = detail.get('stock')?.value || 0;
-      const quantite = detail.get('quantite')?.value || 0;
-      const prix = detail.get('prix_unitaire_vente')?.value || 0;
-
-      if (quantite > stockActuel) {
-        this.toastr.error("Attention");
-        return
-      }
-      
-
-      total += quantite * prix;
-    }
-    this.venteForm.patchValue({ montant_total: total });
-  } */
-
   calculerMontantTotal(): void {
   let total = 0;
   let stockError = false;
-
+    
   for (const detail of this.detailVente.controls) {
     const stock = Number(detail.get('stock')?.value || 0);
     const quantite = Number(detail.get('quantite')?.value || 0);
@@ -450,7 +434,8 @@ calculerMontantTotalApresRemise(): void {
       });
     }
 
-    
+    console.log(this.venteForm.value);
+
 
     this.loading = true;
     
@@ -469,9 +454,13 @@ calculerMontantTotalApresRemise(): void {
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
+          response.data.boutique = this.currentUser?.boutique || null;
+         
           this.initForm(); // Réinitialiser le formulaire
           this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
           //this.toastr.success('Enregistrement effectué avec succès');
+          
+
           Swal.fire({
             title: 'Vente effectuée avec succès',
             text: 'Souhaitez-vous imprimer le reçu ?',
@@ -479,13 +468,39 @@ calculerMontantTotalApresRemise(): void {
             showCancelButton: true,
             confirmButtonText: '🖨️ Imprimer le reçu',
             cancelButtonText: 'Fermer',
-            confirmButtonColor: '#198754', // vert Bootstrap
-            cancelButtonColor: '#6c757d'
+
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+
+            preConfirm: async () => {
+              try {
+                
+                const facture = this.ventesService
+                  .imprimerRecu(response.data)
+                  .toPromise();
+                
+                return facture;
+              } catch (e) {
+                Swal.showValidationMessage(
+                  'Impossible de générer la facture'
+                );
+                return false;
+              }
+            }
           }).then((result) => {
-            if (result.isConfirmed) {
-              //this.imprimerRecu(); // 👉 fonction d'impression
+            if (result.isConfirmed && result.value) {
+              console.log(result.value);
+              
+              const url = result.value.path;
+              
+              window.open(url, '_blank');
+
+              // nettoyage mémoire
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
             }
           });
+
+          
           this.isSubmitting = false;
           // attendre 3 secondes avant de recharger la page
           /* setTimeout(() => {
@@ -517,7 +532,7 @@ calculerMontantTotalApresRemise(): void {
             cancelButtonColor: '#6c757d'
           }).then((result) => {
             if (result.isConfirmed) {
-              //this.imprimerRecu(); // 👉 fonction d'impression
+              
             }
           });
           this.isSubmitting = false;

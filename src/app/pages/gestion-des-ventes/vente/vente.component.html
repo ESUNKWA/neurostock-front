@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<section class="section">
+<section class="section vente-details-section">
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">{{ isEditMode ? 'Modification d\'une vente' : 'Enregistrement d\'une nouvelle vente' }}</h5>
@@ -24,25 +24,42 @@
         <div class="row">
 
           <div class="col-md-9">
-            <h5  class="mb-3">Détails de la vente</h5>
+            
+            <div class="vente-details-header">
+              <h5>Détails de la vente</h5>
+            </div>
             
             <div class="row" formArrayName="detail_vente">
-              <div *ngFor="let detail of detailVente.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-vente-item">
+              <!-- <div *ngFor="let detail of detailVente.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-vente-item"> -->
+                <div *ngFor="let detail of detailVente.controls; let i = index"
+                    [formGroupName]="i"
+                    class="row g-3 mb-3 py-3 detail-vente-item">
+
+                  <div class="produit-index">
+                    {{ i + 1 }}
+                  </div>
 
                 @if (detail.get('image')?.value) {
-                  <div class="col-md-2">
+                  <div class="col-md-1">
                       <div class="image-produit" *ngIf="detail.get('image')?.value">
                       <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
                       <p class="stock-info">
-                        🏷️ Stock dispo : 
-                        <strong>{{ detail.get('stock')?.value }}</strong>
+                        <!-- 🏷️ Stock dispo :  -->
+                         <span class="stock-badge"
+                                [ngClass]="{
+                                  'stock-ok': detail.get('stock')?.value > 5,
+                                  'stock-low': detail.get('stock')?.value <= 5
+                                }">
+                            Stock: {{ detail.get('stock')?.value }}
+                          </span>
+
                       </p>
                     </div>
                   </div>
                 }
 
                 <div class="col-md-5">
-                  <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
+                  <label [for]="'produit_' + i" class="form-label">Liste des produits <span class="text-danger">*</span></label>
                   <nz-select
                     nzShowSearch
                     nzAllowClear
@@ -210,10 +227,10 @@
             
           </div>
 
-          <div class="col-md-3">
+          <div class="col-md-3 vente-sidebar">
 
 
-            <div class="row mt-5">
+            <div class="row mt-5 ">
                   <div class="col-md-12">
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>

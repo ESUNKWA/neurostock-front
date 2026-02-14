@@ -26,7 +26,7 @@ export class BoutiqueComponent {
   toastr = inject(ToastrService)
 
   boutiques: any [] = [];
-  structureData: any = {};
+  boutiqueData: any = {};
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
@@ -41,7 +41,7 @@ export class BoutiqueComponent {
   selectedFile: File | null = null;
 
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
-  structureId: any = '';
+  boutiqueId: any = '';
   
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.boutiqueForm = this.fb.group({
@@ -62,10 +62,10 @@ export class BoutiqueComponent {
 
     this.structure.find().subscribe({
       next: (structure: any) => {
-        this.structureId = structure.data[0].id;
+        this.boutiqueId = structure.data[0].id;
         
         // Mise à jour du champ dans le formulaire
-        this.boutiqueForm.patchValue({ structure: this.structureId });
+        this.boutiqueForm.patchValue({ structure: this.boutiqueId });
     
         // Maintenant que la valeur est bien mise à jour, tu peux appeler boutiqueFind()
         this.boutiqueFind();
@@ -106,8 +106,8 @@ export class BoutiqueComponent {
     this.boutiqueForm.reset();
     this.boutiqueForm.enable();
     this.isEditMode = false;
-    this.structureData = null;
-    const title = 'Ajouter un nouveau user';
+    this.boutiqueData = null;
+    const title = 'Ajouter une nouvelle boutique';
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
@@ -115,17 +115,17 @@ export class BoutiqueComponent {
     
   }
 
-  openView(user: any): void {
+  openView(boutique: any): void {
     this.boutiqueForm.disable();
-    this.structureData = user;
-    const title = `Visualiser le user [ ${user?.nom} ]`;
+    this.boutiqueData = boutique;
+    const title = `Visualiser la boutique [ ${boutique?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
     
     this.isSubmitted = false;
     
-    this.boutiqueForm.patchValue(user);
+    this.boutiqueForm.patchValue(boutique);
     this.boutiqueForm.disable();
 
     const modal = document.getElementById('modal-fadein');
@@ -135,14 +135,14 @@ export class BoutiqueComponent {
     }
   }
 
-  openEdit(user: any): void {
-    this.structureData = user;
-    this.boutiqueForm.patchValue(user);
+  openEdit(boutique: any): void {
+    this.boutiqueData = boutique;
+    this.boutiqueForm.patchValue(boutique);
     this.boutiqueForm.enable();
-    this.isEditMode = !!user;
+    this.isEditMode = !!boutique;
     this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
     this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
-    const title = `Modifier le user [${user?.nom}]`;
+    const title = `Modifier la boutique [${boutique?.nom}]`;
     this.titleModal = title;
     
     this.isSubmitted = false;
@@ -198,7 +198,7 @@ export class BoutiqueComponent {
     if (this.boutiqueForm.invalid) {
       return;
     }
-    this.boutiqueForm.value.structure = this.structureId;
+    this.boutiqueForm.value.boutique = this.boutiqueId;
     const formData = new FormData();
     const structure = this.boutiqueForm.value;
 
@@ -213,13 +213,13 @@ export class BoutiqueComponent {
 
     let request;
     //const user = this.boutiqueForm.value;
-    if (this.isEditMode && this.structureData) {
+    if (this.isEditMode && this.boutiqueData) {
       // Mode modification
       
-      request = this.boutiqueService.update(this.boutiqueForm.value, this.structureData.id);
+      request = this.boutiqueService.update(formData, this.boutiqueData.id);
     } else {
       // Mode création
-      request = this.boutiqueService.create(this.boutiqueForm.value);
+      request = this.boutiqueService.create(formData);
     }
 
     // Afficher l'indicateur de chargement sans masquer le tableau
@@ -248,7 +248,7 @@ export class BoutiqueComponent {
           this.boutiqueForm.reset();
           this.isSubmitted = false;
           this.isEditMode = false;
-          this.structureData = null;
+          this.boutiqueData = null;
         } else {
           this.isLoading = false;
           this.toastr.error('Une erreur est survenue lors de la sauvegarde');
@@ -284,6 +284,10 @@ export class BoutiqueComponent {
         $('.js-dataTable-buttons').DataTable({
           data: this.boutiques, // Fournir les données directement
           columns: [
+            { 
+              data: 'imageUrl',
+              render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
+            },
             { 
               data: 'nom',
               render: (data: any) => `<span class="fw-semibold">${data.toUpperCase() || ''}</span>` 
