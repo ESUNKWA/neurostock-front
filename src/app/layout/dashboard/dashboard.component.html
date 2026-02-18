@@ -11,7 +11,7 @@
 <section class="section dashboard">
 
 
-  @if (boutiques.length >= 1 || currentUser.is_admin == true) {
+  @if (currentUser.profil.code =='responsable_structure' || currentUser.is_admin == true) {
     <div class="row">
       <div class="col-md-12">
           <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Selectionner une boutique" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()">

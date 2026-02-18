@@ -434,10 +434,9 @@ calculerMontantTotalApresRemise(): void {
       });
     }
 
-    console.log(this.venteForm.value);
-
-
+    this.venteForm.value.boutique = this.currentUser?.boutique;
     this.loading = true;
+    
     
     // Si on est en mode édition, appeler la méthode de mise à jour
     if (this.isEditMode && this.editVenteId) {
@@ -454,7 +453,7 @@ calculerMontantTotalApresRemise(): void {
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
-          response.data.boutique = this.currentUser?.boutique || null;
+          //response.data.boutique = this.currentUser?.boutique || null;
          
           this.initForm(); // Réinitialiser le formulaire
           this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
@@ -474,9 +473,10 @@ calculerMontantTotalApresRemise(): void {
 
             preConfirm: async () => {
               try {
+                console.log(response.data);
                 
                 const facture = this.ventesService
-                  .imprimerRecu(response.data)
+                  .imprimerRecu(response.data.idVente)
                   .toPromise();
                 
                 return facture;

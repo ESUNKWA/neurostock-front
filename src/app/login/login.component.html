@@ -38,21 +38,21 @@
                 }
 
                 <div class="col-12">
-                  <label for="email" class="form-label">Email</label>
+                  <label for="telephone" class="form-label">Identifiant</label>
                   <div class="input-group has-validation">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" 
-                           formControlName="email" 
+                    <input type="text" 
+                           formControlName="telephone" 
                            class="form-control" 
-                           id="email" 
-                           [ngClass]="{'is-invalid': submitted && f['email'].errors}">
-                    @if (submitted && f['email'].errors) {
+                           id="telephone" 
+                           [ngClass]="{'is-invalid': submitted && f['telephone'].errors}">
+                    @if (submitted && f['telephone'].errors) {
                       <div class="invalid-feedback">
-                        @if (f['email'].errors['required']) {
-                          <div>L'email est requis</div>
+                        @if (f['telephone'].errors['required']) {
+                          <div>Le Identifiant est requis</div>
                         }
-                        @if (f['email'].errors['email']) {
-                          <div>L'email doit être valide</div>
+                        @if (f['telephone'].errors['telephone']) {
+                          <div>Le Identifiant doit être valide</div>
                         }
                       </div>
                     }

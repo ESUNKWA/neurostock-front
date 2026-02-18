@@ -30,8 +30,8 @@ export class VentesService {
     return this.http.patch(`${this.API_URL}/vente/${id}`, body);
   } 
   
-  imprimerRecu(body: any) {
-    return this.http.post(`${this.API_URL}/pdf/facture/pdf`, body);
+  imprimerRecu(idVente: any) {
+    return this.http.get(`${this.API_URL}/pdf/generate/facture/${idVente}`);
   } 
   
 }

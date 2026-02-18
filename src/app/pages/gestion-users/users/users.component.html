@@ -146,8 +146,22 @@
                                 {{item.nom}}
                             </option>
 
+                            
+
                         </select>
 
+                        <!-- <nz-select
+                          nzShowSearch
+                          nzAllowClear
+                          nzPlaceHolder="Sélectionner un produit"
+                          formControlName="profil">
+                          @for (item of profils; track item.id) {
+                            <nz-option
+                              [nzLabel]="item.nom"
+                              [nzValue]="item.id">
+                            </nz-option>
+                          }
+                        </nz-select> -->
                    
                         @if (isSubmitted && f['profil'].errors) {
                           <div class="invalid-feedback">

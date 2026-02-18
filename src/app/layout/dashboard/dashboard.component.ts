@@ -65,7 +65,9 @@ export default class DashboardComponent implements OnInit{
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadBoutiques();
-    
+
+    this.loadStats()
+
   }
   
 
@@ -77,9 +79,9 @@ export default class DashboardComponent implements OnInit{
 
   loadBoutiques(): void {
 
-    switch(this.currentUser.is_admin){
+    switch(this.currentUser.profil.code){
 
-      case true:
+      case 'admin':
         
         this.boutiqueService.find().subscribe({
           next: (response: any) => {
@@ -93,12 +95,12 @@ export default class DashboardComponent implements OnInit{
         });
         break;
 
-      case false:
-        this.boutiques = this.currentUser.structure[0].boutique;
+      case 'responsable_structure':
+        this.boutiques = this.currentUser.structure[0]?.boutique;
         break;
 
         default:
-          this.boutiques[0] = this.currentUser.boutique;
+          this.boutiques[0] = this.currentUser?.boutique?.id;
     }
 
    
@@ -106,7 +108,7 @@ export default class DashboardComponent implements OnInit{
   }
 
   loadStats(): void {
-    const boutiqueId = this.idBoutique;
+    const boutiqueId =  this.currentUser.profil.code =='admin' || this.currentUser.profil.code =='responsable_structure' ? this.idBoutique : this.currentUser.boutique.id;
 
     this.dashService.find(boutiqueId).subscribe({
       next: (response) => {

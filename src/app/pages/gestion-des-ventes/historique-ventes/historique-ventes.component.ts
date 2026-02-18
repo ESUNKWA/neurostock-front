@@ -124,7 +124,6 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
    */
   loadVentes(): void {
     this.isLoading = true;
-    console.log(this.idBoutique);
     
     if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'gerant') {
       if (!this.idBoutique) {
@@ -351,8 +350,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
           this.detailsVente = response.data.detail_vente;
            
            this.vente.detail_vente = this.detailsVente;
-          this.facture = this.vente
-           console.log(this.facture );
+          this.facture = this.vente;
            
           // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
           this.updateProduitsTable();
@@ -526,6 +524,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       const btnPrint = document.getElementById('btn-print-detail');
       if (btnPrint) {
         btnPrint.onclick = () => this.printVente(vente);
+        //btnPrint.onclick = () => this.printVente(vente);
       }
       
       // Afficher le modal
@@ -570,178 +569,27 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
    * Imprimer une vente
    */
   printVente(vente: any): void {
+    this.ventesService.imprimerRecu(vente.id).subscribe({
+      next(facture: any) {
+        
+        const url = facture.path;
+              
+        window.open(url, '_blank');
+
+        // nettoyage mémoire
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error(err) {
+        console.log(err.error);
+        
+      },
+    });
     
     // Création d'une fenêtre d'impression
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      this.toastr.error('Veuillez autoriser les popups pour cette fonctionnalité');
-      return;
-    }
+    //const printWindow = window.open('', '_blank');
+
     
-    // Formatage de la date
-    const dateVente = vente.date_vente ? new Date(vente.date_vente) : null;
-    const dateFormatee = dateVente ? 
-      `${dateVente.getDate().toString().padStart(2, '0')}/${(dateVente.getMonth() + 1).toString().padStart(2, '0')}/${dateVente.getFullYear()}` : 
-      'Non définie';
     
-    // Générer le HTML pour les détails des produits
-    let produitsHTML = '';
-    let totalGeneral = 0;
-    
-    if (this.detailsVente && this.detailsVente.length > 0) {
-      produitsHTML = `
-        <div class="products-section">
-          <div class="info-title">Détails des produits</div>
-          <table class="products-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Produit</th>
-                <th>Prix unitaire</th>
-                <th>Quantité</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-      
-      this.detailsVente.forEach((detail: any, index: number) => {
-        const produit = detail.produit;
-        const prixUnitaire = detail.prix_unitaire_vente;
-        const quantite = detail.quantite;
-        const total = prixUnitaire * quantite;
-        
-        totalGeneral += total;
-        
-        produitsHTML += `
-          <tr>
-            <td>${index + 1}</td>
-            <td>${produit.nom}</td>
-            <td>${prixUnitaire.toLocaleString()} FCFA</td>
-            <td>${quantite}</td>
-            <td>${total.toLocaleString()} FCFA</td>
-          </tr>
-        `;
-      });
-      
-      produitsHTML += `
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4" class="text-right">Montant Total :</td>
-                <td>${totalGeneral.toLocaleString()} FCFA</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      `;
-    } else {
-      produitsHTML = `
-        <div class="products-section">
-          <div class="info-title">Détails des produits</div>
-          <p class="no-data">Aucun détail de produit disponible</p>
-        </div>
-      `;
-    }
-    
-    // Création du contenu HTML pour l'impression
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Vente ${vente.reference || ''}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .info-container { display: flex; justify-content: space-between; margin: 20px; }
-          .info-section { width: 48%; }
-          .info-title { font-weight: bold; background-color: #f0f0f0; padding: 5px; margin-bottom: 10px; }
-          .info-item { margin: 10px 0; }
-          .info-label { font-weight: bold; display: inline-block; width: 150px; }
-          .description-section { margin-top: 20px; margin: 20px; }
-          .products-section { margin: 20px; }
-          .products-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          .products-table th, .products-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          .products-table th { background-color: #f0f0f0; }
-          .products-table tfoot { font-weight: bold; }
-          .text-right { text-align: right; }
-          .no-data { text-align: center; color: #777; padding: 20px; }
-          .footer { margin-top: 50px; text-align: center; font-size: 12px; }
-          @media print {
-            body { margin: 0; }
-            button { display: none !important; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h2>DÉTAILS DE LA VENTE</h2>
-          <h3>${vente.reference || ''}</h3>
-        </div>
-        
-        <div class="info-container">
-          <div class="info-section">
-            <div class="info-title">Informations générales</div>
-            <div class="info-item">
-              <span class="info-label">Référence:</span> ${vente.reference || 'Non définie'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Libellé:</span> ${vente.libelle || 'Non défini'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Date de vente:</span> ${dateFormatee}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Montant total:</span> ${vente.montant_total ? vente.montant_total.toLocaleString() + ' FCFA' : '0 FCFA'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Mode de paiement:</span> ${vente.mode_paiement || 'Non défini'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Statut:</span> ${vente.statut || 'Non défini'}
-            </div>
-          </div>
-          
-          <div class="info-section">
-            <div class="info-title">Informations du client</div>
-            <div class="info-item">
-              <span class="info-label">Nom:</span> ${vente.client?.nom || 'Non défini'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Adresse:</span> ${vente.client?.adresse || 'Non définie'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Contact:</span> ${vente.client?.telephone || 'Non défini'}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Email:</span> ${vente.client?.email || 'Non défini'}
-            </div>
-          </div>
-        </div>
-        
-        <div class="description-section">
-          <div class="info-title">Description</div>
-          <p>${vente.description || 'Aucune description disponible'}</p>
-        </div>
-        
-        ${produitsHTML}
-        
-        <div class="footer">
-          <p>Document généré le ${new Date().toLocaleDateString()} à ${new Date().toLocaleTimeString()}</p>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    // Écrire le contenu dans la fenêtre d'impression
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    
-    // Attendre que le contenu soit chargé avant d'imprimer
-    printWindow.onload = function() {
-      printWindow.print();
-      // printWindow.close(); // Commenter cette ligne pour permettre à l'utilisateur de fermer la fenêtre lui-même
-    };
+   
   }
 }
