@@ -40,6 +40,10 @@ export class BoutiqueService {
       );
   }
 
+  findOne(id: number): Observable<any> {
+    return this.http.get(`${this.API_URL}/boutique/${id}`);
+  }
+
   create(body: any): Observable<any>{
     return this.http.post(`${this.API_URL}/boutique`, body);
   }

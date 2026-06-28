@@ -113,6 +113,7 @@
                 <div class="mb-2">
                   <span class="fw-bold">Montant total: </span> <span id="detail-montant"></span>
                 </div>
+                
                 <div class="mb-2">
                   <span class="fw-bold">Mode de paiement: </span> <span id="detail-mode-paiement"></span>
                 </div>
@@ -199,6 +200,9 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="btn-print-detail">
           <i class="bi bi-printer"></i> Imprimer
+          @if (isLoading) {
+            &nbsp;<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } 
         </button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           <i class="ri ri-close-circle-line"></i> Fermer

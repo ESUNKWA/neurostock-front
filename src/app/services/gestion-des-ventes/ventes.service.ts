@@ -30,8 +30,12 @@ export class VentesService {
     return this.http.patch(`${this.API_URL}/vente/${id}`, body);
   } 
   
+  deleteVente(id: any) {
+    return this.http.delete(`${this.API_URL}/vente/${id}`);
+  }
+
   imprimerRecu(idVente: any) {
     return this.http.get(`${this.API_URL}/pdf/generate/facture/${idVente}`);
-  } 
-  
+  }
+
 }

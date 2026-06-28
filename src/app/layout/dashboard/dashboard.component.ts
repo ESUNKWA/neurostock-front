@@ -51,6 +51,7 @@ export default class DashboardComponent implements OnInit{
   chart: Chart | null = null; // 👈 stocke l’instance du graphique
 
   api_url: string = environnement.API_URL;
+  today = new Date();
   variationJr: number = 0;
   variationMois: number = 0;
 

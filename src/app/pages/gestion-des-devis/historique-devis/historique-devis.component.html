@@ -1,0 +1,164 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between">
+    <h1>Historique des Devis</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item active">Devis</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<hr>
+
+<section class="section">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h5 class="card-title mb-0 text-uppercase">Devis</h5>
+            </div>
+            <div class="col-md-6 text-end">
+              <a routerLink="/gestion-des-devis/nouveau" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i> Nouveau Devis
+              </a>
+            </div>
+          </div>
+
+          @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+            <div class="row">
+              <div class="col-md-4">
+                <select class="form-select" id="selectBoutique">
+                  <option value="">Sélectionner une boutique</option>
+                  @for (b of boutiques; track b.id) {
+                    <option [value]="b.id">{{ b.nom }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="card-body">
+          @if (isLoading) {
+            <div class="text-center py-3">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </div>
+          }
+          <hr>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped js-dataTable-devis">
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>Client</th>
+                  <th>Montant TTC</th>
+                  <th>Statut</th>
+                  <th>Validité</th>
+                  <th>Date création</th>
+                  <th class="text-center" style="width: 18%;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal détails devis -->
+<div class="modal fade" id="modal-devis-detail" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-uppercase">Détails du devis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        @if (detailDevis) {
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header bg-light"><h6 class="mb-0 text-uppercase">Informations générales</h6></div>
+                <div class="card-body">
+                  <p><strong>Référence :</strong> {{ selectedDevis.reference }}</p>
+                  <p><strong>Libellé :</strong> {{ selectedDevis.libelle || '—' }}</p>
+                  <p><strong>Date :</strong> {{ selectedDevis.created_at | date:'dd/MM/yyyy' }}</p>
+                  <p><strong>Expiration :</strong> {{ selectedDevis.date_expiration | date:'dd/MM/yyyy' }}</p>
+                  <p>
+                    <strong>Statut :</strong>
+                    <span class="badge ms-1" [ngClass]="getStatutBadge(selectedDevis.statut)">
+                      {{ getStatutLabel(selectedDevis.statut) }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header bg-light"><h6 class="mb-0 text-uppercase">Client</h6></div>
+                <div class="card-body">
+                  @if ((selectedDevis.client ?? selectedDevis.clientdata)?.nom) {
+                    <p><strong>Nom :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).nom }} {{ (selectedDevis.client ?? selectedDevis.clientdata).prenoms || '' }}</p>
+                    <p><strong>Téléphone :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).telephone || '—' }}</p>
+                    <p><strong>Email :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).email || '—' }}</p>
+                  } @else {
+                    <p class="text-muted">Aucun client associé</p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header bg-primary text-white"><h6 class="mb-0 text-uppercase">Détail des produits</h6></div>
+            <div class="card-body p-0">
+              <table class="table table-striped mb-0">
+                <thead class="table-light">
+                  <tr><th>#</th><th>Produit</th><th>Prix unitaire</th><th>Quantité</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                  @for (d of detailDevis.detail_devis; track $index) {
+                    <tr>
+                      <td>{{ $index + 1 }}</td>
+                      <td class="fw-semibold">{{ d.produit?.nom }}</td>
+                      <td>{{ d.prix_unitaire_vente | number }} FCFA</td>
+                      <td><span class="badge bg-light text-dark">{{ d.quantite }}</span></td>
+                      <td>{{ (d.prix_unitaire_vente * d.quantite) | number }} FCFA</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot class="table-light">
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Remise :</td>
+                    <td class="text-danger">- {{ detailDevis.remise | number }} FCFA</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Total TTC :</td>
+                    <td class="fw-bold text-success">{{ detailDevis.montant_total_apres_remise | number }} FCFA</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" (click)="printDevis(selectedDevis)">
+          <i class="bi bi-printer"></i> Imprimer
+        </button>
+        <button type="button" class="btn btn-success" (click)="convertirEnVente(selectedDevis)" data-bs-dismiss="modal">
+          <i class="bi bi-arrow-right-circle"></i> Convertir en vente
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

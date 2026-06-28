@@ -1,251 +1,238 @@
 <div class="pagetitle">
-    <div class="d-flex justify-content-between">
-      <h1>Gestion des Approvisionnements</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item">
-            <a routerLink="/dashboard">
-              <i class="bi bi-house"></i> Accueil
-            </a>
-          </li>
-          <li class="breadcrumb-item active">Approvisionnements</li>
-        </ol>
-      </nav>
-    </div>
+  <div class="d-flex justify-content-between">
+    <h1>Approvisionnements</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/historique">Approvisionnements</a></li>
+        <li class="breadcrumb-item active">{{ isEditMode ? 'Modification' : 'Nouvel approvisionnement' }}</li>
+      </ol>
+    </nav>
+  </div>
 </div>
 
-
-
 <section class="section">
-  <div class="card">
+  <div class="card shadow-sm">
     <div class="card-body">
-      <h5 class="card-title">{{ isEditMode ? 'Modification d\'un approvisionnement' : 'Enregistrement d\'un nouvel approvisionnement' }}</h5>
-      
-      <form novalidate class="row g-3" [formGroup]="achatForm" (ngSubmit)="onSubmit()">
-        <!-- Informations générales -->
-        <!-- <div [ngClass]="currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'responsable_structure' ? 'col-md-4' : 'col-md-6'">
-          <label for="libelle" class="form-label">Libellé <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="libelle" formControlName="libelle" [ngClass]="{'is-invalid': isSubmitting && f['libelle'].errors}">
-          @if (isSubmitting && f['libelle'].errors) {
-            <div class="invalid-feedback">
-              @if (f['libelle'].errors['required']) {
-                <div>Le libellé est requis</div>
-              }
-            </div>
-          }
-        </div> -->
-        
-        <div class="col-md-6">
-          <label for="date_achat" class="form-label">Date d'achat <span class="text-danger">*</span></label>
-          <input type="date" class="form-control" id="date_achat" formControlName="date_achat" [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
-          @if (isSubmitting && f['date_achat'].errors) {
-            <div class="invalid-feedback">
-              @if (f['date_achat'].errors['required']) {
-                <div>La date d'achat est requise</div>
-              }
-            </div>
-          }
-        </div>
+      <h5 class="card-title">{{ isEditMode ? 'Modifier l\'approvisionnement' : 'Nouvel approvisionnement' }}</h5>
 
-        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
-          <div class="col-md-6">
-            <label class="form-label" for="boutique">Boutique <span class="text-danger">*</span></label>
-            <select class="form-select " (change)="onBoutiqueChange($event)" [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}" formControlName="boutique">
-              <option value="">Sélectionner une boutique</option>
-              @for (boutique of boutiques; track boutique.id) {
-                <option [value]="boutique.id">{{ boutique.nom }}</option>
-              }
-            </select>
-            @if (isSubmitting && f['boutique'].errors) {
-              <div class="invalid-feedback">
-                @if (f['boutique'].errors['required']) {
-                  <div>La boutique est requise</div>
-                }
-              </div>
-            }
-          </div>
-        }
+      <form novalidate [formGroup]="achatForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
 
-        
-        <div class="col-md-12">
-          <label for="description" class="form-label">Description</label>
-          <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
-        </div>
-        
-        <div class="col-md-4">
-          <label for="fournisseur" class="form-label">Fournisseur <span class="text-danger">*</span></label>
-          <select class="form-select " id="fournisseur" formControlName="fournisseur" [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
-            <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
-            <option *ngFor="let fournisseur of fournisseurs" [ngValue]="fournisseur.id">{{ fournisseur.nom }}</option>
-          </select>
-          @if (isSubmitting && f['fournisseur'].errors) {
-            <div class="invalid-feedback">
-              @if (f['fournisseur'].errors['required']) {
-                <div>Le fournisseur est requis</div>
-              }
-            </div>
-          }
-        </div>
-        
-        <div class="col-md-4">
-          <label for="mode_paiement" class="form-label">Mode de paiement <span class="text-danger">*</span></label>
-          <select class="form-select " id="mode_paiement" formControlName="mode_paiement" [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
-            <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
-          </select>
-          @if (isSubmitting && f['mode_paiement'].errors) {
-            <div class="invalid-feedback">
-              @if (f['mode_paiement'].errors['required']) {
-                <div>Le mode de paiement est requis</div>
-              }
-            </div>
-          }
-        </div>
-        
-        <div class="col-md-4">
-          <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
-          <select class="form-select " id="statut" formControlName="statut" [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
-            <option *ngFor="let statut of statuts" [value]="statut">
-              {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : 'Paiement partiel' }}
-            </option>
-          </select>
-          @if (isSubmitting && f['statut'].errors) {
-            <div class="invalid-feedback">
-              @if (f['statut'].errors['required']) {
-                <div>Le statut est requis</div>
-              }
-            </div>
-          }
-        </div>
-        
-        <div class="col-md-12 details-section">
-          
-          <div class="details-header">
-            <h5>Détails de l'achat</h5>
-          </div>
-          
-          <div formArrayName="detail_achat">
-            <div *ngFor="let detail of detailAchat.controls; let i = index" [formGroupName]="i" class="row g-3 mb-3 py-2 border-bottom detail-achat-item">
+          <!-- ── Colonne principale : lignes produits ── -->
+          <div class="col-md-9">
 
-              @if (detail.get('image')?.value) {
-                  <div class="col-md-1">
-                      <div class="image-produit" *ngIf="detail.get('image')?.value">
-                      <img [src]="detail.get('image')?.value" alt="Produit" width="80" height="80">
-                      <p class="stock-info">
-                        🏷️ Stock disponible : 
-                        <strong>{{ detail.get('stock')?.value }}</strong>
-                      </p>
+            <!-- En-tête : infos générales -->
+            <div class="card border-0 bg-light mb-4">
+              <div class="card-body">
+                <h6 class="fw-semibold mb-3 text-uppercase text-muted" style="font-size:.75rem;letter-spacing:.05em;">
+                  <i class="bi bi-info-circle me-1"></i> Informations générales
+                </h6>
+                <div class="row g-3">
+
+                  <div class="col-md-4">
+                    <label class="form-label form-label-sm">Date d'achat <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control form-control-sm" formControlName="date_achat"
+                      [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
+                    @if (isSubmitting && f['date_achat'].errors?.['required']) {
+                      <div class="invalid-feedback">Date requise</div>
+                    }
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label form-label-sm">Fournisseur <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm" formControlName="fournisseur"
+                      [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
+                      <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
+                      <option *ngFor="let f of fournisseurs" [ngValue]="f.id">{{ f.nom }}</option>
+                    </select>
+                    @if (isSubmitting && f['fournisseur'].errors?.['required']) {
+                      <div class="invalid-feedback">Fournisseur requis</div>
+                    }
+                  </div>
+
+                  @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+                    <div class="col-md-4">
+                      <label class="form-label form-label-sm">Boutique <span class="text-danger">*</span></label>
+                      <select class="form-select form-select-sm" formControlName="boutique"
+                        (change)="onBoutiqueChange($event)"
+                        [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
+                        <option value="">Sélectionner une boutique</option>
+                        @for (b of boutiques; track b.id) {
+                          <option [value]="b.id">{{ b.nom }}</option>
+                        }
+                      </select>
+                      @if (isSubmitting && f['boutique'].errors?.['required']) {
+                        <div class="invalid-feedback">Boutique requise</div>
+                      }
                     </div>
-                  </div>
-                }
+                  }
 
-              <div class="col">
-                <label [for]="'produit_' + i" class="form-label">Produit <span class="text-danger">*</span></label>
-                <!-- <select class="form-select " [id]="'produit_' + i" formControlName="produit"
-                    [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                  <option [ngValue]="null" disabled>Sélectionnez un produit</option>
-                  <option *ngFor="let produit of produits" [ngValue]="produit.id">
-                    {{ produit.nom }}
-                  </option>
-                </select> -->
-                <br>
-                <nz-select
-                    nzShowSearch
-                    nzAllowClear
-                    nzPlaceHolder="Sélectionner un produit"
-                    formControlName="produit">
-                    @for (produit of produits; track produit.id) {
-                      <nz-option
-                        [nzLabel]="produit.nom"
-                        [nzValue]="produit.id">
-                      </nz-option>
-                    }
-                  </nz-select>
-                @if (isSubmitting && detail.get('produit')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('produit')?.errors?.['required']) {
-                      <span>Le produit est requis.</span>
+                  <div class="col-md-12">
+                    <label class="form-label form-label-sm">Description / Observation</label>
+                    <textarea class="form-control form-control-sm" formControlName="description" rows="2"
+                      placeholder="Remarque, note sur cet approvisionnement..."></textarea>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Lignes produits -->
+            <h6 class="fw-semibold mb-3 text-uppercase text-muted" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-box-seam me-1"></i> Produits approvisionnés
+            </h6>
+
+            <div formArrayName="detail_achat">
+              @for (detail of detailAchat.controls; track $index) {
+                <div [formGroupName]="$index" class="row g-2 mb-3 py-3 border-bottom align-items-end">
+
+                  <div class="col-auto text-muted fw-bold align-self-center" style="min-width:24px;">
+                    {{ $index + 1 }}
+                  </div>
+
+                  @if (detail.get('image')?.value) {
+                    <div class="col-auto">
+                      <img [src]="detail.get('image')?.value" alt="produit"
+                           width="52" height="52" class="rounded border object-fit-cover">
+                      <div class="text-center mt-1">
+                        <span class="badge bg-info text-dark" style="font-size:.65rem;">
+                          Stock : {{ detail.get('stock')?.value }}
+                        </span>
+                      </div>
+                    </div>
+                  }
+
+                  <div class="col-md-5">
+                    <label class="form-label form-label-sm">Produit <span class="text-danger">*</span></label>
+                    <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
+                      formControlName="produit"
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
+                      @for (p of produits; track p.id) {
+                        <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
+                      }
+                    </nz-select>
+                    @if (isSubmitting && detail.get('produit')?.errors?.['required']) {
+                      <div class="text-danger small mt-1">Produit requis</div>
                     }
                   </div>
-                }
-              </div>
-              
-              <div class="col">
-                <label [for]="'prix_' + i" class="form-label">Prix unitaire <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" [id]="'prix_' + i" formControlName="prix_unitaire" 
-                      (input)="onPrixOuQuantiteChange()" thousandSeparator
+
+                  <div class="col-md-2">
+                    <label class="form-label form-label-sm">Prix unitaire <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" formControlName="prix_unitaire"
+                      thousandSeparator (input)="onPrixOuQuantiteChange()"
                       [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
-                @if (isSubmitting && detail.get('prix_unitaire')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('prix_unitaire')?.errors?.['required']) {
-                      <span>Le prix unitaire est requis.</span>
-                    }
-                    @if (detail.get('prix_unitaire')?.errors?.['min']) {
-                      <span>Le prix unitaire doit être supérieur à 0.</span>
+                    @if (isSubmitting && detail.get('prix_unitaire')?.errors?.['required']) {
+                      <div class="invalid-feedback">Requis</div>
                     }
                   </div>
-                }
-              </div>
-              
-              <div class="col">
-                <label [for]="'quantite_' + i" class="form-label">Quantité <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" [id]="'quantite_' + i" formControlName="quantite" 
+
+                  <div class="col-md-2">
+                    <label class="form-label form-label-sm">Quantité <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control form-control-sm" formControlName="quantite" min="1"
                       (input)="onPrixOuQuantiteChange()"
                       [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
-                @if (isSubmitting && detail.get('quantite')?.errors) {
-                  <div class="invalid-feedback">
-                    @if (detail.get('quantite')?.errors?.['required']) {
-                      <span>La quantité est requise.</span>
-                    }
-                    @if (detail.get('quantite')?.errors?.['min']) {
-                      <span>La quantité doit être supérieure à 0.</span>
+                    @if (isSubmitting && detail.get('quantite')?.errors?.['required']) {
+                      <div class="invalid-feedback">Requis</div>
                     }
                   </div>
-                }
+
+                  <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                      (click)="removeDetailAchat($index)" [disabled]="detailAchat.length === 1"
+                      title="Retirer ce produit">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+
+                </div>
+              }
+
+              @if (detailAchat.length === 0) {
+                <div class="text-center text-muted py-4 border rounded mb-3">
+                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                  Aucun produit ajouté
+                </div>
+              }
+            </div>
+
+            <button type="button" class="btn btn-outline-primary btn-sm mb-4" (click)="addDetailAchat()">
+              <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+            </button>
+
+          </div>
+
+          <!-- ── Sidebar droite : paiement + total ── -->
+          <div class="col-md-3 d-flex flex-column gap-3">
+
+            <!-- Paiement -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-success text-white py-2 border-0">
+                <h6 class="mb-0 fw-semibold" style="font-size:.85rem;">
+                  <i class="bi bi-credit-card me-1"></i> Paiement
+                </h6>
               </div>
-              
-              <div class="col-md-1 mt-5">
-                <button type="button" class="btn btn-danger" (click)="removeDetailAchat(i)">
-                  <i class="bi bi-trash"></i>
-                </button>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label form-label-sm">Mode de paiement <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm" formControlName="mode_paiement"
+                    [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+                    <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
+                  </select>
+                  @if (isSubmitting && f['mode_paiement'].errors?.['required']) {
+                    <div class="invalid-feedback">Requis</div>
+                  }
+                </div>
+                <div>
+                  <label class="form-label form-label-sm">Statut <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm" formControlName="statut"
+                    [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
+                    <option value="payer">Payé</option>
+                    <option value="non_payer">Non payé</option>
+                    <option value="partiel">Paiement partiel</option>
+                  </select>
+                  @if (isSubmitting && f['statut'].errors?.['required']) {
+                    <div class="invalid-feedback">Requis</div>
+                  }
+                </div>
               </div>
             </div>
-            
-            <div class="text-center mb-3" *ngIf="detailAchat.length === 0">
-              <p class="text-muted">Aucun produit ajouté. Utilisez le bouton ci-dessous pour ajouter des produits à l'achat.</p>
+
+            <!-- Total -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-dark text-white py-2 border-0">
+                <h6 class="mb-0 fw-semibold" style="font-size:.85rem;">
+                  <i class="bi bi-receipt me-1"></i> Montant total
+                </h6>
+              </div>
+              <div class="card-body text-center py-4">
+                <div class="display-6 fw-bold text-success">
+                  {{ achatForm.get('montant_total')?.value | number:'1.0-0':'fr' }}
+                </div>
+                <div class="text-muted small mt-1">FCFA</div>
+              </div>
             </div>
-            
-            <div class="col-12 mb-3">
-              <button type="button" class="btn btn-primary" (click)="addDetailAchat()">
-                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
-              </button>
-            </div>
+
           </div>
         </div>
-        
-        <div class="col-md-6 offset-md-6">
-          <div class="card bg-light">
-            <div class="card-body">
-              <h5 class="card-title">Montant total</h5>
-              <div class="input-group">
-                <span class="input-group-text">FCFA</span>
-                <input type="text" class="form-control" formControlName="montant_total" readonly>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-12 text-end">
-          <button type="submit" class="btn btn-success" [disabled]="loading">
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+          <a routerLink="/gestion-des-approvisionnements/historique" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Retour
+          </a>
+          <button type="submit" class="btn btn-success px-4" [disabled]="loading">
             @if (loading) {
-              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              {{ isEditMode ? 'Mise à jour en cours...' : 'Enregistrement en cours...' }}
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Enregistrement...
             } @else {
-              <i class="ri ri-save-line"></i> {{ isEditMode ? 'Mettre à jour l\'approvisionnement' : 'Enregistrer l\'approvisionnement' }}
+              <i class="bi bi-save me-1"></i>
+              {{ isEditMode ? 'Modifier l\'approvisionnement' : 'Enregistrer' }}
             }
           </button>
         </div>
+
       </form>
-      <!-- <pre>{{ achatForm.value | json }}</pre> -->
     </div>
   </div>
 </section>

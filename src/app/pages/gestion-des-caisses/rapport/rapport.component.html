@@ -1,0 +1,259 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>Rapport de caisse</h1>
+    <nav>
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i></a></li>
+        <li class="breadcrumb-item"><a routerLink="/caisse">Caisse</a></li>
+        <li class="breadcrumb-item active">Rapport #{{ sessionId }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="section">
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted mt-2">Chargement du rapport…</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  @if (!loading && rapport) {
+
+    <!-- En-tête session -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-8">
+            <h5 class="fw-bold mb-1">
+              Session #{{ rapport.session?.id }}
+              <span class="text-muted fw-normal small ms-2">{{ rapport.session?.reference }}</span>
+            </h5>
+            <p class="text-muted small mb-1">
+              Ouverture : {{ rapport.session?.date_ouverture | date:'dd/MM/yyyy HH:mm' }}
+              @if (rapport.session?.date_fermeture) {
+                &nbsp;·&nbsp; Fermeture : {{ rapport.session.date_fermeture | date:'dd/MM/yyyy HH:mm' }}
+              }
+            </p>
+            @if (rapport.session?.caissier) {
+              <p class="text-muted small mb-1">
+                <i class="bi bi-person-fill me-1"></i>
+                Caissier : <strong>{{ rapport.session.caissier.prenoms || rapport.session.caissier.prenom }} {{ rapport.session.caissier.nom }}</strong>
+              </p>
+            }
+            @if (rapport.session?.boutique) {
+              <p class="text-muted small mb-0">
+                <i class="bi bi-shop me-1"></i>{{ rapport.session.boutique.nom }}
+              </p>
+            }
+            @if (rapport.session?.notes || rapport.session?.note) {
+              <p class="text-muted small mb-0 mt-1">
+                <i class="bi bi-chat-left-text me-1"></i>{{ rapport.session.notes || rapport.session.note }}
+              </p>
+            }
+          </div>
+          <div class="col-md-4 text-md-end">
+            <span class="badge fs-6" [ngClass]="rapport.session?.statut === 'ouverte' ? 'bg-success' : 'bg-secondary'">
+              {{ rapport.session?.statut === 'ouverte' ? 'Session ouverte' : 'Session fermée' }}
+            </span>
+            <div class="mt-2">
+              <button class="btn btn-outline-secondary btn-sm" (click)="print()">
+                <i class="bi bi-printer me-1"></i> Imprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <p class="text-muted small text-uppercase fw-semibold mb-1">Fond ouverture</p>
+            <h4 class="fw-bold text-primary mb-1">
+              {{ sumModes(rapport.recap?.fond_ouverture) | number:'1.0-0':'fr' }}
+            </h4>
+            <small class="text-muted d-block mb-2">FCFA</small>
+            @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+              @if ((rapport.fond_ouverture || rapport.recap?.fond_ouverture)?.[mode]) {
+                <div class="d-flex justify-content-between align-items-center px-1" style="font-size:.72rem;">
+                  <span class="text-muted">{{ labelMode(mode) }}</span>
+                  <span class="fw-semibold text-primary">
+                    {{ (rapport.fond_ouverture || rapport.recap?.fond_ouverture)[mode] | number:'1.0-0':'fr' }}
+                  </span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <p class="text-muted small text-uppercase fw-semibold mb-1">Total ventes</p>
+            <h4 class="fw-bold text-success mb-0">
+              {{ rapport.ventes?.total | number:'1.0-0':'fr' }}
+            </h4>
+            <small class="text-muted">{{ rapport.ventes?.nbre_total }} vente(s)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <p class="text-muted small text-uppercase fw-semibold mb-1">Montant théorique</p>
+            <h4 class="fw-bold mb-0">
+              {{ rapport.recap?.montant_theorique != null
+                  ? (sumModes(rapport.recap.montant_theorique) | number:'1.0-0':'fr')
+                  : '—' }}
+            </h4>
+            <small class="text-muted">FCFA</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100"
+             [ngClass]="rapport.recap?.ecart != null && ecartTotal !== 0
+               ? 'border-start border-3 ' + (ecartTotal > 0 ? 'border-success' : 'border-danger') : ''">
+          <div class="card-body text-center">
+            <p class="text-muted small text-uppercase fw-semibold mb-1">Écart total</p>
+            @if (rapport.recap?.ecart == null) {
+              <h4 class="fw-bold text-muted mb-0">—</h4>
+              <small class="text-muted">Session en cours</small>
+            } @else {
+              <h4 class="fw-bold mb-1"
+                  [ngClass]="ecartTotal > 0 ? 'text-success' : ecartTotal < 0 ? 'text-danger' : 'text-muted'">
+                {{ ecartSign(ecartTotal) }}{{ ecartTotal | number:'1.0-0':'fr' }} FCFA
+              </h4>
+              @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                @if (rapport.recap.ecart[mode] != null && rapport.recap.ecart[mode] !== 0) {
+                  <div class="d-flex justify-content-between align-items-center px-1 mt-1" style="font-size:.72rem;">
+                    <span class="text-muted">{{ labelMode(mode) }}</span>
+                    <span [ngClass]="rapport.recap.ecart[mode] > 0 ? 'text-success fw-semibold' : 'text-danger fw-semibold'">
+                      {{ rapport.recap.ecart[mode] > 0 ? '+' : '' }}{{ rapport.recap.ecart[mode] | number:'1.0-0':'fr' }}
+                    </span>
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row g-3">
+
+      <!-- Ventes par mode de paiement -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-credit-card me-1"></i> Ventes par mode de paiement
+            </h6>
+            @if (!modesEntries().length) {
+              <p class="text-muted text-center py-3 small">Aucune vente</p>
+            }
+            @for (entry of modesEntries(); track entry.mode) {
+              <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded bg-light">
+                <div>
+                  <span class="small fw-semibold">{{ labelMode(entry.mode) }}</span>
+                  <span class="text-muted ms-2" style="font-size:.7rem;">{{ entry.nbre }} vente(s)</span>
+                </div>
+                <span class="badge bg-primary rounded-pill">
+                  {{ entry.total | number:'1.0-0':'fr' }} FCFA
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Mouvements manuels -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-arrow-left-right me-1"></i> Mouvements manuels
+            </h6>
+            @if (!mouvementsDetail.length) {
+              <p class="text-muted text-center py-3 small">Aucun mouvement</p>
+            }
+            @for (m of mouvementsDetail; track $index) {
+              <div class="d-flex align-items-center gap-2 mb-2 p-2 rounded bg-light">
+                <i class="bi fs-5" [ngClass]="m.type === 'entree' ? 'bi-arrow-down-circle-fill text-success' : 'bi-arrow-up-circle-fill text-danger'"></i>
+                <div class="flex-grow-1">
+                  <div class="small fw-semibold">{{ m.motif }}</div>
+                  <div class="text-muted" style="font-size:.7rem;">
+                    {{ labelMode(m.mode_paiement || '') }}
+                    @if (m.created_at) { · {{ m.created_at | date:'dd/MM HH:mm' }} }
+                  </div>
+                </div>
+                <span class="fw-bold small" [ngClass]="m.type === 'entree' ? 'text-success' : 'text-danger'">
+                  {{ m.type === 'entree' ? '+' : '-' }}{{ m.montant | number:'1.0-0':'fr' }} FCFA
+                </span>
+              </div>
+            }
+
+            <!-- Résumé mouvements -->
+            <hr class="my-2">
+            <div class="d-flex justify-content-between small">
+              <span class="text-success fw-semibold">
+                Entrées : {{ totalEntrees | number:'1.0-0':'fr' }} FCFA
+              </span>
+              <span class="text-danger fw-semibold">
+                Sorties : {{ totalSorties | number:'1.0-0':'fr' }} FCFA
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Fond de fermeture par mode (si session fermée) -->
+      @if (rapport.session?.statut !== 'ouverte' && rapport.recap?.fond_fermeture) {
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+                <i class="bi bi-safe me-1"></i> Fond de fermeture (compté)
+              </h6>
+              <div class="row g-2">
+                @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                  @if (rapport.recap.fond_fermeture[mode] != null) {
+                    <div class="col-6 col-md-3">
+                      <div class="p-2 rounded bg-light text-center">
+                        <div class="text-muted small">{{ labelMode(mode) }}</div>
+                        <div class="fw-bold">
+                          {{ rapport.recap.fond_fermeture[mode] | number:'1.0-0':'fr' }} FCFA
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+              <div class="mt-2 text-end small fw-semibold">
+                Total : {{ sumModes(rapport.recap.fond_fermeture) | number:'1.0-0':'fr' }} FCFA
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+  }
+
+</section>

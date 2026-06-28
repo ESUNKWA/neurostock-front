@@ -1,0 +1,122 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between">
+    <h1>Gestion des Clients</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item active">Clients</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="section">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h5 class="card-title mb-0 text-uppercase">Liste des clients</h5>
+            </div>
+            <div class="col-md-6 text-end">
+              <button type="button" class="btn btn-primary mt-3"
+                data-bs-toggle="modal" data-bs-target="#modal-client" (click)="openNew()">
+                <i class="bi bi-plus-circle"></i> Nouveau Client
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          @if (isLoading) {
+            <div class="text-center py-3">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </div>
+          }
+          <hr>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Prénom</th>
+                  <th>Téléphone</th>
+                  <th>Email</th>
+                  <th>Adresse</th>
+                  <th class="text-center" style="width: 12%;">Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Ajout / Modification / Visualisation -->
+<div class="modal fade" id="modal-client" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form novalidate [formGroup]="clientForm" (ngSubmit)="saveOrUpdate()">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nom <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" formControlName="nom"
+                placeholder="Nom du client"
+                [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+              @if (isSubmitted && f['nom'].errors?.['required']) {
+                <div class="invalid-feedback">Le nom est obligatoire</div>
+              }
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Prénom</label>
+              <input type="text" class="form-control" formControlName="prenom" placeholder="Prénom du client">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" formControlName="telephone"
+                placeholder="+225 XX XX XX XX"
+                [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+              @if (isSubmitted && f['telephone'].errors?.['required']) {
+                <div class="invalid-feedback">Le téléphone est obligatoire</div>
+              }
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" formControlName="email"
+                placeholder="email@exemple.com"
+                [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+              @if (isSubmitted && f['email'].errors?.['email']) {
+                <div class="invalid-feedback">Email invalide</div>
+              }
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Adresse</label>
+              <input type="text" class="form-control" formControlName="adresse" placeholder="Adresse du client">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          @if (!titleModal.includes('VISUALISER')) {
+            <button type="submit" class="btn btn-primary me-2">
+              <i [class]="icon"></i> {{ buttonText }}
+            </button>
+          }
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="ri ri-close-circle-line"></i>
+            {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,174 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>Mouvements de stock</h1>
+    <nav>
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item active">Mouvements de stock</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="section">
+  <div class="card border-0 shadow-sm">
+
+    <!-- En-tête + filtres -->
+    <div class="card-header py-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h6 class="mb-0 fw-semibold">Historique des mouvements</h6>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+          <!-- Sélecteur boutique (admin / responsable) -->
+          @if (boutiques.length > 1) {
+            <nz-select nzPlaceHolder="Sélectionner une boutique" nzAllowClear
+              [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
+              style="min-width:220px;">
+              @for (b of boutiques; track b.id) {
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              }
+            </nz-select>
+          }
+
+          <!-- Lignes par page -->
+          <select class="form-select form-select-sm" style="width:auto;" [(ngModel)]="limit" (ngModelChange)="onLimitChange()">
+            @for (opt of limitOptions; track opt) {
+              <option [ngValue]="opt">{{ opt }} / page</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+
+      <!-- Message sélection boutique requise -->
+      @if (!selectedBoutiqueId && boutiques.length > 1) {
+        <div class="alert alert-info m-3">
+          <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour afficher les mouvements.
+        </div>
+      }
+
+      <!-- Spinner -->
+      @if (isLoading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted mt-2 small">Chargement…</p>
+        </div>
+      }
+
+      <!-- Tableau -->
+      @if (!isLoading && selectedBoutiqueId) {
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Produit</th>
+                <th>Mouvement</th>
+                <th>Source</th>
+                <th class="text-center">Qté</th>
+                <th class="text-center">Stock avant</th>
+                <th class="text-center">Stock après</th>
+                <th>Référence</th>
+                <th>Opérateur</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of mouvements; track m.id) {
+                <tr>
+                  <td class="text-nowrap small text-muted">
+                    {{ m.created_at | date:'dd/MM/yyyy HH:mm' }}
+                  </td>
+                  <td>
+                    <span class="fw-semibold">{{ m.produit?.nom || '—' }}</span>
+                    @if (m.produit?.unite_mesure) {
+                      <span class="text-muted ms-1 small">({{ m.produit.unite_mesure }})</span>
+                    }
+                  </td>
+                  <td>
+                    @if (m.mouvement === 'entree') {
+                      <span class="badge bg-success">
+                        <i class="bi bi-arrow-down-circle me-1"></i>Entrée
+                      </span>
+                    } @else {
+                      <span class="badge bg-danger">
+                        <i class="bi bi-arrow-up-circle me-1"></i>Sortie
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    @if (m.source === 'vente') {
+                      <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">
+                        <i class="bi bi-cart3 me-1"></i>Vente
+                      </span>
+                    } @else if (m.source === 'achat') {
+                      <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle">
+                        <i class="bi bi-truck me-1"></i>Achat
+                      </span>
+                    } @else {
+                      <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle">
+                        <i class="bi bi-arrow-left-right me-1"></i>{{ m.source || 'Manuel' }}
+                      </span>
+                    }
+                  </td>
+                  <td class="text-center fw-bold"
+                      [ngClass]="m.mouvement === 'entree' ? 'text-success' : 'text-danger'">
+                    {{ m.mouvement === 'entree' ? '+' : '-' }}{{ m.quantite }}
+                  </td>
+                  <td class="text-center text-muted">{{ m.stock_avant ?? '—' }}</td>
+                  <td class="text-center fw-semibold">{{ m.stock_apres ?? '—' }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border small font-monospace">
+                      {{ reference(m) }}
+                    </span>
+                  </td>
+                  <td class="small text-muted">{{ operateur(m) }}</td>
+                </tr>
+              }
+              @empty {
+                <tr>
+                  <td colspan="9" class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                    Aucun mouvement de stock
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1) {
+          <div class="d-flex align-items-center justify-content-between px-3 py-3 border-top flex-wrap gap-2">
+            <small class="text-muted">
+              Page {{ page }} / {{ totalPages }} — {{ total }} mouvement(s)
+            </small>
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="page === 1">
+                  <button class="page-link" (click)="goToPage(1)" title="Première">&laquo;</button>
+                </li>
+                <li class="page-item" [class.disabled]="page === 1">
+                  <button class="page-link" (click)="goToPage(page - 1)">&lsaquo;</button>
+                </li>
+                @for (p of pages; track p) {
+                  <li class="page-item" [class.active]="p === page">
+                    <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
+                  </li>
+                }
+                <li class="page-item" [class.disabled]="page === totalPages">
+                  <button class="page-link" (click)="goToPage(page + 1)">&rsaquo;</button>
+                </li>
+                <li class="page-item" [class.disabled]="page === totalPages">
+                  <button class="page-link" (click)="goToPage(totalPages)" title="Dernière">&raquo;</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        }
+      }
+
+    </div>
+  </div>
+</section>

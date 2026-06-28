@@ -27,10 +27,11 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  toggleSidebar() {
-    const sidebar = document.getElementById('toggleSidebar');
-    if (sidebar) {
-      sidebar.classList.toggle('toggle-sidebar');
+  toggleSidebar(): void {
+    if (window.innerWidth < 992) {
+      document.body.classList.toggle('sidebar-mobile-open');
+    } else {
+      document.body.classList.toggle('sidebar-collapsed');
     }
   }
 

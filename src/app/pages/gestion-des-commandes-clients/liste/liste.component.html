@@ -1,0 +1,187 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h1>Commandes clients</h1>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item active">Commandes clients</li>
+    </ol></nav>
+  </div>
+</div>
+
+<section class="section">
+  <div class="card border-0 shadow-sm">
+
+    <div class="card-header py-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h6 class="mb-0 fw-semibold">Liste des commandes</h6>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+          @if (boutiques.length > 1) {
+            <nz-select nzPlaceHolder="Sélectionner une boutique" nzAllowClear
+              [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
+              style="min-width:220px;">
+              @for (b of boutiques; track b.id) {
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              }
+            </nz-select>
+          }
+
+          <a routerLink="/commandes-clients/nouvelle" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      @if (!selectedBoutiqueId && boutiques.length > 1) {
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour afficher les commandes.
+        </div>
+      }
+
+      @if (isLoading) {
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted mt-2 small">Chargement…</p>
+        </div>
+      }
+
+      <div [class.d-none]="isLoading">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle dt-commandes-clients">
+            <thead class="table-light">
+              <tr>
+                <th>Référence</th>
+                <th>Client</th>
+                <th>Date commande</th>
+                <th>Livraison prévue</th>
+                <th class="text-end">Montant TTC</th>
+                <th class="text-center">Statut</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Modal : Détail commande ──────────────────────────────────────────────── -->
+<div class="modal fade" id="modal-detail" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-file-earmark-text me-2"></i>
+          Commande {{ detailCommande?.reference || '#' + detailCommande?.id }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      @if (detailCommande) {
+        <div class="modal-body">
+
+          <!-- Statut + dates -->
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+              <span class="badge bg-{{ statutCss(detailCommande.statut) }} me-2 fs-6">
+                {{ statutLabel(detailCommande.statut) }}
+              </span>
+              <small class="text-muted">
+                Créée le {{ detailCommande.created_at | date:'dd/MM/yyyy HH:mm' }}
+              </small>
+            </div>
+            @if (detailCommande.date_livraison_prevue) {
+              <small class="text-muted">
+                <i class="bi bi-calendar-check me-1"></i>
+                Livraison prévue : {{ detailCommande.date_livraison_prevue | date:'dd/MM/yyyy' }}
+              </small>
+            }
+          </div>
+
+          <!-- Client -->
+          @if (detailCommande.client) {
+            <div class="mb-3 p-2 bg-light rounded">
+              <p class="fw-semibold small text-uppercase text-muted mb-1">
+                <i class="bi bi-person me-1"></i>Client
+              </p>
+              <p class="mb-0 fw-semibold">
+                {{ detailCommande.client.prenoms || '' }} {{ detailCommande.client.nom || '' }}
+              </p>
+              @if (detailCommande.client.telephone) {
+                <p class="mb-0 small text-muted">{{ detailCommande.client.telephone }}</p>
+              }
+            </div>
+          }
+
+          <!-- Lignes de commande -->
+          <table class="table table-sm table-bordered mb-3">
+            <thead class="table-light">
+              <tr>
+                <th>Produit</th>
+                <th class="text-center">Qté</th>
+                <th class="text-end">Prix unitaire</th>
+                <th class="text-end">Total ligne</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of (detailCommande.detail_commande || detailCommande.details || []); track $index) {
+                <tr>
+                  <td>{{ l.produit?.nom || l.produit }}</td>
+                  <td class="text-center">{{ l.quantite }}</td>
+                  <td class="text-end">{{ (l.prix_unitaire ?? l.prix_unitaire_vente) | number:'1.0-0':'fr' }} FCFA</td>
+                  <td class="text-end fw-semibold">
+                    {{ (l.quantite * (l.prix_unitaire ?? l.prix_unitaire_vente)) | number:'1.0-0':'fr' }} FCFA
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- Totaux -->
+          <div class="row justify-content-end">
+            <div class="col-md-5">
+              <div class="d-flex justify-content-between small py-1 border-bottom">
+                <span class="text-muted">Sous-total</span>
+                <span>{{ detailCommande.montant_total | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+              @if (detailCommande.remise) {
+                <div class="d-flex justify-content-between small py-1 border-bottom text-danger">
+                  <span>Remise</span>
+                  <span>− {{ detailCommande.remise | number:'1.0-0':'fr' }} FCFA</span>
+                </div>
+              }
+              <div class="d-flex justify-content-between fw-bold py-1">
+                <span>Total TTC</span>
+                <span class="text-success">
+                  {{ (detailCommande.montant_total_apres_remise ?? detailCommande.montant_total) | number:'1.0-0':'fr' }} FCFA
+                </span>
+              </div>
+            </div>
+          </div>
+
+          @if (detailCommande.notes) {
+            <p class="text-muted small mt-2 mb-0">
+              <i class="bi bi-chat-left-text me-1"></i>{{ detailCommande.notes }}
+            </p>
+          }
+        </div>
+      }
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        @if (detailCommande && detailCommande.statut !== 'livre' && detailCommande.statut !== 'annule') {
+          <a [routerLink]="['/commandes-clients', detailCommande.id, 'edit']"
+             class="btn btn-primary" data-bs-dismiss="modal">
+            <i class="bi bi-pencil me-1"></i> Modifier
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+</div>

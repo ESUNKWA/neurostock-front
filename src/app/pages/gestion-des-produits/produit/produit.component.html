@@ -238,8 +238,39 @@
                             </div>
                         </div>
 
-                        <!-- Image et Prévisualisation -->
-                        
+                        <!-- Unité de mesure + Code-barres -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="unite_mesure">Unité de mesure</label>
+                                <select class="form-select" id="unite_mesure" formControlName="unite_mesure"
+                                    [ngClass]="{'is-invalid': isSubmitted && f['unite_mesure'].errors}">
+                                    <option value="pièce">Pièce</option>
+                                    <option value="kg">Kilogramme (kg)</option>
+                                    <option value="g">Gramme (g)</option>
+                                    <option value="litre">Litre (L)</option>
+                                    <option value="cl">Centilitre (cl)</option>
+                                    <option value="carton">Carton</option>
+                                    <option value="sachet">Sachet</option>
+                                    <option value="boite">Boîte</option>
+                                    <option value="paire">Paire</option>
+                                    <option value="m">Mètre (m)</option>
+                                </select>
+                                @if (isSubmitted && f['unite_mesure'].errors?.['required']) {
+                                    <div class="invalid-feedback">L'unité de mesure est obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="code_barre">Code-barres</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                                    <input type="text" class="form-control" id="code_barre"
+                                        placeholder="Scanner ou saisir le code"
+                                        formControlName="code_barre">
+                                </div>
+                                <div class="form-text text-muted">Optionnel — scanner ou saisir manuellement</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div class="modal-footer">

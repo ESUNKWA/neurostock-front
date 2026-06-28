@@ -33,6 +33,10 @@ export class ProduitService {
   deleteProduit(id: number) {
     return this.http.delete(`${this.API_URL}/produit/${id}`);
   }
+
+  scanByCodeBarre(code: string, boutique: number) {
+    return this.http.get(`${this.API_URL}/produit/scan/${code}`, { params: { boutique } });
+  }
 }
 
 // Fonction utilitaire pour vérifier si l'objet est un FormData

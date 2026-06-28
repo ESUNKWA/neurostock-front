@@ -1,0 +1,194 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>{{ isEditMode ? 'Modifier la commande' : 'Nouvelle commande client' }}</h1>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item"><a routerLink="/commandes-clients/liste">Commandes</a></li>
+      <li class="breadcrumb-item active">{{ isEditMode ? 'Modification' : 'Nouvelle' }}</li>
+    </ol></nav>
+  </div>
+</div>
+
+<section class="section">
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted mt-2 small">Chargement…</p>
+    </div>
+  }
+
+  @if (!loading) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="row g-3">
+
+        <!-- ── Lignes de commande ── -->
+        <div class="col-md-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header py-2">
+              <h6 class="mb-0 fw-semibold"><i class="bi bi-list-ul me-1"></i> Lignes de commande</h6>
+            </div>
+            <div class="card-body">
+              <div formArrayName="detail_commande">
+                @for (ligne of lignes.controls; track $index) {
+                  <div [formGroupName]="$index" class="row g-2 align-items-end mb-3 pb-3 border-bottom">
+                    <div class="col-auto text-muted fw-bold align-self-center" style="min-width:20px;">
+                      {{ $index + 1 }}
+                    </div>
+                    <div class="col-md-5">
+                      <label class="form-label form-label-sm">Produit <span class="text-danger">*</span></label>
+                      <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
+                        formControlName="produit"
+                        [ngClass]="{'is-invalid': isSubmitting && ligne.get('produit')?.errors}">
+                        @for (p of produits; track p.id) {
+                          <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
+                        }
+                      </nz-select>
+                      @if (isSubmitting && ligne.get('produit')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">Produit requis</div>
+                      }
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label form-label-sm">Qté <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-sm" formControlName="quantite" min="1"
+                             [ngClass]="{'is-invalid': isSubmitting && ligne.get('quantite')?.errors}">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label form-label-sm">Prix unitaire <span class="text-danger">*</span></label>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text" class="form-control" formControlName="prix_unitaire"
+                               thousandSeparator
+                               [ngClass]="{'is-invalid': isSubmitting && ligne.get('prix_unitaire')?.errors}">
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-outline-danger btn-sm"
+                              (click)="removeLigne($index)" [disabled]="lignes.length === 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                    <!-- Total ligne -->
+                    <div class="col-12 text-end">
+                      <small class="text-muted">
+                        Sous-total :
+                        <strong>
+                          {{ ((ligne.value.quantite || 0) * (ligne.value.prix_unitaire || 0)) | number:'1.0-0':'fr' }} FCFA
+                        </strong>
+                      </small>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="addLigne()">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Panneau latéral ── -->
+        <div class="col-md-4 d-flex flex-column gap-3">
+
+          <!-- Client -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header py-2">
+              <h6 class="mb-0 fw-semibold"><i class="bi bi-person me-1"></i> Client</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Client existant</label>
+                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher par nom…"
+                  [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onClientSelect($event)">
+                  @for (c of clients; track c.id) {
+                    <nz-option
+                      [nzLabel]="(c.prenoms ? c.prenoms + ' ' : '') + c.nom + (c.telephone ? ' — ' + c.telephone : '')"
+                      [nzValue]="c.id">
+                    </nz-option>
+                  }
+                </nz-select>
+                <small class="text-muted">Ou saisissez manuellement ↓</small>
+              </div>
+              <div formGroupName="clientdata">
+                <div class="mb-2">
+                  <label class="form-label form-label-sm">Nom</label>
+                  <input type="text" class="form-control form-control-sm" formControlName="nom"
+                         placeholder="Nom du client">
+                </div>
+                <div>
+                  <label class="form-label form-label-sm">Téléphone</label>
+                  <input type="tel" class="form-control form-control-sm" formControlName="telephone"
+                         placeholder="+225 XX XX XX XX">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totaux & options -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header py-2">
+              <h6 class="mb-0 fw-semibold"><i class="bi bi-calculator me-1"></i> Récapitulatif</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Remise (FCFA)</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="remise" thousandSeparator placeholder="0">
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Sous-total</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control fw-semibold"
+                         [value]="form.get('montant_total')?.value | number:'1.0-0':'fr'" readonly>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label form-label-sm fw-semibold">Total TTC</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-success text-white">FCFA</span>
+                  <input type="text" class="form-control fw-bold text-success border-success"
+                         [value]="form.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr'" readonly>
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Date de livraison prévue</label>
+                <input type="date" class="form-control form-control-sm" formControlName="date_livraison_prevue">
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label form-label-sm">Notes</label>
+                <textarea class="form-control form-control-sm" formControlName="notes" rows="2"
+                          placeholder="Instructions, adresse de livraison…"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a routerLink="/commandes-clients/liste" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i> Retour
+        </a>
+        <button type="submit" class="btn btn-primary px-4" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner-border spinner-border-sm me-1"></span>Enregistrement…
+          } @else {
+            <i class="bi bi-save me-1"></i>
+            {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la commande' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+
+</section>

@@ -1,54 +1,52 @@
 <!-- ======= Header ======= -->
-<header id="header" class="header fixed-top d-flex align-items-center">
+<header id="header" class="app-header">
 
-  <div class="d-flex align-items-center justify-content-between">
-    <a href="#" class="logo d-flex align-items-center">
-      <!-- <img src="assets/img/logo.png" alt="logo NeuroStock" class="img-fluid"> -->
-      <img src="assets/img/logo-neurostock-small.png" alt="logo neurostock" class="img-fluid">
-      <span class="d-none d-lg-block">neurostock</span>
-    </a>
-    <i class="bi bi-list toggle-sidebar-btn" (click)="toggleSidebar()"></i>
-  </div><!-- End Logo -->
+  <div class="header-left">
+    <button type="button" class="header-menu-btn" (click)="toggleSidebar()" title="Menu">
+      <i class="bi bi-list"></i>
+    </button>
+  </div>
 
-  <nav class="header-nav ms-auto">
-    <ul class="d-flex align-items-center">
+  <div class="header-right">
 
-      <li class="nav-item dropdown pe-3">
+    <!-- User dropdown -->
+    <div class="dropdown">
+      <button type="button" class="user-btn" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="user-avatar">
+          {{ (currentUser?.prenom || currentUser?.nom || 'U').charAt(0).toUpperCase() }}
+        </div>
+        <div class="user-info d-none d-md-flex">
+          <span class="user-name">{{ (currentUser?.prenom || currentUser?.nom) | titlecase }}</span>
+          <span class="user-role">{{ currentUser?.profil?.nom | titlecase }}</span>
+        </div>
+        <i class="bi bi-chevron-down user-chevron d-none d-md-inline"></i>
+      </button>
 
-        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-          <!-- <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle"> -->
-          <span class="d-none d-md-block dropdown-toggle ps-2">{{ currentUser?.nom + ' ' + currentUser?.prenoms | uppercase }}</span>
-        </a>
+      <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+        <li class="dropdown-header-block">
+          <div class="dh-avatar">
+            {{ (currentUser?.prenom || currentUser?.nom || 'U').charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <div class="dh-name">{{ currentUser?.nom }} {{ currentUser?.prenoms }}</div>
+            <div class="dh-role">{{ currentUser?.profil?.nom | titlecase }}</div>
+          </div>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item" routerLink="/utilisateurs/edit-user-info">
+            <i class="bi bi-person-gear"></i> Mon profil
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <button type="button" class="dropdown-item text-danger" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Déconnecter
+          </button>
+        </li>
+      </ul>
+    </div>
 
-        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-          <li class="dropdown-header">
-            <h6>{{ currentUser.nom + ' ' + currentUser.prenoms | uppercase }}</h6>
-            <span>{{ currentUser.profil.nom | titlecase }}</span>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
+  </div>
 
-          <li>
-            <a class="dropdown-item d-flex align-items-center" routerLink="/utilisateurs/edit-user-info">
-              <i class="bi bi-person"></i>
-              <span>Profil</span>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-          <li class="logout-hover">
-            <a class="dropdown-item d-flex align-items-center" (click)="logout()">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>Déconnecter</span>
-            </a>
-          </li>
-
-        </ul><!-- End Profile Dropdown Items -->
-      </li><!-- End Profile Nav -->
-
-    </ul>
-  </nav><!-- End Icons Navigation -->
-
-</header><!-- End Header -->
+</header>

@@ -141,30 +141,20 @@ export default class CategorieComponent implements OnInit, OnDestroy {
             }
           ],
           language: {
-            emptyTable: "Aucune donnée",
-            info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
-            infoFiltered: "(filtré de _MAX_ entrées au total)",
-            infoThousands: ",",
-            loadingRecords: "Chargement...",
-            processing: "Traitement...",
-            search: "Rechercher :",
-            zeroRecords: "Aucun enregistrement trouvé",
-            paginate: {
-              first: '<i class="bi bi-chevron-double-left"></i>',
-              last: '<i class="bi bi-chevron-double-right"></i>',
-              next: '<i class="bi bi-chevron-right"></i>',
-              previous: '<i class="bi bi-chevron-left"></i>'
-            }
+            emptyTable: 'Aucune catégorie trouvée',
+            search: 'Rechercher :',
+            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            infoEmpty: 'Aucun résultat',
+            zeroRecords: 'Aucun résultat',
+            lengthMenu: 'Afficher _MENU_ éléments',
+            paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>' +
-               '<"row"<"col-sm-12"tr>>' +
-               '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-2',
+              className: 'btn btn-success btn-sm me-1',
               exportOptions: {
                 columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
               }
@@ -178,7 +168,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
               }
             }
           ],
-          pageLength: 5,
+          pageLength: 10,
           searching: true,
           info: true,
           responsive: true,

@@ -1,128 +1,115 @@
-<main>
-  <div class="container-fluid p-0">
-    <div class="row g-0">
-      <!-- Colonne de gauche avec l'image de fond -->
-      <div class="col-lg-6 d-none d-lg-block">
-        <div class="login-background">
-          <div class="image-container">
-            <div class="slideshow">
-              <div class="slide" id="slide1"></div>
-              <div class="slide" id="slide2"></div>
-            </div>
-          </div>
+<div class="login-page">
+  <!-- Panneau gauche décoratif -->
+  <div class="login-left d-none d-lg-flex">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="left-content">
+      <div class="brand-logo mb-4">
+        <img src="assets/img/logo-neurostock-small.png" alt="logo" class="logo-img">
+      </div>
+      <h1 class="brand-title">neurostock</h1>
+      <p class="brand-tagline">Gérez votre stock avec intelligence</p>
+
+      <div class="slideshow-wrapper">
+        <div class="slideshow">
+          <div class="slide" id="slide1"></div>
+          <div class="slide" id="slide2"></div>
         </div>
       </div>
 
-      <!-- Colonne de droite avec le formulaire -->
-      <div class="col-lg-5">
-        <div class="login-form-container">
-          <div class="d-flex justify-content-center py-4">
-            <a routerLink="/" class="logo d-flex align-items-center w-auto">
-              <img src="assets/img/logo-neurostock-small.png" alt="logo neurostock" style="width: 50px; height: 50px;">
-              <span class="d-none d-lg-block" style="font-size: 40px; font-weight: bold;">neurostock</span>
-            </a>
-          </div>
-
-          <div class="card">
-            <div class="card-body">
-              <div class="pt-4 pb-2">
-                <h5 class="card-title text-center pb-0 fs-4">Se connecter à votre compte</h5>
-                <p class="text-center small">Entrer votre email et le mot de passe pour vous connecter</p>
-              </div>
-
-              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="row g-3">
-                @if (error) {
-                  <div class="col-12">
-                    <div class="alert alert-danger">{{ error }}</div>
-                  </div>
-                }
-
-                <div class="col-12">
-                  <label for="telephone" class="form-label">Identifiant</label>
-                  <div class="input-group has-validation">
-                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="text" 
-                           formControlName="telephone" 
-                           class="form-control" 
-                           id="telephone" 
-                           [ngClass]="{'is-invalid': submitted && f['telephone'].errors}">
-                    @if (submitted && f['telephone'].errors) {
-                      <div class="invalid-feedback">
-                        @if (f['telephone'].errors['required']) {
-                          <div>Le Identifiant est requis</div>
-                        }
-                        @if (f['telephone'].errors['telephone']) {
-                          <div>Le Identifiant doit être valide</div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <label for="password" class="form-label">Mot de passe</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input [type]="showPassword ? 'text' : 'password'" 
-                           formControlName="mot_de_passe" 
-                           class="form-control" 
-                           id="password"
-                           [ngClass]="{'is-invalid': submitted && f['mot_de_passe'].errors}">
-                    <button class="btn btn-outline-secondary" 
-                            type="button" 
-                            (click)="togglePasswordVisibility()">
-                      <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-                    </button>
-                    @if (submitted && f['mot_de_passe'].errors) {
-                      <div class="invalid-feedback">
-                        @if (f['mot_de_passe'].errors['required']) {
-                          <div>Le mot de passe est requis</div>
-                        }
-                        @if (f['mot_de_passe'].errors['minlength']) {
-                          <div>Le mot de passe doit contenir au moins 4 caractères</div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- <div class="col-12">
-                  <div class="form-check">
-                    <input class="form-check-input" 
-                           type="checkbox" 
-                           formControlName="rememberMe" 
-                           id="rememberMe">
-                    <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
-                  </div>
-                </div> -->
-
-                <div class="col-12 mt-4">
-                  <button class="btn btn-primary w-100" 
-                          type="submit" 
-                          [disabled]="loading">
-                    @if (loading) {
-                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                      Connexion en cours...
-                    } @else {
-                      Se connecter
-                    }
-                  </button>
-                </div>
-
-                <div class="col-12">
-                  <p class="small mb-0">Mot de passe oublié ? <a routerLink="/register">Réinitialiser le mot de passe</a></p>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="credits text-center mt-4">
-            Réalisé par <a href="#">NeuroStock</a>
-          </div>
-        </div>
+      <div class="left-footer">
+        <span class="badge-pill">Gestion des stocks</span>
+        <span class="badge-pill">Ventes & Achats</span>
+        <span class="badge-pill">Caisse</span>
       </div>
     </div>
   </div>
-</main>
 
-<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <!-- Panneau droit : formulaire -->
+  <div class="login-right">
+    <div class="form-wrapper">
+
+      <!-- Logo mobile uniquement -->
+      <div class="d-flex d-lg-none justify-content-center mb-4">
+        <a routerLink="/" class="mobile-logo">
+          <img src="assets/img/logo-neurostock-small.png" alt="logo" style="width:44px;height:44px;">
+          <span>neurostock</span>
+        </a>
+      </div>
+
+      <div class="form-header">
+        <h2>Bon retour&nbsp;!</h2>
+        <p>Connectez-vous à votre espace de gestion</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+
+        @if (error) {
+          <div class="error-banner">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>{{ error }}
+          </div>
+        }
+
+        <!-- Identifiant -->
+        <div class="field-group">
+          <label for="telephone">Identifiant</label>
+          <div class="input-wrap" [class.input-error]="submitted && f['telephone'].errors">
+            <span class="input-icon"><i class="bi bi-person"></i></span>
+            <input
+              type="text"
+              id="telephone"
+              formControlName="telephone"
+              placeholder="Votre identifiant"
+              autocomplete="username">
+          </div>
+          @if (submitted && f['telephone'].errors?.['required']) {
+            <span class="field-error">L'identifiant est requis</span>
+          }
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="field-group">
+          <label for="password">Mot de passe</label>
+          <div class="input-wrap" [class.input-error]="submitted && f['mot_de_passe'].errors">
+            <span class="input-icon"><i class="bi bi-lock"></i></span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              formControlName="mot_de_passe"
+              placeholder="Votre mot de passe"
+              autocomplete="current-password">
+            <button type="button" class="toggle-pass" (click)="togglePasswordVisibility()">
+              <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
+          </div>
+          @if (submitted && f['mot_de_passe'].errors?.['required']) {
+            <span class="field-error">Le mot de passe est requis</span>
+          }
+          @if (submitted && f['mot_de_passe'].errors?.['minlength']) {
+            <span class="field-error">Minimum 4 caractères</span>
+          }
+        </div>
+
+        <div class="forgot-link">
+          <a routerLink="/register">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- Bouton -->
+        <button type="submit" class="btn-login" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Connexion en cours...
+          } @else {
+            <span>Se connecter</span>
+            <i class="bi bi-arrow-right-short btn-arrow"></i>
+          }
+        </button>
+
+      </form>
+
+      <p class="footer-credit">Réalisé avec <i class="bi bi-heart-fill"></i> par <strong>NeuroStock</strong></p>
+    </div>
+  </div>
+</div>

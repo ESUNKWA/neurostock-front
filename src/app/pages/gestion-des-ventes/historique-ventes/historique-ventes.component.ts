@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import Swal from 'sweetalert2';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -261,31 +262,20 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
             }
           ],
           language: {
-            emptyTable: "Aucune donnée",
-            info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
-            infoFiltered: "(filtré de _MAX_ entrées au total)",
-            infoThousands: ",",
-            lengthMenu: "Afficher _MENU_ entrées",
-            loadingRecords: "Chargement...",
-            processing: "Traitement...",
-            search: "Rechercher :",
-            zeroRecords: "Aucun enregistrement trouvé",
-            paginate: {
-              first: '<i class="bi bi-chevron-double-left"></i>',
-              last: '<i class="bi bi-chevron-double-right"></i>',
-              next: '<i class="bi bi-chevron-right"></i>',
-              previous: '<i class="bi bi-chevron-left"></i>'
-            }
+            emptyTable: 'Aucune vente trouvée',
+            search: 'Rechercher :',
+            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            infoEmpty: 'Aucun résultat',
+            zeroRecords: 'Aucun résultat',
+            lengthMenu: 'Afficher _MENU_ éléments',
+            paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>' +
-               '<"row"<"col-sm-12"tr>>' +
-               '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-2',
+              className: 'btn btn-success btn-sm me-1',
               exportOptions: {
                 columns: [0, 1, 2, 3, 4, 5] // Exporter toutes les colonnes sauf Actions
               }
@@ -299,7 +289,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               }
             }
           ],
-          pageLength: 10,
+          pageLength: 20,
           searching: true,
           info: true,
           responsive: true,
@@ -455,7 +445,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       'Non définie';
     
     // Formater le montant
-    const montantFormatte = vente.montant_total ? `${vente.montant_total.toLocaleString()} FCFA` : '0 FCFA';
+    const montantFormatte = vente.montant_total ? `${vente.montant_total_apres_remise.toLocaleString()} FCFA` : '0 FCFA';
     
     // Déterminer la classe du badge pour le statut
     let badgeClass = '';
@@ -561,25 +551,50 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   }
 
   deleteVente(vente: any): void {
-    console.log('Supprimer la vente:', vente);
-    // Implémenter la suppression
+    Swal.fire({
+      text: `Voulez-vous vraiment supprimer la vente "${vente.reference}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.isLoading = true;
+        this.ventesService.deleteVente(vente.id).subscribe({
+          next: () => {
+            this.toastr.success('Vente supprimée avec succès');
+            this.loadVentes();
+          },
+          error: (err: any) => {
+            console.error('Erreur lors de la suppression:', err);
+            this.toastr.error('Erreur lors de la suppression de la vente');
+            this.isLoading = false;
+          }
+        });
+      }
+    });
   }
 
   /**
    * Imprimer une vente
    */
-  printVente(vente: any): void {
+  printVente(vente: any) {
+    this.isLoading = true;
     this.ventesService.imprimerRecu(vente.id).subscribe({
-      next(facture: any) {
+      next: (facture: any) => {
         
         const url = facture.path;
-              
+         
+        this.isLoading = false; 
+
         window.open(url, '_blank');
 
         // nettoyage mémoire
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       },
-      error(err) {
+      error: (err)=> {
         console.log(err.error);
         
       },

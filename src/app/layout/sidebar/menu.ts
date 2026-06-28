@@ -15,7 +15,6 @@ export const Menu: any = [
         full: true,
         menu: [
             {
-                
                 libelle: 'Gestion des produits',
                 icon: 'bi bi-menu-button-wide',
                 target: 'products-nav',
@@ -29,7 +28,8 @@ export const Menu: any = [
                         libelle: 'Fournisseurs',
                         lien: '/gestion-des-produits/fournisseur',
                         icon: 'bi bi-circle'
-                    },{
+                    },
+                    {
                         libelle: 'Produits',
                         lien: '/gestion-des-produits/produit',
                         icon: 'bi bi-circle'
@@ -37,7 +37,11 @@ export const Menu: any = [
                 ]
             },
             {
-                
+                libelle: 'Clients',
+                icon: 'bi bi-people',
+                lien: '/clients/list'
+            },
+            {
                 libelle: 'Gestion des boutiques',
                 icon: 'bi bi-houses',
                 target: 'boutique-nav',
@@ -62,7 +66,6 @@ export const Menu: any = [
         full: true,
         menu: [
             {
-                
                 libelle: 'Approvisionnements',
                 icon: 'bi bi-cart4',
                 target: 'achats-nav',
@@ -78,14 +81,14 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     }
                 ]
-            },{
-                
+            },
+            {
                 libelle: 'Gestion des ventes',
                 icon: 'bi bi-currency-dollar',
                 target: 'ventes-nav',
                 sousMenu: [
                     {
-                        libelle: 'Nouvelle ventes',
+                        libelle: 'Nouvelle vente',
                         lien: '/gestion-des-ventes/vente',
                         icon: 'bi bi-circle'
                     },
@@ -95,6 +98,50 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     }
                 ]
+            },
+            {
+                libelle: 'Devis',
+                icon: 'bi bi-file-earmark-text',
+                target: 'devis-nav',
+                sousMenu: [
+                    {
+                        libelle: 'Nouveau devis',
+                        lien: '/gestion-des-devis/nouveau',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Historique des devis',
+                        lien: '/gestion-des-devis/historique',
+                        icon: 'bi bi-circle'
+                    }
+                ]
+            },
+            {
+                libelle: 'Commandes clients',
+                icon: 'bi bi-bag-check',
+                target: 'commandes-clients-nav',
+                sousMenu: [
+                    {
+                        libelle: 'Nouvelle commande',
+                        lien: '/commandes-clients/nouvelle',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Toutes les commandes',
+                        lien: '/commandes-clients/liste',
+                        icon: 'bi bi-circle'
+                    }
+                ]
+            },
+            {
+                libelle: 'Mouvements de stock',
+                icon: 'bi bi-arrow-left-right',
+                lien: '/stocks/mouvements'
+            },
+            {
+                libelle: 'Gestion de caisse',
+                icon: 'bi bi-cash-coin',
+                lien: '/caisse'
             }
         ]
     },

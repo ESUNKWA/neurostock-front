@@ -6,6 +6,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
+import { ClientService } from '../../../services/gestion-des-clients/client.service';
+import { CaisseService } from '../../../services/gestion-des-caisses/caisse.service';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
@@ -24,14 +26,27 @@ export default class VenteComponent implements OnInit {
 
   idBoutique: any;
   venteForm!: FormGroup;
-  modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte'];
+  modesPaiement: { value: string; label: string }[] = [
+    { value: 'espece',       label: 'Espèces' },
+    { value: 'carte',        label: 'Carte bancaire' },
+    { value: 'mobile_money', label: 'Mobile Money' },
+    { value: 'credit',       label: 'Crédit (à recouvrer)' },
+    { value: 'mixte',        label: 'Paiement mixte' },
+  ];
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
+  barcodeInput = '';
+  scanLoading = false;
   produits: any[] = [];
+  clients: any[] = [];
+  selectedClientId: number | null = null;
   isSubmitting = false;
   currentUser: any;
   boutiques: any[] = [];
   selectedBoutique: string = '';
   loading = false;
+  activeSessionId: number | null = null;
+  caisseActivee = false;
+  caisseLoaded = false;
 
   
   // Variables pour le mode édition
@@ -41,13 +56,29 @@ export default class VenteComponent implements OnInit {
 
   currentProduitSelect: any = {};
 
+  get isMixte(): boolean {
+    return this.venteForm?.get('mode_paiement')?.value === 'mixte';
+  }
+
+  get isCredit(): boolean {
+    return this.venteForm?.get('mode_paiement')?.value === 'credit';
+  }
+
+  get totalDetailsPaiement(): number {
+    const d = this.venteForm?.get('details_paiement')?.value || {};
+    return (Number(d.espece) || 0) + (Number(d.carte) || 0)
+         + (Number(d.mobile_money) || 0) + (Number(d.credit) || 0);
+  }
+
   constructor(
     private fb: FormBuilder,
     private ventesService: VentesService,
+    private clientService: ClientService,
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
     private produitService: ProduitService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private caisseService: CaisseService
   ) {}
 
   ngOnInit(): void {
@@ -56,9 +87,9 @@ export default class VenteComponent implements OnInit {
     this.initForm();
     this.loadBoutiques();
     this.loadProduits();
-    
-    // Vérifier s'il y a des données d'édition dans le localStorage
+    this.loadClients();
     this.checkForEditData();
+    this.loadActiveSession();
   }
 
  
@@ -66,6 +97,30 @@ export default class VenteComponent implements OnInit {
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
+    });
+  }
+
+  loadActiveSession(): void {
+    const boutiqueId = this.currentUser?.boutique?.id;
+    if (!boutiqueId) return;
+
+    this.boutiqueService.findOne(boutiqueId).subscribe({
+      next: (r: any) => {
+        const boutique = r?.data || r;
+        this.caisseActivee = !!boutique?.gestion_caisse_activee;
+        this.caisseLoaded = true;
+
+        if (this.caisseActivee) {
+          this.caisseService.getActiveSession(boutiqueId, this.currentUser?.id).subscribe({
+            next: (res: any) => { this.activeSessionId = res?.data?.id ?? null; },
+            error: () => { this.activeSessionId = null; }
+          });
+        }
+      },
+      error: () => {
+        this.caisseActivee = false;
+        this.caisseLoaded = true;
+      }
     });
   }
 
@@ -88,6 +143,12 @@ export default class VenteComponent implements OnInit {
       mode_paiement: ['espece', Validators.required],
       statut: ['payer', Validators.required],
       detail_vente: this.fb.array([]),
+      details_paiement: this.fb.group({
+        espece:       [null],
+        carte:        [null],
+        mobile_money: [null],
+        credit:       [null],
+      }),
       clientdata: this.fb.group({
         nom: [],
         telephone: [],
@@ -214,13 +275,7 @@ export default class VenteComponent implements OnInit {
     // Calculer le montant total
     this.calculerMontantTotal();
     
-    // Mettre à jour le titre du composant pour indiquer le mode édition
-    setTimeout(() => {
-      const cardTitle = document.querySelector('.card-title');
-      if (cardTitle) {
-        cardTitle.textContent = `Modification de la vente #${vente.reference || ''}`;
-      }
-    }, 0);
+    // Le titre est géré par le binding isEditMode dans le template
   }
 
   get f() {
@@ -275,37 +330,24 @@ export default class VenteComponent implements OnInit {
   }
 
   calculerMontantTotal(): void {
-  let total = 0;
-  let stockError = false;
-    
-  for (const detail of this.detailVente.controls) {
-    const stock = Number(detail.get('stock')?.value || 0);
-    const quantite = Number(detail.get('quantite')?.value || 0);
-    const prix = Number(detail.get('prix_unitaire_vente')?.value || 0);
+    let total = 0;
 
-    // Reset erreur
-    detail.get('quantite')?.setErrors(null);
+    for (const detail of this.detailVente.controls) {
+      const stock = Number(detail.get('stock')?.value || 0);
+      const quantite = Number(detail.get('quantite')?.value || 0);
+      const prix = Number(detail.get('prix_unitaire_vente')?.value || 0);
 
-    if (quantite > stock) {
-      detail.get('quantite')?.setErrors({ stockExceeded: true });
-      stockError = true;
-    } else {
-      total += quantite * prix;
+      detail.get('quantite')?.setErrors(null);
+
+      if (quantite > stock) {
+        detail.get('quantite')?.setErrors({ stockExceeded: true });
+      } else {
+        total += quantite * prix;
+      }
     }
-  }
-  
-  this.venteForm.patchValue({ montant_total: total, montant_total_apres_remise: total });
 
-  // Toast une seule fois
-  if (stockError) {
-    //this.toastr.error('La quantité dépasse le stock disponible');
-    Swal.fire({
-      icon: "warning",
-      title: "Oops...",
-      text: "Le stock est épuisé"
-    });
+    this.venteForm.patchValue({ montant_total: total, montant_total_apres_remise: total });
   }
-}
 
 
   onPrixOuQuantiteChange(): void {
@@ -340,6 +382,29 @@ calculerMontantTotalApresRemise(): void {
   // Recalcul monnaie rendue si déjà saisie
   this.calculerMonnaieRendue();
 }
+
+  loadClients(): void {
+    const boutiqueId = this.currentUser?.boutique?.id;
+    if (!boutiqueId) return;
+    this.clientService.getClientsByBoutique(boutiqueId).subscribe({
+      next: (r: any) => {
+        if (Array.isArray(r)) this.clients = r;
+        else if (Array.isArray(r?.data?.items)) this.clients = r.data.items;
+        else if (Array.isArray(r?.data)) this.clients = r.data;
+      }
+    });
+  }
+
+  onClientSelect(id: number): void {
+    if (!id) return;
+    const c = this.clients.find(cl => cl.id === id);
+    if (!c) return;
+    (this.venteForm.get('clientdata') as FormGroup).patchValue({
+      nom: c.nom || '',
+      telephone: c.telephone || '',
+      email: c.email || ''
+    });
+  }
 
   loadBoutiques(): void {
     if (!this.currentUser) {
@@ -420,18 +485,47 @@ calculerMontantTotalApresRemise(): void {
 
   onSubmit(): void {
     this.isSubmitting = true;
-    
-    if (this.venteForm.invalid) {
+
+    if (this.caisseActivee && !this.activeSessionId) {
+      Swal.fire({
+        title: 'Caisse non ouverte',
+        text: 'Vous devez ouvrir une session de caisse avant de pouvoir enregistrer une vente.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+      this.isSubmitting = false;
       return;
     }
 
-    if (this.venteForm.value.montant_recu == 0) {
+    if (this.venteForm.invalid) {
+      this.markFormGroupTouched(this.venteForm);
+      this.isSubmitting = false;
+      return;
+    }
+
+    if (this.venteForm.value.montant_recu == 0 && !this.isCredit && !this.isMixte) {
       Swal.fire({
-        title: 'Error!',
+        title: 'Erreur !',
         text: 'Veuillez saisir le montant reçu de la part du client',
         icon: 'error',
-        confirmButtonText: 'Cool'
+        confirmButtonText: 'OK'
       });
+      this.isSubmitting = false;
+      return;
+    }
+
+    if (this.isMixte) {
+      const diff = Math.abs(this.totalDetailsPaiement - (this.venteForm.get('montant_total_apres_remise')?.value || 0));
+      if (diff > 0) {
+        Swal.fire({
+          title: 'Erreur !',
+          text: `La répartition du paiement mixte (${this.totalDetailsPaiement.toLocaleString('fr')} FCFA) ne correspond pas au total dû.`,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+        this.isSubmitting = false;
+        return;
+      }
     }
 
     this.venteForm.value.boutique = this.currentUser?.boutique;
@@ -449,7 +543,8 @@ calculerMontantTotalApresRemise(): void {
   }
   
   createVente(): void {
-    this.ventesService.saveVente(this.venteForm.value)
+    const body = { ...this.venteForm.value, session_caisse: this.activeSessionId };
+    this.ventesService.saveVente(body)
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
@@ -546,13 +641,7 @@ calculerMontantTotalApresRemise(): void {
           this.initForm();
           this.addDetailVente();
           
-          // Mettre à jour le titre
-          setTimeout(() => {
-            const cardTitle = document.querySelector('.card-title');
-            if (cardTitle) {
-              cardTitle.textContent = 'Enregistrement d\'une nouvelle vente';
-            }
-          }, 0);
+          // Le titre est géré par le binding isEditMode dans le template
         },
         error: (error: any) => {
           console.error('Erreur lors de la modification de la vente', error);
@@ -579,9 +668,68 @@ calculerMontantTotalApresRemise(): void {
     });
   }
 
+  onModeChange(): void {
+    const mode = this.venteForm.get('mode_paiement')?.value;
+    if (mode === 'credit') {
+      this.venteForm.patchValue({ statut: 'non_payer', montant_recu: 0, monnaie_rendu: 0 });
+    } else {
+      if (this.venteForm.get('statut')?.value === 'non_payer') {
+        this.venteForm.patchValue({ statut: 'payer' });
+      }
+    }
+  }
+
+  onScanBarcode(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+    const code = this.barcodeInput.trim();
+    if (!code) return;
+    this.barcodeInput = '';
+    const boutique = this.currentUser?.boutique?.id;
+    if (!boutique) return;
+    this.scanLoading = true;
+    this.produitService.scanByCodeBarre(code, boutique).subscribe({
+      next: (res: any) => {
+        this.scanLoading = false;
+        const produit = res?.data || res;
+        if (!produit?.id) {
+          this.toastr.warning('Produit non trouvé pour ce code-barres');
+          return;
+        }
+        // Check if already in list
+        const existe = this.detail_vente.value.some((d: any) => d.produit === produit.id);
+        if (existe) {
+          // Increment quantity
+          const idx = this.detail_vente.value.findIndex((d: any) => d.produit === produit.id);
+          const ctrl = this.detail_vente.at(idx);
+          ctrl.patchValue({ quantite: (Number(ctrl.get('quantite')?.value) || 0) + 1 });
+          this.calculerMontantTotal();
+          this.toastr.info(`Quantité mise à jour pour ${produit.nom}`);
+        } else {
+          const ligne = this.createDetailVente();
+          this.detail_vente.push(ligne);
+          ligne.patchValue({
+            produit: produit.id,
+            prix_unitaire_vente: produit.prix_vente,
+            image: produit.imageUrl,
+            stock: produit.stock_disponible,
+            nom: produit.nom,
+            quantite: 1
+          });
+          this.calculerMontantTotal();
+          this.toastr.success(`${produit.nom} ajouté`);
+        }
+      },
+      error: () => {
+        this.scanLoading = false;
+        this.toastr.error('Erreur lors de la recherche par code-barres');
+      }
+    });
+  }
+
   imprimerRecu(urlRecuPdf: string) {
-  const url = urlRecuPdf; // ex: https://api.xxx/recus/123.pdf
-  window.open(url, '_blank');
-}
+    const url = urlRecuPdf;
+    window.open(url, '_blank');
+  }
 
 }
+

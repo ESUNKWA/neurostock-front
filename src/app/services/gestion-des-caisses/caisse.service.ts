@@ -1,0 +1,67 @@
+import { Injectable } from '@angular/core';
+import { environnement } from '../../environnement/environnement';
+import { HttpClientService } from '../http-client/http-client.service';
+
+export interface FondCaisse {
+  espece?: number;
+  mobile_money?: number;
+  carte?: number;
+  credit?: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class CaisseService {
+  private readonly BASE = `${environnement.API_URL}/caisse`;
+
+  constructor(private http: HttpClientService) {}
+
+  /** Liste des sessions (historique) */
+  getSessions(boutique: number, page = 1, limit = 20) {
+    return this.http.get(this.BASE, { params: { boutique, page, limit } });
+  }
+
+  /** Session active — caissier optionnel */
+  getActiveSession(boutique: number, caissier?: number | null) {
+    const params: any = { boutique };
+    if (caissier) params['caissier'] = caissier;
+    return this.http.get(`${this.BASE}/active`, { params });
+  }
+
+  /** Ouvrir une session */
+  ouvrirSession(body: {
+    boutique: number;
+    caissier?: number | null;
+    fond_ouverture: FondCaisse;
+    note?: string;
+  }) {
+    return this.http.post(`${this.BASE}/ouvrir`, body);
+  }
+
+  /** Fermer une session — caissier en query param optionnel */
+  fermerSession(id: number, body: { fond_fermeture: FondCaisse; notes?: string }, caissier?: number | null) {
+    const params: any = {};
+    if (caissier) params['caissier'] = caissier;
+    return this.http.post(`${this.BASE}/${id}/fermer`, body, { params });
+  }
+
+  /** Ajouter un mouvement (entrée / sortie) */
+  ajouterMouvement(id: number, body: {
+    type: 'entree' | 'sortie';
+    montant: number;
+    motif: string;
+    mode_paiement?: string;
+    caissier?: number;
+  }) {
+    return this.http.post(`${this.BASE}/${id}/mouvement`, body);
+  }
+
+  /** Situation théorique en cours de session */
+  getTheorique(id: number) {
+    return this.http.get(`${this.BASE}/${id}/theorique`);
+  }
+
+  /** Rapport complet d'une session */
+  getRapport(id: number) {
+    return this.http.get(`${this.BASE}/${id}/rapport`);
+  }
+}

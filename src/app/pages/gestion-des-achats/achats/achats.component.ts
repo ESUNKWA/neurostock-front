@@ -237,31 +237,33 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadBoutiques(): void {
-    
-    switch(this.currentUser.profil.code.toLowerCase()){
+    const code = this.currentUser.profil.code.toLowerCase();
 
-      case true:
-        
-        this.boutiqueService.find().subscribe({
-          next: (response: any) => {
-            if (response.status === 'success' && response.data) {
-              this.boutiques = response.data;
-            }
-          },
-          error: (error: any) => {
-            console.error('Erreur lors du chargement des boutiques:', error);
+    if (code === 'admin') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
           }
-        });
-        break;
-
-      case false:
-        this.boutiques = this.currentUser.structure[0].boutique;
-        break;
-
-        default:
-          this.boutiques[0] = this.currentUser.boutique;
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else if (code === 'responsable_structure') {
+      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
     }
-
   }
 
   onBoutiqueChange(event: Event): void {

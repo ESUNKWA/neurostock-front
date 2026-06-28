@@ -20,23 +20,48 @@ export const routes: Routes = [
             loadChildren: () => import('./pages/gestion-des-achats/routes'), 
             title: 'neurostock | Gestion des approvisionnements' 
         },
-        { 
-            path: 'gestion-des-ventes', 
-            loadChildren: () => import('./pages/gestion-des-ventes/routes'), 
-            title: 'neurostock | Gestion des ventes' 
+        {
+            path: 'gestion-des-ventes',
+            loadChildren: () => import('./pages/gestion-des-ventes/routes'),
+            title: 'neurostock | Gestion des ventes'
         },
-                
+        {
+            path: 'gestion-des-devis',
+            loadChildren: () => import('./pages/gestion-des-devis/routes'),
+            title: 'neurostock | Devis'
+        },
+        {
+            path: 'clients',
+            loadChildren: () => import('./pages/gestion-des-clients/routes'),
+            title: 'neurostock | Clients'
+        },
+        {
+            path: 'stocks',
+            loadChildren: () => import('./pages/gestion-des-stocks/routes'),
+            title: 'neurostock | Mouvements de stock'
+        },
+        {
+            path: 'commandes-clients',
+            loadChildren: () => import('./pages/gestion-des-commandes-clients/routes'),
+            title: 'neurostock | Commandes clients'
+        },
+        {
+            path: 'caisse',
+            loadChildren: () => import('./pages/gestion-des-caisses/routes'),
+            title: 'neurostock | Caisse'
+        },
+
         // Gestion des utilisateurs
-        { 
-            path: 'utilisateurs', 
+        {
+            path: 'utilisateurs',
             loadChildren:()=> import('./pages/gestion-users/gestion.users.routes').then((u) => u.UsersRoutes),
-            title: 'neurostock | Profil' 
+            title: 'neurostock | Profil'
         },
         // Gestion des boutiques
-        { 
-            path: 'structure', 
+        {
+            path: 'structure',
             loadChildren:()=> import('./pages/gestion-boutiques/gestion.boutique.route').then((u) => u.boutiqueRoute),
-            title: 'neurostock | Gestion des boutiques' 
+            title: 'neurostock | Gestion des boutiques'
         },
     ] 
     },

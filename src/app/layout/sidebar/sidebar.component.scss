@@ -1,0 +1,311 @@
+// ── Design tokens ────────────────────────────────────────────────────────────
+$sidebar-width:     260px;
+$sidebar-collapsed: 68px;
+$bg:                #1e293b;
+$bg-darker:         #162032;
+$text:              #94a3b8;
+$text-active:       #e2e8f0;
+$text-muted:        #475569;
+$accent:            #60a5fa;
+$active-bg:         rgba(96, 165, 250, 0.12);
+$hover-bg:          rgba(255, 255, 255, 0.06);
+$border:            rgba(255, 255, 255, 0.07);
+$transition:        0.25s ease;
+
+// ── Host ─────────────────────────────────────────────────────────────────────
+:host {
+  display: block;
+}
+
+// ── Sidebar shell ─────────────────────────────────────────────────────────────
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: $sidebar-width;
+  background: $bg;
+  z-index: 997;
+  display: flex;
+  flex-direction: column;
+  transition: width $transition, transform $transition;
+  overflow: hidden;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  will-change: width;
+
+  &::-webkit-scrollbar       { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+}
+
+// ── Brand header ──────────────────────────────────────────────────────────────
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  height: 62px;
+  padding: 0 1rem;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+
+  img {
+    flex-shrink: 0;
+    border-radius: 6px;
+    filter: brightness(1.1);
+  }
+}
+
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.015em;
+  font-family: 'Poppins', sans-serif;
+  transition: opacity $transition;
+}
+
+// ── Scrollable nav ────────────────────────────────────────────────────────────
+.sidebar-nav-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.625rem 0;
+
+  &::-webkit-scrollbar       { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+// ── Section labels ────────────────────────────────────────────────────────────
+.nav-section-label {
+  padding: 1rem 1.25rem 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity $transition, padding $transition;
+}
+
+// ── Nav items ─────────────────────────────────────────────────────────────────
+.nav-item {
+  padding: 1px 0.5rem;
+}
+
+// Shared base for link + group toggle button
+%nav-base {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.575rem 0.75rem;
+  border-radius: 8px;
+  color: $text;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color $transition, background $transition, padding $transition, gap $transition;
+  white-space: nowrap;
+  overflow: hidden;
+
+  > i:first-child {
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    transition: none;
+  }
+
+  &:hover {
+    color: $text-active;
+    background: $hover-bg;
+    text-decoration: none;
+  }
+
+  &.active {
+    color: $text-active;
+    background: $active-bg;
+
+    > i:first-child { color: $accent; }
+  }
+}
+
+.nav-link      { @extend %nav-base; }
+.nav-group-toggle { @extend %nav-base; }
+
+// ── Text label ────────────────────────────────────────────────────────────────
+.link-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity $transition;
+}
+
+// ── Chevron ───────────────────────────────────────────────────────────────────
+.chevron {
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  color: $text-muted;
+  transition: transform $transition, opacity $transition;
+}
+
+.nav-group-toggle[aria-expanded='true'] .chevron {
+  transform: rotate(-180deg);
+}
+
+// ── Sub-menu ──────────────────────────────────────────────────────────────────
+.nav-submenu {
+  list-style: none;
+  padding: 0.25rem 0 0.25rem 2.5rem;
+  margin: 0;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.625rem;
+    border-radius: 6px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.8125rem;
+    transition: color $transition, background $transition;
+    white-space: nowrap;
+    overflow: hidden;
+
+    i.bi-dot {
+      font-size: 1.4rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    span { overflow: hidden; text-overflow: ellipsis; }
+
+    &:hover {
+      color: $text-active;
+      background: $hover-bg;
+    }
+
+    &.active { color: $accent; }
+  }
+}
+
+// ── Collapse toggle (bottom) ──────────────────────────────────────────────────
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-top: 1px solid $border;
+  color: $text-muted;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color $transition, background $transition, padding $transition, gap $transition;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  i {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    transition: transform $transition;
+  }
+
+  &:hover {
+    color: $text-active;
+    background: $hover-bg;
+  }
+}
+
+.toggle-icon {
+  transition: transform $transition !important;
+}
+
+// ── Mobile backdrop ───────────────────────────────────────────────────────────
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 996;
+  cursor: pointer;
+}
+
+// ── Collapsed state (via @HostBinding) ───────────────────────────────────────
+:host.collapsed {
+  .sidebar { width: $sidebar-collapsed; }
+
+  .brand-name    { opacity: 0; width: 0; }
+  .link-label    { opacity: 0; width: 0; }
+  .chevron       { opacity: 0; width: 0; }
+  .nav-section-label { opacity: 0; padding: 0.75rem 0 0.25rem; }
+
+  .nav-link,
+  .nav-group-toggle {
+    justify-content: center;
+    gap: 0;
+    padding: 0.575rem;
+  }
+
+  .sidebar-collapse-btn {
+    justify-content: center;
+    gap: 0;
+    padding: 0.875rem;
+
+    .toggle-icon { transform: rotate(180deg); }
+  }
+
+  .nav-submenu { display: none; }
+}
+
+// ── Responsive (mobile) ───────────────────────────────────────────────────────
+@media (max-width: 991px) {
+  .sidebar {
+    width: $sidebar-width !important;
+    transform: translateX(-100%);
+  }
+
+  body.sidebar-mobile-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4);
+  }
+
+  body.sidebar-mobile-open .sidebar-backdrop {
+    display: block;
+  }
+
+  // Never collapse on mobile — only slide in/out
+  :host.collapsed .sidebar {
+    width: $sidebar-width !important;
+    transform: translateX(-100%);
+  }
+
+  body.sidebar-mobile-open :host.collapsed .sidebar {
+    transform: translateX(0);
+  }
+}

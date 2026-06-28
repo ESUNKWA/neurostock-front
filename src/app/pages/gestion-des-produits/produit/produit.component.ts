@@ -54,6 +54,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       seuil_alert: [2, [Validators.required]],
       categorie: ['', Validators.required],
       boutique: ['', Validators.required],
+      unite_mesure: ['pièce', Validators.required],
+      code_barre: [null],
       image: [null]
     });
   }
@@ -181,30 +183,20 @@ export default class ProduitComponent implements OnInit, OnDestroy {
             }
           ],
           language: {
-            emptyTable: "Aucune donnée",
-            info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
-            infoEmpty: "Affichage de 0 à 0 sur 0 entrée",
-            infoFiltered: "(filtré de _MAX_ entrées au total)",
-            infoThousands: ",",
-            loadingRecords: "Chargement...",
-            processing: "Traitement...",
-            search: "Rechercher :",
-            zeroRecords: "Aucun enregistrement trouvé",
-            paginate: {
-              first: '<i class="bi bi-chevron-double-left"></i>',
-              last: '<i class="bi bi-chevron-double-right"></i>',
-              next: '<i class="bi bi-chevron-right"></i>',
-              previous: '<i class="bi bi-chevron-left"></i>'
-            }
+            emptyTable: 'Aucun produit trouvé',
+            search: 'Rechercher :',
+            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            infoEmpty: 'Aucun résultat',
+            zeroRecords: 'Aucun résultat',
+            lengthMenu: 'Afficher _MENU_ éléments',
+            paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>' +
-               '<"row"<"col-sm-12"tr>>' +
-               '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-2',
+              className: 'btn btn-success btn-sm me-1',
               exportOptions: {
                 columns: [0, 1, 2, 3, 4] // Exporter les colonnes Nom, Prix d'achat, Prix de vente, Stock, Catégorie
               }
@@ -218,7 +210,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               }
             }
           ],
-          pageLength: 5,
+          pageLength: 20,
           searching: true,
           info: true,
           responsive: true,
@@ -405,7 +397,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       stock_initial: produit.stock_initial,
       categorie: produit.categorie?.id,
       boutique: produit.boutique?.id,
-      seuil_alert: produit.seuil_alert || 0
+      seuil_alert: produit.seuil_alert || 0,
+      unite_mesure: produit.unite_mesure || 'pièce',
+      code_barre: produit.code_barre || null
     });
 
     // Désactiver les champs du formulaire
@@ -442,7 +436,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       categorie: produit.categorie?.id,
       boutique: produit.boutique?.id,
       image: produit.image,
-      seuil_alert: produit.seuil_alert || 0
+      seuil_alert: produit.seuil_alert || 0,
+      unite_mesure: produit.unite_mesure || 'pièce',
+      code_barre: produit.code_barre || null
     });
 
     const modal = document.getElementById('modal-fadein');

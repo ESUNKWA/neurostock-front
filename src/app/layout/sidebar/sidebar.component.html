@@ -1,53 +1,75 @@
-<!-- ======= Sidebar ======= -->
 <aside id="sidebar" class="sidebar">
 
-  <ul class="sidebar-nav" id="sidebar-nav"> 
+  <div class="sidebar-brand">
+    <a routerLink="/dashboard" class="brand-link">
+      <img src="assets/img/logo-neurostock-small.png" alt="NeuroStock" width="30" height="30">
+      <span class="brand-name">neurostock</span>
+    </a>
+  </div>
 
-    @for (item of filteredMenu; track $index) {
+  <nav class="sidebar-nav-area">
+    <ul class="nav-list" id="sidebar-nav">
 
-      <!-- Titre pour un ensemble de menu -->
-      @if (item?.titre) {
-        <li class="nav-heading mt-4">{{item?.titre}}</li>
+      @for (item of filteredMenu; track $index) {
+
+        @if (item?.titre) {
+          <li class="nav-section-label"><span>{{ item.titre }}</span></li>
+        }
+
+        @if (!item?.full) {
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="item?.menu[0]?.lien"
+               routerLinkActive="active" [title]="item?.menu[0]?.libelle">
+              <i [class]="item?.menu[0]?.icon"></i>
+              <span class="link-label">{{ item?.menu[0]?.libelle }}</span>
+            </a>
+          </li>
+        } @else {
+          @for (items of item?.menu; track $index) {
+            <li class="nav-item">
+
+              @if (items?.sousMenu) {
+                <button type="button" class="nav-link nav-group-toggle"
+                        [attr.data-bs-target]="'#' + items?.target"
+                        data-bs-toggle="collapse"
+                        [title]="items?.libelle">
+                  <i [class]="items?.icon"></i>
+                  <span class="link-label">{{ items?.libelle }}</span>
+                  <i class="bi bi-chevron-down chevron"></i>
+                </button>
+                <ul [id]="items?.target" class="nav-submenu collapse" data-bs-parent="#sidebar-nav">
+                  @for (sub of items?.sousMenu; track $index) {
+                    <li>
+                      <a [routerLink]="sub?.lien" routerLinkActive="active" [title]="sub?.libelle">
+                        <i class="bi bi-dot"></i>
+                        <span>{{ sub?.libelle }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <a class="nav-link" [routerLink]="items?.lien"
+                   routerLinkActive="active" [title]="items?.libelle">
+                  <i [class]="items?.icon"></i>
+                  <span class="link-label">{{ items?.libelle }}</span>
+                </a>
+              }
+
+            </li>
+          }
+        }
+
       }
 
-       
-          <!-- Affichage pour un seul menu -->
-          @if ( !item?.full) {
-            <li class="nav-item">
-              <a class="nav-link collapsed" [routerLink]="item?.menu[0]?.lien" [attr.data-bs-target]="'#' + item?.menu?.target" data-bs-toggle="collapse" href="#">
-                <i [attr.class]="item?.menu[0]?.icon" ></i><span>{{item?.menu[0]?.libelle}}</span>
-              </a>
-            </li>
-          }@else {
-            <!-- Affichage pour un ensemble menu -->
-            @for (items of item?.menu; track $index) {
+    </ul>
+  </nav>
 
-              <li class="nav-item">
-                <a class="nav-link collapsed" [attr.data-bs-target]="'#' + items?.target" data-bs-toggle="collapse" href="#">
-                  <i [attr.class]="items?.icon"></i><span>{{items?.libelle}}</span><i class="bi bi-chevron-down ms-auto"></i>
-                </a>
+  <button type="button" class="sidebar-collapse-btn" (click)="toggleCollapsed()"
+          [title]="collapsed ? 'Développer la barre' : 'Réduire la barre'">
+    <i class="bi bi-chevron-left toggle-icon"></i>
+    <span class="link-label">Réduire</span>
+  </button>
 
-                 <!-- Affichage sous-menu -->
-                  <ul [attr.id]="items?.target" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                  
-                    @for (itemSubmenu of items?.sousMenu; track $index) {
-                   
-                      <li>
-                        <a [routerLink]="itemSubmenu?.lien" routerLinkActive="active">
-                          <i [attr.class]="itemSubmenu?.icon"></i><span>{{itemSubmenu?.libelle}}</span>
-                        </a>
-                      </li>
-                    }
-                    
-                  </ul>
-    
-              </li>
+</aside>
 
-            }
-          }
-
-    }
-
-  </ul>
-
-</aside><!-- End Sidebar-->
+<div class="sidebar-backdrop" (click)="closeMobile()"></div>

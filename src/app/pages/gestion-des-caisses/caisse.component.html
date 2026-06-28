@@ -1,0 +1,511 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1>Gestion de caisse</h1>
+      <p class="text-muted small mb-0">Suivi des sessions de caisse et mouvements</p>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      @if (caisseActivee === true && (currentUser?.is_admin || currentUser?.profil?.code === 'responsable_structure')) {
+        <button class="btn btn-outline-danger btn-sm fw-semibold" (click)="desactiverCaisse()" [disabled]="activating">
+          @if (activating) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          <i class="bi bi-toggle-on me-1"></i> Désactiver la caisse
+        </button>
+      }
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+          <li class="breadcrumb-item active">Caisse</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+
+  <!-- ── Bannière : caisse non activée ──────────────────────────────────────── -->
+  @if (caisseActivee === false) {
+    <div class="card border-0 shadow-sm mb-4 border-start border-warning border-4">
+      <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-4">
+        <div>
+          <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Gestion de caisse désactivée</h6>
+          <p class="text-muted small mb-0">
+            La gestion de caisse n'est pas activée pour cette boutique. Les ventes fonctionnent normalement sans lien avec une session de caisse.
+          </p>
+        </div>
+        @if (currentUser?.is_admin || currentUser?.profil?.code === 'responsable_structure') {
+          <button class="btn btn-warning btn-sm fw-semibold" (click)="activerCaisse()" [disabled]="activating">
+            @if (activating) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            <i class="bi bi-toggle-off me-1"></i> Activer la caisse
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Vérification en cours ──────────────────────────────────────────────── -->
+  @if (caisseActivee === null && idBoutique) {
+    <div class="text-center py-3">
+      <div class="spinner-border text-primary spinner-border-sm"></div>
+      <span class="ms-2 text-muted small">Vérification de la configuration…</span>
+    </div>
+  }
+
+  @if (caisseActivee === true) {
+
+  <!-- Sélecteur boutique (admin / responsable) -->
+  @if (currentUser?.is_admin || currentUser?.profil?.code === 'responsable_structure') {
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-shop"></i></span>
+          <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" [ngModelOptions]="{standalone:true}">
+            <option [ngValue]="null">— Sélectionner une boutique —</option>
+            @for (b of boutiques; track b.id) {
+              <option [ngValue]="b.id">{{ b.nom }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Statut session active ─────────────────────────────────────────────── -->
+  @if (loadingActive) {
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary spinner-border-sm"></div>
+      <span class="ms-2 text-muted small">Chargement de la session…</span>
+    </div>
+  }
+
+  @if (!loadingActive) {
+
+    @if (!activeSession) {
+      <!-- Pas de session ouverte -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center py-5">
+          <i class="bi bi-cash-stack fs-1 text-muted"></i>
+          <p class="text-muted mt-3 mb-3">Aucune session de caisse ouverte pour cette boutique.</p>
+          <button type="button" class="btn btn-primary px-4" (click)="openModalOuvrir()" [disabled]="!idBoutique">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir la caisse
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Session active -->
+      <div class="card border-0 shadow-sm mb-4 border-start border-success border-4">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+            <div>
+              <span class="badge bg-success mb-1">Session ouverte</span>
+              <h5 class="fw-bold mb-1">Session #{{ activeSession.id }}</h5>
+              @if (activeSession.caissier) {
+                <p class="text-muted small mb-0">
+                  <i class="bi bi-person-fill me-1"></i>
+                  <strong>{{ activeSession.caissier.prenoms || activeSession.caissier.prenom }} {{ activeSession.caissier.nom }}</strong>
+                </p>
+              }
+              <p class="text-muted small mb-0">
+                Fond d'ouverture :
+                <strong>{{ sumFond(activeSession.fond_ouverture) | number:'1.0-0':'fr' }} FCFA</strong>
+                &nbsp;·&nbsp;
+                {{ activeSession.date_ouverture || activeSession.created_at | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+              @if (activeSession.notes || activeSession.note) {
+                <p class="text-muted small mb-0">
+                  <i class="bi bi-chat-left-text me-1"></i>{{ activeSession.notes || activeSession.note }}
+                </p>
+              }
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="openModalMouvement()">
+                <i class="bi bi-arrow-left-right me-1"></i> Mouvement
+              </button>
+              <a [routerLink]="['/caisse/rapport', activeSession.id]" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i> Rapport
+              </a>
+              <button type="button" class="btn btn-danger btn-sm" (click)="openModalFermer()">
+                <i class="bi bi-box-arrow-right me-1"></i> Fermer la caisse
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Situation théorique en cours ──────────────────────────────────── -->
+      @if (loadingTheorique) {
+        <div class="text-center py-2 mb-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+          <span class="ms-2 text-muted small">Calcul du théorique…</span>
+        </div>
+      }
+      @if (!loadingTheorique && theorique) {
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between py-2">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-calculator me-1 text-primary"></i>
+              Situation théorique en cours
+            </h6>
+            <button class="btn btn-outline-secondary btn-sm" (click)="loadTheorique()" title="Rafraîchir">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Mode</th>
+                    <th class="text-end">Fond ouverture</th>
+                    <th class="text-end">Ventes</th>
+                    <th class="text-end">Mouvements nets</th>
+                    <th class="text-end fw-bold text-primary">Théorique attendu</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                    @let fo  = theorique.fond_ouverture?.[mode]          ?? 0;
+                    @let v   = theorique.ventes_par_mode?.[mode]         ?? 0;
+                    @let ent = theorique.mouvements_par_mode?.[mode]?.entrees ?? 0;
+                    @let sor = theorique.mouvements_par_mode?.[mode]?.sorties ?? 0;
+                    @let th  = theorique.montant_theorique?.[mode]       ?? null;
+                    @if (fo !== 0 || v !== 0 || ent !== 0 || sor !== 0 || th !== null) {
+                      <tr>
+                        <td class="fw-semibold small">{{ modesLabels[mode] }}</td>
+                        <td class="text-end small">{{ fo | number:'1.0-0':'fr' }}</td>
+                        <td class="text-end small text-success">+{{ v | number:'1.0-0':'fr' }}</td>
+                        <td class="text-end small" [ngClass]="(ent - sor) >= 0 ? 'text-success' : 'text-danger'">
+                          {{ (ent - sor) >= 0 ? '+' : '' }}{{ (ent - sor) | number:'1.0-0':'fr' }}
+                        </td>
+                        <td class="text-end fw-bold text-primary">
+                          {{ th != null ? (th | number:'1.0-0':'fr') : '—' }} FCFA
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+                <tfoot class="table-light">
+                  <tr>
+                    <td class="fw-bold small">Total</td>
+                    <td class="text-end small fw-semibold">{{ sumFond(theorique.fond_ouverture) | number:'1.0-0':'fr' }}</td>
+                    <td class="text-end small fw-semibold text-success">+{{ sumFond(theorique.ventes_par_mode) | number:'1.0-0':'fr' }}</td>
+                    <td class="text-end small fw-semibold"></td>
+                    <td class="text-end fw-bold text-primary">{{ sumFond(theorique.montant_theorique) | number:'1.0-0':'fr' }} FCFA</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+  }
+
+  <!-- ── Historique des sessions ──────────────────────────────────────────── -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header d-flex align-items-center justify-content-between py-3">
+      <h6 class="mb-0 fw-semibold">Historique des sessions</h6>
+      @if (!activeSession && idBoutique) {
+        <button type="button" class="btn btn-primary btn-sm" (click)="openModalOuvrir()">
+          <i class="bi bi-plus-circle me-1"></i> Ouvrir
+        </button>
+      }
+    </div>
+    <div class="card-body">
+      @if (loadingSessions) {
+        <div class="text-center py-3">
+          <div class="spinner-border text-primary spinner-border-sm"></div>
+        </div>
+      }
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover caisse-table">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Caissier</th>
+              <th>Ouverture</th>
+              <th>Fond ouverture</th>
+              <th>Fond fermeture</th>
+              <th>Statut</th>
+              <th>Fermeture</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of sessions; track s.id) {
+              <tr>
+                <td>{{ s.id }}</td>
+                <td>
+                  @if (s.caissier) {
+                    {{ s.caissier.prenoms || s.caissier.prenom }} {{ s.caissier.nom }}
+                  } @else { — }
+                </td>
+                <td>{{ (s.date_ouverture || s.created_at) | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ sumFond(s.fond_ouverture) | number:'1.0-0':'fr' }} FCFA</td>
+                <td>{{ s.fond_fermeture != null ? (sumFond(s.fond_fermeture) | number:'1.0-0':'fr') + ' FCFA' : '—' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="s.statut === 'ouverte' ? 'bg-success' : 'bg-secondary'">
+                    {{ labelStatut(s.statut) }}
+                  </span>
+                </td>
+                <td>{{ (s.date_fermeture || s.fermeture_at) ? ((s.date_fermeture || s.fermeture_at) | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td class="text-center">
+                  <a [routerLink]="['/caisse/rapport', s.id]" class="btn btn-sm btn-outline-info" title="Rapport">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                  </a>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr><td colspan="9" class="text-center text-muted py-3">Aucune session enregistrée</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  } <!-- fin @if caisseActivee === true -->
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  Modal : Ouvrir la caisse                                                -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-ouvrir" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-box-arrow-in-right me-2"></i>Ouvrir la caisse</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="ouvrirForm" (ngSubmit)="submitOuvrir()">
+        <div class="modal-body">
+
+          <!-- Caissier -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Caissier <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="caissier"
+                    [ngClass]="{'is-invalid': ouvrirForm.get('caissier')?.invalid && ouvrirForm.get('caissier')?.touched}">
+              <option [ngValue]="null">— Sélectionner un caissier —</option>
+              @for (u of users; track u.id) {
+                <option [ngValue]="u.id">{{ u.prenoms || u.prenom }} {{ u.nom }}</option>
+              }
+            </select>
+            @if (ouvrirForm.get('caissier')?.invalid && ouvrirForm.get('caissier')?.touched) {
+              <div class="invalid-feedback d-block">Caissier requis</div>
+            }
+          </div>
+
+          <!-- Fond d'ouverture par mode -->
+          <div class="mb-3" formGroupName="fond_ouverture">
+            <label class="form-label fw-semibold">Fond d'ouverture par mode (FCFA)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Espèces</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="espece" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Mobile Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="mobile_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Carte bancaire</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="carte" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Crédit</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="credit" thousandSeparator placeholder="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Note</label>
+            <textarea class="form-control" formControlName="note" rows="2" placeholder="Observation…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="ouvrirForm.invalid || submittingOuvrir">
+            @if (submittingOuvrir) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Ouvrir
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  Modal : Fermer la caisse                                                -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-fermer" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-box-arrow-right me-2 text-danger"></i>Fermer la caisse</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="fermerForm" (ngSubmit)="submitFermer()">
+        <div class="modal-body">
+          <div class="alert alert-warning py-2 small">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Comptez physiquement chaque mode de paiement avant de valider.
+          </div>
+
+          <!-- Référence théorique -->
+          @if (theorique?.montant_theorique) {
+            <div class="mb-3 p-2 rounded border border-primary-subtle bg-primary-subtle">
+              <p class="small fw-semibold text-primary mb-1">
+                <i class="bi bi-calculator me-1"></i>Montant théorique attendu
+              </p>
+              @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                @if (theorique.montant_theorique[mode]) {
+                  <div class="d-flex justify-content-between small">
+                    <span class="text-muted">{{ modesLabels[mode] }}</span>
+                    <span class="fw-semibold">{{ theorique.montant_theorique[mode] | number:'1.0-0':'fr' }} FCFA</span>
+                  </div>
+                }
+              }
+              <div class="d-flex justify-content-between small border-top mt-1 pt-1">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold text-primary">{{ sumFond(theorique.montant_theorique) | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+            </div>
+          }
+
+          <!-- Fond de fermeture par mode -->
+          <div class="mb-3" formGroupName="fond_fermeture">
+            <label class="form-label fw-semibold">Fond de fermeture compté par mode (FCFA) <span class="text-danger">*</span></label>
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Espèces</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="espece" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Mobile Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="mobile_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Carte bancaire</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="carte" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted mb-1">Crédit</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control" formControlName="credit" thousandSeparator placeholder="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Note de clôture</label>
+            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Observation…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger" [disabled]="fermerForm.invalid || submittingFermer">
+            @if (submittingFermer) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Fermer la caisse
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  Modal : Mouvement de caisse                                             -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-mouvement" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Mouvement de caisse</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form [formGroup]="mouvementForm" (ngSubmit)="submitMouvement()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Type <span class="text-danger">*</span></label>
+            <div class="d-flex gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="type" value="entree" id="r-entree">
+                <label class="form-check-label text-success fw-semibold" for="r-entree">
+                  <i class="bi bi-arrow-down-circle me-1"></i> Entrée
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="type" value="sortie" id="r-sortie">
+                <label class="form-check-label text-danger fw-semibold" for="r-sortie">
+                  <i class="bi bi-arrow-up-circle me-1"></i> Sortie
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mode de paiement</label>
+            <select class="form-select" formControlName="mode_paiement">
+              @for (m of modesPaiement; track m.value) {
+                <option [value]="m.value">{{ m.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Montant (FCFA) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text">FCFA</span>
+              <input type="text" class="form-control" formControlName="montant"
+                     thousandSeparator placeholder="0"
+                     [ngClass]="{'is-invalid': mouvementForm.get('montant')?.invalid && mouvementForm.get('montant')?.touched}">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Motif <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="motif"
+                   placeholder="Ex: dépense transport, apport fonds…"
+                   [ngClass]="{'is-invalid': mouvementForm.get('motif')?.invalid && mouvementForm.get('motif')?.touched}">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="mouvementForm.invalid || submittingMouvement">
+            @if (submittingMouvement) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
