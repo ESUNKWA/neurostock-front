@@ -1,0 +1,111 @@
+<div class="p-4">
+
+  <!-- Page header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Structures / Tenants</h4>
+      <p class="text-muted small mb-0">Configurations des bases de données par structure</p>
+    </div>
+    <a routerLink="/ekwatech/provision" class="btn btn-primary btn-sm">
+      <i class="bi bi-database-add me-1"></i>Provisionner
+    </a>
+  </div>
+
+  <!-- Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement des tenants…</p>
+        </div>
+      }
+
+      @if (!loading && tenants.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-diagram-3 display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucun tenant configuré</p>
+          <a routerLink="/ekwatech/provision" class="btn btn-sm btn-primary">
+            <i class="bi bi-database-add me-1"></i>Provisionner le premier
+          </a>
+        </div>
+      }
+
+      @if (!loading && tenants.length > 0) {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Structure</th>
+                <th>Base de données</th>
+                <th>Hôte</th>
+                <th>Port</th>
+                <th>Statut</th>
+                <th class="text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of tenants; track t.structureId) {
+                <tr>
+                  <td class="ps-4">
+                    <div class="d-flex flex-column">
+                      <span class="fw-semibold small">{{ t.structure?.nom || '—' }}</span>
+                      <span class="text-muted" style="font-size:.72rem">
+                        <i class="bi bi-hash"></i>{{ t.structureId }}
+                        @if (t.structure?.telephone) {
+                          &nbsp;·&nbsp;<i class="bi bi-telephone me-1"></i>{{ t.structure.telephone }}
+                        }
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-database-fill text-muted" style="font-size:.85rem"></i>
+                      <code class="text-body fw-semibold">{{ t.database }}</code>
+                    </div>
+                  </td>
+                  <td class="text-muted small">{{ t.host || '—' }}</td>
+                  <td class="text-muted small">{{ t.port || '—' }}</td>
+                  <td>
+                    @if (t.isActive !== false) {
+                      <span class="badge" style="background:#dcfce7; color:#166534;">
+                        <i class="bi bi-circle-fill me-1" style="font-size:.4rem; vertical-align:middle"></i>Actif
+                      </span>
+                    } @else {
+                      <span class="badge bg-warning-subtle text-warning">
+                        <i class="bi bi-circle-fill me-1" style="font-size:.4rem; vertical-align:middle"></i>Inactif
+                      </span>
+                    }
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      <a class="btn btn-sm btn-outline-primary"
+                         [routerLink]="['/ekwatech/tenants', t.structureId, 'tables']"
+                         title="Voir les tables">
+                        <i class="bi bi-table me-1"></i>Tables
+                      </a>
+                      <button class="btn btn-sm btn-outline-warning"
+                              [disabled]="resetting === t.structureId"
+                              (click)="resetPool(t)"
+                              title="Réinitialiser le pool de connexion">
+                        @if (resetting === t.structureId) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        } @else {
+                          <i class="bi bi-arrow-clockwise me-1"></i>
+                        }
+                        Reset
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </div>
+  </div>
+
+</div>

@@ -55,7 +55,7 @@ export default class NouveauDevisComponent implements OnInit {
   }
 
   loadClients(): void {
-    const boutiqueId = this.currentUser?.boutique?.id;
+    const boutiqueId = this.currentUser.boutique_id;
     if (!boutiqueId) return;
     this.clientService.getClientsByBoutique(boutiqueId).subscribe({
       next: (r: any) => {
@@ -80,8 +80,8 @@ export default class NouveauDevisComponent implements OnInit {
 
   initForm(): void {
     this.devisForm = this.fb.group({
-      user: [{ id: this.currentUser?.id }, Validators.required],
-      boutique: [{ id: this.currentUser?.boutique?.id }, Validators.required],
+      user: [this.currentUser?.telephone ?? null, Validators.required],
+      boutique: [{ id: this.currentUser.boutique_id }, Validators.required],
       montant_total: [0],
       montant_total_apres_remise: [0],
       remise: [0, [Validators.min(0)]],
@@ -235,7 +235,7 @@ export default class NouveauDevisComponent implements OnInit {
   }
 
   loadProduits(): void {
-    const boutiqueId = this.currentUser?.boutique?.id;
+    const boutiqueId = this.currentUser.boutique_id;
     if (!boutiqueId) return;
     this.produitService.getProduits({ boutique: boutiqueId }).subscribe({
       next: (r: any) => { if (r.status === 'success') this.produits = r.data; }
@@ -250,8 +250,8 @@ export default class NouveauDevisComponent implements OnInit {
       remise: v.remise,
       date_expiration: new Date(v.date_expiration).toISOString(),
       notes: v.notes,
-      boutique: { id: this.currentUser?.boutique?.id },
-      user: { id: this.currentUser?.id },
+      boutique: { id: this.currentUser.boutique_id },
+      user: this.currentUser?.telephone ?? null,
       clientdata: v.clientdata,
       detail_devis: v.detail_devis.map((d: any) => ({
         produit: d.produit,

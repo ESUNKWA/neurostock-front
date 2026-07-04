@@ -14,6 +14,8 @@
 
 <hr>
 
+
+
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
@@ -30,6 +32,22 @@
                         </div>
                     </div>
                 </div>
+                @if (parsedUser?.profil?.code?.toLowerCase() === 'admin' || parsedUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+                    @if (boutiques.length >= 1) {
+                        <div class="card-body border-bottom pb-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select" (change)="onBoutiqueChange($event)">
+                                        <option value="">Toutes les boutiques</option>
+                                        @for (boutique of boutiques; track boutique.id) {
+                                            <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
                 <div class="card-body">
                     @if (isLoading) {
                         <div class="text-center py-3">
@@ -63,148 +81,179 @@
     </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
-<div class="modal fade" id="modal-fadein" tabindex="-1" >
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Modal utilisateur -->
+<div class="modal fade" id="modal-fadein" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content mf-modal mf-modal--slate">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-person-plus"></i></div>
+        <div>
+          <div class="mf-header-title">{{ titleModal }}</div>
+          <div class="mf-header-subtitle">Renseignez les informations de l'utilisateur</div>
         </div>
-        <form [formGroup]="userForm" (ngSubmit)="saveOrUpdate()" >
-            <div class="modal-body">
-                <div class="block-content fs-sm">
-
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <label class="form-label" for="nom">Nom</label>
-                            <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                            @if (isSubmitted && f['nom'].errors) {
-                                <div class="invalid-feedback">
-                                  @if (f['nom'].errors['required']) {
-                                    <div>Le nom est obligatoire</div>
-                                  }
-                                </div>
-                              }
-                          </div>
-                          <div class="col-md-6 mb-4">
-                            <label class="form-label" for="prenoms">Prenoms</label>
-                            <input type="text" class="form-control" id="prenoms" formControlName="prenoms" [ngClass]="{'is-invalid': isSubmitted && f['prenoms'].errors}">
-                            @if (isSubmitted && f['prenoms'].errors) {
-                                <div class="invalid-feedback">
-                                  @if (f['prenoms'].errors['required']) {
-                                    <div>Le prenoms est obligatoire</div>
-                                  }
-                                </div>
-                              }
-                          </div>
-                    </div>
-
-                  
-                  <div class="mb-4">
-                    <label class="form-label" for="email">Adresse email</label>
-                    <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
-                    @if (isSubmitted && f['email'].errors) {
-                        <div class="invalid-feedback">
-                          @if (f['email'].errors['required']) {
-                            <div>L'adresse email est obligatoire</div>
-                          }
-                        </div>
-                      }
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label" for="telephone">Numéro de téléphone</label>
-                    <input type="telephone" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
-                    @if (isSubmitted && f['telephone'].errors) {
-                        <div class="invalid-feedback">
-                          @if (f['telephone'].errors['required']) {
-                            <div>L'adresse email est obligatoire</div>
-                          }
-                        </div>
-                      }
-                  </div>
-                  
-                  <div class="row">
-                    <div class="col mb-4">
-                        <label class="form-label" for="profil">Profil</label>
-                        <!-- <select class="form-control js-example-basic-single" id="profil" formControlName="profil" [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
-                            <option value="">---Selectionnez le profil---</option>
-                            @for (item of profils; track $index) {
-                                <option value="{{item.id}}">{{item.nom}}</option>
-                            }
-                        </select> -->
-                        <select 
-                            class="form-control js-example-basic-single" 
-                            id="profil" 
-                            formControlName="profil"
-                            [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
-                            
-                            <option value="">---Sélectionnez le profil---</option>
-
-                            <option *ngFor="let item of profils" [value]="item.id" [selected]="item.id === f['profil'].value">
-                                {{item.nom}}
-                            </option>
-
-                            
-
-                        </select>
-
-                        <!-- <nz-select
-                          nzShowSearch
-                          nzAllowClear
-                          nzPlaceHolder="Sélectionner un produit"
-                          formControlName="profil">
-                          @for (item of profils; track item.id) {
-                            <nz-option
-                              [nzLabel]="item.nom"
-                              [nzValue]="item.id">
-                            </nz-option>
-                          }
-                        </nz-select> -->
-                   
-                        @if (isSubmitted && f['profil'].errors) {
-                          <div class="invalid-feedback">
-                            @if (f['profil'].errors['required']) {
-                              <div>Le profil est obligatoire</div>
-                            }
-                          </div>
-                        }
-                    </div>
-                    <div class="col mb-4">
-                        <label class="form-label" for="boutique">Boutique</label>
-                        <select class="form-control js-example-tags" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
-                          <option value="">---Selectionnez la boutique---</option>
-                          @for (item of boutiques; track $index) {
-                            <option value="{{item.id}}">{{item.nom}}</option>
-                          }
-                        </select>
-                        @if (isSubmitted && f['boutique'].errors) {
-                          <div class="invalid-feedback">
-                            @if (f['boutique'].errors['required']) {
-                              <div>La boutique est obligatoire</div>
-                            }
-                          </div>
-                        }
-                    </div>
-                  </div>
-                  <div class="mb-4">
-                    <label class="form-label" for="description">Description</label>
-                    <textarea class="form-control" id="description" rows="5" formControlName="description"></textarea>
-                  </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                @if (!titleModal.includes('VISUALISER')) {
-                    <button type="submit" class="btn btn-primary me-2">
-                      <i [class]="icon"></i> {{ buttonText }}
-                    </button>
-                  }
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
-                </button>
-            </div>
-        </form>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="saveOrUpdate()">
+        <div class="mf-body">
+
+          <!-- Identité -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-person"></i> Identité</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label" for="nom">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="nom"
+                    placeholder="Nom de famille"
+                    formControlName="nom"
+                    [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                </div>
+                @if (isSubmitted && f['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label" for="prenoms">Prénoms</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="prenoms"
+                    placeholder="Prénoms"
+                    formControlName="prenoms"
+                    [ngClass]="{'is-invalid': isSubmitted && f['prenoms'].errors}">
+                </div>
+                @if (isSubmitted && f['prenoms'].errors?.['required']) {
+                  <div class="mf-error">Les prénoms sont obligatoires</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Coordonnées -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-telephone"></i> Coordonnées</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label" for="telephone">Téléphone <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-telephone mf-input-icon"></i>
+                  <input type="tel" class="form-control mf-input" id="telephone"
+                    placeholder="0X XX XX XX XX" maxlength="10"
+                    formControlName="telephone"
+                    [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+                </div>
+                @if (isSubmitted && f['telephone'].errors?.['required']) {
+                  <div class="mf-error">Le téléphone est obligatoire</div>
+                }
+                @if (isSubmitted && f['telephone'].errors?.['pattern']) {
+                  <div class="mf-error">Format : 01, 05 ou 07 + 8 chiffres</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label" for="email">Email <span class="text-muted fw-normal" style="font-size:.75rem">(optionnel)</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input" id="email"
+                    placeholder="email@exemple.com"
+                    formControlName="email"
+                    [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+                </div>
+                @if (isSubmitted && f['email'].errors?.['email']) {
+                  <div class="mf-error">Email invalide</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Accès & Affectation -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-key"></i> Accès & Affectation</div>
+            <div class="row g-3">
+              <!-- Structure (multi-tenant) -->
+              <div class="col-12">
+                <label class="mf-label" for="structure_id">
+                  Structure <span class="text-danger">*</span>
+                  <span class="badge bg-warning text-dark ms-1 fw-normal" style="font-size:.62rem">Multi-tenant</span>
+                  @if (!isGlobalAdmin) {
+                    <span class="badge bg-secondary ms-1 fw-normal" style="font-size:.62rem">
+                      <i class="bi bi-lock-fill me-1"></i>Verrouillé
+                    </span>
+                  }
+                </label>
+                <select class="form-select mf-input" id="structure_id" formControlName="structure_id"
+                  [ngClass]="{'is-invalid': isSubmitted && f['structure_id'].errors}"
+                  (change)="onStructureChange($any($event.target).value)">
+                  <option value="">— Sélectionnez la structure —</option>
+                  @for (s of structures; track s.id) {
+                    <option [value]="s.id">{{ s.nom }} (ID: {{ s.id }})</option>
+                  }
+                </select>
+                @if (isSubmitted && f['structure_id'].errors) {
+                  <div class="mf-error">La structure est obligatoire pour le routage multi-tenant</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label" for="profil">Profil <span class="text-danger">*</span></label>
+                <select class="form-select mf-input" id="profil" formControlName="profil"
+                  [ngClass]="{'is-invalid': isSubmitted && f['profil'].errors}">
+                  <option value="">— Sélectionnez le profil —</option>
+                  @for (item of profils; track item.id) {
+                    <option [value]="item.id">{{ item.nom }}</option>
+                  }
+                </select>
+                @if (isSubmitted && f['profil'].errors?.['required']) {
+                  <div class="mf-error">Le profil est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label" for="boutique">Boutique <span class="text-danger">*</span></label>
+                <select class="form-select mf-input" id="boutique" formControlName="boutique"
+                  [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                  <option value="">— Sélectionnez la boutique —</option>
+                  @for (item of boutiques; track item.id) {
+                    <option [value]="item.id">{{ item.nom }}</option>
+                  }
+                </select>
+                @if (isSubmitted && f['boutique'].errors?.['required']) {
+                  <div class="mf-error">La boutique est obligatoire</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Permissions & Note -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-shield"></i> Permissions & Note</div>
+            @if (showRetourPermission) {
+              <div class="mf-switch-row mb-3">
+                <input class="form-check-input" type="checkbox" role="switch"
+                  id="peut_faire_retour" formControlName="peut_faire_retour">
+                <div>
+                  <div class="mf-switch-label">Autoriser les retours produits</div>
+                  <div class="mf-switch-hint">Permet à cet utilisateur d'enregistrer des retours après vente</div>
+                </div>
+              </div>
+            }
+            <div>
+              <label class="mf-label" for="description">Note / description</label>
+              <textarea class="form-control mf-input" id="description" rows="3"
+                placeholder="Informations complémentaires…"
+                formControlName="description"></textarea>
+            </div>
+          </div>
+
+        </div>
+        <div class="mf-footer">
+          @if (!titleModal.includes('VISUALISER')) {
+            <button type="submit" class="btn mf-btn-save"><i [class]="icon"></i> {{ buttonText }}</button>
+          }
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>

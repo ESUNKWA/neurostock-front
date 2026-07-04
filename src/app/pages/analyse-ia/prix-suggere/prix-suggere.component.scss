@@ -1,0 +1,60 @@
+.ia-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: .5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+
+  &--sm {
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: .85rem;
+    border-radius: .35rem;
+  }
+}
+
+// ── Panel suggestion ───────────────────────────────────────────────────────────
+.suggestion-panel {
+  background: #f5f3ff;
+  border: 1px solid #e9d5ff;
+  border-left: 4px solid #6366f1;
+  border-radius: .6rem;
+  padding: 1rem 1.25rem;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .75rem;
+  }
+
+  &__result {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9d5ff;
+  }
+}
+
+// ── Metric boxes ──────────────────────────────────────────────────────────────
+.metric-box {
+  padding: .6rem .8rem;
+  border-radius: .4rem;
+  background: #f3f4f6;
+
+  &__label { font-size: .72rem; color: #6b7280; margin-bottom: .15rem; }
+  &__value { font-size: 1.1rem; font-weight: 700; line-height: 1.1; color: #374151; }
+
+  &--green { background: #f0fdf4; .metric-box__value { color: #16a34a; } }
+  &--amber { background: #fffbeb; .metric-box__value { color: #d97706; } }
+  &--red   { background: #fef2f2; .metric-box__value { color: #dc2626; } }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin .7s linear infinite; }

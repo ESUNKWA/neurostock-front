@@ -1,0 +1,178 @@
+// ── Modal shell ───────────────────────────────────────────────────────────────
+.frs-modal {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+// ── Gradient header ───────────────────────────────────────────────────────────
+.frs-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  color: #fff;
+}
+
+.frs-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 1.35rem; }
+}
+
+.frs-modal-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+.frs-modal-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.78;
+  margin-top: 2px;
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.frs-body {
+  padding: 0;
+  background: #f8fafc;
+}
+
+// ── Sections ──────────────────────────────────────────────────────────────────
+.frs-section {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+
+  & + .frs-section { margin-top: 6px; }
+
+  &--last { border-bottom: none; }
+}
+
+.frs-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #3b82f6;
+  margin-bottom: 0.875rem;
+
+  i { margin-right: 5px; }
+}
+
+// ── Boutique select ───────────────────────────────────────────────────────────
+.frs-select {
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  height: 42px;
+  background-color: #f0f7ff;
+  font-weight: 500;
+  color: #1e40af;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  &:disabled { background-color: #f1f5f9; color: #64748b; }
+}
+
+// ── Inputs with icon ──────────────────────────────────────────────────────────
+.frs-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.frs-input-wrap {
+  position: relative;
+}
+
+.frs-input-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.frs-input {
+  padding-left: 2.1rem;
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  height: 42px;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  }
+
+  &:disabled { background-color: #f8fafc; color: #64748b; }
+
+  &.is-invalid { padding-left: 2.1rem; }
+}
+
+.frs-error {
+  font-size: 0.76rem;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.frs-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.frs-btn-save {
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.1s;
+
+  &:hover { opacity: 0.9; color: #fff; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+
+  i { margin-right: 5px; }
+}
+
+.frs-btn-cancel {
+  background: #fff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s;
+
+  &:hover { background: #f1f5f9; color: #1e293b; }
+
+  i { margin-right: 4px; }
+}

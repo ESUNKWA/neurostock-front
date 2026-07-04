@@ -63,176 +63,164 @@
     </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
+<!-- Modal structure -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content mf-modal mf-modal--violet">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-building"></i></div>
+        <div>
+          <div class="mf-header-title">{{ titleModal }}</div>
+          <div class="mf-header-subtitle">Renseignez les informations de la structure</div>
         </div>
-        <form [formGroup]="structureForm" (ngSubmit)="saveOrUpdate()" enctype="multipart/form-data" >
-            <div class="container my-4">
-                    <div class="modal-body">
-
-                        <fieldset class="border border-success border-2 rounded p-3 mb-3">
-                            <legend class="w-auto px-2"><i class="bi bi-building me-2"></i>Structure</legend>
-                                
-                                <div class="block-content fs-sm">
-
-                                    <div class="mb-4">
-                                        <label class="form-label" for="nom">Nom de la structure</label>
-                                        <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                                        @if (isSubmitted && f['nom'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['nom'].errors['required']) {
-                                                <div>Le nom est obligatoire</div>
-                                                }
-                                            </div>
-                                            }
-                                    </div>
-
-                                    <div class="row mb-4">
-                                        
-                                        <div class="col-md-4 ">
-                                            <label class="form-label" for="email">Adresse email</label>
-                                            <input type="email" class="form-control" id="email" formControlName="email">
-                                        </div>
-                                        <div class="col-md-8">
-                                            <label class="form-label" for="situation_geo">Situation géographique</label>
-                                            <input type="text" class="form-control" id="situation_geo" formControlName="situation_geo">
-                                        </div>
-                                    </div>
-                                    
-                                    
-                                
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label" for="logo">Image du produit</label>
-                                            <input type="file" class="form-control" id="logo" (change)="onFileSelected($event)" accept="logo/*">
-                                            
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Prévisualisation de l'image</label>
-                                            <div class="border rounded p-2" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
-                                                @if (previewImageUrl) {
-                                                    <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
-                                                } @else if (structureData?.imageUrl) {
-                                                    <img [src]="structureData.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
-                                                } @else {
-                                                    <div class="text-muted">
-                                                        <i class="bi bi-image" style="font-size: 2rem;"></i>
-                                                        <p class="mb-0 mt-2">Aucune image sélectionnée</p>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                            
-                                </div>
-                        </fieldset>
-
-                        <fieldset class="border border-info border-2 rounded p-3 mb-3" formGroupName="responsable">
-                            <legend class="w-auto px-2"> <i class="bi bi-person-fill me-2"></i> Responsable</legend>
-                            
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label" for="nom">Nom</label>
-                                    <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && r['nom'].errors}">
-                                    @if (isSubmitted && r['nom'].errors) {
-                                        <div class="invalid-feedback">
-                                        @if (r['nom'].errors['required']) {
-                                            <div>Le nom est obligatoire</div>
-                                        }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label" for="prenoms">Prenoms</label>
-                                    <input type="text" class="form-control" id="prenoms" formControlName="prenoms" [ngClass]="{'is-invalid': isSubmitted && r['prenoms'].errors}">
-                                    @if (isSubmitted && r['prenoms'].errors) {
-                                        <div class="invalid-feedback">
-                                        @if (r['prenoms'].errors['required']) {
-                                            <div>Le prenoms est obligatoire</div>
-                                        }
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-
-                        
-                            <div class="row">
-                                <div class=" col-md-6 mb-4">
-                                    <label class="form-label" for="email">Adresse email</label>
-                                    <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
-                                    @if (isSubmitted && f['email'].errors) {
-                                        <div class="invalid-feedback">
-                                        @if (f['email'].errors['required']) {
-                                            <div>L'adresse email est obligatoire</div>
-                                        }
-                                        </div>
-                                    }
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label" for="telephone">Téléphone</label>
-                                    <input type="text" class="form-control" id="telephone" formControlName="telephone" [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
-                                    @if (isSubmitted && f['telephone'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['telephone'].errors['required']) {
-                                            <div>Le telephone est obligatoire</div>
-                                            }
-                                        </div>
-                                        }
-                                </div>
-                            </div>
-
-                        </fieldset>
-
-
-                        <fieldset class="border border-info border-2 rounded p-3 mb-3" formGroupName="responsable">
-                            <legend class="w-auto px-2"> <i class="bi bi-shop"></i> Liste des boutiques</legend>
-                        
-
-                            <table class="table table-bordered table-striped table-vcenter">
-                                <thead>
-                                    <tr>
-                                    <th>Boutique</th>
-                                    <th>Situation géographique</th>
-                                    <th>telephone</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (item of boutiques; track $index) {
-                                        <tr>
-                                            <td>{{item?.nom}}</td>
-                                            <td>{{item?.situation_geo}}</td>
-                                            <td>{{item?.telephone}}</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                                <tbody>
-                                    <!-- Contenu généré par DataTables -->
-                                </tbody>
-                            </table>
-
-                        </fieldset>
-
-
-                        <div class="modal-footer">
-                            @if (!titleModal.includes('VISUALISER')) {
-                                <button type="submit" class="btn btn-primary me-2">
-                                <i [class]="icon"></i> {{ buttonText }}
-                                </button>
-                            }
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
-                            </button>
-                        </div>
-                </div>
-            </div>
-        </form>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
+      <form [formGroup]="structureForm" (ngSubmit)="saveOrUpdate()" enctype="multipart/form-data">
+        <div class="mf-body">
+
+          <!-- Structure -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-building"></i> Structure</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label" for="nom">Nom de la structure <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-building mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="nom"
+                    placeholder="Ex : EKWATech CI SARL"
+                    formControlName="nom"
+                    [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                </div>
+                @if (isSubmitted && f['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-4">
+                <label class="mf-label" for="email">Email</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input" id="email"
+                    placeholder="contact@structure.com" formControlName="email">
+                </div>
+              </div>
+              <div class="col-md-8">
+                <label class="mf-label" for="situation_geo">Localisation</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-geo-alt mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="situation_geo"
+                    placeholder="Ex : Abidjan, Plateau" formControlName="situation_geo">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-upload-zone" for="logo">
+                  <i class="bi bi-cloud-arrow-up"></i>
+                  <span>Choisir un logo</span>
+                  <small>PNG, JPG — max 5 Mo</small>
+                  <input type="file" id="logo" class="d-none" (change)="onFileSelected($event)" accept="image/*">
+                </label>
+              </div>
+              <div class="col-md-6">
+                <div class="mf-preview-box">
+                  @if (previewImageUrl) {
+                    <img [src]="previewImageUrl" alt="Aperçu">
+                  } @else if (structureData?.imageUrl) {
+                    <img [src]="structureData.imageUrl" alt="Logo actuel">
+                  } @else {
+                    <div class="mf-preview-empty"><i class="bi bi-card-image"></i><span>Aperçu logo</span></div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Responsable -->
+          <div class="mf-section" formGroupName="responsable">
+            <div class="mf-section-label"><i class="bi bi-person-fill"></i> Responsable</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input"
+                    placeholder="Nom du responsable" formControlName="nom"
+                    [ngClass]="{'is-invalid': isSubmitted && r['nom'].errors}">
+                </div>
+                @if (isSubmitted && r['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Prénoms <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input"
+                    placeholder="Prénoms du responsable" formControlName="prenoms"
+                    [ngClass]="{'is-invalid': isSubmitted && r['prenoms'].errors}">
+                </div>
+                @if (isSubmitted && r['prenoms'].errors?.['required']) {
+                  <div class="mf-error">Les prénoms sont obligatoires</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Email</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input"
+                    placeholder="email@responsable.com" formControlName="email">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Téléphone <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-telephone mf-input-icon"></i>
+                  <input type="tel" class="form-control mf-input"
+                    placeholder="0X XX XX XX XX" maxlength="10" formControlName="telephone"
+                    [ngClass]="{'is-invalid': isSubmitted && r['telephone'].errors}">
+                </div>
+                @if (isSubmitted && r['telephone'].errors) {
+                  <div class="mf-error">10 chiffres requis</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutiques -->
+          @if (boutiques?.length) {
+            <div class="mf-section mf-section--last">
+              <div class="mf-section-label"><i class="bi bi-shop"></i> Boutiques rattachées ({{ boutiques.length }})</div>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Boutique</th><th>Localisation</th><th>Téléphone</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (item of boutiques; track $index) {
+                      <tr>
+                        <td class="fw-semibold">{{ item?.nom }}</td>
+                        <td class="text-muted small">{{ item?.situation_geo || '—' }}</td>
+                        <td class="text-muted small">{{ item?.telephone || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          } @else {
+            <div class="mf-section mf-section--last"></div>
+          }
+
+        </div>
+        <div class="mf-footer">
+          @if (!titleModal.includes('VISUALISER')) {
+            <button type="submit" class="btn mf-btn-save"><i [class]="icon"></i> {{ buttonText }}</button>
+          }
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>

@@ -134,6 +134,23 @@ export const Menu: any = [
                 ]
             },
             {
+                libelle: 'Retours produits',
+                icon: 'bi bi-arrow-return-left',
+                target: 'retours-nav',
+                sousMenu: [
+                    {
+                        libelle: 'Historique',
+                        lien: '/retours/historique',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Nouveau retour',
+                        lien: '/retours/nouveau',
+                        icon: 'bi bi-circle'
+                    }
+                ]
+            },
+            {
                 libelle: 'Mouvements de stock',
                 icon: 'bi bi-arrow-left-right',
                 lien: '/stocks/mouvements'
@@ -142,6 +159,36 @@ export const Menu: any = [
                 libelle: 'Gestion de caisse',
                 icon: 'bi bi-cash-coin',
                 lien: '/caisse'
+            }
+        ]
+    },
+    {
+        titre: 'Analyse IA',
+        full: true,
+        menu: [
+            {
+                libelle: 'Résumé du jour',
+                lien: '/analyse-ia/resume-journalier',
+                icon: 'bi bi-stars',
+                badge: 'IA'
+            },
+            {
+                libelle: 'Prix suggérés',
+                lien: '/analyse-ia/prix-suggere',
+                icon: 'bi bi-tags-fill',
+                badge: 'IA'
+            },
+            {
+                libelle: 'Prévision rupture',
+                lien: '/analyse-ia/rupture-stock',
+                icon: 'bi bi-graph-up-arrow',
+                badge: 'IA'
+            },
+            {
+                libelle: 'Scan facture',
+                lien: '/analyse-ia/scan-facture',
+                icon: 'bi bi-camera-fill',
+                badge: 'IA'
             }
         ]
     },
@@ -165,6 +212,17 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     }
                 ]
+            }
+        ]
+    },
+    {
+        titre: 'Mon compte',
+        full: true,
+        menu: [
+            {
+                libelle: 'Mon abonnement',
+                lien: '/mon-abonnement',
+                icon: 'bi bi-calendar-check'
             }
         ]
     }

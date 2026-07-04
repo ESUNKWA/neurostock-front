@@ -29,7 +29,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        @if (boutiques.length >= 1) {
+                        @if (boutiques?.length >= 1) {
                      
                             <div class="col-md-4">
                                 <select class="form-select" id="mySelect" (change)="selectFournisseurs($event)" >
@@ -78,116 +78,163 @@
     </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser un fournisseur -->
+<!-- Modal fournisseur -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content frs-modal">
+
+            <!-- En-tête coloré -->
+            <div class="frs-modal-header">
+                <div class="frs-modal-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <div class="frs-modal-title">{{ titleModal }}</div>
+                    <div class="frs-modal-subtitle">Renseignez les informations du fournisseur</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <form novalidate [formGroup]="fournisseurForm" (ngSubmit)="saveOrUpdateFournisseur()">
-                <div class="modal-body">
-                    <div class="block-content fs-sm">
-                        <!-- Informations principales -->
-                        <div class="mb-4">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="nom">Nom du fournisseur</label>
-                                    <input type="text" class="form-control" id="nom" placeholder="Nom du fournisseur" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                                    @if (isSubmitted && f['nom'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['nom'].errors['required']) {
-                                                <div>Le nom est obligatoire</div>
-                                            }
-                                        </div>
+                <div class="modal-body frs-body">
+
+                    <!-- Boutique (en premier) -->
+                    <div class="frs-section">
+                        <div class="frs-section-label">
+                            <i class="bi bi-shop-window"></i> Boutique rattachée
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <select class="form-select frs-select" id="boutique" formControlName="boutique"
+                                    [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                                    <option value="">— Sélectionner une boutique —</option>
+                                    @for (b of boutiques; track b.id) {
+                                        <option [value]="b.id">{{ b.nom }}</option>
                                     }
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="addresse_geo">Adresse</label>
-                                    <input type="text" class="form-control" id="addresse_geo" placeholder="Adresse du fournisseur" formControlName="addresse_geo" [ngClass]="{'is-invalid': isSubmitted && f['addresse_geo'].errors}">
-                                    @if (isSubmitted && f['addresse_geo'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['addresse_geo'].errors['required']) {
-                                                <div>L'adresse est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
+                                </select>
+                                @if (isSubmitted && f['boutique'].errors) {
+                                    <div class="invalid-feedback">La boutique est obligatoire</div>
+                                }
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Coordonnées -->
-                        <div class="mb-4">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="contact">Contact principal</label>
-                                    <input type="text" class="form-control" id="contact" placeholder="Contact du fournisseur" formControlName="contact" [ngClass]="{'is-invalid': isSubmitted && f['contact'].errors}">
-                                    @if (isSubmitted && f['contact'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['contact'].errors['required']) {
-                                                <div>Le contact est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="email">Email</label>
-                                    <input type="email" class="form-control" id="email" placeholder="Email du fournisseur" formControlName="email" [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
-                                    @if (isSubmitted && f['email'].errors) {  
-                                        <div class="invalid-feedback">
-                                            @if (f['email'].errors['required']) {
-                                                <div>L'email est obligatoire</div>
-                                            }
-                                            @if (f['email'].errors['email']) {
-                                                <div>L'email est invalide</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            </div>
+                    <!-- Informations générales -->
+                    <div class="frs-section">
+                        <div class="frs-section-label">
+                            <i class="bi bi-info-circle"></i> Informations générales
                         </div>
-
-                        <!-- Interlocuteur -->
-                        <div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="interlocuteur">Nom de l'interlocuteur</label>
-                                    <input type="text" class="form-control" id="interlocuteur" placeholder="Interlocuteur du fournisseur" formControlName="interlocuteur" [ngClass]="{'is-invalid': isSubmitted && f['interlocuteur'].errors}">
-                                    @if (isSubmitted && f['interlocuteur'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['interlocuteur'].errors['required']) {
-                                                <div>L'interlocuteur est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="frs-label" for="nom">Nom du fournisseur <span class="text-danger">*</span></label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-person-badge frs-input-icon"></i>
+                                    <input type="text" class="form-control frs-input" id="nom"
+                                        placeholder="Ex : SOPROGI SARL"
+                                        formControlName="nom"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label" for="contact_interlocuteur">Contact de l'interlocuteur</label>
-                                    <input type="text" class="form-control" id="contact_interlocuteur" placeholder="Contact Interlocuteur du fournisseur" formControlName="contact_interlocuteur" [ngClass]="{'is-invalid': isSubmitted && f['contact_interlocuteur'].errors}">
-                                    @if (isSubmitted && f['contact_interlocuteur'].errors) {
-                                        <div class="invalid-feedback">
-                                            @if (f['contact_interlocuteur'].errors['required']) {
-                                                <div>Le contact interlocuteur est obligatoire</div>
-                                            }
-                                        </div>
-                                    }
+                                @if (isSubmitted && f['nom'].errors?.['required']) {
+                                    <div class="frs-error">Le nom est obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="frs-label" for="addresse_geo">Adresse</label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-geo-alt frs-input-icon"></i>
+                                    <input type="text" class="form-control frs-input" id="addresse_geo"
+                                        placeholder="Ex : Abidjan, Plateau"
+                                        formControlName="addresse_geo">
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Coordonnées -->
+                    <div class="frs-section">
+                        <div class="frs-section-label">
+                            <i class="bi bi-telephone"></i> Coordonnées
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="frs-label" for="contact">Contact principal <span class="text-danger">*</span></label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-telephone frs-input-icon"></i>
+                                    <input type="text" class="form-control frs-input" id="contact"
+                                        placeholder="Ex : +225 07 00 00 00"
+                                        formControlName="contact"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['contact'].errors}">
+                                </div>
+                                @if (isSubmitted && f['contact'].errors?.['required']) {
+                                    <div class="frs-error">Le contact est obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="frs-label" for="email">Adresse e-mail</label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-envelope frs-input-icon"></i>
+                                    <input type="email" class="form-control frs-input" id="email"
+                                        placeholder="Ex : contact@fournisseur.com"
+                                        formControlName="email"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+                                </div>
+                                @if (isSubmitted && f['email'].errors?.['email']) {
+                                    <div class="frs-error">L'adresse e-mail est invalide</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interlocuteur -->
+                    <div class="frs-section frs-section--last">
+                        <div class="frs-section-label">
+                            <i class="bi bi-person-lines-fill"></i> Interlocuteur
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="frs-label" for="interlocuteur">Nom <span class="text-danger">*</span></label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-person frs-input-icon"></i>
+                                    <input type="text" class="form-control frs-input" id="interlocuteur"
+                                        placeholder="Ex : M. KONÉ Kouadio"
+                                        formControlName="interlocuteur"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['interlocuteur'].errors}">
+                                </div>
+                                @if (isSubmitted && f['interlocuteur'].errors?.['required']) {
+                                    <div class="frs-error">Le nom de l'interlocuteur est obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="frs-label" for="contact_interlocuteur">Contact <span class="text-danger">*</span></label>
+                                <div class="frs-input-wrap">
+                                    <i class="bi bi-phone frs-input-icon"></i>
+                                    <input type="text" class="form-control frs-input" id="contact_interlocuteur"
+                                        placeholder="Ex : +225 05 00 00 00"
+                                        formControlName="contact_interlocuteur"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['contact_interlocuteur'].errors}">
+                                </div>
+                                @if (isSubmitted && f['contact_interlocuteur'].errors?.['required']) {
+                                    <div class="frs-error">Le contact de l'interlocuteur est obligatoire</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="modal-footer">
+
+                <!-- Pied de formulaire -->
+                <div class="frs-footer">
                     @if (!titleModal.includes('VISUALISER')) {
-                        <button type="submit" class="btn btn-primary me-2">
+                        <button type="submit" class="btn frs-btn-save">
                             <i [class]="icon"></i> {{ buttonText }}
                         </button>
                     }
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+                    <button type="button" class="btn frs-btn-cancel" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>

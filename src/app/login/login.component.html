@@ -58,14 +58,18 @@
           <div class="input-wrap" [class.input-error]="submitted && f['telephone'].errors">
             <span class="input-icon"><i class="bi bi-person"></i></span>
             <input
-              type="text"
+              type="tel"
               id="telephone"
               formControlName="telephone"
               placeholder="Votre identifiant"
+              maxlength="10"
               autocomplete="username">
           </div>
-          @if (submitted && f['telephone'].errors?.['required']) {
-            <span class="field-error">L'identifiant est requis</span>
+          @if (submitted && f['telephone'].errors) {
+            <span class="field-error">
+              @if (f['telephone'].errors['required']) { L'identifiant est requis }
+              @else { L'identifiant doit contenir exactement 10 chiffres }
+            </span>
           }
         </div>
 

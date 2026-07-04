@@ -1,0 +1,155 @@
+<div class="p-4">
+
+  <!-- Page header -->
+  <div class="mb-4">
+    <h4 class="fw-bold mb-1">Provisionner un tenant</h4>
+    <p class="text-muted small mb-0">Crée la base de données et synchronise le schéma pour une structure</p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Form -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-database-add text-primary me-2"></i>Configuration du tenant</h6>
+        </div>
+        <div class="card-body p-4">
+
+          <!-- Structure -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Structure <span class="text-danger">*</span></label>
+            @if (loadingStructures) {
+              <div class="form-select text-muted">Chargement…</div>
+            } @else {
+              <select class="form-select" [(ngModel)]="form.structureId" (ngModelChange)="onStructureChange()" name="structureId">
+                <option [ngValue]="0" disabled>Sélectionner une structure…</option>
+                @for (s of structures; track s.id) {
+                  <option [ngValue]="s.id">{{ s.nom }} (ID: {{ s.id }})</option>
+                }
+              </select>
+            }
+            <div class="form-text">La structure doit exister en master DB avant de provisionner.</div>
+          </div>
+
+          <!-- DB name -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Nom de la base de données <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-database"></i></span>
+              <input type="text" class="form-control font-monospace"
+                     placeholder="GESTION_STOCK_1"
+                     [(ngModel)]="form.database" name="database">
+            </div>
+            <div class="form-text">Sera créée automatiquement si elle n'existe pas.</div>
+          </div>
+
+          <!-- Host + Port -->
+          <div class="row g-2 mb-3">
+            <div class="col-8">
+              <label class="form-label fw-semibold small">Hôte <span class="text-danger">*</span></label>
+              <input type="text" class="form-control font-monospace"
+                     placeholder="localhost"
+                     [(ngModel)]="form.host" name="host">
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-semibold small">Port <span class="text-danger">*</span></label>
+              <input type="number" class="form-control font-monospace"
+                     placeholder="5432"
+                     [(ngModel)]="form.port" name="port">
+            </div>
+          </div>
+
+          <!-- Username + Password -->
+          <div class="row g-2 mb-4">
+            <div class="col-6">
+              <label class="form-label fw-semibold small">Utilisateur DB <span class="text-danger">*</span></label>
+              <input type="text" class="form-control font-monospace"
+                     placeholder="postgres"
+                     [(ngModel)]="form.username" name="username">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold small">Mot de passe DB <span class="text-danger">*</span></label>
+              <input type="password" class="form-control font-monospace"
+                     placeholder="••••••••"
+                     [(ngModel)]="form.password" name="password">
+            </div>
+          </div>
+
+          <!-- Admin du tenant -->
+          <hr class="my-3">
+          <p class="fw-semibold small text-muted mb-3">
+            <i class="bi bi-person-badge me-1"></i>Administrateur du tenant
+            <span class="fw-normal">(compte créé automatiquement)</span>
+          </p>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold small">Nom <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="form.adminNom" name="adminNom" placeholder="Kouadio">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold small">Prénoms <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="form.adminPrenoms" name="adminPrenoms" placeholder="Jean">
+            </div>
+          </div>
+
+          <div class="row g-2 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Téléphone <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" [(ngModel)]="form.adminTelephone" name="adminTelephone" placeholder="0701020304">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Email</label>
+              <input type="email" class="form-control" [(ngModel)]="form.adminEmail" name="adminEmail" placeholder="jean@structure.com">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Mot de passe <span class="text-danger">*</span></label>
+              <input type="text" class="form-control font-monospace" [(ngModel)]="form.adminPassword" name="adminPassword" placeholder="motdepasse123">
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button class="btn btn-primary px-4 fw-semibold w-100"
+                  [disabled]="!isValid || isSubmitting"
+                  (click)="submit()">
+            @if (isSubmitting) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Provisionnement en cours…
+            } @else {
+              <i class="bi bi-database-add me-2"></i>Provisionner
+            }
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Info panel -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-white border-bottom py-3">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-info-circle-fill text-primary me-2"></i>Ce que fait cette action</h6>
+        </div>
+        <div class="card-body small text-muted">
+          <ul class="mb-0 ps-3">
+            <li class="mb-2">Crée la base de données si elle n'existe pas encore</li>
+            <li class="mb-2">Synchronise toutes les entités métier (boutiques, produits, ventes…)</li>
+            <li class="mb-2">Enregistre la configuration dans <code>tenant_configs</code> (master DB)</li>
+            <li>Rend la structure opérationnelle pour le login multi-tenant</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm border-start border-4 border-warning">
+        <div class="card-body small">
+          <p class="fw-semibold text-warning mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Attention</p>
+          <p class="text-muted mb-0">
+            Le mot de passe est transmis au backend pour établir la connexion initiale.
+            Utilisez un compte PostgreSQL dédié avec les permissions minimales requises.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

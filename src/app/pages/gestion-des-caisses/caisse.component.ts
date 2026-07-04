@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CaisseService } from '../../services/gestion-des-caisses/caisse.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
@@ -16,7 +17,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-caisse',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective, NzSelectModule],
   templateUrl: './caisse.component.html',
   styleUrl: './caisse.component.scss'
 })
@@ -47,6 +48,11 @@ export default class CaisseComponent implements OnInit {
   submittingFermer = false;
   submittingMouvement = false;
 
+  get isSuperUser(): boolean {
+    const code = this.currentUser?.profil?.code;
+    return code === 'admin' || code === 'responsable_structure';
+  }
+
   readonly modesPaiement = [
     { value: 'espece',       label: 'Espèces' },
     { value: 'mobile_money', label: 'Mobile Money' },
@@ -60,16 +66,24 @@ export default class CaisseComponent implements OnInit {
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
     private userService: UserService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router
   ) {}
+
+  rapportRoute(id: number): string[] {
+    const base = this.router.url.startsWith('/pos') ? '/pos/caisse/rapport' : '/caisse/rapport';
+    return [base, String(id)];
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
+      
       if (user) {
         this.initForms();
         this.loadBoutiques();
-        const boutique = user.boutique?.id;
+        const boutique = user.boutique_id;
+        
         if (boutique) {
           this.idBoutique = boutique;
           this.checkCaisseActivee();
@@ -111,12 +125,13 @@ export default class CaisseComponent implements OnInit {
   // ── Boutiques ────────────────────────────────────────────────────────────────
 
   loadBoutiques(): void {
+    
     if (this.currentUser.is_admin) {
       this.boutiqueService.find().subscribe({
         next: (r: any) => { if (r?.data) this.boutiques = r.data; }
       });
     } else if (this.currentUser.profil?.code === 'responsable_structure') {
-      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+      this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
         next: (r: any) => { if (r?.data) this.boutiques = r.data; }
       });
     } else {
@@ -202,7 +217,7 @@ export default class CaisseComponent implements OnInit {
     if (!this.idBoutique) return;
     this.loadingActive = true;
     this.theorique = null;
-    this.caisseService.getActiveSession(this.idBoutique, this.currentUser?.id)
+    this.caisseService.getActiveSession(this.idBoutique, this.currentUser?.telephone)
       .pipe(finalize(() => (this.loadingActive = false)))
       .subscribe({
         next: (r: any) => {
@@ -240,13 +255,32 @@ export default class CaisseComponent implements OnInit {
   // ── Modals ───────────────────────────────────────────────────────────────────
 
   openModalOuvrir(): void {
+    const caissierCtrl = this.ouvrirForm.get('caissier');
+    caissierCtrl?.enable();
     this.ouvrirForm.reset({
-      caissier: this.currentUser?.id ?? null,
+      caissier: null,
       fond_ouverture: { espece: 0, mobile_money: 0, carte: 0, credit: 0 },
       note: ''
     });
-    const m = document.getElementById('modal-ouvrir');
-    if (m) new bootstrap.Modal(m).show();
+
+    const openModal = () => {
+      // setTimeout(0) laisse nz-select enregistrer ses options avant setValue
+      setTimeout(() => caissierCtrl?.setValue(this.currentUser?.id ?? null), 0);
+      const m = document.getElementById('modal-ouvrir');
+      if (m) (bootstrap.Modal.getInstance(m) ?? new bootstrap.Modal(m)).show();
+    };
+
+    if (this.idBoutique && this.users.length === 0) {
+      this.userService.find('', this.idBoutique.toString()).subscribe({
+        next: (r: any) => {
+          this.users = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []);
+          openModal();
+        },
+        error: () => openModal()
+      });
+    } else {
+      openModal();
+    }
   }
 
   openModalFermer(): void {
@@ -269,7 +303,7 @@ export default class CaisseComponent implements OnInit {
   submitOuvrir(): void {
     if (this.ouvrirForm.invalid || !this.idBoutique) return;
     this.submittingOuvrir = true;
-    const { caissier, ...rest } = this.ouvrirForm.value;
+    const { caissier, ...rest } = this.ouvrirForm.getRawValue();
     const body = { boutique: this.idBoutique, caissier: caissier ?? null, ...rest };
     this.caisseService.ouvrirSession(body)
       .pipe(finalize(() => (this.submittingOuvrir = false)))
@@ -354,7 +388,7 @@ export default class CaisseComponent implements OnInit {
       if (!result.isConfirmed) return;
 
       this.submittingFermer = true;
-      this.caisseService.fermerSession(this.activeSession.id, this.fermerForm.value, this.currentUser?.id)
+      this.caisseService.fermerSession(this.activeSession.id, this.fermerForm.value, this.currentUser?.telephone)
         .pipe(finalize(() => (this.submittingFermer = false)))
         .subscribe({
           next: (r: any) => {
@@ -383,7 +417,7 @@ export default class CaisseComponent implements OnInit {
   submitMouvement(): void {
     if (this.mouvementForm.invalid || !this.activeSession?.id) return;
     this.submittingMouvement = true;
-    const body = { ...this.mouvementForm.value, caissier: this.currentUser?.id };
+    const body = { ...this.mouvementForm.value, caissier: this.currentUser?.telephone };
     this.caisseService.ajouterMouvement(this.activeSession.id, body)
       .pipe(finalize(() => (this.submittingMouvement = false)))
       .subscribe({

@@ -1,0 +1,222 @@
+<div class="p-4" style="max-width:700px">
+  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Mon abonnement</h4>
+      <p class="text-muted small mb-0">Détails et renouvellement de votre abonnement</p>
+    </div>
+    <div class="d-flex gap-2">
+      @if (abonnement?.id && !loading) {
+        <button class="btn btn-outline-secondary btn-sm" (click)="showFacture = true">
+          <i class="bi bi-receipt me-1"></i>Facture
+        </button>
+      }
+      @if (canSubscribe && !loading) {
+        <button class="btn btn-primary btn-sm" (click)="openModal()">
+          <i class="bi bi-arrow-repeat me-1"></i>
+          {{ abonnement?.statut === 'actif' ? 'Renouveler' : 'Souscrire' }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Chargement…</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+    </div>
+  }
+
+  @if (abonnement && !loading) {
+
+    <!-- Statut card -->
+    <div class="card border-0 shadow-sm mb-4 border-start border-4" [class]="statutClass">
+      <div class="card-body d-flex align-items-center gap-4 flex-wrap">
+        <div class="display-5">
+          @if (abonnement.statut === 'actif') { ✅ }
+          @else if (abonnement.statut === 'expire') { ⛔ }
+          @else { ⏸️ }
+        </div>
+        <div class="flex-grow-1">
+          <div class="fw-bold fs-5 mb-1">{{ planLabel }}</div>
+          <span class="badge px-3 py-2"
+                [class.bg-success-subtle]="abonnement.statut === 'actif'"
+                [class.text-success]="abonnement.statut === 'actif'"
+                [class.bg-danger-subtle]="abonnement.statut === 'expire'"
+                [class.text-danger]="abonnement.statut === 'expire'"
+                [class.bg-warning-subtle]="abonnement.statut === 'suspendu'"
+                [class.text-warning]="abonnement.statut === 'suspendu'">
+            {{ abonnement.statut | titlecase }}
+          </span>
+        </div>
+        <div class="text-end">
+          <div class="fs-2 fw-bold" [class]="joursClass">{{ abonnement.jours_restants ?? '—' }}</div>
+          <div class="text-muted small">jours restants</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    @if (abonnement.statut !== 'actif' || abonnement.jours_restants <= 7) {
+      <div class="alert mb-4"
+           [class.alert-danger]="abonnement.statut !== 'actif' || abonnement.jours_restants <= 3"
+           [class.alert-warning]="abonnement.statut === 'actif' && abonnement.jours_restants > 3">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @if (abonnement.statut === 'expire') {
+          Votre abonnement a expiré. Cliquez sur <strong>Souscrire</strong> pour continuer à utiliser l'application.
+        } @else if (abonnement.statut === 'suspendu') {
+          Votre abonnement est suspendu. Contactez votre administrateur ou souscrivez un nouveau plan.
+        } @else {
+          Votre abonnement expire dans <strong>{{ abonnement.jours_restants }}</strong> jour(s). Pensez à le renouveler.
+        }
+      </div>
+    }
+
+    <!-- Détails -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header py-2 px-4 bg-transparent border-bottom">
+        <span class="fw-semibold small"><i class="bi bi-info-circle me-2 text-primary"></i>Informations</span>
+      </div>
+      <div class="card-body px-4">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted small py-2">Plan</dt>
+          <dd class="col-sm-8 fw-semibold py-2 border-bottom mb-0">{{ planLabel }}</dd>
+
+          <dt class="col-sm-4 text-muted small py-2">Date de début</dt>
+          <dd class="col-sm-8 py-2 border-bottom mb-0">{{ abonnement.date_debut | date:'dd MMMM yyyy':'':'fr' }}</dd>
+
+          <dt class="col-sm-4 text-muted small py-2">Date d'expiration</dt>
+          <dd class="col-sm-8 py-2 border-bottom mb-0">
+            <span [class]="joursClass">{{ abonnement.date_fin | date:'dd MMMM yyyy':'':'fr' }}</span>
+          </dd>
+
+          @if (abonnement.montant) {
+            <dt class="col-sm-4 text-muted small py-2">Montant payé</dt>
+            <dd class="col-sm-8 py-2 border-bottom mb-0 fw-semibold text-success">
+              {{ abonnement.montant | number:'1.0-0':'fr' }} {{ abonnement.devise ?? 'XOF' }}
+            </dd>
+          }
+
+          @if (abonnement.boutiques_supplementaires > 0) {
+            <dt class="col-sm-4 text-muted small py-2">Boutiques sup.</dt>
+            <dd class="col-sm-8 py-2 mb-0">
+              <span class="badge bg-warning-subtle text-warning">{{ abonnement.boutiques_supplementaires }} boutique(s)</span>
+            </dd>
+          }
+        </dl>
+      </div>
+    </div>
+  }
+
+  @if (!abonnement && !loading && !error) {
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-calendar-x display-3 d-block mb-3 opacity-25"></i>
+      <p class="mb-3">Aucun abonnement actif pour votre compte.</p>
+      <button class="btn btn-primary" (click)="openModal()">
+        <i class="bi bi-plus-circle me-1"></i>Souscrire maintenant
+      </button>
+    </div>
+  }
+</div>
+
+<!-- ── Modal souscription ──────────────────────────────────────────────────── -->
+@if (showModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:500px">
+      <div class="modal-content mf-modal mf-modal--blue">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-credit-card"></i></div>
+          <div>
+            <div class="mf-header-title">{{ abonnement?.statut === 'actif' ? 'Renouveler mon abonnement' : 'Souscrire à un plan' }}</div>
+            <div class="mf-header-subtitle">Choisissez un plan et confirmez votre souscription</div>
+          </div>
+          <button class="btn-close btn-close-white ms-auto" (click)="showModal=false"></button>
+        </div>
+
+        <div class="mf-body">
+
+          <!-- Choix du plan -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-stars"></i> Plan tarifaire <span class="text-danger">*</span></div>
+            <div class="d-flex gap-2 flex-wrap">
+              @for (p of plans; track p.plan) {
+                <label class="plan-card flex-grow-1 text-center p-3 border rounded-3"
+                  [class.selected]="form.plan === p.plan" style="cursor:pointer">
+                  <input type="radio" class="d-none" [(ngModel)]="form.plan" [value]="p.plan" (change)="onPlanChange()">
+                  <div class="fw-bold small">{{ planLabelOf(p.plan) }}</div>
+                  <div class="text-muted" style="font-size:.72rem">{{ p.montant | number:'1.0-0':'fr' }} {{ p.devise }}</div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Devis calculé -->
+          @if (devisLoading) {
+            <div class="mf-section">
+              <div class="text-center py-1 text-muted small">
+                <span class="spinner-border spinner-border-sm me-1"></span>Calcul du montant…
+              </div>
+            </div>
+          }
+          @if (devis && !devisLoading) {
+            <div class="mf-section" style="background:#eff6ff">
+              <div class="mf-section-label"><i class="bi bi-calculator"></i> Devis estimatif</div>
+              <div class="d-flex justify-content-between small py-1">
+                <span class="text-muted">Prix de base ({{ planLabelOf(devis.plan) }})</span>
+                <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+              </div>
+              @if (devis.boutiques_supplementaires > 0) {
+                <div class="d-flex justify-content-between small py-1">
+                  <span class="text-muted">{{ devis.boutiques_supplementaires }} boutique(s) sup.</span>
+                  <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                </div>
+              }
+              <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-1">
+                <span>Total à payer</span>
+                <span class="text-success">{{ devis.total | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+              </div>
+            </div>
+          }
+
+          <!-- Notes de paiement -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-chat-left-text"></i> Référence / Note <span class="text-muted fw-normal" style="font-size:.75rem">(optionnel)</span></div>
+            <textarea class="form-control mf-input" rows="2" [(ngModel)]="form.notes"
+              placeholder="Ex: Paiement mobile money — ref. XXXXX"></textarea>
+          </div>
+
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" [disabled]="isSubmitting || !form.plan || devisLoading" (click)="submit()">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2-circle me-1"></i> }
+            Confirmer la souscription
+          </button>
+          <button class="btn mf-btn-cancel" (click)="showModal=false">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+  .plan-card { border-color: #dee2e6 !important; transition: all .15s; }
+  .plan-card.selected { border-color: var(--bs-primary) !important; background: #e7f1ff; }
+  .plan-card:hover { border-color: var(--bs-primary) !important; }
+</style>
+
+@if (showFacture && abonnement?.id) {
+  <app-facture-modal
+    [abonnementId]="abonnement.id"
+    (closed)="showFacture = false">
+  </app-facture-modal>
+}

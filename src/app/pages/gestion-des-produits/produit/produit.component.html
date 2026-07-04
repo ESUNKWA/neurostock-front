@@ -22,6 +22,17 @@
                             <h5 class="card-title mb-0 text-uppercase">Liste des produits</h5>
                         </div>
                         <div class="col-md-7 text-end">
+                            <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
+                            <button type="button" class="btn btn-outline-secondary me-2" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
+                              <i class="bi bi-download"></i> Modèle Excel
+                            </button>
+                            <button type="button" class="btn btn-success me-2" (click)="importProduitInput.click()" [disabled]="isParsingFile">
+                              @if (isParsingFile) {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> Lecture du fichier...
+                              } @else {
+                                <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
+                              }
+                            </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
                                 <i class="bi bi-plus-circle"></i> Nouveau Produit
                             </button>
@@ -29,7 +40,7 @@
                     </div>
                 </div>
                 
-                @if (currentUser.profil.description.toLowerCase() === 'admin' || currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+                @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
                    @if (boutiques.length >= 1) {
                         <div class="card-body">
                             <div class="row">
@@ -80,170 +91,164 @@
     </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser un produit -->
+<!-- Modal produit -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content prd-modal">
+
+            <!-- En-tête coloré -->
+            <div class="prd-modal-header">
+                <div class="prd-modal-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <div class="prd-modal-title">{{ titleModal }}</div>
+                    <div class="prd-modal-subtitle">Renseignez les informations du produit</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <form novalidate [formGroup]="produitForm" (ngSubmit)="saveOrUpdateProduit()" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="block-content fs-sm">
-                        <!-- Informations principales -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label" for="nom">Nom du produit</label>
-                                <input type="text" class="form-control" id="nom" placeholder="Nom du produit" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                                @if (isSubmitted && f['nom'].errors) {
-                                    <div class="invalid-feedback">
-                                        @if (f['nom'].errors['required']) {
-                                            <div>Le nom est obligatoire</div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="categorie">Catégorie</label>
-                                <select class="form-select" id="categorie" formControlName="categorie" [ngClass]="{'is-invalid': isSubmitted && f['categorie'].errors}">
-                                    <option value="">Sélectionner une catégorie</option>
-                                    @for (categorie of categories; track categorie?.id) {
-                                        <option [value]="categorie?.id">{{ categorie?.nom }}</option>
+                <div class="modal-body prd-body">
+
+                    <!-- Boutique (en premier) -->
+                    <div class="prd-section">
+                        <div class="prd-section-label">
+                            <i class="bi bi-shop-window"></i> Boutique rattachée
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <select class="form-select prd-select" id="boutique" formControlName="boutique"
+                                    [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
+                                    <option value="">— Sélectionner une boutique —</option>
+                                    @for (b of boutiques; track b.id) {
+                                        <option [value]="b.id">{{ b.nom }}</option>
                                     }
                                 </select>
-                                @if (isSubmitted && f['categorie'].errors) {
-                                    <div class="invalid-feedback">
-                                        @if (f['categorie'].errors['required']) {
-                                            <div>La catégorie est obligatoire</div>
-                                        }
-                                    </div>
+                                @if (isSubmitted && f['boutique'].errors?.['required']) {
+                                    <div class="invalid-feedback">La boutique est obligatoire</div>
                                 }
                             </div>
-                            
                         </div>
+                    </div>
 
-                        
-
-                        <!-- Prix et Stock -->
-                        <div class="row mb-3">
+                    <!-- Identification -->
+                    <div class="prd-section">
+                        <div class="prd-section-label">
+                            <i class="bi bi-tag"></i> Identification
+                        </div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
-                                        <label class="form-label" for="boutique">Boutique</label>
-                                        <select class="form-select" id="boutique" formControlName="boutique" [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
-                                            <option value="">Sélectionner une boutique</option>
-                                            @for (boutique of boutiques; track boutique.id) {
-                                                <option [value]="boutique.id">{{ boutique.nom }}</option>
-                                            }
-                                        </select>
-                                        @if (isSubmitted && f['boutique'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['boutique'].errors['required']) {
-                                                    <div>La boutique est obligatoire</div>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
+                                <label class="prd-label" for="nom">Nom du produit <span class="text-danger">*</span></label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-box prd-input-icon"></i>
+                                    <input type="text" class="form-control prd-input" id="nom"
+                                        placeholder="Ex : Farine de blé 1kg"
+                                        formControlName="nom"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                                 </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label" for="prix_achat">Prix d'achat (FCFA)</label>
-                                        <input type="text" class="form-control" id="prix_achat" placeholder="Prix d'achat" 
-                                        formControlName="prix_achat" [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}"
-                                        thousandSeparator>
-                                        @if (isSubmitted && f['prix_achat'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['prix_achat'].errors['required']) {
-                                                    <div>Le prix d'achat est obligatoire</div>
-                                                }
-                                                @if (f['prix_achat'].errors['min']) {
-                                                    <div>Le prix d'achat doit être supérieur à 0</div>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label" for="prix_vente">Prix de vente (FCFA)</label>
-                                        <input type="text" class="form-control" id="prix_vente" placeholder="Prix de vente" formControlName="prix_vente" 
-                                        thousandSeparator [ngClass]="{'is-invalid': isSubmitted && f['prix_vente'].errors}">
-                                        @if (isSubmitted && f['prix_vente'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['prix_vente'].errors['required']) {
-                                                    <div>Le prix de vente est obligatoire</div>
-                                                }
-                                                @if (f['prix_vente'].errors['min']) {
-                                                    <div>Le prix de vente doit être supérieur à 0</div>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                    
-                                </div>
-                                <div class="row mb-3">
-                                   <div class="col-md-6">
-                                        <label class="form-label" for="stock_initial">Stock initial</label>
-                                        <input type="number" class="form-control" id="stock_initial" placeholder="Stock initial" 
-                                        min="0" formControlName="stock_initial" [ngClass]="{'is-invalid': isSubmitted && f['stock_initial'].errors}">
-                                        @if (isSubmitted && f['stock_initial'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['stock_initial'].errors['required']) {
-                                                    <div>Le stock initial est obligatoire</div>
-                                                }
-                                                @if (f['stock_initial'].errors['min']) {
-                                                    <div>Le stock initial doit être supérieur à 0</div>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label" for="seuil_alert">Seuil d'alerte</label>
-                                        <input type="number" class="form-control" id="seuil_alert" placeholder="Stock seuil_alert" 
-                                        min="0" formControlName="seuil_alert" [ngClass]="{'is-invalid': isSubmitted && f['seuil_alert'].errors}">
-                                        @if (isSubmitted && f['seuil_alert'].errors) {
-                                            <div class="invalid-feedback">
-                                                @if (f['seuil_alert'].errors['required']) {
-                                                    <div>Le seuil d'alerte est obligatoire</div>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                    
-                                </div>
-                                
+                                @if (isSubmitted && f['nom'].errors?.['required']) {
+                                    <div class="prd-error">Le nom est obligatoire</div>
+                                }
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="image">Image du produit</label>
-                                <input type="file" class="form-control" id="image" (change)="onFileSelected($event)" accept="image/*" [ngClass]="{'is-invalid': isSubmitted && f['image'].errors}">
-                                @if (isSubmitted && f['image'].errors) {
-                                    <div class="invalid-feedback">
-                                        @if (f['image'].errors['required']) {
-                                            <div>L'image est obligatoire</div>
-                                        }
-                                    </div>
-                                }
-                                <div class="border rounded p-2" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                                    @if (previewImageUrl) {
-                                        <img [src]="previewImageUrl" alt="Prévisualisation de l'image" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                    } @else if (selectedProduit?.imageUrl) {
-                                        <img [src]="selectedProduit.imageUrl" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 180px;">
-                                    } @else {
-                                        <div class="text-muted">
-                                            <i class="bi bi-image" style="font-size: 2rem;"></i>
-                                            <p class="mb-0 mt-2">Aucune image sélectionnée</p>
-                                        </div>
+                                <label class="prd-label">Catégorie <span class="text-danger">*</span></label>
+                                <nz-select
+                                    formControlName="categorie"
+                                    nzShowSearch
+                                    nzAllowClear
+                                    nzPlaceHolder="Sélectionner une catégorie"
+                                    [class.is-invalid]="isSubmitted && f['categorie'].errors"
+                                    style="width:100%">
+                                    @for (cat of categories; track cat?.id) {
+                                        <nz-option [nzValue]="cat?.id" [nzLabel]="cat?.nom ?? ''"></nz-option>
                                     }
-                                </div>
+                                </nz-select>
+                                @if (isSubmitted && f['categorie'].errors?.['required']) {
+                                    <div class="prd-error">La catégorie est obligatoire</div>
+                                }
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Unité de mesure + Code-barres -->
-                        <div class="row mb-3">
+                    <!-- Tarification -->
+                    <div class="prd-section">
+                        <div class="prd-section-label">
+                            <i class="bi bi-currency-exchange"></i> Tarification
+                        </div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label" for="unite_mesure">Unité de mesure</label>
-                                <select class="form-select" id="unite_mesure" formControlName="unite_mesure"
-                                    [ngClass]="{'is-invalid': isSubmitted && f['unite_mesure'].errors}">
+                                <label class="prd-label" for="prix_achat">Prix d'achat (FCFA) <span class="text-danger">*</span></label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-arrow-down-circle prd-input-icon"></i>
+                                    <input type="text" class="form-control prd-input" id="prix_achat"
+                                        placeholder="Ex : 5 000"
+                                        formControlName="prix_achat"
+                                        thousandSeparator
+                                        [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}">
+                                </div>
+                                @if (isSubmitted && f['prix_achat'].errors?.['required']) {
+                                    <div class="prd-error">Le prix d'achat est obligatoire</div>
+                                }
+                                @if (isSubmitted && f['prix_achat'].errors?.['min']) {
+                                    <div class="prd-error">Doit être supérieur à 0</div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="prd-label" for="prix_vente">Prix de vente (FCFA) <span class="text-danger">*</span></label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-arrow-up-circle prd-input-icon"></i>
+                                    <input type="text" class="form-control prd-input" id="prix_vente"
+                                        placeholder="Ex : 7 500"
+                                        formControlName="prix_vente"
+                                        thousandSeparator
+                                        [ngClass]="{'is-invalid': isSubmitted && f['prix_vente'].errors}">
+                                </div>
+                                @if (isSubmitted && f['prix_vente'].errors?.['required']) {
+                                    <div class="prd-error">Le prix de vente est obligatoire</div>
+                                }
+                                @if (isSubmitted && f['prix_vente'].errors?.['min']) {
+                                    <div class="prd-error">Doit être supérieur à 0</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="prd-section">
+                        <div class="prd-section-label">
+                            <i class="bi bi-archive"></i> Stock & Paramètres
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="prd-label" for="stock_initial">Stock initial <span class="text-danger">*</span></label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-layers prd-input-icon"></i>
+                                    <input type="number" class="form-control prd-input" id="stock_initial"
+                                        placeholder="0" min="0"
+                                        formControlName="stock_initial"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['stock_initial'].errors}">
+                                </div>
+                                @if (isSubmitted && f['stock_initial'].errors?.['required']) {
+                                    <div class="prd-error">Obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-3">
+                                <label class="prd-label" for="seuil_alert">Seuil d'alerte <span class="text-danger">*</span></label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-bell prd-input-icon"></i>
+                                    <input type="number" class="form-control prd-input" id="seuil_alert"
+                                        placeholder="2" min="0"
+                                        formControlName="seuil_alert"
+                                        [ngClass]="{'is-invalid': isSubmitted && f['seuil_alert'].errors}">
+                                </div>
+                                @if (isSubmitted && f['seuil_alert'].errors?.['required']) {
+                                    <div class="prd-error">Obligatoire</div>
+                                }
+                            </div>
+                            <div class="col-md-3">
+                                <label class="prd-label" for="unite_mesure">Unité de mesure</label>
+                                <select class="form-select prd-input" id="unite_mesure" formControlName="unite_mesure">
                                     <option value="pièce">Pièce</option>
                                     <option value="kg">Kilogramme (kg)</option>
                                     <option value="g">Gramme (g)</option>
@@ -255,35 +260,263 @@
                                     <option value="paire">Paire</option>
                                     <option value="m">Mètre (m)</option>
                                 </select>
-                                @if (isSubmitted && f['unite_mesure'].errors?.['required']) {
-                                    <div class="invalid-feedback">L'unité de mesure est obligatoire</div>
-                                }
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="code_barre">Code-barres</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
-                                    <input type="text" class="form-control" id="code_barre"
-                                        placeholder="Scanner ou saisir le code"
+                            <div class="col-md-3">
+                                <label class="prd-label" for="code_barre">Code-barres</label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-upc-scan prd-input-icon"></i>
+                                    <input type="text" class="form-control prd-input" id="code_barre"
+                                        placeholder="Optionnel"
                                         formControlName="code_barre">
                                 </div>
-                                <div class="form-text text-muted">Optionnel — scanner ou saisir manuellement</div>
                             </div>
                         </div>
-
                     </div>
+
+                    <!-- Image -->
+                    <div class="prd-section prd-section--last">
+                        <div class="prd-section-label">
+                            <i class="bi bi-image"></i> Image du produit
+                        </div>
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-6">
+                                <label class="prd-upload-zone" for="image">
+                                    <i class="bi bi-cloud-arrow-up prd-upload-icon"></i>
+                                    <span class="prd-upload-text">Cliquer pour choisir une image</span>
+                                    <span class="prd-upload-hint">PNG, JPG, WEBP — max 5 Mo</span>
+                                    <input type="file" id="image" class="d-none"
+                                        (change)="onFileSelected($event)" accept="image/*">
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="prd-preview-box">
+                                    @if (previewImageUrl) {
+                                        <img [src]="previewImageUrl" alt="Aperçu" class="prd-preview-img">
+                                    } @else if (selectedProduit?.imageUrl) {
+                                        <img [src]="selectedProduit.imageUrl" alt="Image actuelle" class="prd-preview-img">
+                                    } @else {
+                                        <div class="prd-preview-empty">
+                                            <i class="bi bi-card-image"></i>
+                                            <span>Aperçu</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="modal-footer">
+
+                <!-- Pied de formulaire -->
+                <div class="prd-footer">
                     @if (!titleModal.includes('VISUALISER')) {
-                        <button type="submit" class="btn btn-primary me-2">
+                        <button type="submit" class="btn prd-btn-save">
                             <i [class]="icon"></i> {{ buttonText }}
                         </button>
                     }
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+                    <button type="button" class="btn prd-btn-cancel" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
+</div>
+
+<!-- Modal Suggestion IA — Prix suggéré -->
+<div class="modal fade" id="modal-prix-suggere" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 pb-1">
+        <h5 class="modal-title fw-semibold d-flex align-items-center gap-2">
+          <span class="ia-icon-badge"><i class="bi bi-robot"></i></span>
+          Suggestion IA — Prix de vente
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        @if (produitPrixSuggere) {
+          <!-- Fiche actuelle -->
+          <div class="p-3 rounded-3 mb-3" style="background:#f8f9fa;">
+            <div class="fw-semibold small text-uppercase text-muted mb-2">{{ produitPrixSuggere.nom }}</div>
+            <div class="d-flex flex-wrap gap-3 small">
+              <span>Prix d'achat : <strong>{{ (prixSuggereData?.prix_achat ?? produitPrixSuggere.prix_achat) | number:'1.0-0':'fr' }} F</strong></span>
+              <span>Prix actuel : <strong>{{ (prixSuggereData?.prix_actuel ?? produitPrixSuggere.prix_vente) | number:'1.0-0':'fr' }} F</strong></span>
+              @if (prixSuggereData?.marge_actuelle) {
+                <span>Marge actuelle : <strong>{{ prixSuggereData.marge_actuelle }}</strong></span>
+              } @else {
+                <span>Marge actuelle : <strong>{{ margeActuelle }}%</strong></span>
+              }
+            </div>
+          </div>
+
+          <!-- Chargement -->
+          @if (isLoadingPrixSuggere) {
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted small mt-2 mb-0">Analyse IA en cours…</p>
+            </div>
+          }
+
+          <!-- Erreur -->
+          @if (!isLoadingPrixSuggere && prixSuggereError) {
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+              <div>
+                <strong>Suggestion indisponible</strong><br>
+                <small>{{ prixSuggereError }}</small>
+              </div>
+            </div>
+          }
+
+          <!-- Résultat IA -->
+          @if (!isLoadingPrixSuggere && prixSuggereData) {
+            <div class="ia-suggestion-panel">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-lightbulb-fill text-warning"></i>
+                <span class="fw-semibold">Suggestion IA</span>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <div class="ia-metric-box ia-metric-box--green">
+                    <div class="ia-metric-label">Prix suggéré</div>
+                    <div class="ia-metric-value">{{ prixSuggereData.prix_suggere | number:'1.0-0':'fr' }} F</div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="ia-metric-box ia-metric-box--green">
+                    <div class="ia-metric-label">Marge cible</div>
+                    <div class="ia-metric-value">{{ prixSuggereData.marge_cible }}</div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="ia-metric-box" [class.ia-metric-box--green]="prixSuggereData.gain_potentiel_mensuel >= 0"
+                                              [class.ia-metric-box--red]="prixSuggereData.gain_potentiel_mensuel < 0">
+                    <div class="ia-metric-label">Gain / mois</div>
+                    <div class="ia-metric-value">
+                      {{ prixSuggereData.gain_potentiel_mensuel >= 0 ? '+' : '' }}{{ prixSuggereData.gain_potentiel_mensuel | number:'1.0-0':'fr' }} F
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="ia-metric-box ia-metric-box--amber">
+                    <div class="ia-metric-label">Ventes / jour</div>
+                    <div class="ia-metric-value">{{ prixSuggereData.velocite_journaliere | number:'1.1-2':'fr' }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="alert alert-info py-2 small mb-3">
+                <i class="bi bi-info-circle me-1"></i>{{ prixSuggereData.conseil }}
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-success flex-grow-1" (click)="appliquerPrixSuggere()" [disabled]="isAppliquerPrix">
+                  @if (isAppliquerPrix) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  } @else {
+                    <i class="bi bi-check2-circle me-1"></i>
+                  }
+                  Appliquer ce prix
+                </button>
+                <button class="btn btn-outline-secondary" (click)="ignorerPrixSuggere()">
+                  Ignorer
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'aperçu de l'import CSV/Excel -->
+<div class="modal fade" id="modal-import-preview" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content mf-modal mf-modal--slate">
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-file-earmark-spreadsheet"></i></div>
+        <div>
+          <div class="mf-header-title">Aperçu de l'import</div>
+          <div class="mf-header-subtitle">{{ pendingImportFile?.name }}</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" (click)="cancelImport()"></button>
+      </div>
+      <div class="modal-body" style="background:#f8fafc">
+
+        <!-- Sélection de la boutique cible -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Boutique cible <span class="text-danger">*</span>
+          </label>
+          @if (boutiques.length > 1) {
+            <select class="form-select" [(ngModel)]="importBoutiqueId" [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="null">— Sélectionnez une boutique —</option>
+              @for (b of boutiques; track b.id) {
+                <option [ngValue]="b.id">{{ b.nom }}</option>
+              }
+            </select>
+          } @else if (boutiques.length === 1) {
+            <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
+          } @else {
+            <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
+          }
+        </div>
+
+        @if (importPreview && importPreview.rows.length) {
+          <p class="text-muted">{{ importPreview.rows.length }} ligne(s) détectée(s) dans le fichier.</p>
+          <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+            <table class="table table-bordered table-sm table-striped">
+              <thead class="table-light" style="position: sticky; top: 0;">
+                <tr>
+                  @for (col of importPreview.columns; track col) {
+                    <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of importPreview.rows; track $index) {
+                  <tr>
+                    @for (col of importPreview.columns; track col) {
+                      <td>{{ row[col] }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (importPreview) {
+          <div class="alert alert-warning mb-0">Le fichier ne contient aucune ligne exploitable.</div>
+        }
+
+        @if (importResult) {
+          <hr>
+          <div class="alert" [ngClass]="importResult.errors.length ? 'alert-warning' : 'alert-success'">
+            <strong>Import terminé :</strong> {{ importResult.created }} créé(s), {{ importResult.skipped }} ignoré(s).
+            @if (importResult.errors.length) {
+              <ul class="mb-0 mt-2">
+                @for (err of importResult.errors; track $index) {
+                  <li>{{ err }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+      <div class="mf-footer">
+        @if (!importResult) {
+          <button type="button" class="btn mf-btn-save" [disabled]="isImporting || !importPreview?.rows?.length || !importBoutiqueId" (click)="confirmImport()">
+            @if (isImporting) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span> Importation...
+            } @else {
+              <i class="bi bi-cloud-upload me-1"></i> Confirmer l'import
+            }
+          </button>
+        }
+        <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal" (click)="cancelImport()">
+          <i class="bi bi-x-lg me-1"></i> {{ importResult ? 'Fermer' : 'Annuler' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

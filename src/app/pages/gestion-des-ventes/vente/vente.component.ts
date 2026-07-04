@@ -101,7 +101,7 @@ export default class VenteComponent implements OnInit {
   }
 
   loadActiveSession(): void {
-    const boutiqueId = this.currentUser?.boutique?.id;
+    const boutiqueId = this.currentUser.boutique_id;
     if (!boutiqueId) return;
 
     this.boutiqueService.findOne(boutiqueId).subscribe({
@@ -111,7 +111,7 @@ export default class VenteComponent implements OnInit {
         this.caisseLoaded = true;
 
         if (this.caisseActivee) {
-          this.caisseService.getActiveSession(boutiqueId, this.currentUser?.id).subscribe({
+          this.caisseService.getActiveSession(boutiqueId, this.currentUser?.telephone).subscribe({
             next: (res: any) => { this.activeSessionId = res?.data?.id ?? null; },
             error: () => { this.activeSessionId = null; }
           });
@@ -126,11 +126,11 @@ export default class VenteComponent implements OnInit {
 
   initForm(): void {
     // Vérifier si currentUser existe avant d'accéder à ses propriétés
-    const userId = this.currentUser ? this.currentUser.id : null;
-    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
-    
+    const userTelephone = this.currentUser ? this.currentUser.telephone : null;
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique_id : null;
+
     this.venteForm = this.fb.group({
-      user: [userId, Validators.required],
+      user: [userTelephone, Validators.required],
       libelle: [''],
       description: [''],
       boutique: [boutiqueId, Validators.required],
@@ -178,7 +178,7 @@ export default class VenteComponent implements OnInit {
           this.loadProduits();
         } else if (this.currentUser && this.currentUser.boutique) {
           // Utiliser la boutique de l'utilisateur courant comme fallback
-          this.selectedBoutique = this.currentUser.boutique.id.toString();
+          this.selectedBoutique = this.currentUser.boutique_id.toString();
           this.loadProduits();
         }
         
@@ -237,15 +237,15 @@ export default class VenteComponent implements OnInit {
     }
     
     // Vérifier que currentUser et boutique existent avant d'accéder à leurs propriétés
-    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
-    const userId = this.currentUser ? this.currentUser.id : null;
-    
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique_id : null;
+    const userTelephone = this.currentUser ? this.currentUser.telephone : null;
+
     // Mettre à jour les champs principaux du formulaire
     this.venteForm.patchValue({
       libelle: vente.libelle || '',
       description: vente.description || '',
       boutique: boutiqueId,
-      user: userId,
+      user: userTelephone,
       montant_total: vente.montant_total || 0,
       date_vente: dateVente,
       mode_paiement: vente.mode_paiement || 'espece',
@@ -384,7 +384,7 @@ calculerMontantTotalApresRemise(): void {
 }
 
   loadClients(): void {
-    const boutiqueId = this.currentUser?.boutique?.id;
+    const boutiqueId = this.currentUser.boutique_id;
     if (!boutiqueId) return;
     this.clientService.getClientsByBoutique(boutiqueId).subscribe({
       next: (r: any) => {
@@ -451,7 +451,7 @@ calculerMontantTotalApresRemise(): void {
       return;
     }
    
-    this.selectedBoutique = this.currentUser.boutique.id.toString();
+    this.selectedBoutique = this.currentUser.boutique_id.toString();
      
     if (this.currentUser.profil && (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'responsable_structure')) {
       if (!this.selectedBoutique) {
@@ -459,7 +459,7 @@ calculerMontantTotalApresRemise(): void {
         return;
       }
     } else if (this.currentUser.boutique) {
-      this.selectedBoutique = this.currentUser.boutique.id.toString();
+      this.selectedBoutique = this.currentUser.boutique_id.toString();
        
     } else {
       // Si aucune boutique n'est disponible
@@ -684,7 +684,7 @@ calculerMontantTotalApresRemise(): void {
     const code = this.barcodeInput.trim();
     if (!code) return;
     this.barcodeInput = '';
-    const boutique = this.currentUser?.boutique?.id;
+    const boutique = this.currentUser.boutique_id;
     if (!boutique) return;
     this.scanLoading = true;
     this.produitService.scanByCodeBarre(code, boutique).subscribe({

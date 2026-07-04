@@ -1,0 +1,119 @@
+<div class="p-4">
+  <div class="mb-4">
+    <h4 class="fw-bold mb-1">Plans tarifaires</h4>
+    <p class="text-muted small mb-0">Définissez les prix des abonnements et des boutiques supplémentaires</p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Liste des plans actuels -->
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header py-2 px-3">
+          <span class="fw-semibold small"><i class="bi bi-tags-fill me-2 text-primary"></i>Tarifs en vigueur</span>
+        </div>
+        <div class="card-body p-0">
+
+          @if (loading) {
+            <div class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          }
+
+          @if (!loading) {
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4">Plan</th>
+                  <th>Montant</th>
+                  <th>Devise</th>
+                  <th class="text-end pe-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of plans; track p.id) {
+                  <tr>
+                    <td class="ps-4 fw-semibold">{{ planLabel(p.plan) }}</td>
+                    <td class="text-success fw-bold">{{ p.montant | number:'1.0-0':'fr' }}</td>
+                    <td class="text-muted small">{{ p.devise }}</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary" (click)="editPlan(p)">
+                        <i class="bi bi-pencil me-1"></i>Modifier
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (plans.length === 0 && !loading) {
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Aucun plan configuré</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+        </div>
+      </div>
+
+      <!-- Prix boutique supplémentaire -->
+      <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header py-2 px-3">
+          <span class="fw-semibold small"><i class="bi bi-shop-window me-2 text-warning"></i>Prix boutique supplémentaire</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            Prix facturé par boutique supplémentaire (2ème boutique et +) lors d'un renouvellement.
+            @if (prixBoutique) {
+              <span class="ms-1 badge bg-warning-subtle text-warning fw-semibold">
+                Actuel : {{ prixBoutique.valeur | number:'1.0-0':'fr' }} {{ prixBoutique.devise }}
+              </span>
+            }
+          </p>
+          <div class="d-flex gap-2 align-items-end">
+            <div class="flex-grow-1">
+              <label class="form-label fw-semibold small mb-1">Montant (XOF)</label>
+              <input type="number" class="form-control" [(ngModel)]="prixBoutiqueForm.montant" min="0" placeholder="5000">
+            </div>
+            <button class="btn btn-warning" [disabled]="isSavingPrixBoutique" (click)="savePrixBoutique()">
+              @if (isSavingPrixBoutique) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              @else { <i class="bi bi-floppy me-1"></i> }
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire créer / modifier un plan -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header py-2 px-3">
+          <span class="fw-semibold small"><i class="bi bi-plus-circle me-2 text-success"></i>Créer / Mettre à jour un plan</span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Plan <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.plan">
+              @for (o of PLAN_OPTIONS; track o.value) {
+                <option [value]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Montant <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="number" class="form-control" [(ngModel)]="form.montant" min="0" placeholder="0">
+              <span class="input-group-text">XOF</span>
+            </div>
+          </div>
+          <button class="btn btn-primary w-100" [disabled]="isSubmitting" (click)="save()">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-floppy me-1"></i> }
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

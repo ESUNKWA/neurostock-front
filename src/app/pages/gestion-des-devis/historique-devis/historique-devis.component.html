@@ -22,7 +22,7 @@
               <h5 class="card-title mb-0 text-uppercase">Devis</h5>
             </div>
             <div class="col-md-6 text-end">
-              <a routerLink="/gestion-des-devis/nouveau" class="btn btn-primary mt-3">
+              <a [routerLink]="isPos ? '/pos/devis/nouveau' : '/gestion-des-devis/nouveau'" class="btn btn-primary mt-3">
                 <i class="bi bi-plus-circle"></i> Nouveau Devis
               </a>
             </div>
@@ -76,89 +76,197 @@
 <!-- Modal détails devis -->
 <div class="modal fade" id="modal-devis-detail" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold text-uppercase">Détails du devis</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content mf-modal mf-modal--teal">
+
+      <!-- ── En-tête ── -->
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="flex-grow-1 min-width-0">
+          <div class="mf-header-title">
+            Devis {{ selectedDevis?.reference || '' }}
+          </div>
+          <div class="mf-header-subtitle d-flex align-items-center gap-2 flex-wrap mt-1">
+            @if (selectedDevis?.created_at) {
+              <span><i class="bi bi-calendar3 me-1 opacity-75"></i>{{ selectedDevis.created_at | date:'dd/MM/yyyy' }}</span>
+            }
+            @if (selectedDevis?.date_expiration) {
+              <span class="opacity-75">· Expire {{ selectedDevis.date_expiration | date:'dd/MM/yyyy' }}</span>
+            }
+            @if (selectedDevis?.statut) {
+              <span class="badge ms-1" [ngClass]="getStatutBadge(selectedDevis.statut)">
+                {{ getStatutLabel(selectedDevis.statut) }}
+              </span>
+            }
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-2 flex-shrink-0" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
+
+      <!-- ── Corps ── -->
+      <div class="mf-body dv-detail-body">
         @if (detailDevis) {
-          <div class="row mb-3">
+
+          <!-- Info générales + Client -->
+          <div class="row g-3 mb-4">
+
             <div class="col-md-6">
-              <div class="card">
-                <div class="card-header bg-light"><h6 class="mb-0 text-uppercase">Informations générales</h6></div>
-                <div class="card-body">
-                  <p><strong>Référence :</strong> {{ selectedDevis.reference }}</p>
-                  <p><strong>Libellé :</strong> {{ selectedDevis.libelle || '—' }}</p>
-                  <p><strong>Date :</strong> {{ selectedDevis.created_at | date:'dd/MM/yyyy' }}</p>
-                  <p><strong>Expiration :</strong> {{ selectedDevis.date_expiration | date:'dd/MM/yyyy' }}</p>
-                  <p>
-                    <strong>Statut :</strong>
-                    <span class="badge ms-1" [ngClass]="getStatutBadge(selectedDevis.statut)">
+              <div class="dv-detail-card">
+                <div class="dv-detail-card-head">
+                  <i class="bi bi-info-circle"></i> Informations générales
+                </div>
+                <div class="dv-detail-card-body">
+                  <div class="dv-info-row">
+                    <span class="dv-info-label">Référence</span>
+                    <span class="dv-info-value fw-semibold">{{ selectedDevis.reference || '—' }}</span>
+                  </div>
+                  @if (selectedDevis.libelle) {
+                    <div class="dv-info-row">
+                      <span class="dv-info-label">Libellé</span>
+                      <span class="dv-info-value">{{ selectedDevis.libelle }}</span>
+                    </div>
+                  }
+                  <div class="dv-info-row">
+                    <span class="dv-info-label">Créé le</span>
+                    <span class="dv-info-value">{{ selectedDevis.created_at | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="dv-info-row">
+                    <span class="dv-info-label">Expiration</span>
+                    <span class="dv-info-value">{{ selectedDevis.date_expiration | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="dv-info-row">
+                    <span class="dv-info-label">Statut</span>
+                    <span class="badge" [ngClass]="getStatutBadge(selectedDevis.statut)">
                       {{ getStatutLabel(selectedDevis.statut) }}
                     </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-header bg-light"><h6 class="mb-0 text-uppercase">Client</h6></div>
-                <div class="card-body">
-                  @if ((selectedDevis.client ?? selectedDevis.clientdata)?.nom) {
-                    <p><strong>Nom :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).nom }} {{ (selectedDevis.client ?? selectedDevis.clientdata).prenoms || '' }}</p>
-                    <p><strong>Téléphone :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).telephone || '—' }}</p>
-                    <p><strong>Email :</strong> {{ (selectedDevis.client ?? selectedDevis.clientdata).email || '—' }}</p>
-                  } @else {
-                    <p class="text-muted">Aucun client associé</p>
+                  </div>
+                  @if (detailDevis.notes) {
+                    <div class="dv-info-row align-items-start">
+                      <span class="dv-info-label">Notes</span>
+                      <span class="dv-info-value text-muted" style="font-size:.82rem">{{ detailDevis.notes }}</span>
+                    </div>
                   }
                 </div>
               </div>
             </div>
+
+            <div class="col-md-6">
+              <div class="dv-detail-card">
+                <div class="dv-detail-card-head">
+                  <i class="bi bi-person"></i> Client
+                </div>
+                <div class="dv-detail-card-body">
+                  @if ((selectedDevis.client ?? selectedDevis.clientdata)?.nom; as clientNom) {
+                    <div class="dv-client-avatar">
+                      <div class="dv-client-initials">
+                        {{ clientNom.charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <div class="fw-semibold" style="font-size:.95rem">
+                          {{ (selectedDevis.client ?? selectedDevis.clientdata).nom }}
+                          {{ (selectedDevis.client ?? selectedDevis.clientdata).prenoms || '' }}
+                        </div>
+                        @if ((selectedDevis.client ?? selectedDevis.clientdata).telephone) {
+                          <div class="text-muted small">
+                            <i class="bi bi-telephone me-1"></i>{{ (selectedDevis.client ?? selectedDevis.clientdata).telephone }}
+                          </div>
+                        }
+                        @if ((selectedDevis.client ?? selectedDevis.clientdata).email) {
+                          <div class="text-muted small">
+                            <i class="bi bi-envelope me-1"></i>{{ (selectedDevis.client ?? selectedDevis.clientdata).email }}
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="dv-no-client">
+                      <i class="bi bi-person-x fs-3 d-block mb-1 opacity-50"></i>
+                      Aucun client associé
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <div class="card">
-            <div class="card-header bg-primary text-white"><h6 class="mb-0 text-uppercase">Détail des produits</h6></div>
-            <div class="card-body p-0">
-              <table class="table table-striped mb-0">
-                <thead class="table-light">
-                  <tr><th>#</th><th>Produit</th><th>Prix unitaire</th><th>Quantité</th><th>Total</th></tr>
+          <!-- Produits -->
+          <div class="dv-detail-products">
+            <div class="dv-detail-products-head">
+              <span><i class="bi bi-box-seam me-2"></i>Produits</span>
+              <span class="badge dv-count-badge">{{ detailDevis.detail_devis?.length || 0 }} article(s)</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table dv-detail-table mb-0">
+                <thead>
+                  <tr>
+                    <th style="width:36px">#</th>
+                    <th>Produit</th>
+                    <th class="text-end" style="width:150px">Prix unitaire</th>
+                    <th class="text-center" style="width:80px">Qté</th>
+                    <th class="text-end" style="width:160px">Sous-total</th>
+                  </tr>
                 </thead>
                 <tbody>
                   @for (d of detailDevis.detail_devis; track $index) {
                     <tr>
-                      <td>{{ $index + 1 }}</td>
-                      <td class="fw-semibold">{{ d.produit?.nom }}</td>
-                      <td>{{ d.prix_unitaire_vente | number }} FCFA</td>
-                      <td><span class="badge bg-light text-dark">{{ d.quantite }}</span></td>
-                      <td>{{ (d.prix_unitaire_vente * d.quantite) | number }} FCFA</td>
+                      <td class="text-muted small align-middle">{{ $index + 1 }}</td>
+                      <td class="align-middle">
+                        <div class="d-flex align-items-center gap-2">
+                          @if (d.produit?.imageUrl) {
+                            <img [src]="d.produit.imageUrl" alt=""
+                                 width="34" height="34"
+                                 style="border-radius:7px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0">
+                          }
+                          <span class="fw-semibold">{{ d.produit?.nom || d.nom || '—' }}</span>
+                        </div>
+                      </td>
+                      <td class="text-end align-middle">{{ d.prix_unitaire_vente | number:'1.0-0':'fr' }} FCFA</td>
+                      <td class="text-center align-middle">
+                        <span class="dv-qty-badge">× {{ d.quantite }}</span>
+                      </td>
+                      <td class="text-end align-middle fw-semibold">
+                        {{ (d.prix_unitaire_vente * d.quantite) | number:'1.0-0':'fr' }} FCFA
+                      </td>
                     </tr>
                   }
                 </tbody>
-                <tfoot class="table-light">
-                  <tr>
-                    <td colspan="4" class="text-end fw-bold">Remise :</td>
-                    <td class="text-danger">- {{ detailDevis.remise | number }} FCFA</td>
-                  </tr>
-                  <tr>
-                    <td colspan="4" class="text-end fw-bold">Total TTC :</td>
-                    <td class="fw-bold text-success">{{ detailDevis.montant_total_apres_remise | number }} FCFA</td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
+
+            <!-- Totaux -->
+            <div class="dv-detail-totals">
+              @if (detailDevis.remise > 0) {
+                <div class="dv-detail-total-row">
+                  <span class="text-muted small">Remise</span>
+                  <span class="text-danger fw-semibold">− {{ detailDevis.remise | number:'1.0-0':'fr' }} FCFA</span>
+                </div>
+              }
+              <div class="dv-detail-total-row dv-detail-total-final">
+                <span>Total TTC</span>
+                <span>{{ detailDevis.montant_total_apres_remise | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+            </div>
           </div>
+
         }
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-warning" (click)="printDevis(selectedDevis)">
-          <i class="bi bi-printer"></i> Imprimer
+
+      <!-- ── Pied de page ── -->
+      <div class="mf-footer">
+        <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i> Fermer
         </button>
-        <button type="button" class="btn btn-success" (click)="convertirEnVente(selectedDevis)" data-bs-dismiss="modal">
-          <i class="bi bi-arrow-right-circle"></i> Convertir en vente
+        <button type="button" class="btn dv-btn-print" (click)="printDevis(selectedDevis)">
+          <i class="bi bi-printer me-1"></i> Imprimer
         </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        @if (selectedDevis?.statut?.toLowerCase() === 'accepte') {
+          <button type="button" class="btn dv-btn-convert"
+            (click)="convertirEnVente(selectedDevis)" data-bs-dismiss="modal">
+            <i class="bi bi-arrow-right-circle me-1"></i> Convertir en vente
+          </button>
+        }
       </div>
+
     </div>
   </div>
 </div>

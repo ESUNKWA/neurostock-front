@@ -5,7 +5,7 @@
       <p class="text-muted small mb-0">Suivi des sessions de caisse et mouvements</p>
     </div>
     <div class="d-flex align-items-center gap-3">
-      @if (caisseActivee === true && (currentUser?.is_admin || currentUser?.profil?.code === 'responsable_structure')) {
+      @if (caisseActivee === true && (currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'responsable_structure')) {
         <button class="btn btn-outline-danger btn-sm fw-semibold" (click)="desactiverCaisse()" [disabled]="activating">
           @if (activating) { <span class="spinner-border spinner-border-sm me-1"></span> }
           <i class="bi bi-toggle-on me-1"></i> Désactiver la caisse
@@ -56,7 +56,7 @@
   @if (caisseActivee === true) {
 
   <!-- Sélecteur boutique (admin / responsable) -->
-  @if (currentUser?.is_admin || currentUser?.profil?.code === 'responsable_structure') {
+  @if (caisseActivee === true && (currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'responsable_structure')) {
     <div class="row mb-3">
       <div class="col-md-4">
         <div class="input-group input-group-sm">
@@ -125,7 +125,7 @@
               <button type="button" class="btn btn-outline-primary btn-sm" (click)="openModalMouvement()">
                 <i class="bi bi-arrow-left-right me-1"></i> Mouvement
               </button>
-              <a [routerLink]="['/caisse/rapport', activeSession.id]" class="btn btn-outline-secondary btn-sm">
+              <a [routerLink]="rapportRoute(activeSession.id)" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-file-earmark-bar-graph me-1"></i> Rapport
               </a>
               <button type="button" class="btn btn-danger btn-sm" (click)="openModalFermer()">
@@ -256,7 +256,7 @@
                 </td>
                 <td>{{ (s.date_fermeture || s.fermeture_at) ? ((s.date_fermeture || s.fermeture_at) | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
                 <td class="text-center">
-                  <a [routerLink]="['/caisse/rapport', s.id]" class="btn btn-sm btn-outline-info" title="Rapport">
+                  <a [routerLink]="rapportRoute(s.id)" class="btn btn-sm btn-outline-info" title="Rapport">
                     <i class="bi bi-file-earmark-bar-graph"></i>
                   </a>
                 </td>
@@ -280,74 +280,96 @@
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-ouvrir" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-box-arrow-in-right me-2"></i>Ouvrir la caisse</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content mf-modal mf-modal--emerald">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+        <div>
+          <div class="mf-header-title">Ouvrir la caisse</div>
+          <div class="mf-header-subtitle">Configurez la session d'ouverture</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
       <form [formGroup]="ouvrirForm" (ngSubmit)="submitOuvrir()">
-        <div class="modal-body">
+        <div class="mf-body">
 
           <!-- Caissier -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Caissier <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="caissier"
-                    [ngClass]="{'is-invalid': ouvrirForm.get('caissier')?.invalid && ouvrirForm.get('caissier')?.touched}">
-              <option [ngValue]="null">— Sélectionner un caissier —</option>
-              @for (u of users; track u.id) {
-                <option [ngValue]="u.id">{{ u.prenoms || u.prenom }} {{ u.nom }}</option>
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-person-fill"></i> Caissier</div>
+            <label class="mf-label">
+              Caissier <span class="text-danger">*</span>
+              @if (!isSuperUser) {
+                <span class="badge bg-secondary ms-1 fw-normal" style="font-size:.62rem">
+                  <i class="bi bi-lock-fill me-1"></i>Assigné
+                </span>
               }
-            </select>
+            </label>
+            <nz-select
+              nzShowSearch
+              nzPlaceHolder="Rechercher un caissier…"
+              formControlName="caissier"
+              [nzAllowClear]="isSuperUser"
+              [nzDisabled]="!isSuperUser"
+              style="width:100%"
+              [ngClass]="{'is-invalid': ouvrirForm.get('caissier')?.invalid && ouvrirForm.get('caissier')?.touched}">
+              @for (u of users; track u.id) {
+                <nz-option [nzValue]="u.id" [nzLabel]="(u.prenoms || u.prenom) + ' ' + u.nom"></nz-option>
+              }
+            </nz-select>
             @if (ouvrirForm.get('caissier')?.invalid && ouvrirForm.get('caissier')?.touched) {
-              <div class="invalid-feedback d-block">Caissier requis</div>
+              <div class="mf-error mt-1">Caissier requis</div>
             }
           </div>
 
           <!-- Fond d'ouverture par mode -->
-          <div class="mb-3" formGroupName="fond_ouverture">
-            <label class="form-label fw-semibold">Fond d'ouverture par mode (FCFA)</label>
+          <div class="mf-section" formGroupName="fond_ouverture">
+            <div class="mf-section-label"><i class="bi bi-cash-coin"></i> Fond d'ouverture par mode (FCFA)</div>
             <div class="row g-2">
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Espèces</label>
+                <label class="mf-label mb-1">Espèces</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="espece" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="espece" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Mobile Money</label>
+                <label class="mf-label mb-1">Mobile Money</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="mobile_money" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="mobile_money" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Carte bancaire</label>
+                <label class="mf-label mb-1">Carte bancaire</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="carte" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="carte" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Crédit</label>
+                <label class="mf-label mb-1">Crédit</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="credit" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="credit" thousandSeparator placeholder="0">
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label">Note</label>
-            <textarea class="form-control" formControlName="note" rows="2" placeholder="Observation…"></textarea>
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-chat-left-text"></i> Note</div>
+            <textarea class="form-control mf-input" formControlName="note" rows="2" placeholder="Observation…"></textarea>
           </div>
+
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="ouvrirForm.invalid || submittingOuvrir">
+        <div class="mf-footer">
+          <button type="submit" class="btn mf-btn-save" [disabled]="ouvrirForm.invalid || submittingOuvrir">
             @if (submittingOuvrir) { <span class="spinner-border spinner-border-sm me-1"></span> }
-            Ouvrir
+            <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir
+          </button>
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> Annuler
           </button>
         </div>
       </form>
@@ -360,84 +382,95 @@
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-fermer" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-box-arrow-right me-2 text-danger"></i>Fermer la caisse</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content mf-modal mf-modal--rose">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-box-arrow-right"></i></div>
+        <div>
+          <div class="mf-header-title">Fermer la caisse</div>
+          <div class="mf-header-subtitle">Saisissez le fond compté pour chaque mode</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
       <form [formGroup]="fermerForm" (ngSubmit)="submitFermer()">
-        <div class="modal-body">
-          <div class="alert alert-warning py-2 small">
-            <i class="bi bi-exclamation-triangle me-1"></i>
-            Comptez physiquement chaque mode de paiement avant de valider.
+        <div class="mf-body">
+
+          <!-- Alerte -->
+          <div class="mf-section" style="background:#fff7ed">
+            <div class="d-flex align-items-center gap-2 small text-warning-emphasis fw-semibold">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              Comptez physiquement chaque mode de paiement avant de valider.
+            </div>
           </div>
 
           <!-- Référence théorique -->
           @if (theorique?.montant_theorique) {
-            <div class="mb-3 p-2 rounded border border-primary-subtle bg-primary-subtle">
-              <p class="small fw-semibold text-primary mb-1">
-                <i class="bi bi-calculator me-1"></i>Montant théorique attendu
-              </p>
+            <div class="mf-section">
+              <div class="mf-section-label"><i class="bi bi-calculator"></i> Montant théorique attendu</div>
               @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
                 @if (theorique.montant_theorique[mode]) {
-                  <div class="d-flex justify-content-between small">
+                  <div class="d-flex justify-content-between small py-1">
                     <span class="text-muted">{{ modesLabels[mode] }}</span>
                     <span class="fw-semibold">{{ theorique.montant_theorique[mode] | number:'1.0-0':'fr' }} FCFA</span>
                   </div>
                 }
               }
-              <div class="d-flex justify-content-between small border-top mt-1 pt-1">
+              <div class="d-flex justify-content-between small border-top pt-2 mt-1">
                 <span class="fw-bold">Total</span>
-                <span class="fw-bold text-primary">{{ sumFond(theorique.montant_theorique) | number:'1.0-0':'fr' }} FCFA</span>
+                <span class="fw-bold" style="color:var(--mf-accent)">{{ sumFond(theorique.montant_theorique) | number:'1.0-0':'fr' }} FCFA</span>
               </div>
             </div>
           }
 
           <!-- Fond de fermeture par mode -->
-          <div class="mb-3" formGroupName="fond_fermeture">
-            <label class="form-label fw-semibold">Fond de fermeture compté par mode (FCFA) <span class="text-danger">*</span></label>
+          <div class="mf-section" formGroupName="fond_fermeture">
+            <div class="mf-section-label"><i class="bi bi-cash-coin"></i> Fond compté par mode (FCFA) <span class="text-danger">*</span></div>
             <div class="row g-2">
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Espèces</label>
+                <label class="mf-label mb-1">Espèces</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="espece" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="espece" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Mobile Money</label>
+                <label class="mf-label mb-1">Mobile Money</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="mobile_money" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="mobile_money" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Carte bancaire</label>
+                <label class="mf-label mb-1">Carte bancaire</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="carte" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="carte" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
-                <label class="form-label small text-muted mb-1">Crédit</label>
+                <label class="mf-label mb-1">Crédit</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control" formControlName="credit" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="credit" thousandSeparator placeholder="0">
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label">Note de clôture</label>
-            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Observation…"></textarea>
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-chat-left-text"></i> Note de clôture</div>
+            <textarea class="form-control mf-input" formControlName="notes" rows="2" placeholder="Observation…"></textarea>
           </div>
+
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-danger" [disabled]="fermerForm.invalid || submittingFermer">
+        <div class="mf-footer">
+          <button type="submit" class="btn mf-btn-danger" [disabled]="fermerForm.invalid || submittingFermer">
             @if (submittingFermer) { <span class="spinner-border spinner-border-sm me-1"></span> }
-            Fermer la caisse
+            <i class="bi bi-box-arrow-right me-1"></i> Fermer la caisse
+          </button>
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> Annuler
           </button>
         </div>
       </form>
@@ -450,16 +483,24 @@
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-mouvement" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Mouvement de caisse</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content mf-modal mf-modal--indigo">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-arrow-left-right"></i></div>
+        <div>
+          <div class="mf-header-title">Mouvement de caisse</div>
+          <div class="mf-header-subtitle">Enregistrez une entrée ou une sortie</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
       <form [formGroup]="mouvementForm" (ngSubmit)="submitMouvement()">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Type <span class="text-danger">*</span></label>
-            <div class="d-flex gap-3">
+        <div class="mf-body">
+
+          <!-- Type -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-arrow-left-right"></i> Type de mouvement <span class="text-danger">*</span></div>
+            <div class="d-flex gap-4">
               <div class="form-check">
                 <input class="form-check-input" type="radio" formControlName="type" value="entree" id="r-entree">
                 <label class="form-check-label text-success fw-semibold" for="r-entree">
@@ -474,35 +515,47 @@
               </div>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Mode de paiement</label>
-            <select class="form-select" formControlName="mode_paiement">
-              @for (m of modesPaiement; track m.value) {
-                <option [value]="m.value">{{ m.label }}</option>
-              }
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Montant (FCFA) <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text">FCFA</span>
-              <input type="text" class="form-control" formControlName="montant"
-                     thousandSeparator placeholder="0"
-                     [ngClass]="{'is-invalid': mouvementForm.get('montant')?.invalid && mouvementForm.get('montant')?.touched}">
+
+          <!-- Mode + Montant -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-cash-coin"></i> Détail</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label">Mode de paiement</label>
+                <select class="form-select mf-input" formControlName="mode_paiement">
+                  @for (m of modesPaiement; track m.value) {
+                    <option [value]="m.value">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="mf-label">Montant (FCFA) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="montant"
+                    thousandSeparator placeholder="0"
+                    [ngClass]="{'is-invalid': mouvementForm.get('montant')?.invalid && mouvementForm.get('montant')?.touched}">
+                </div>
+              </div>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Motif <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" formControlName="motif"
-                   placeholder="Ex: dépense transport, apport fonds…"
-                   [ngClass]="{'is-invalid': mouvementForm.get('motif')?.invalid && mouvementForm.get('motif')?.touched}">
+
+          <!-- Motif -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-chat-left-text"></i> Motif <span class="text-danger">*</span></div>
+            <input type="text" class="form-control mf-input" formControlName="motif"
+              placeholder="Ex: dépense transport, apport fonds…"
+              [ngClass]="{'is-invalid': mouvementForm.get('motif')?.invalid && mouvementForm.get('motif')?.touched}">
           </div>
+
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="mouvementForm.invalid || submittingMouvement">
+        <div class="mf-footer">
+          <button type="submit" class="btn mf-btn-save" [disabled]="mouvementForm.invalid || submittingMouvement">
             @if (submittingMouvement) { <span class="spinner-border spinner-border-sm me-1"></span> }
-            Enregistrer
+            <i class="bi bi-check-lg me-1"></i> Enregistrer
+          </button>
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> Annuler
           </button>
         </div>
       </form>

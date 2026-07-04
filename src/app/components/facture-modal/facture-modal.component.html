@@ -1,0 +1,150 @@
+<div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-receipt me-2 text-primary"></i>Facture
+          @if (facture) { <span class="text-muted fw-normal small ms-2">{{ facture.reference }}</span> }
+        </h5>
+        <div class="d-flex gap-2 align-items-center">
+          @if (facture) {
+            <button class="btn btn-sm btn-outline-primary" [disabled]="pdfLoading" (click)="downloadPdf()">
+              @if (pdfLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              @else { <i class="bi bi-file-earmark-pdf me-1"></i> }
+              Télécharger PDF
+            </button>
+          }
+          <button class="btn-close" (click)="close()"></button>
+        </div>
+      </div>
+
+      <div class="modal-body p-0">
+
+        @if (loading) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="text-muted small mt-2">Chargement de la facture…</p>
+          </div>
+        }
+
+        @if (error && !loading) {
+          <div class="alert alert-danger m-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+          </div>
+        }
+
+        @if (facture && !loading) {
+          <div class="p-4">
+
+            <!-- En-tête facture -->
+            <div class="row mb-4">
+              <div class="col-sm-6">
+                <div class="mb-1 text-muted small text-uppercase fw-semibold" style="letter-spacing:.05em">Facturé à</div>
+                <div class="fw-bold fs-6">{{ facture.structure.nom }}</div>
+                @if (facture.structure.adresse) {
+                  <div class="text-muted small">{{ facture.structure.adresse }}</div>
+                }
+                @if (facture.structure.telephone) {
+                  <div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ facture.structure.telephone }}</div>
+                }
+                @if (facture.structure.email) {
+                  <div class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ facture.structure.email }}</div>
+                }
+              </div>
+              <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                <div class="mb-1 text-muted small text-uppercase fw-semibold" style="letter-spacing:.05em">Informations</div>
+                <div class="small"><span class="text-muted">Référence :</span> <strong>{{ facture.reference }}</strong></div>
+                <div class="small"><span class="text-muted">Date d'émission :</span> {{ facture.date_emission | date:'dd/MM/yyyy' }}</div>
+                <div class="small"><span class="text-muted">Période :</span>
+                  {{ facture.abonnement.date_debut | date:'dd/MM/yyyy' }} → {{ facture.abonnement.date_fin | date:'dd/MM/yyyy' }}
+                </div>
+                <div class="mt-1">
+                  <span class="badge"
+                        [class.bg-success-subtle]="facture.abonnement.statut === 'actif'"
+                        [class.text-success]="facture.abonnement.statut === 'actif'"
+                        [class.bg-danger-subtle]="facture.abonnement.statut !== 'actif'"
+                        [class.text-danger]="facture.abonnement.statut !== 'actif'">
+                    {{ facture.abonnement.statut | titlecase }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-3">
+
+            <!-- Lignes de facturation -->
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Description</th>
+                  <th class="text-end">Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Plan de base -->
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ facture.detail.plan_base.label }}</div>
+                    <div class="text-muted small">1 boutique incluse</div>
+                  </td>
+                  <td class="text-end fw-semibold">
+                    {{ facture.detail.plan_base.montant | number:'1.0-0':'fr' }} {{ facture.detail.plan_base.devise }}
+                  </td>
+                </tr>
+
+                <!-- Boutiques supplémentaires -->
+                @for (b of facture.detail.boutiques_supplementaires; track b.boutiqueNom) {
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">Boutique supplémentaire — {{ b.boutiqueNom }}</div>
+                      <div class="text-muted small">
+                        Tarif unitaire : {{ b.prix_unitaire | number:'1.0-0':'fr' }} {{ b.devise }}
+                        @if (!b.est_active) {
+                          <span class="ms-2 badge bg-secondary-subtle text-secondary">Désactivée</span>
+                        }
+                      </div>
+                    </td>
+                    <td class="text-end fw-semibold">
+                      {{ b.prix_unitaire | number:'1.0-0':'fr' }} {{ b.devise }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                @if (facture.detail.nb_boutiques_facturees > 0) {
+                  <tr class="table-light">
+                    <td class="text-muted small">Sous-total boutiques supplémentaires ({{ facture.detail.nb_boutiques_facturees }})</td>
+                    <td class="text-end text-muted small">
+                      {{ facture.detail.montant_boutiques | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
+                    </td>
+                  </tr>
+                }
+                <tr class="fw-bold">
+                  <td class="fs-6">Total</td>
+                  <td class="text-end text-success fs-6">
+                    {{ facture.detail.total | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+          </div>
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        @if (facture) {
+          <button class="btn btn-outline-primary me-auto" [disabled]="pdfLoading" (click)="downloadPdf()">
+            @if (pdfLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-download me-1"></i> }
+            Télécharger le PDF
+          </button>
+        }
+        <button class="btn btn-outline-secondary" (click)="close()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -26,7 +26,7 @@
             </nz-select>
           }
 
-          <a routerLink="/commandes-clients/nouvelle" class="btn btn-primary btn-sm">
+          <a [routerLink]="isPos ? '/pos/commandes/nouvelle' : '/commandes-clients/nouvelle'" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
           </a>
         </div>
@@ -176,7 +176,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
         @if (detailCommande && detailCommande.statut !== 'livre' && detailCommande.statut !== 'annule') {
-          <a [routerLink]="['/commandes-clients', detailCommande.id, 'edit']"
+          <a [routerLink]="isPos ? ['/pos/commandes', detailCommande.id, 'edit'] : ['/commandes-clients', detailCommande.id, 'edit']"
              class="btn btn-primary" data-bs-dismiss="modal">
             <i class="bi bi-pencil me-1"></i> Modifier
           </a>

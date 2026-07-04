@@ -17,6 +17,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective, NzSelectModule],
   templateUrl: './form.component.html',
+  styleUrl: './form.component.scss',
 })
 export default class FormComponent implements OnInit {
   form!: FormGroup;
@@ -68,7 +69,7 @@ export default class FormComponent implements OnInit {
       montant_total_apres_remise: [{ value: 0, disabled: true }],
       clientdata: this.fb.group({
         nom:       [''],
-        telephone: [''],
+        telephone: ['', [Validators.minLength(10), Validators.maxLength(10)]],
       }),
       detail_commande: this.fb.array([this.newLigne()]),
     });
@@ -82,11 +83,30 @@ export default class FormComponent implements OnInit {
       quantite:       [1,   [Validators.required, Validators.min(1)]],
       prix_unitaire:  [null, [Validators.required, Validators.min(0)]],
     });
+
+    g.get('produit')?.valueChanges.subscribe((id: any) => {
+      const produit = this.produits.find(p => p.id === id);
+      if (produit) {
+        g.patchValue({ prix_unitaire: produit.prix_vente }, { emitEvent: false });
+        this.calculerTotaux();
+      }
+    });
+
     g.valueChanges.subscribe(() => this.calculerTotaux());
     return g;
   }
 
   get lignes(): FormArray { return this.form.get('detail_commande') as FormArray; }
+
+  getProduitImage(id: number | null): string | null {
+    if (!id) return null;
+    return this.produits.find(p => p.id === id)?.imageUrl ?? null;
+  }
+
+  getProduitStock(id: number | null): number {
+    if (!id) return 0;
+    return this.produits.find(p => p.id === id)?.stock_disponible ?? 0;
+  }
 
   addLigne(): void { this.lignes.push(this.newLigne()); }
 
@@ -157,7 +177,7 @@ export default class FormComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const raw = this.form.getRawValue();
-    const boutiqueId = this.currentUser?.boutique?.id;
+    const boutiqueId = this.currentUser.boutique_id;
 
     // Sanitize: parse numeric fields — the ThousandSeparatorDirective may leave
     // string-formatted values or null if the field was never interacted with.
@@ -183,7 +203,7 @@ export default class FormComponent implements OnInit {
 
     const body: any = {
       boutique:    boutiqueId,
-      user:        this.currentUser?.id,
+      user:        this.currentUser?.telephone,
       montant_total:                sousTotal,
       montant_total_apres_remise:   Math.max(0, sousTotal - remise),
       remise,

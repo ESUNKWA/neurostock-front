@@ -3,7 +3,7 @@
   <div class="sidebar-brand">
     <a routerLink="/dashboard" class="brand-link">
       <img src="assets/img/logo-neurostock-small.png" alt="NeuroStock" width="30" height="30">
-      <span class="brand-name">neurostock</span>
+      <span class="brand-name">NeuroStock</span>
     </a>
   </div>
 
@@ -52,6 +52,12 @@
                    routerLinkActive="active" [title]="items?.libelle">
                   <i [class]="items?.icon"></i>
                   <span class="link-label">{{ items?.libelle }}</span>
+                  @if (items?.badge) {
+                    <span class="badge ms-auto"
+                          style="background:linear-gradient(135deg,#6366f1,#8b5cf6);font-size:.58rem;padding:.2em .45em;border-radius:3px">
+                      {{ items.badge }}
+                    </span>
+                  }
                 </a>
               }
 

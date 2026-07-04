@@ -1,0 +1,407 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Abonnements</h4>
+      <p class="text-muted small mb-0">Gestion des abonnements par structure</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="openTrialModal(0)">
+        <i class="bi bi-gift me-1"></i>Démarrer un essai
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openSubscribeModal()">
+        <i class="bi bi-plus-circle me-1"></i>Souscrire
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      @if (!loading && abonnements.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar-x display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucun abonnement enregistré</p>
+        </div>
+      }
+
+      @if (!loading && abonnements.length > 0) {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Structure</th>
+                <th>Plan</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Jours restants</th>
+                <th>Boutiques sup.</th>
+                <th>Statut</th>
+                <th class="text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ab of abonnements; track ab.id) {
+                <tr>
+                  <td class="ps-4">
+                    <span class="fw-semibold small">{{ structureName(ab.structureId) }}</span>
+                    <span class="text-muted" style="font-size:.72rem;display:block">#{{ ab.structureId }}</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold">
+                      {{ planLabel(ab.plan) }}
+                    </span>
+                  </td>
+                  <td class="text-muted small">{{ ab.date_debut | date:'dd/MM/yyyy' }}</td>
+                  <td class="text-muted small">{{ ab.date_fin | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span [class]="joursClass(ab.jours_restants, ab.statut)">
+                      {{ ab.jours_restants ?? '—' }}j
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    @if (ab.boutiques_supplementaires > 0) {
+                      <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                              (click)="openBoutiquesModal(ab)" title="Voir les boutiques">
+                        <i class="bi bi-shop-window me-1"></i>{{ ab.boutiques_supplementaires }}
+                      </button>
+                    } @else {
+                      <span class="text-muted small">—</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [class]="statutClass(ab.statut)">
+                      @if (ab.statut === 'actif') { <i class="bi bi-check-circle-fill me-1"></i> }
+                      @else if (ab.statut === 'expire') { <i class="bi bi-x-circle-fill me-1"></i> }
+                      @else { <i class="bi bi-pause-circle-fill me-1"></i> }
+                      {{ ab.statut | titlecase }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex justify-content-end gap-1">
+                      <button class="btn btn-sm btn-outline-secondary" (click)="factureAbonnementId = ab.id"
+                              title="Voir la facture">
+                        <i class="bi bi-receipt"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-primary" (click)="openSubscribeModal(ab)"
+                              title="Souscrire / Renouveler">
+                        <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                      </button>
+                      @if (ab.statut === 'actif') {
+                        <button class="btn btn-sm btn-outline-warning"
+                                [disabled]="actionLoading === ab.id"
+                                (click)="suspend(ab)" title="Suspendre">
+                          @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
+                          @else { <i class="bi bi-pause-fill"></i> }
+                        </button>
+                      } @else if (ab.statut === 'suspendu') {
+                        <button class="btn btn-sm btn-outline-success"
+                                [disabled]="actionLoading === ab.id"
+                                (click)="reactivate(ab)" title="Réactiver">
+                          @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
+                          @else { <i class="bi bi-play-fill"></i> }
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal souscrire / renouveler ────────────────────────────────────────── -->
+@if (showModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+      <div class="modal-content mf-modal mf-modal--blue">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-credit-card"></i></div>
+          <div>
+            <div class="mf-header-title">Souscrire un abonnement</div>
+            <div class="mf-header-subtitle">Choisissez la structure et le plan tarifaire</div>
+          </div>
+          <button class="btn-close btn-close-white ms-auto" (click)="showModal=false"></button>
+        </div>
+
+        <div class="mf-body">
+
+          <!-- Structure -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-building"></i> Structure</div>
+            <select class="form-select mf-boutique-select mf-input" [(ngModel)]="form.structureId" (ngModelChange)="onFormChange()">
+              <option [ngValue]="null">— Sélectionner la structure —</option>
+              @for (s of structures; track s.id) {
+                <option [ngValue]="s.id">{{ s.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Plan -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-stars"></i> Plan <span class="text-danger">*</span></div>
+            <div class="d-flex gap-2 flex-wrap">
+              @for (p of plans; track p.plan) {
+                <label class="plan-card flex-grow-1 text-center p-3 border rounded-3"
+                  [class.selected]="form.plan === p.plan" style="cursor:pointer">
+                  <input type="radio" class="d-none" [(ngModel)]="form.plan" [value]="p.plan" (change)="onFormChange()">
+                  <div class="fw-bold small">{{ planLabel(p.plan) }}</div>
+                  <div class="text-muted" style="font-size:.72rem">{{ p.montant | number:'1.0-0':'fr' }} {{ p.devise }}</div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Devis calculé -->
+          @if (devisLoading) {
+            <div class="mf-section">
+              <div class="text-center py-1 text-muted small">
+                <span class="spinner-border spinner-border-sm me-1"></span> Calcul du devis…
+              </div>
+            </div>
+          }
+          @if (devis && !devisLoading) {
+            <div class="mf-section" style="background:#eff6ff">
+              <div class="mf-section-label"><i class="bi bi-calculator"></i> Devis estimatif</div>
+              <div class="d-flex justify-content-between small py-1">
+                <span class="text-muted">Prix de base ({{ planLabel(devis.plan) }})</span>
+                <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+              </div>
+              @if (devis.boutiques_supplementaires > 0) {
+                <div class="d-flex justify-content-between small py-1">
+                  <span class="text-muted">{{ devis.boutiques_supplementaires }} boutique(s) sup. × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }}</span>
+                  <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                </div>
+              }
+              <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-1">
+                <span>Total</span>
+                <span class="text-success">{{ devis.total | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+              </div>
+            </div>
+          }
+
+          <!-- Montant + Notes -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-cash-coin"></i> Encaissement & Note</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label">Montant réel encaissé (XOF)</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-currency-exchange mf-input-icon"></i>
+                  <input type="number" class="form-control mf-input" [(ngModel)]="form.montant" min="0">
+                </div>
+                <div class="text-muted" style="font-size:.75rem;margin-top:4px">Pré-rempli par le devis. Modifiable si remise accordée.</div>
+              </div>
+              <div class="col-12">
+                <label class="mf-label">Notes</label>
+                <textarea class="form-control mf-input" rows="2" [(ngModel)]="form.notes" placeholder="Ex: Paiement reçu le 02/07/2026"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" [disabled]="isSubmitting || !form.structureId" (click)="submitSubscription()">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2-circle me-1"></i> }
+            Confirmer
+          </button>
+          <button class="btn mf-btn-cancel" (click)="showModal=false">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal boutiques facturées ───────────────────────────────────────────── -->
+@if (showBoutiquesModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+      <div class="modal-content mf-modal mf-modal--orange">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-shop-window"></i></div>
+          <div>
+            <div class="mf-header-title">Boutiques facturées</div>
+            <div class="mf-header-subtitle">{{ boutiquesModalNom }}</div>
+          </div>
+          <button class="btn-close btn-close-white ms-auto" (click)="showBoutiquesModal=false"></button>
+        </div>
+
+        <div class="mf-body">
+          <div class="mf-section mf-section--last" style="padding:0">
+
+            <!-- Résultat sync -->
+            @if (syncResult) {
+              <div class="px-3 pt-3">
+                <div class="alert py-2 mb-0 small"
+                     [class.alert-success]="syncResult.ajoutees > 0"
+                     [class.alert-info]="syncResult.ajoutees === 0">
+                  @if (syncResult.ajoutees > 0) {
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    <strong>{{ syncResult.ajoutees }}</strong> boutique(s) ajoutée(s),
+                    {{ syncResult.deja_presentes }} déjà présente(s).
+                  } @else {
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    Toutes les boutiques sont déjà synchronisées ({{ syncResult.deja_presentes }} présente(s)).
+                  }
+                </div>
+              </div>
+            }
+
+            @if (boutiquesLoading) {
+              <div class="text-center py-4">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+              </div>
+            }
+            @if (!boutiquesLoading && boutiques.length === 0) {
+              <div class="text-center py-4 text-muted small px-3">
+                <i class="bi bi-shop display-6 d-block mb-2 opacity-25"></i>
+                Aucune boutique supplémentaire enregistrée.<br>
+                <span class="text-muted">Utilisez "Synchroniser" pour importer les boutiques existantes.</span>
+              </div>
+            }
+            @if (!boutiquesLoading && boutiques.length > 0) {
+              <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3">Boutique</th>
+                    <th>Date ajout</th>
+                    <th>Statut</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (b of boutiques; track b.id) {
+                    <tr>
+                      <td class="ps-3 fw-semibold small">{{ b.boutiqueNom }}</td>
+                      <td class="text-muted small">{{ b.date_ajout | date:'dd/MM/yyyy' }}</td>
+                      <td>
+                        @if (b.est_active) {
+                          <span class="badge bg-success-subtle text-success">Facturée</span>
+                        } @else {
+                          <span class="badge bg-secondary-subtle text-secondary">Désactivée</span>
+                        }
+                      </td>
+                      <td class="text-end pe-2">
+                        <div class="d-flex justify-content-end gap-1">
+                          <button class="btn btn-sm py-0 px-2"
+                            [class.btn-outline-warning]="b.est_active"
+                            [class.btn-outline-success]="!b.est_active"
+                            [title]="b.est_active ? 'Désactiver (ne plus facturer)' : 'Réactiver (facturer à nouveau)'"
+                            [disabled]="toggleLoading === b.boutiqueId"
+                            (click)="toggleBoutiqueActive(b)">
+                            @if (toggleLoading === b.boutiqueId) {
+                              <span class="spinner-border spinner-border-sm"></span>
+                            } @else if (b.est_active) {
+                              <i class="bi bi-pause-fill"></i>
+                            } @else {
+                              <i class="bi bi-play-fill"></i>
+                            }
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                            title="Retirer définitivement de la facturation"
+                            [disabled]="retirerLoading === b.boutiqueId"
+                            (click)="retirerBoutique(b)">
+                            @if (retirerLoading === b.boutiqueId) {
+                              <span class="spinner-border spinner-border-sm"></span>
+                            } @else {
+                              <i class="bi bi-trash3"></i>
+                            }
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+
+        <div class="mf-footer justify-content-between">
+          <button class="btn mf-btn-save btn-sm" [disabled]="isSyncing" (click)="syncBoutiques()">
+            @if (isSyncing) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-arrow-repeat me-1"></i> }
+            Synchroniser
+          </button>
+          <button class="btn mf-btn-cancel" (click)="showBoutiquesModal=false">
+            <i class="bi bi-x-lg"></i> Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal démarrer un essai ─────────────────────────────────────────────── -->
+@if (showTrialModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+      <div class="modal-content mf-modal mf-modal--emerald">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-gift"></i></div>
+          <div>
+            <div class="mf-header-title">Démarrer un essai</div>
+            <div class="mf-header-subtitle">31 jours offerts pour la structure sélectionnée</div>
+          </div>
+          <button class="btn-close btn-close-white ms-auto" (click)="showTrialModal=false"></button>
+        </div>
+
+        <div class="mf-body">
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-building"></i> Structure</div>
+            <select class="form-select mf-boutique-select mf-input" [(ngModel)]="trialStructureId">
+              <option [ngValue]="null">— Sélectionner la structure —</option>
+              @for (s of structures; track s.id) {
+                <option [ngValue]="s.id">{{ s.nom }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" [disabled]="isStartingTrial || !trialStructureId" (click)="startTrial()">
+            @if (isStartingTrial) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-play-circle me-1"></i> }
+            Démarrer l'essai
+          </button>
+          <button class="btn mf-btn-cancel" (click)="showTrialModal=false">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+  .plan-card { border-color: #dee2e6 !important; transition: all .15s; }
+  .plan-card.selected { border-color: var(--bs-primary) !important; background: #e7f1ff; }
+  .plan-card:hover { border-color: var(--bs-primary) !important; }
+</style>
+
+@if (factureAbonnementId) {
+  <app-facture-modal
+    [abonnementId]="factureAbonnementId"
+    (closed)="factureAbonnementId = null">
+  </app-facture-modal>
+}

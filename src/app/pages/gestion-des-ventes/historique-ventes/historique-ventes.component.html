@@ -23,13 +23,8 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row mb-3">
-                      <div class="col-md-6">
+                      <div class="col-md-12">
                         <h5 class="card-title mb-0 text-uppercase">Liste des ventes</h5>
-                      </div>
-                      <div class="col-md-6 text-end">
-                        <button type="button" class="btn btn-primary mt-3" routerLink="/gestion-des-ventes/vente">
-                          <i class="bi bi-plus-circle"></i> Nouvelle Vente
-                        </button>
                       </div>
                     </div>
                 </div>
@@ -81,133 +76,168 @@
     </div>
 </section>
 
-<!-- Modal pour visualiser les détails d'une vente -->
+<!-- Modal détails vente -->
 <div class="modal fade" id="modal-view-details" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">Détails vente - Réf:<span class="text-danger"> {{vente?.reference}} </span>&nbsp;&nbsp;&nbsp;&nbsp; Total: <span class="text-success" >{{vente?.montant_total_apres_remise| number:'1.0-0' }} FCFA</span> </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+      <!-- En-tête coloré -->
+      <div class="modal-header text-white" style="background: linear-gradient(135deg,#1e40af,#3b82f6);">
+        <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+          <div class="flex-grow-1 min-w-0">
+            <div class="fw-bold fs-5">{{ vente?.reference }}</div>
+            <div class="small opacity-75">{{ vente?.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          @if (vente?.statut) {
+            @let s = vente.statut.toLowerCase();
+            <span class="badge fs-6 align-self-center"
+              [class.bg-success]="s === 'payer'"
+              [class.bg-danger]="s === 'non_payer'"
+              [class.bg-secondary]="s !== 'payer' && s !== 'non_payer'">
+              {{ s === 'payer' ? 'Payé' : s === 'non_payer' ? 'Non payé' : vente.statut }}
+            </span>
+          }
+          <div class="text-end flex-shrink-0">
+            <div class="small opacity-75">Net à payer</div>
+            <div class="fw-bold fs-4">{{ vente?.montant_total_apres_remise | number:'1.0-0' }} F CFA</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <div class="row">
 
-          <div class="col-md-12 text-success"><p>Cette vente a été enregistré par: <span class="text-primary fw-bold" >{{vente?.user?.nom}} {{vente?.user?.prenoms}}</span></p></div>
+      <div class="modal-body p-0">
 
-          <div class="col-md-6">
-            <div class="card">
-
-              <div class="card-header bg-light">
-                <h5 class="card-title mb-0 text-uppercase">Informations générales</h5>
-              </div>
-              <div class="card-body">
-                <div class="mb-2">
-                  <span class="fw-bold">Référence: </span> <span id="detail-reference"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Libellé: </span> <span id="detail-libelle"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Date de vente: </span> <span id="detail-date"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Montant total: </span> <span id="detail-montant"></span>
-                </div>
-                
-                <div class="mb-2">
-                  <span class="fw-bold">Mode de paiement: </span> <span id="detail-mode-paiement"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Statut: </span> <span id="detail-statut"></span>
-                </div>
+        <!-- Bandeau infos rapides -->
+        <div class="d-flex flex-wrap gap-0 border-bottom bg-light">
+          <div class="px-3 py-2 border-end">
+            <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Vendeur</div>
+            <div class="fw-semibold small">{{ vente?.user?.prenoms || vente?.user?.prenom }} {{ vente?.user?.nom }}</div>
+          </div>
+          <div class="px-3 py-2 border-end">
+            <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Mode de paiement</div>
+            <div class="fw-semibold small">{{ vente?.mode_paiement || '—' }}</div>
+          </div>
+          @if (vente?.boutique?.nom) {
+            <div class="px-3 py-2 border-end">
+              <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Boutique</div>
+              <div class="fw-semibold small"><i class="bi bi-shop me-1"></i>{{ vente.boutique.nom }}</div>
+            </div>
+          }
+          @if (vente?.client) {
+            <div class="px-3 py-2">
+              <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Client</div>
+              <div class="fw-semibold small">
+                {{ vente.client.nom }}
+                @if (vente.client.telephone) {
+                  <span class="text-muted fw-normal ms-1">— {{ vente.client.telephone }}</span>
+                }
               </div>
             </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header bg-light">
-                <h5 class="card-title mb-0 text-uppercase">Informations du client</h5>
-              </div>
-              <div class="card-body">
-                <div class="mb-2">
-                  <span class="fw-bold">Nom: </span> <span id="detail-client-nom"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Adresse: </span> <span id="detail-client-adresse"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Contact: </span> <span id="detail-client-contact"></span>
-                </div>
-                <div class="mb-2">
-                  <span class="fw-bold">Email: </span> <span id="detail-client-email"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card mt-3">
-          <div class="card-header bg-light">
-            <h5 class="card-title mb-0 text-uppercase">Description</h5>
-          </div>
-          <div class="card-body">
-            <p id="detail-description"></p>
-          </div>
+          }
         </div>
 
-        <!-- Nouvelle section pour les détails des produits -->
-        <div class="card mt-4">
-          <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0 text-uppercase">Détails des produits</h5>
+        <!-- Tableau des produits -->
+        <div class="p-3">
+          <div class="fw-semibold text-uppercase text-muted mb-2" style="font-size:.75rem;letter-spacing:.06em">
+            <i class="bi bi-box-seam me-1"></i>Produits
           </div>
-          <div class="card-body p-0">
+
+          @if (loadingDetails) {
+            <div class="text-center py-5 text-muted">
+              <span class="spinner-border spinner-border-sm me-2"></span>Chargement des produits…
+            </div>
+          } @else {
             <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
+              <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th>#</th>
+                    <th class="text-center" style="width:40px">#</th>
                     <th>Produit</th>
-                    <th>Prix unitaire</th>
-                    <th>Quantité</th>
-                    <th>Total</th>
+                    <th class="text-end">Prix unitaire</th>
+                    <th class="text-center">Qté</th>
+                    <th class="text-end">Total</th>
                   </tr>
                 </thead>
-                <tbody id="detail-produits-body">
-                  <!-- Les détails des produits seront ajoutés ici dynamiquement -->
-                  <tr *ngIf="!detailsVente || detailsVente.length === 0">
-                    <td colspan="5" class="text-center py-3">Aucun détail disponible</td>
-                  </tr>
+                <tbody>
+                  @if (detailsVente.length === 0) {
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-4">Aucun produit trouvé</td>
+                    </tr>
+                  }
+                  @for (ligne of detailsVente; track $index) {
+                    <tr>
+                      <td class="text-center text-muted small">{{ $index + 1 }}</td>
+                      <td>
+                        <div class="fw-semibold">{{ ligne.produit?.nom }}</div>
+                        @if (ligne.produit?.description) {
+                          <small class="text-muted">{{ ligne.produit.description }}</small>
+                        }
+                      </td>
+                      <td class="text-end small">{{ ligne.prix_unitaire_vente | number:'1.0-0' }} F CFA</td>
+                      <td class="text-center">
+                        <span class="badge bg-secondary rounded-pill">{{ ligne.quantite }}</span>
+                      </td>
+                      <td class="text-end fw-semibold">{{ (ligne.prix_unitaire_vente * ligne.quantite) | number:'1.0-0' }} F CFA</td>
+                    </tr>
+                  }
                 </tbody>
-                <tfoot class="table-light">
-                  <tr>
-                    <td colspan="4" class="text-end fw-bold">Montant Total :</td>
-                    <td class="fw-bold" id="detail-total-montant"></td>
+                <tfoot>
+                  <tr class="table-light">
+                    <td colspan="4" class="text-end text-muted small">Sous-total</td>
+                    <td class="text-end small">{{ vente?.montant_total | number:'1.0-0' }} F CFA</td>
                   </tr>
-                  <tr>
-                    <td colspan="4" class="text-end fw-bold">Rémise :</td>
-                    <td class="fw-bold" id="detail-total-remise" style="color: red;" ></td>
-                  </tr>
-                  <tr>
-                    <td colspan="4" class="text-end fw-bold">Montant Total :</td>
-                    <td class="fw-bold" id="detail-total-montant-net" style="color: green;" ></td>
+                  @if (vente?.remise > 0) {
+                    <tr class="table-light">
+                      <td colspan="4" class="text-end text-danger small">Remise</td>
+                      <td class="text-end text-danger small">− {{ vente.remise | number:'1.0-0' }} F CFA</td>
+                    </tr>
+                  }
+                  <tr style="background:#f0fdf4">
+                    <td colspan="4" class="text-end fw-bold text-success">Net à payer</td>
+                    <td class="text-end fw-bold text-success fs-6">{{ vente?.montant_total_apres_remise | number:'1.0-0' }} F CFA</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-          </div>
+          }
         </div>
+
+        <!-- Note / description -->
+        @if (vente?.description) {
+          <div class="px-3 pb-3 border-top pt-2">
+            <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Note</div>
+            <p class="mb-0 small text-muted mt-1">{{ vente.description }}</p>
+          </div>
+        }
+
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="btn-print-detail">
-          <i class="bi bi-printer"></i> Imprimer
-          @if (isLoading) {
-            &nbsp;<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          } 
+
+      <div class="modal-footer gap-2">
+        <!-- Impression A4 -->
+        <button type="button" class="btn btn-primary" (click)="printVente(vente)" [disabled]="printingA4 || printingThermique">
+          @if (printingA4) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          } @else {
+            <i class="bi bi-file-earmark-pdf me-1"></i>
+          }
+          A4
         </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="ri ri-close-circle-line"></i> Fermer
+
+        <!-- Impression thermique -->
+        <button type="button" class="btn btn-warning" (click)="printVenteThermique(vente)" [disabled]="printingA4 || printingThermique">
+          @if (printingThermique) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          } @else {
+            <i class="bi bi-printer me-1"></i>
+          }
+          Thermique 80mm
+        </button>
+
+        <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">
+          <i class="bi bi-x me-1"></i>Fermer
         </button>
       </div>
+
     </div>
   </div>
 </div>

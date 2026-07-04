@@ -57,63 +57,97 @@
   </div>
 </section>
 
-<!-- Modal Ajout / Modification / Visualisation -->
+<!-- Modal client -->
 <div class="modal fade" id="modal-client" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content mf-modal mf-modal--indigo">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-person-vcard"></i></div>
+        <div>
+          <div class="mf-header-title">{{ titleModal }}</div>
+          <div class="mf-header-subtitle">Renseignez les informations du client</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
       <form novalidate [formGroup]="clientForm" (ngSubmit)="saveOrUpdate()">
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Nom <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" formControlName="nom"
-                placeholder="Nom du client"
-                [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-              @if (isSubmitted && f['nom'].errors?.['required']) {
-                <div class="invalid-feedback">Le nom est obligatoire</div>
-              }
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Prénom</label>
-              <input type="text" class="form-control" formControlName="prenom" placeholder="Prénom du client">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Téléphone <span class="text-danger">*</span></label>
-              <input type="tel" class="form-control" formControlName="telephone"
-                placeholder="+225 XX XX XX XX"
-                [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
-              @if (isSubmitted && f['telephone'].errors?.['required']) {
-                <div class="invalid-feedback">Le téléphone est obligatoire</div>
-              }
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" formControlName="email"
-                placeholder="email@exemple.com"
-                [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
-              @if (isSubmitted && f['email'].errors?.['email']) {
-                <div class="invalid-feedback">Email invalide</div>
-              }
-            </div>
-            <div class="col-12 mb-3">
-              <label class="form-label">Adresse</label>
-              <input type="text" class="form-control" formControlName="adresse" placeholder="Adresse du client">
+        <div class="mf-body">
+
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-person"></i> Identité</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="nom"
+                    placeholder="Ex : KONÉ"
+                    [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                </div>
+                @if (isSubmitted && f['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Prénom</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="prenom"
+                    placeholder="Ex : Kouadio">
+                </div>
+              </div>
             </div>
           </div>
+
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-telephone"></i> Coordonnées</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label">Téléphone <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-telephone mf-input-icon"></i>
+                  <input type="tel" class="form-control mf-input" formControlName="telephone"
+                    placeholder="0X XX XX XX XX" maxlength="10"
+                    [ngClass]="{'is-invalid': isSubmitted && f['telephone'].errors}">
+                </div>
+                @if (isSubmitted && f['telephone'].errors?.['required']) {
+                  <div class="mf-error">Le téléphone est obligatoire</div>
+                }
+                @if (isSubmitted && f['telephone'].errors?.['minlength'] || f['telephone'].errors?.['maxlength']) {
+                  <div class="mf-error">10 chiffres requis</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Email</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input" formControlName="email"
+                    placeholder="email@exemple.com"
+                    [ngClass]="{'is-invalid': isSubmitted && f['email'].errors}">
+                </div>
+                @if (isSubmitted && f['email'].errors?.['email']) {
+                  <div class="mf-error">Email invalide</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="mf-label">Adresse</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-geo-alt mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="adresse"
+                    placeholder="Ex : Abidjan, Cocody">
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="modal-footer">
+        <div class="mf-footer">
           @if (!titleModal.includes('VISUALISER')) {
-            <button type="submit" class="btn btn-primary me-2">
-              <i [class]="icon"></i> {{ buttonText }}
-            </button>
+            <button type="submit" class="btn mf-btn-save"><i [class]="icon"></i> {{ buttonText }}</button>
           }
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="ri ri-close-circle-line"></i>
-            {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
           </button>
         </div>
       </form>

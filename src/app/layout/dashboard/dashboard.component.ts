@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AlerteService } from '../../services/alerte/alerte.service';
 import { CommonModule } from '@angular/common';
 import { LoaderService } from '../../services/loader/loader.service';
 import { Chart, registerables} from 'chart.js';
@@ -9,6 +10,7 @@ import { environnement } from '../../environnement/environnement';
 import { FormsModule } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { PrevisionService } from '../../services/analyse-ia/prevision.service';
 
 declare var $: any;
 
@@ -22,7 +24,7 @@ Chart.register(...registerables);
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export default class DashboardComponent implements OnInit{
+export default class DashboardComponent implements OnInit, OnDestroy {
 
   stats: any;
    // Exemple de chiffre d'affaires par mois
@@ -48,14 +50,47 @@ export default class DashboardComponent implements OnInit{
 
   boutiqueService = inject(BoutiqueService);
   authService = inject(AuthService);
-  chart: Chart | null = null; // 👈 stocke l’instance du graphique
+  chart: Chart | null = null;
 
   api_url: string = environnement.API_URL;
   today = new Date();
   variationJr: number = 0;
   variationMois: number = 0;
 
-  constructor(private loaderService: LoaderService, private dashService: DashService) {
+  resumeJournalier: any | null = null;
+  isLoadingResume = false;
+
+  // ── Caissier / Vendeur dashboard ─────────────────────────────────────────────
+  caissierStats: any = null;
+  isLoadingCaissier = false;
+
+  private readonly CAISSIER_PROFILES = ['caissier', 'vendeur', 'gerant', 'user'];
+
+  get isCaissierView(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return this.CAISSIER_PROFILES.includes(code);
+  }
+
+  readonly modesLabels: Record<string, string> = {
+    espece: 'Espèces',
+    mobile_money: 'Mobile Money',
+    carte: 'Carte bancaire',
+    credit: 'Crédit',
+  };
+
+  modeEntries(obj: any): { mode: string; label: string; val: number }[] {
+    if (!obj || typeof obj !== 'object') return [];
+    return Object.entries(obj)
+      .filter(([, v]) => Number(v) > 0)
+      .map(([mode, val]) => ({ mode, label: this.modesLabels[mode] ?? mode, val: Number(val) }));
+  }
+
+  constructor(
+    private loaderService: LoaderService,
+    private dashService: DashService,
+    private previsionService: PrevisionService,
+    public alerteService: AlerteService
+  ) {
     this.loaderService.showLoading();
     setTimeout(() => {
       this.loaderService.hideLoading();
@@ -65,12 +100,18 @@ export default class DashboardComponent implements OnInit{
 
   ngOnInit(): void {
     this.getCurrentUser();
-    this.loadBoutiques();
 
-    this.loadStats()
-
+    if (this.isCaissierView) {
+      this.loadCaissierStats();
+    } else {
+      this.loadBoutiques();
+      // loadStats() est appelé depuis loadBoutiques() une fois l'idBoutique résolu
+    }
   }
-  
+
+  ngOnDestroy(): void {
+    window.speechSynthesis?.cancel();
+  }
 
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user: any) => {
@@ -79,15 +120,15 @@ export default class DashboardComponent implements OnInit{
   }
 
   loadBoutiques(): void {
-
-    switch(this.currentUser.profil.code){
+    const code = this.currentUser?.profil?.code;
+    switch(code){
 
       case 'admin':
-        
         this.boutiqueService.find().subscribe({
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
+              // Admin: attend la sélection manuelle (idBoutique reste 0)
             }
           },
           error: (error: any) => {
@@ -97,42 +138,80 @@ export default class DashboardComponent implements OnInit{
         break;
 
       case 'responsable_structure':
-        this.boutiques = this.currentUser.structure[0]?.boutique;
+        this.boutiques = this.currentUser.boutiques ?? [];
+        // Auto-sélectionner la première boutique et charger les stats
+        if (this.boutiques.length > 0) {
+          this.idBoutique = this.boutiques[0].id;
+          this.loadStats();
+        }
         break;
 
-        default:
-          this.boutiques[0] = this.currentUser?.boutique?.id;
+      default:
+        // gérant et autres rôles non-caissier avec boutique assignée
+        this.idBoutique = this.currentUser.boutique_id ?? 0;
+        this.boutiques = this.currentUser.boutiques ?? (this.currentUser.boutique ? [this.currentUser.boutique] : []);
+        if (this.idBoutique) this.loadStats();
     }
+  }
 
-   
+  loadCaissierStats(): void {
+    const boutiqueId = this.currentUser?.boutique_id ?? 0;
+    const caissier = this.currentUser?.id ?? this.currentUser?.telephone;
+    if (!boutiqueId || !caissier) {
+      this.caissierStats = {};  // show empty state rather than staying null
+      return;
+    }
+    this.isLoadingCaissier = true;
     
+    this.dashService.findCaissier(boutiqueId, caissier).subscribe({
+      next: (res: any) => {
+        this.caissierStats = res;
+        this.isLoadingCaissier = false;
+      },
+      error: () => {
+        this.caissierStats = {};
+        this.isLoadingCaissier = false;
+      }
+    });
   }
 
   loadStats(): void {
-    const boutiqueId =  this.currentUser.profil.code =='admin' || this.currentUser.profil.code =='responsable_structure' ? this.idBoutique : this.currentUser.boutique.id;
+    const boutiqueId = this.currentUser.profil.code === 'admin' || this.currentUser.profil.code === 'responsable_structure'
+      ? this.idBoutique
+      : this.currentUser.boutique_id;
+
+    this.loadResumeJournalier(boutiqueId);
 
     this.dashService.find(boutiqueId).subscribe({
       next: (response) => {
+        if (!response?.dash) return; // réponse vide ou erreur catchée
         this.stats = response;
         this.ventesParMois = this.stats.dash.vente_par_mois;
 
-        //Calcul de la variation des ventes du jour
-        if (this.stats?.dash?.vente?.total_vente_jr == 0 && this.stats?.dash?.vente?.total_vente_hier == 0) {
-          this.variationJr = -100;
-        }else{
-          this.variationJr = ((this.stats?.dash?.vente?.total_vente_jr - this.stats?.dash?.vente?.total_vente_hier)/this.stats?.dash?.vente?.total_vente_hier) * 100;
-          this.variationJr = Math.round(this.variationJr);
+        // Mettre à jour le compteur commandes dans le header
+        this.alerteService.setCommandesCount(response.dash?.commandes_client?.prevues_aujourd_hui ?? 0);
+
+        // Variation ventes du jour
+        const jr   = this.stats?.dash?.vente?.total_vente_jr   ?? 0;
+        const hier = this.stats?.dash?.vente?.total_vente_hier  ?? 0;
+        if (jr === 0 && hier === 0) {
+          this.variationJr = 0;
+        } else if (!hier) {
+          this.variationJr = 100;
+        } else {
+          this.variationJr = Math.round(((jr - hier) / hier) * 100);
         }
 
-
-        if (this.stats?.dash?.vente?.total_vente_mois == 0 && this.stats?.dash?.vente?.total_vente_mois_passe == 0) {
-          this.variationMois = -100;
-        }else{
-          //Calcul de la variation des ventes du mois
-          this.variationMois = ((this.stats?.dash?.vente?.total_vente_mois - this.stats?.dash?.vente?.total_vente_mois_passe)/this.stats?.dash?.vente?.total_vente_mois_passe) * 100;
-          this.variationMois = Math.round(this.variationMois);
+        // Variation CA mensuel
+        const mois      = this.stats?.dash?.vente?.total_vente_mois       ?? 0;
+        const moisPasse = this.stats?.dash?.vente?.total_vente_mois_passe  ?? 0;
+        if (mois === 0 && moisPasse === 0) {
+          this.variationMois = 0;
+        } else if (!moisPasse) {
+          this.variationMois = 100;
+        } else {
+          this.variationMois = Math.round(((mois - moisPasse) / moisPasse) * 100);
         }
-        
 
         this.createChart();
       },
@@ -142,6 +221,19 @@ export default class DashboardComponent implements OnInit{
     });
   }
 
+  loadResumeJournalier(boutiqueId: number): void {
+    if (!boutiqueId) return;
+    this.isLoadingResume = true;
+    this.previsionService.getResumeJournalier(boutiqueId).subscribe({
+      next: (res: any) => {
+        this.resumeJournalier = res?.data ?? res;
+        this.isLoadingResume = false;
+      },
+      error: () => {
+        this.isLoadingResume = false;
+      }
+    });
+  }
 
   createChart(): void {
     const ctx = document.getElementById('myChart') as HTMLCanvasElement;
@@ -194,6 +286,18 @@ export default class DashboardComponent implements OnInit{
         }
       }
     });
+  }
+
+  get alertesCount(): number {
+    const r = this.stats?.dash?.produit?.stock_rupture?.length ?? 0;
+    const a = this.stats?.dash?.produit?.stock_alert?.length ?? 0;
+    return r + a;
+  }
+
+  replayAlert(): void {
+    const ruptures = this.stats?.dash?.produit?.stock_rupture?.length ?? 0;
+    const alertes  = this.stats?.dash?.produit?.stock_alert?.length  ?? 0;
+    this.alerteService.playSound(ruptures, alertes);
   }
 
   // Calculer la largeur relative de la barre (en %)

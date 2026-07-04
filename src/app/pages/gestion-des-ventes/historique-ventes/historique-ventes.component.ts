@@ -25,7 +25,10 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   idBoutique: number = 0;
   boutiques: any[] = [];
   isLoading: boolean = false;
-  detailsVente: any;
+  loadingDetails = false;
+  printingA4 = false;
+  printingThermique = false;
+  detailsVente: any[] = [];
   vente: any = {};
   facture: any = {
     vente: {},
@@ -133,7 +136,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
         return;
       }
     } else {
-      this.idBoutique = this.currentUser.boutique.id;
+      this.idBoutique = this.currentUser.boutique_id
     }
     
     const body: any = {
@@ -334,191 +337,28 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   }
 
   getDetailsVente(id: any) {
+    this.loadingDetails = true;
     this.ventesService.getDetailVente(id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
-          this.detailsVente = response.data.detail_vente;
-           
-           this.vente.detail_vente = this.detailsVente;
+          this.detailsVente = response.data.detail_vente ?? [];
+          this.vente.detail_vente = this.detailsVente;
           this.facture = this.vente;
-           
-          // Mettre à jour le tableau des détails produits si le modal est déjà ouvert
-          this.updateProduitsTable();
         }
+        this.loadingDetails = false;
       },
-      error: (error: any) => {
-        console.error('Erreur lors de la récupération des détails de la vente:', error);
-      }
+      error: () => { this.loadingDetails = false; }
     });
   }
 
-  /**
-   * Met à jour le tableau des produits avec les détails
-   */
-  updateProduitsTable(): void {
-    const tableBody = document.getElementById('detail-produits-body');
-    const totalElement = document.getElementById('detail-total-montant');
-    const totalNet = document.getElementById('detail-total-montant-net');
-    const remise = document.getElementById('detail-total-remise');
-    
-    if (!tableBody || !this.detailsVente) return;
-    
-    // Vider le tableau
-    tableBody.innerHTML = '';
-    
-    // Si aucun détail n'est disponible
-    if (this.detailsVente.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="5" class="text-center py-3">Aucun détail disponible</td>
-        </tr>
-      `;
-      if (totalElement) totalElement.textContent = '0 FCFA';
-      if (remise) remise.textContent = '0 FCFA';
-      return;
-    }
-    
-    // Calculer le montant total
-    let montantTotal = 0;
-    
-    // Ajouter les détails au tableau
-    this.detailsVente.forEach((detail: any, index: number) => {
-      const produit = detail.produit;
-      const prixUnitaire = detail.prix_unitaire_vente;
-      const quantite = detail.quantite;
-      const total = prixUnitaire * quantite;
-      
-      montantTotal = this.vente.montant_total;
-      
-      const row = document.createElement('tr');
-      row.className = 'align-middle';
-      row.innerHTML = `
-        <td class="text-center">${index + 1}</td>
-        <td>
-          <div class="d-flex ">
-            <div>
-              <div class="fw-semibold">${produit.nom}</div>
-              <small class="text-muted">${produit.description || ''}</small>
-            </div>
-          </div>
-        </td>
-        <td class="">${prixUnitaire.toLocaleString()} FCFA</td>
-        <td class="">
-          <span class="badge bg-light text-dark">${quantite}</span>
-        </td>
-        <td class="">${total.toLocaleString()} FCFA</td>
-      `;
-      
-      tableBody.appendChild(row);
-    });
-    
-    // Mettre à jour le montant total
-    if (totalElement) {
-      totalElement.textContent = `${montantTotal.toLocaleString()} FCFA`;
-    }
-    if (remise) {
-      remise.textContent = `${this.vente.remise.toLocaleString()} FCFA`;
-    }
-    if (totalNet) {
-      totalNet.textContent = `${this.vente.montant_total_apres_remise.toLocaleString()} FCFA`;
-    }
-  }
-
-  /**
-   * Afficher les détails d'une vente
-   */
   viewDetails(vente: any): void {
-    
     this.vente = vente;
-    
-    // Récupérer les détails de la vente (sera traité de manière asynchrone)
+    this.detailsVente = [];
     this.getDetailsVente(vente.id);
-    
-    // Formater la date de vente
-    const dateVente = vente.created_at ? new Date(vente.created_at) : null;
 
-    const dateFormatee = dateVente ? 
-      `${dateVente.getDate().toString().padStart(2, '0')}/${(dateVente.getMonth() + 1).toString().padStart(2, '0')}/${dateVente.getFullYear()}` +
-                      ` à ${dateVente.getHours().toString().padStart(2, '0')}:` +
-                      `${dateVente.getMinutes().toString().padStart(2, '0')}:` +
-                      `${dateVente.getSeconds().toString().padStart(2, '0')}`: 
-      'Non définie';
-    
-    // Formater le montant
-    const montantFormatte = vente.montant_total ? `${vente.montant_total_apres_remise.toLocaleString()} FCFA` : '0 FCFA';
-    
-    // Déterminer la classe du badge pour le statut
-    let badgeClass = '';
-    switch(vente.statut?.toLowerCase()) {
-      case 'payer':
-        badgeClass = 'bg-success';
-        break;
-      case 'non_payer':
-        badgeClass = 'bg-danger';
-        break;
-      default:
-        badgeClass = 'bg-secondary';
-    }
-    
-    // Ouvrir le modal pour afficher les détails
     const modal = document.getElementById('modal-view-details');
     if (modal) {
-      // Remplir les informations générales
-      document.getElementById('detail-reference')!.textContent = vente.reference || 'Non définie';
-      document.getElementById('detail-libelle')!.textContent = vente.libelle || 'Non défini';
-      document.getElementById('detail-date')!.textContent = dateFormatee;
-      document.getElementById('detail-montant')!.textContent = montantFormatte;
-      document.getElementById('detail-mode-paiement')!.textContent = vente.mode_paiement || 'Non défini';
-      
-      // Remplir le statut avec badge
-      const statutElement = document.getElementById('detail-statut');
-      if (statutElement) {
-        statutElement.innerHTML = `<span class="badge ${badgeClass}">${vente.statut || 'Non défini'}</span>`;
-      }
-      
-      // Remplir les informations du client (si disponible)
-      if (vente.client) {
-        document.getElementById('detail-client-nom')!.textContent = vente.client.nom || 'Non défini';
-        document.getElementById('detail-client-adresse')!.textContent = vente.client.adresse || 'Non définie';
-        document.getElementById('detail-client-contact')!.textContent = vente.client.telephone || 'Non défini';
-        document.getElementById('detail-client-email')!.textContent = vente.client.email || 'Non défini';
-      } else {
-        document.getElementById('detail-client-nom')!.textContent = 'Client non défini';
-        document.getElementById('detail-client-adresse')!.textContent = 'Non définie';
-        document.getElementById('detail-client-contact')!.textContent = 'Non défini';
-        document.getElementById('detail-client-email')!.textContent = 'Non défini';
-      }
-      
-      // Remplir la description
-      document.getElementById('detail-description')!.textContent = vente.description || 'Aucune description disponible';
-      
-      // Initialiser le tableau des produits (sera mis à jour par la méthode updateProduitsTable)
-      const tableBody = document.getElementById('detail-produits-body');
-      if (tableBody) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="5" class="text-center py-3">
-              <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-              Chargement des détails...
-            </td>
-          </tr>
-        `;
-      }
-      
-      // Mettre à jour le tableau si les détails sont déjà disponibles
-      if (this.detailsVente && this.detailsVente.length > 0) {
-        this.updateProduitsTable();
-      }
-      
-      // Configurer le bouton d'impression
-      const btnPrint = document.getElementById('btn-print-detail');
-      if (btnPrint) {
-        btnPrint.onclick = () => this.printVente(vente);
-        //btnPrint.onclick = () => this.printVente(vente);
-      }
-      
-      // Afficher le modal
-      const modalInstance = new bootstrap.Modal(modal);
+      const modalInstance = bootstrap.Modal.getInstance(modal) ?? new bootstrap.Modal(modal);
       modalInstance.show();
     }
   }
@@ -577,34 +417,25 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Imprimer une vente
-   */
   printVente(vente: any) {
-    this.isLoading = true;
+    this.printingA4 = true;
     this.ventesService.imprimerRecu(vente.id).subscribe({
       next: (facture: any) => {
-        
-        const url = facture.path;
-         
-        this.isLoading = false; 
-
-        window.open(url, '_blank');
-
-        // nettoyage mémoire
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.printingA4 = false;
+        if (facture?.path) window.open(facture.path, '_blank');
       },
-      error: (err)=> {
-        console.log(err.error);
-        
-      },
+      error: () => { this.printingA4 = false; }
     });
-    
-    // Création d'une fenêtre d'impression
-    //const printWindow = window.open('', '_blank');
+  }
 
-    
-    
-   
+  printVenteThermique(vente: any) {
+    this.printingThermique = true;
+    this.ventesService.imprimerThermique(vente.id).subscribe({
+      next: (facture: any) => {
+        this.printingThermique = false;
+        if (facture?.path) window.open(facture.path, '_blank');
+      },
+      error: () => { this.printingThermique = false; }
+    });
   }
 }

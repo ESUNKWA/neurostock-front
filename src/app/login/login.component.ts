@@ -34,9 +34,9 @@ export default class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Rediriger vers le dashboard si déjà connecté
+    // Rediriger si déjà connecté selon le rôle
     if (this.authService.isAuthenticated()) {
-      this.router.navigateByUrl('/dashboard');
+      this.router.navigateByUrl(this.homeUrl());
     }
 
     this.initForm();
@@ -44,13 +44,22 @@ export default class LoginComponent implements OnInit {
 
   initForm(): void {
     this.loginForm = this.formBuilder.group({
-      telephone: ['', [Validators.required]],
+      telephone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(10)]],
       mot_de_passe: ['', [Validators.required, Validators.minLength(4)]]
     });
   }
 
   // getter pour un accès facile aux champs du formulaire
   get f() { return this.loginForm.controls; }
+
+  private homeUrl(): string {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const code = (user?.profil?.code ?? '').toLowerCase();
+    if (!code) return '/no-access';
+    if (code === 'super_admin') return '/ekwatech';
+    if (code === 'vendeur' || code === 'caissier') return '/pos/vente';
+    return '/dashboard';
+  }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
@@ -70,7 +79,7 @@ export default class LoginComponent implements OnInit {
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: () => {
-          this.router.navigateByUrl('/dashboard');
+          this.router.navigateByUrl(this.homeUrl());
           setTimeout(() => {
             this.toastr.success('Vous êtes connecté! Bienvenue sur NeuroStock');
           }, 2000);

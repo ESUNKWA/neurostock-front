@@ -46,7 +46,7 @@ export class BoutiqueComponent {
   constructor(@Inject(PLATFORM_ID) private platformId: any){
     this.boutiqueForm = this.fb.group({
       nom: ['', [Validators.required]],
-      telephone: ['', []],
+      telephone: ['', [Validators.minLength(10), Validators.maxLength(10)]],
       rccm: ['', []],
       email: ['', []],
       structure: [null],
@@ -104,6 +104,7 @@ export class BoutiqueComponent {
   }
   openNewModal(): void {
     this.boutiqueForm.reset();
+    this.boutiqueForm.patchValue({ structure: this.boutiqueId }); // restaurer la structure après reset
     this.boutiqueForm.enable();
     this.isEditMode = false;
     this.boutiqueData = null;
@@ -112,7 +113,6 @@ export class BoutiqueComponent {
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
     this.isSubmitted = false;
-    
   }
 
   openView(boutique: any): void {
@@ -198,7 +198,6 @@ export class BoutiqueComponent {
     if (this.boutiqueForm.invalid) {
       return;
     }
-    this.boutiqueForm.value.boutique = this.boutiqueId;
     const formData = new FormData();
     const structure = this.boutiqueForm.value;
 

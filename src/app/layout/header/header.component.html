@@ -5,9 +5,39 @@
     <button type="button" class="header-menu-btn" (click)="toggleSidebar()" title="Menu">
       <i class="bi bi-list"></i>
     </button>
+    @if (currentUser?.boutique?.nom) {
+      <div class="header-boutique">
+        @if (currentUser.boutique.logo) {
+          <img [src]="currentUser.boutique.logo" [alt]="currentUser.boutique.nom" class="header-boutique-logo">
+        } @else {
+          <i class="bi bi-shop"></i>
+        }
+        <span>{{ currentUser.boutique.nom }}</span>
+      </div>
+    }
   </div>
 
   <div class="header-right">
+
+    <!-- Cloche alertes stock -->
+    <a routerLink="/dashboard" class="header-alert-btn" [class.has-alert]="alerteCount > 0"
+       title="{{ alerteCount > 0 ? alerteCount + ' alerte(s) stock' : 'Aucune alerte' }}">
+      <span class="header-bell-wrap" [class.ringing]="alerteCount > 0">
+        <i class="bi bi-bell-fill"></i>
+      </span>
+      @if (alerteCount > 0) {
+        <span class="header-alert-badge">{{ alerteCount > 99 ? '99+' : alerteCount }}</span>
+      }
+    </a>
+
+    <!-- Commandes client du jour -->
+    @if (commandesCount > 0) {
+      <a routerLink="/gestion-des-commandes-clients/liste" class="header-orders-btn"
+         title="{{ commandesCount }} commande(s) prévue(s) aujourd'hui">
+        <i class="bi bi-bag-check-fill"></i>
+        <span class="header-orders-badge">{{ commandesCount > 99 ? '99+' : commandesCount }}</span>
+      </a>
+    }
 
     <!-- User dropdown -->
     <div class="dropdown">
@@ -17,7 +47,10 @@
         </div>
         <div class="user-info d-none d-md-flex">
           <span class="user-name">{{ (currentUser?.prenom || currentUser?.nom) | titlecase }}</span>
-          <span class="user-role">{{ currentUser?.profil?.nom | titlecase }}</span>
+          <span class="user-role">
+            {{ currentUser?.profil?.nom | titlecase }}
+            
+          </span>
         </div>
         <i class="bi bi-chevron-down user-chevron d-none d-md-inline"></i>
       </button>
@@ -30,6 +63,11 @@
           <div>
             <div class="dh-name">{{ currentUser?.nom }} {{ currentUser?.prenoms }}</div>
             <div class="dh-role">{{ currentUser?.profil?.nom | titlecase }}</div>
+            @if (currentUser?.boutique?.nom) {
+              <div class="dh-boutique">
+                <i class="bi bi-shop me-1"></i>{{ currentUser.boutique.nom }}
+              </div>
+            }
           </div>
         </li>
         <li><hr class="dropdown-divider"></li>

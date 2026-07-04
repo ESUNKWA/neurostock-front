@@ -61,28 +61,31 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   }
 
   loadBoutiques(): void {
-    switch(this.currentUser.is_admin){
-
-      case true:
-        
-        this.boutiqueService.find().subscribe({
-          next: (response: any) => {
-            if (response.status === 'success' && response.data) {
-              this.boutiques = response.data;
-            }
-          },
-          error: (error: any) => {
-            console.error('Erreur lors du chargement des boutiques:', error);
+    const code = this.currentUser.profil.code.toLowerCase();
+    if (code === 'admin') {
+      this.boutiqueService.find().subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
           }
-        });
-        break;
-
-      case false:
-        this.boutiques = this.currentUser.structure[0].boutique;
-        break;
-
-        default:
-          this.boutiques[0] = this.currentUser.boutique;
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else if (code === 'responsable_structure') {
+      this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.boutiques = response.data;
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des boutiques:', error);
+        }
+      });
+    } else {
+      this.boutiques[0] = this.currentUser.boutique;
     }
   }
 
@@ -121,7 +124,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         return;
       }
     } else {
-      this.idBoutique = this.currentUser.boutique.id;
+      this.idBoutique = this.currentUser.boutique_id
     }
     
     const body: any = {

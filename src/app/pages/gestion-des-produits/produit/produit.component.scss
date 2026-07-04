@@ -1,0 +1,293 @@
+// ── Modal shell ───────────────────────────────────────────────────────────────
+.prd-modal {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+// ── Gradient header (green) ───────────────────────────────────────────────────
+.prd-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+  color: #fff;
+}
+
+.prd-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 1.35rem; }
+}
+
+.prd-modal-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+.prd-modal-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.78;
+  margin-top: 2px;
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.prd-body {
+  padding: 0;
+  background: #f8fafc;
+}
+
+// ── Sections ──────────────────────────────────────────────────────────────────
+.prd-section {
+  padding: 1.125rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+
+  & + .prd-section { margin-top: 6px; }
+
+  &--last { border-bottom: none; }
+}
+
+.prd-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #059669;
+  margin-bottom: 0.75rem;
+
+  i { margin-right: 5px; }
+}
+
+// ── Boutique select ───────────────────────────────────────────────────────────
+.prd-select {
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  height: 42px;
+  background-color: #f0fdf4;
+  font-weight: 500;
+  color: #065f46;
+
+  &:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  }
+
+  &:disabled { background-color: #f1f5f9; color: #64748b; }
+}
+
+// ── Labels ────────────────────────────────────────────────────────────────────
+.prd-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+// ── Inputs with icon ──────────────────────────────────────────────────────────
+.prd-input-wrap {
+  position: relative;
+}
+
+.prd-input-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.prd-input {
+  border-color: #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  height: 42px;
+
+  .prd-input-wrap & { padding-left: 2.1rem; }
+
+  &:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  }
+
+  &:disabled { background-color: #f8fafc; color: #64748b; }
+
+  &.is-invalid { padding-left: 2.1rem; }
+}
+
+// select without icon doesn't need padding-left override
+select.prd-input { padding-left: 0.75rem; }
+
+.prd-error {
+  font-size: 0.76rem;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+// ── Image upload zone ─────────────────────────────────────────────────────────
+.prd-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 130px;
+  border: 2px dashed #a7f3d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+  padding: 0.75rem;
+
+  &:hover {
+    border-color: #059669;
+    background: #ecfdf5;
+  }
+}
+
+.prd-upload-icon {
+  font-size: 1.75rem;
+  color: #059669;
+}
+
+.prd-upload-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #065f46;
+}
+
+.prd-upload-hint {
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.prd-preview-box {
+  height: 130px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.prd-preview-img {
+  max-width: 100%;
+  max-height: 128px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.prd-preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: #94a3b8;
+
+  i { font-size: 1.75rem; }
+  span { font-size: 0.75rem; }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.prd-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.prd-btn-save {
+  background: linear-gradient(135deg, #065f46, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.1s;
+
+  &:hover { opacity: 0.9; color: #fff; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+
+  i { margin-right: 5px; }
+}
+
+.prd-btn-cancel {
+  background: #fff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s;
+
+  &:hover { background: #f1f5f9; color: #1e293b; }
+
+  i { margin-right: 4px; }
+}
+
+// ── IA icon badge (purple gradient) ──────────────────────────────────────────
+.ia-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .4rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+// ── Suggestion IA panel ───────────────────────────────────────────────────────
+.ia-suggestion-panel {
+  padding: 1rem;
+  border-radius: .6rem;
+  background: linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 100%);
+  border: 1px solid #e9d5ff;
+}
+
+.ia-metric-box {
+  padding: .6rem .8rem;
+  border-radius: .4rem;
+
+  .ia-metric-label { font-size: .72rem; color: #6b7280; margin-bottom: .15rem; }
+  .ia-metric-value { font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
+
+  &--green {
+    background: #f0fdf4;
+    .ia-metric-value { color: #16a34a; }
+  }
+  &--amber {
+    background: #fffbeb;
+    .ia-metric-value { color: #d97706; }
+  }
+  &--red {
+    background: #fef2f2;
+    .ia-metric-value { color: #dc2626; }
+  }
+}

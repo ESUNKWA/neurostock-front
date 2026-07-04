@@ -1,0 +1,133 @@
+<div class="ek-layout d-flex">
+
+  <!-- ── Backdrop mobile ───────────────────────────────────────────────────────── -->
+  @if (sidebarOpen) {
+    <div class="ek-backdrop" (click)="sidebarOpen = false"></div>
+  }
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────────────── -->
+  <aside class="ek-sidebar d-flex flex-column" [class.open]="sidebarOpen">
+
+    <!-- Brand -->
+    <div class="ek-brand px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div class="ek-brand-icon">
+          <i class="bi bi-hexagon-fill"></i>
+        </div>
+        <div>
+          <div class="ek-brand-name">Ekwatech</div>
+          <div class="ek-brand-sub">Super Admin</div>
+        </div>
+      </div>
+      <!-- Fermer sidebar (mobile) -->
+      <button class="btn btn-sm ek-close-btn d-lg-none" (click)="sidebarOpen = false">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="ek-nav flex-grow-1 px-3 py-3">
+
+      <p class="ek-nav-label">Général</p>
+      <ul class="list-unstyled">
+        <li>
+          <a routerLink="/ekwatech/dashboard" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Vue d'ensemble</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="ek-nav-label mt-3">Répertoire</p>
+      <ul class="list-unstyled">
+        <li>
+          <a routerLink="/ekwatech/structures" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-building-fill"></i>
+            <span>Structures</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/ekwatech/boutiques" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-shop-window"></i>
+            <span>Boutiques</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="ek-nav-label mt-3">Multi-tenancy</p>
+      <ul class="list-unstyled">
+        <li>
+          <a routerLink="/ekwatech/tenants" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-diagram-3-fill"></i>
+            <span>Bases de données</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/ekwatech/provision" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-database-add"></i>
+            <span>Provisionner</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="ek-nav-label mt-3">Abonnements</p>
+      <ul class="list-unstyled">
+        <li>
+          <a routerLink="/ekwatech/abonnements" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-calendar-check-fill"></i>
+            <span>Abonnements</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/ekwatech/plans" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-tags-fill"></i>
+            <span>Plans tarifaires</span>
+          </a>
+        </li>
+      </ul>
+
+    </nav>
+
+    <!-- User footer -->
+    <div class="ek-sidebar-footer border-top px-4 py-3">
+      <div class="d-flex align-items-center gap-2">
+        <div class="ek-avatar flex-shrink-0">{{ userInitials }}</div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="ek-user-name text-truncate">{{ userName }}</div>
+          <div class="ek-user-role">Super Admin</div>
+        </div>
+        <button class="btn btn-sm btn-logout" (click)="logout()" title="Se déconnecter">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+  <!-- ── Main area ─────────────────────────────────────────────────────────────── -->
+  <div class="ek-main d-flex flex-column flex-grow-1 overflow-hidden">
+
+    <!-- Top bar -->
+    <header class="ek-header d-flex align-items-center px-3 px-lg-4 border-bottom flex-shrink-0 gap-2">
+
+      <!-- Hamburger (mobile) -->
+      <button class="btn ek-hamburger d-lg-none me-1" (click)="toggleSidebar()" aria-label="Menu">
+        <i class="bi bi-list"></i>
+      </button>
+
+      <span class="text-muted small fw-medium text-truncate">Administration de la plateforme</span>
+      <div class="ms-auto d-flex align-items-center gap-2 flex-shrink-0">
+        <span class="badge ek-status-badge d-none d-sm-inline-flex">
+          <i class="bi bi-circle-fill me-1" style="font-size:.4rem; vertical-align:middle"></i>
+          Système opérationnel
+        </span>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="ek-content flex-grow-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

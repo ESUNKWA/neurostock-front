@@ -5,6 +5,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { tenantContextInterceptor } from './interceptors/tenant-context.interceptor';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 
@@ -14,7 +15,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
      { provide: LOCALE_ID, useValue: 'fr-FR' },
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, tenantContextInterceptor])),
     provideAnimations(),
     provideToastr({
       timeOut: 3000,

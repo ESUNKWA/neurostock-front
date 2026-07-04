@@ -1,0 +1,85 @@
+.ia-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: .5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+// ── Hero card ──────────────────────────────────────────────────────────────────
+.resume-hero {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed 60%, #9333ea);
+  border-radius: .75rem;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 24px rgba(99,102,241,.3);
+
+  &__date {
+    color: rgba(255,255,255,.75);
+    font-size: .85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+}
+
+.resume-kpi {
+  &__label  { font-size: .7rem; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+  &__value  { font-size: 1.6rem; font-weight: 700; color: #fff; line-height: 1.1; }
+  &__evo    { font-size: .75rem; margin-top: .3rem; color: rgba(255,255,255,.6);
+    &--up   { color: #86efac; }
+    &--down { color: #fca5a5; }
+  }
+}
+
+// ── Texte IA ──────────────────────────────────────────────────────────────────
+.resume-texte-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #f5f3ff;
+  border-left: 4px solid #6366f1;
+  border-radius: .5rem;
+  padding: 1rem 1.25rem;
+  color: #4338ca;
+
+  &__icon { font-size: 1.4rem; flex-shrink: 0; color: #6366f1; }
+
+  blockquote { font-size: .9rem; font-style: italic; line-height: 1.6; }
+}
+
+// ── Top rank ──────────────────────────────────────────────────────────────────
+.top-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+// ── Stock stats ───────────────────────────────────────────────────────────────
+.stock-stat {
+  flex: 1;
+  text-align: center;
+  padding: .75rem;
+  border-radius: .5rem;
+
+  &__value { font-size: 2rem; font-weight: 700; line-height: 1; }
+  &__label { font-size: .72rem; color: #6b7280; margin-top: .15rem; }
+
+  &--danger  { background: #fef2f2; .stock-stat__value { color: #dc2626; } }
+  &--warning { background: #fffbeb; .stock-stat__value { color: #d97706; } }
+}
+
+// ── Spinner animation ─────────────────────────────────────────────────────────
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin .7s linear infinite; }

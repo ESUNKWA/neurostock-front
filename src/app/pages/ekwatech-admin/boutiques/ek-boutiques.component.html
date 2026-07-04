@@ -1,0 +1,193 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Boutiques</h4>
+      <p class="text-muted small mb-0">Points de vente par structure</p>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openCreate()" [disabled]="!selectedStructureId">
+      <i class="bi bi-plus-lg me-1"></i>Nouvelle boutique
+    </button>
+  </div>
+
+  <!-- Filtre structure -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2 px-3 d-flex align-items-center gap-3">
+      <label class="form-label mb-0 fw-semibold small text-nowrap">
+        <i class="bi bi-building me-1"></i>Structure
+      </label>
+      <select class="form-select form-select-sm w-auto"
+              [(ngModel)]="selectedStructureId" (ngModelChange)="onStructureChange()">
+        <option [ngValue]="null" disabled>Choisir une structure…</option>
+        @for (s of structures; track s.id) {
+          <option [ngValue]="s.id">{{ s.nom }} (ID: {{ s.id }})</option>
+        }
+      </select>
+      @if (selectedStructureId) {
+        <span class="text-muted small">{{ boutiques.length }} boutique(s)</span>
+      }
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+
+      @if (!selectedStructureId) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-building display-3 d-block mb-3 opacity-25"></i>
+          <p>Sélectionnez une structure pour voir ses boutiques</p>
+        </div>
+      }
+
+      @if (selectedStructureId && loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      @if (selectedStructureId && !loading && boutiques.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-shop display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucune boutique pour cette structure</p>
+          <button class="btn btn-sm btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg me-1"></i>Créer la première
+          </button>
+        </div>
+      }
+
+      @if (selectedStructureId && !loading && boutiques.length > 0) {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">ID</th>
+                <th>Nom</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>RCCM</th>
+                <th>Localisation</th>
+                <th class="text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of boutiques; track b.id) {
+                <tr>
+                  <td class="ps-4">
+                    <span class="badge bg-secondary-subtle text-secondary fw-semibold">#{{ b.id }}</span>
+                  </td>
+                  <td class="fw-semibold">{{ b.nom }}</td>
+                  <td class="text-muted small">{{ b.telephone || '—' }}</td>
+                  <td class="text-muted small">{{ b.email || '—' }}</td>
+                  <td class="text-muted small">{{ b.rccm || '—' }}</td>
+                  <td class="text-muted small">{{ b.situation_geo || '—' }}</td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex gap-1 justify-content-end">
+                      <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(b)" title="Modifier">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(b)" title="Supprimer">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal boutique -->
+@if (showModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content mf-modal mf-modal--orange">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-shop"></i></div>
+          <div>
+            <div class="mf-header-title">{{ isEditMode ? 'Modifier la boutique' : 'Nouvelle boutique' }}</div>
+            <div class="mf-header-subtitle">Renseignez les informations du point de vente</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeModal()" [disabled]="isSubmitting"></button>
+        </div>
+
+        <div class="mf-body">
+
+          <!-- Affectation -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-building"></i> Structure rattachée</div>
+            <select class="form-select mf-boutique-select mf-input" [(ngModel)]="form.structure" name="structure">
+              <option [ngValue]="null" disabled>— Sélectionner la structure —</option>
+              @for (s of structures; track s.id) {
+                <option [ngValue]="s.id">{{ s.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Informations -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-shop mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.nom" name="nom" placeholder="Nom de la boutique">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Téléphone</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-telephone mf-input-icon"></i>
+                  <input type="tel" class="form-control mf-input" [(ngModel)]="form.telephone" name="telephone" maxlength="10" placeholder="0X XX XX XX XX">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Email</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input" [(ngModel)]="form.email" name="email">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">RCCM</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-file-earmark-text mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.rccm" name="rccm">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Localisation</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-geo-alt mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.situation_geo" name="situation_geo" placeholder="Ville, quartier…">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" (click)="submit()" [disabled]="isSubmitting">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2 me-1"></i> }
+            {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+          </button>
+          <button class="btn mf-btn-cancel" (click)="closeModal()" [disabled]="isSubmitting">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

@@ -19,9 +19,13 @@ export class DashService {
         tap(data => this.profils.set(data)),
         catchError(error => {
           console.error('Erreur lors du chargement', error);
-          return of([]); // Retourne un tableau vide en cas d'erreur
+          return of(null);
         })
       );
   }
-  
+
+  findCaissier(boutiqueId: number, caissier: number | string): Observable<any> {
+    return this.http.get(`${this.API_URL}/dashboard/caissier?boutique=${boutiqueId}&caissier=${caissier}`);
+  }
+
 }

@@ -93,7 +93,7 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
     if (code === 'admin') {
       this.boutiqueService.find().subscribe({ next: (r: any) => { if (r.status === 'success') this.boutiques = r.data; } });
     } else if (code === 'responsable_structure') {
-      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({ next: (r: any) => { if (r.status === 'success') this.boutiques = r.data; } });
+      this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({ next: (r: any) => { if (r.status === 'success') this.boutiques = r.data; } });
     } else {
       this.boutiques[0] = this.currentUser?.boutique;
     }
@@ -107,11 +107,10 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       return;
     }
-    const boutiqueId = this.idBoutique || this.currentUser?.boutique?.id;
+    const boutiqueId = this.idBoutique || this.currentUser.boutique_id;
 
     this.devisService.getAllDevis({ boutique: boutiqueId, page: 1, limit: 100 }).subscribe({
       next: (response: any) => {
-        console.log('[Devis] réponse API :', response);
 
         if (Array.isArray(response)) {
           this.devis = response;
@@ -124,11 +123,9 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
         } else if (Array.isArray(response?.devis)) {
           this.devis = response.devis;
         } else {
-          console.warn('[Devis] structure de réponse inconnue :', JSON.stringify(response));
           this.devis = [];
         }
 
-        console.log('[Devis] données extraites :', this.devis.length, 'entrées');
 
         this.destroyDataTable();
         setTimeout(() => {
@@ -269,13 +266,17 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
     });
   }
 
+  get isPos(): boolean {
+    return this.router.url.startsWith('/pos');
+  }
+
   editDevis(devis: any): void {
     this.isLoading = true;
     this.devisService.getDetailDevis(devis.id).subscribe({
       next: (r: any) => {
         const data = Array.isArray(r) ? r : (r.data ?? r);
         localStorage.setItem('editDevisData', JSON.stringify({ id: devis.id, devis: data }));
-        this.router.navigate(['/gestion-des-devis/nouveau']);
+        this.router.navigate([this.isPos ? '/pos/devis/nouveau' : '/gestion-des-devis/nouveau']);
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; this.toastr.error('Erreur lors du chargement du devis'); }

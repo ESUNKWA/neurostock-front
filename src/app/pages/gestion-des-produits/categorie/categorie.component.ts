@@ -2,12 +2,14 @@ import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angu
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
+import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../helpers/file-import-preview';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -15,13 +17,16 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-categorie',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule],
   templateUrl: './categorie.component.html',
   styleUrl: './categorie.component.scss',
   providers: [ToastrService]
 })
 export default class CategorieComponent implements OnInit, OnDestroy {
   categories: any = [];
+  boutiques: any[] = [];
+  selectedBoutiqueId: string | null = null;
+  importBoutiqueId: number | null = null;
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedCategorie: any = null;
@@ -30,12 +35,19 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   icon: string = 'ri ri-save-3-line';
   categorieForm: FormGroup;
   isSubmitted: boolean = false;
+  isImporting: boolean = false;
+  isParsingFile: boolean = false;
+  importPreview: FilePreview | null = null;
+  pendingImportFile: File | null = null;
+  importResult: { created: number; skipped: number; errors: string[] } | null = null;
 
-   currentUser: any;
+  currentUser: any;
   authService = inject(AuthService);
+
   constructor(
-    private fb: FormBuilder, 
-    private categorieService: CategorieService, 
+    private fb: FormBuilder,
+    private categorieService: CategorieService,
+    private boutiqueService: BoutiqueService,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
@@ -47,6 +59,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.getCurrentUser();
+    this.loadBoutiques();
     // Initialiser les données
     this.loadCategories();
     
@@ -63,7 +76,24 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
-      // console.log('currentUser', this.currentUser);
+    });
+  }
+
+  loadBoutiques(): void {
+    this.authService.currentUser$.pipe(first()).subscribe((user: any) => {
+      if (!user) return;
+      if (user.is_admin) {
+        this.boutiqueService.find().subscribe({
+          next: (r: any) => { this.boutiques = r?.data ?? []; }
+        });
+      } else if (user.profil?.code === 'responsable_structure') {
+        const structureId = user.structure_id ?? user.structure?.[0]?.id;
+        this.boutiqueService.findByStructure(structureId).subscribe({
+          next: (r: any) => { this.boutiques = r?.data ?? []; }
+        });
+      } else {
+        this.boutiques = user.boutique ? [user.boutique] : [];
+      }
     });
   }
 
@@ -209,13 +239,18 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     }
   }
 
+  onBoutiqueChange(event: any): void {
+    this.selectedBoutiqueId = event.target.value || null;
+    this.loadCategories();
+  }
+
   /**
    * Recharge les données et rafraîchit le tableau
    */
   loadCategories(): void {
     this.isLoading = true;
-    
-    this.categorieService.getCategoriesByBoutik(this.currentUser?.boutique?.id).subscribe({
+    const boutiqueId = this.selectedBoutiqueId ?? this.currentUser?.boutique_id;
+    this.categorieService.getCategoriesByBoutik(boutiqueId).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           // Mise à jour des données
@@ -339,7 +374,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     }
 
     let request;
-    this.categorieForm.value.boutique = this.currentUser.boutique.id;
+    this.categorieForm.value.boutique = this.selectedBoutiqueId ?? this.currentUser.boutique_id;
     const categorie = this.categorieForm.value;
     if (this.isEditMode && this.selectedCategorie) {
       // Mode modification
@@ -387,6 +422,86 @@ export default class CategorieComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  async onImportFileSelected(event: any): Promise<void> {
+    const file: File = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+
+    this.importResult = null;
+    this.pendingImportFile = file;
+    this.importBoutiqueId = this.currentUser?.boutique_id ?? null;
+    this.isParsingFile = true;
+
+    try {
+      this.importPreview = await parseFileToRows(file);
+    } catch (error) {
+      console.error('Erreur lors de la lecture du fichier:', error);
+      this.toastr.error('Impossible de lire ce fichier. Vérifiez le format (.csv, .xlsx, .xls).');
+      this.pendingImportFile = null;
+      this.isParsingFile = false;
+      return;
+    }
+
+    this.isParsingFile = false;
+
+    const modal = document.getElementById('modal-import-preview');
+    if (modal) {
+      const modalInstance = new bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+  }
+
+  confirmImport(): void {
+    if (!this.pendingImportFile) return;
+    if (!this.importBoutiqueId) {
+      this.toastr.error('Veuillez sélectionner une boutique avant d\'importer.');
+      return;
+    }
+
+    this.isImporting = true;
+    this.categorieService.importCategories(this.pendingImportFile, this.importBoutiqueId).pipe(first()).subscribe({
+      next: (response: any) => {
+        this.isImporting = false;
+        this.importResult = {
+          created: response?.created ?? 0,
+          skipped: response?.skipped ?? 0,
+          errors: response?.errors ?? []
+        };
+        this.toastr.success(`Import terminé : ${this.importResult.created} créé(s), ${this.importResult.skipped} ignoré(s).`);
+        this.loadCategories();
+      },
+      error: (err: any) => {
+        this.isImporting = false;
+        this.toastr.error(err?.error?.message || 'Erreur lors de l\'import des catégories.');
+      }
+    });
+  }
+
+  downloadTemplate(): void {
+    downloadXlsxTemplate(
+      ['nom', 'description'],
+      [
+        { nom: 'Électronique', description: 'Appareils et accessoires électroniques' },
+        { nom: 'Alimentation', description: '' }
+      ],
+      'modele_categories.xlsx'
+    );
+  }
+
+  cancelImport(): void {
+    this.pendingImportFile = null;
+    this.importPreview = null;
+    this.importResult = null;
+    this.importBoutiqueId = null;
+    const modal = document.getElementById('modal-import-preview');
+    if (modal) {
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
   }
 
   deleteCategorie(categorie: any): void {

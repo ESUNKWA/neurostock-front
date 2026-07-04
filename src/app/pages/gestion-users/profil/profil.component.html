@@ -61,57 +61,71 @@
     </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
+<!-- Modal profil -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+    <div class="modal-content mf-modal mf-modal--purple">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-shield-check"></i></div>
+        <div>
+          <div class="mf-header-title">{{ titleModal }}</div>
+          <div class="mf-header-subtitle">Définissez le profil d'accès</div>
         </div>
-        <form [formGroup]="profilForm" (ngSubmit)="saveOrUpdate()" >
-            <div class="modal-body">
-                <div class="block-content fs-sm">
-                  <div class="mb-4">
-                    <label class="form-label" for="code">Code</label>
-                    <input type="text" class="form-control" id="code" formControlName="code" [ngClass]="{'is-invalid': isSubmitted && f['code'].errors}">
-                    @if (isSubmitted && f['code'].errors) {
-                        <div class="invalid-feedback">
-                          @if (f['code'].errors['required']) {
-                            <div>Le code est obligatoire</div>
-                          }
-                        </div>
-                      }
-                  </div>
-                  <div class="mb-4">
-                    <label class="form-label" for="nom">Nom</label>
-                    <input type="text" class="form-control" id="nom" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-                    @if (isSubmitted && f['nom'].errors) {
-                        <div class="invalid-feedback">
-                          @if (f['nom'].errors['required']) {
-                            <div>Le nom est obligatoire</div>
-                          }
-                        </div>
-                      }
-                  </div>
-                  <div class="mb-4">
-                    <label class="form-label" for="description">Description</label>
-                    <textarea class="form-control" id="description" rows="5" formControlName="description"></textarea>
-                    
-                  </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                @if (!titleModal.includes('VISUALISER')) {
-                    <button type="submit" class="btn btn-primary me-2">
-                      <i [class]="icon"></i> {{ buttonText }}
-                    </button>
-                  }
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
-                </button>
-            </div>
-        </form>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
+      <form [formGroup]="profilForm" (ngSubmit)="saveOrUpdate()">
+        <div class="mf-body">
+
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations du profil</div>
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="mf-label" for="code">Code technique <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-code-slash mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="code"
+                    placeholder="Ex : caissier"
+                    formControlName="code"
+                    [ngClass]="{'is-invalid': isSubmitted && f['code'].errors}">
+                </div>
+                @if (isSubmitted && f['code'].errors?.['required']) {
+                  <div class="mf-error">Le code est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-7">
+                <label class="mf-label" for="nom">Libellé <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person-badge mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="nom"
+                    placeholder="Ex : Caissier / Vendeur"
+                    formControlName="nom"
+                    [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
+                </div>
+                @if (isSubmitted && f['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="mf-label" for="description">Description</label>
+                <textarea class="form-control mf-input" id="description" rows="3"
+                  placeholder="Décrivez les droits de ce profil…"
+                  formControlName="description"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="mf-footer">
+          @if (!titleModal.includes('VISUALISER')) {
+            <button type="submit" class="btn mf-btn-save"><i [class]="icon"></i> {{ buttonText }}</button>
+          }
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>

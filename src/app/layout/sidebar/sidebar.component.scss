@@ -290,12 +290,14 @@ $transition:        0.25s ease;
     transform: translateX(-100%);
   }
 
-  body.sidebar-mobile-open .sidebar {
-    transform: translateX(0);
+  // HostBinding 'mobile-open' is toggled via MutationObserver — avoids
+  // body.class selector scoping issues with ViewEncapsulation.Emulated
+  :host.mobile-open .sidebar {
+    transform: translateX(0) !important;
     box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4);
   }
 
-  body.sidebar-mobile-open .sidebar-backdrop {
+  :host.mobile-open .sidebar-backdrop {
     display: block;
   }
 
@@ -303,9 +305,5 @@ $transition:        0.25s ease;
   :host.collapsed .sidebar {
     width: $sidebar-width !important;
     transform: translateX(-100%);
-  }
-
-  body.sidebar-mobile-open :host.collapsed .sidebar {
-    transform: translateX(0);
   }
 }

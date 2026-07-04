@@ -46,11 +46,138 @@ $transition: 0.25s ease;
   }
 }
 
+// ── Boutique badge (left zone) ────────────────────────────────────────────────
+.header-boutique {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2563eb;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  i { font-size: 0.85rem; flex-shrink: 0; }
+
+  @media (max-width: 576px) { display: none; }
+}
+
+.header-boutique-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 // ── Right zone ────────────────────────────────────────────────────────────────
 .header-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+// ── Cloche alertes ────────────────────────────────────────────────────────────
+.header-alert-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: #f1f5f9; color: #1e293b; }
+
+  &.has-alert {
+    color: #ef4444;
+    &:hover { background: #fef2f2; }
+  }
+}
+
+.header-bell-wrap {
+  display: inline-flex;
+  i { font-size: 1.2rem; transform-origin: top center; display: inline-block; }
+
+  &.ringing i { animation: hdr-bell-ring 1.5s ease-in-out infinite; }
+}
+
+.header-alert-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+  animation: hdr-badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hdr-bell-ring {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  8%  { transform: rotate(22deg); }
+  16% { transform: rotate(-18deg); }
+  24% { transform: rotate(14deg); }
+  32% { transform: rotate(-10deg); }
+  40% { transform: rotate(6deg); }
+  48% { transform: rotate(-3deg); }
+}
+
+@keyframes hdr-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.25); }
+}
+
+// ── Commandes client du jour ──────────────────────────────────────────────────
+.header-orders-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #7c3aed;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+
+  i { font-size: 1.15rem; }
+
+  &:hover { background: #f5f3ff; color: #5b21b6; }
+}
+
+.header-orders-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
 }
 
 // ── User button ───────────────────────────────────────────────────────────────
@@ -150,6 +277,14 @@ $transition: 0.25s ease;
   font-size: 0.72rem;
   color: #94a3b8;
   margin-top: 1px;
+}
+
+.dh-boutique {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-item {

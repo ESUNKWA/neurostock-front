@@ -1,3 +1,66 @@
+// ── Résumé IA journalier — hero card ─────────────────────────────────────────
+
+.resume-ia-card {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #9333ea 100%);
+  border-radius: .75rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, .35);
+
+  &--loading {
+    display: flex;
+    align-items: center;
+    min-height: 80px;
+  }
+}
+
+.resume-ia-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: .35rem;
+  background: rgba(255,255,255,.2);
+  color: #fde68a;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+
+.resume-ia-sublabel {
+  font-size: .7rem;
+  color: rgba(255,255,255,.65);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: .15rem;
+}
+
+.resume-ia-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.resume-ia-pill {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .15em .5em;
+  border-radius: 20px;
+
+  &--up   { background: rgba(74,222,128,.25); color: #86efac; }
+  &--down { background: rgba(248,113,113,.25); color: #fca5a5; }
+}
+
+.resume-ia-divider {
+  border-color: rgba(255,255,255,.2);
+  margin: .75rem 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 :host ::ng-deep .stock-alert-container {
   display: flex;
   align-items: center;
@@ -74,6 +137,67 @@
 }
 
 
+
+// ── Cloche alertes ───────────────────────────────────────────────────────────
+
+.bell-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1.1rem;
+    transform-origin: top center;
+    display: inline-block;
+  }
+
+  &.ringing i {
+    animation: bell-ring 1.4s ease-in-out infinite;
+  }
+}
+
+.bell-dot {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  width: 9px;
+  height: 9px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.alert-card-header {
+  border-left: 3px solid #ef4444;
+  padding-left: .75rem;
+  animation: header-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes bell-ring {
+  0%        { transform: rotate(0deg); }
+  8%        { transform: rotate(22deg); }
+  16%       { transform: rotate(-18deg); }
+  24%       { transform: rotate(14deg); }
+  32%       { transform: rotate(-10deg); }
+  40%       { transform: rotate(6deg); }
+  48%       { transform: rotate(-3deg); }
+  55%, 100% { transform: rotate(0deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+
+@keyframes header-glow {
+  from { border-left-color: #ef4444; }
+  to   { border-left-color: #f97316; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 .top-ventes-container {
   background-color: #ffffff;
@@ -155,6 +279,82 @@
 
 nz-select {
   width: 30%;
+}
+
+// ── KPI Cards ─────────────────────────────────────────────────────────────────
+.db-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+// ── Trend pill ────────────────────────────────────────────────────────────────
+.db-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  padding: .2em .55em;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+
+  &--up   { background: #dcfce7; color: #15803d; }
+  &--down { background: #fee2e2; color: #b91c1c; }
+  &--flat { background: #f1f5f9; color: #64748b; }
+}
+
+// ── Mini KPI cards (Row 2) ────────────────────────────────────────────────────
+.db-mini-card {
+  border-radius: 10px;
+  padding: .875rem 1rem;
+  height: 100%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+
+  &--amber  { background: #fffbeb; border-left: 3px solid #f59e0b; }
+  &--purple { background: #faf5ff; border-left: 3px solid #7c3aed; }
+  &--red    { background: #fff5f5; border-left: 3px solid #ef4444; }
+  &--teal   { background: #f0fdfa; border-left: 3px solid #14b8a6; }
+}
+
+.db-mini-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.db-mini-value {
+  font-weight: 700;
+  font-size: .95rem;
+  color: #1e293b;
+
+  .unit { font-size: .75rem; color: #94a3b8; font-weight: 400; }
+}
+
+.db-mini-sub {
+  font-size: .7rem;
+  color: #94a3b8;
+  margin-top: .2rem;
+}
+
+// ── Commandes list ────────────────────────────────────────────────────────────
+.db-cmd-item {
+  padding: .5rem .75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: background .1s;
+
+  &:hover { background: #f1f5f9; }
+}
+
+// ── Annual stat box ───────────────────────────────────────────────────────────
+.db-stat-box {
+  border-radius: 10px;
+  padding: .875rem 1rem;
 }
 
 

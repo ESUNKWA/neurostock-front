@@ -1,238 +1,248 @@
-<div class="pagetitle">
-  <div class="d-flex justify-content-between">
-    <h1>Approvisionnements</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
-        <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/historique">Approvisionnements</a></li>
-        <li class="breadcrumb-item active">{{ isEditMode ? 'Modification' : 'Nouvel approvisionnement' }}</li>
-      </ol>
-    </nav>
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="ac-page-header">
+  <div class="ac-header-icon"><i class="bi bi-truck"></i></div>
+  <div>
+    <div class="ac-header-title">{{ isEditMode ? 'Modifier l\'approvisionnement' : 'Nouvel approvisionnement' }}</div>
+    <div class="ac-header-subtitle">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0" style="font-size:.75rem;opacity:.85">
+          <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-white opacity-75">Accueil</a></li>
+          <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/historique" class="text-white opacity-75">Approvisionnements</a></li>
+          <li class="breadcrumb-item active text-white">{{ isEditMode ? 'Modification' : 'Nouveau' }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div class="ms-auto d-flex gap-2 align-items-center">
+    <a routerLink="/gestion-des-approvisionnements/historique" class="btn btn-sm"
+       style="background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:8px">
+      <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
   </div>
 </div>
 
 <section class="section">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h5 class="card-title">{{ isEditMode ? 'Modifier l\'approvisionnement' : 'Nouvel approvisionnement' }}</h5>
+  <form novalidate [formGroup]="achatForm" (ngSubmit)="onSubmit()">
+    <div class="row g-4">
 
-      <form novalidate [formGroup]="achatForm" (ngSubmit)="onSubmit()">
-        <div class="row g-3">
+      <!-- ── Colonne principale ────────────────────────────────────────────── -->
+      <div class="col-md-8">
 
-          <!-- ── Colonne principale : lignes produits ── -->
-          <div class="col-md-9">
+        <!-- Informations générales -->
+        <div class="ac-card">
+          <div class="ac-card-header">
+            <span class="ac-card-title"><i class="bi bi-info-circle"></i> Informations générales</span>
+          </div>
+          <div class="ac-card-body">
+            <div class="row g-3">
 
-            <!-- En-tête : infos générales -->
-            <div class="card border-0 bg-light mb-4">
-              <div class="card-body">
-                <h6 class="fw-semibold mb-3 text-uppercase text-muted" style="font-size:.75rem;letter-spacing:.05em;">
-                  <i class="bi bi-info-circle me-1"></i> Informations générales
-                </h6>
-                <div class="row g-3">
-
-                  <div class="col-md-4">
-                    <label class="form-label form-label-sm">Date d'achat <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control form-control-sm" formControlName="date_achat"
-                      [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
-                    @if (isSubmitting && f['date_achat'].errors?.['required']) {
-                      <div class="invalid-feedback">Date requise</div>
-                    }
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label form-label-sm">Fournisseur <span class="text-danger">*</span></label>
-                    <select class="form-select form-select-sm" formControlName="fournisseur"
-                      [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
-                      <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
-                      <option *ngFor="let f of fournisseurs" [ngValue]="f.id">{{ f.nom }}</option>
-                    </select>
-                    @if (isSubmitting && f['fournisseur'].errors?.['required']) {
-                      <div class="invalid-feedback">Fournisseur requis</div>
-                    }
-                  </div>
-
-                  @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
-                    <div class="col-md-4">
-                      <label class="form-label form-label-sm">Boutique <span class="text-danger">*</span></label>
-                      <select class="form-select form-select-sm" formControlName="boutique"
-                        (change)="onBoutiqueChange($event)"
-                        [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
-                        <option value="">Sélectionner une boutique</option>
-                        @for (b of boutiques; track b.id) {
-                          <option [value]="b.id">{{ b.nom }}</option>
-                        }
-                      </select>
-                      @if (isSubmitting && f['boutique'].errors?.['required']) {
-                        <div class="invalid-feedback">Boutique requise</div>
-                      }
-                    </div>
-                  }
-
-                  <div class="col-md-12">
-                    <label class="form-label form-label-sm">Description / Observation</label>
-                    <textarea class="form-control form-control-sm" formControlName="description" rows="2"
-                      placeholder="Remarque, note sur cet approvisionnement..."></textarea>
-                  </div>
-
-                </div>
+              <div class="col-md-4">
+                <label class="ac-label">Date d'achat <span class="text-danger">*</span></label>
+                <input type="date" class="form-control form-control-sm ac-input" formControlName="date_achat"
+                  [ngClass]="{'is-invalid': isSubmitting && f['date_achat'].errors}">
+                @if (isSubmitting && f['date_achat'].errors?.['required']) {
+                  <div class="text-danger small mt-1">Date requise</div>
+                }
               </div>
+
+              <div class="col-md-4">
+                <label class="ac-label">Fournisseur <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm ac-input" formControlName="fournisseur"
+                  [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
+                  <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
+                  @for (fr of fournisseurs; track fr.id) {
+                    <option [ngValue]="fr.id">{{ fr.nom }}</option>
+                  }
+                </select>
+                @if (isSubmitting && f['fournisseur'].errors?.['required']) {
+                  <div class="text-danger small mt-1">Fournisseur requis</div>
+                }
+              </div>
+
+              @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+                <div class="col-md-4">
+                  <label class="ac-label">Boutique <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm ac-input" formControlName="boutique"
+                    (change)="onBoutiqueChange($event)"
+                    [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
+                    <option value="">Sélectionner une boutique</option>
+                    @for (b of boutiques; track b.id) {
+                      <option [value]="b.id">{{ b.nom }}</option>
+                    }
+                  </select>
+                  @if (isSubmitting && f['boutique'].errors?.['required']) {
+                    <div class="text-danger small mt-1">Boutique requise</div>
+                  }
+                </div>
+              }
+
+              <div class="col-12">
+                <label class="ac-label">Description / Observation</label>
+                <textarea class="form-control form-control-sm ac-input" formControlName="description" rows="2"
+                  style="height:auto;resize:vertical"
+                  placeholder="Remarque, note sur cet approvisionnement…"></textarea>
+              </div>
+
             </div>
+          </div>
+        </div>
 
-            <!-- Lignes produits -->
-            <h6 class="fw-semibold mb-3 text-uppercase text-muted" style="font-size:.75rem;letter-spacing:.05em;">
-              <i class="bi bi-box-seam me-1"></i> Produits approvisionnés
-            </h6>
-
+        <!-- Lignes produits -->
+        <div class="ac-card">
+          <div class="ac-card-header">
+            <span class="ac-card-title"><i class="bi bi-box-seam"></i> Produits approvisionnés</span>
+            <button type="button" class="ac-btn-add" style="width:auto;margin:0;padding:.3rem .875rem" (click)="addDetailAchat()">
+              <i class="bi bi-plus-circle me-1"></i> Ajouter
+            </button>
+          </div>
+          <div class="ac-card-body p-0">
             <div formArrayName="detail_achat">
               @for (detail of detailAchat.controls; track $index) {
-                <div [formGroupName]="$index" class="row g-2 mb-3 py-3 border-bottom align-items-end">
+                <div [formGroupName]="$index" class="ac-ligne px-4">
+                  <div class="row g-2 align-items-end">
 
-                  <div class="col-auto text-muted fw-bold align-self-center" style="min-width:24px;">
-                    {{ $index + 1 }}
-                  </div>
+                    <div class="col-auto fw-bold text-muted align-self-center" style="min-width:24px;padding-bottom:.5rem">
+                      {{ $index + 1 }}
+                    </div>
 
-                  @if (detail.get('image')?.value) {
-                    <div class="col-auto">
-                      <img [src]="detail.get('image')?.value" alt="produit"
-                           width="52" height="52" class="rounded border object-fit-cover">
-                      <div class="text-center mt-1">
-                        <span class="badge bg-info text-dark" style="font-size:.65rem;">
-                          Stock : {{ detail.get('stock')?.value }}
-                        </span>
+                    <!-- Produit (image inline + select) -->
+                    <div class="col-md-5">
+                      <label class="ac-label">Produit <span class="text-danger">*</span></label>
+                      <div class="ac-produit-field">
+                        @if (detail.get('image')?.value) {
+                          <div class="ac-thumb">
+                            <img [src]="detail.get('image')?.value" alt="produit">
+                            <span class="ac-stock-badge badge"
+                              [ngClass]="(detail.get('stock')?.value || 0) > 5 ? 'bg-success' : 'bg-danger'">
+                              {{ detail.get('stock')?.value }}
+                            </span>
+                          </div>
+                        }
+                        <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
+                          formControlName="produit"
+                          [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
+                          @for (p of produits; track p.id) {
+                            <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
+                          }
+                        </nz-select>
+                      </div>
+                      @if (isSubmitting && detail.get('produit')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">Produit requis</div>
+                      }
+                    </div>
+
+                    <!-- Prix unitaire -->
+                    <div class="col-md-3">
+                      <label class="ac-label">Prix unitaire <span class="text-danger">*</span></label>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">FCFA</span>
+                        <input type="text" class="form-control ac-input" formControlName="prix_unitaire"
+                          thousandSeparator (input)="onPrixOuQuantiteChange()"
+                          [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
                       </div>
                     </div>
-                  }
 
-                  <div class="col-md-5">
-                    <label class="form-label form-label-sm">Produit <span class="text-danger">*</span></label>
-                    <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
-                      formControlName="produit"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                      @for (p of produits; track p.id) {
-                        <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
-                      }
-                    </nz-select>
-                    @if (isSubmitting && detail.get('produit')?.errors?.['required']) {
-                      <div class="text-danger small mt-1">Produit requis</div>
-                    }
+                    <!-- Quantité -->
+                    <div class="col-md-2">
+                      <label class="ac-label">Qté <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-sm ac-input" formControlName="quantite" min="1"
+                        (input)="onPrixOuQuantiteChange()"
+                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
+                    </div>
+
+                    <!-- Supprimer -->
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-outline-danger btn-sm"
+                        style="border-radius:8px;padding:.3rem .5rem"
+                        (click)="removeDetailAchat($index)" [disabled]="detailAchat.length === 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+
+                    <!-- Sous-total ligne -->
+                    <div class="col-12 text-end">
+                      <span class="ac-ligne-subtotal">
+                        Sous-total : {{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire || 0)) | number:'1.0-0':'fr' }} FCFA
+                      </span>
+                    </div>
+
                   </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label form-label-sm">Prix unitaire <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-sm" formControlName="prix_unitaire"
-                      thousandSeparator (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
-                    @if (isSubmitting && detail.get('prix_unitaire')?.errors?.['required']) {
-                      <div class="invalid-feedback">Requis</div>
-                    }
-                  </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label form-label-sm">Quantité <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control form-control-sm" formControlName="quantite" min="1"
-                      (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
-                    @if (isSubmitting && detail.get('quantite')?.errors?.['required']) {
-                      <div class="invalid-feedback">Requis</div>
-                    }
-                  </div>
-
-                  <div class="col-auto">
-                    <button type="button" class="btn btn-outline-danger btn-sm"
-                      (click)="removeDetailAchat($index)" [disabled]="detailAchat.length === 1"
-                      title="Retirer ce produit">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-
                 </div>
               }
 
               @if (detailAchat.length === 0) {
-                <div class="text-center text-muted py-4 border rounded mb-3">
+                <div class="text-center text-muted py-5">
                   <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                   Aucun produit ajouté
                 </div>
               }
             </div>
 
-            <button type="button" class="btn btn-outline-primary btn-sm mb-4" (click)="addDetailAchat()">
-              <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
-            </button>
-
-          </div>
-
-          <!-- ── Sidebar droite : paiement + total ── -->
-          <div class="col-md-3 d-flex flex-column gap-3">
-
-            <!-- Paiement -->
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-success text-white py-2 border-0">
-                <h6 class="mb-0 fw-semibold" style="font-size:.85rem;">
-                  <i class="bi bi-credit-card me-1"></i> Paiement
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="mb-3">
-                  <label class="form-label form-label-sm">Mode de paiement <span class="text-danger">*</span></label>
-                  <select class="form-select form-select-sm" formControlName="mode_paiement"
-                    [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
-                    <option *ngFor="let mode of modesPaiement" [value]="mode">{{ mode | titlecase }}</option>
-                  </select>
-                  @if (isSubmitting && f['mode_paiement'].errors?.['required']) {
-                    <div class="invalid-feedback">Requis</div>
-                  }
-                </div>
-                <div>
-                  <label class="form-label form-label-sm">Statut <span class="text-danger">*</span></label>
-                  <select class="form-select form-select-sm" formControlName="statut"
-                    [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
-                    <option value="payer">Payé</option>
-                    <option value="non_payer">Non payé</option>
-                    <option value="partiel">Paiement partiel</option>
-                  </select>
-                  @if (isSubmitting && f['statut'].errors?.['required']) {
-                    <div class="invalid-feedback">Requis</div>
-                  }
-                </div>
-              </div>
+            <div class="px-4 py-3">
+              <button type="button" class="ac-btn-add" (click)="addDetailAchat()">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+              </button>
             </div>
-
-            <!-- Total -->
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-dark text-white py-2 border-0">
-                <h6 class="mb-0 fw-semibold" style="font-size:.85rem;">
-                  <i class="bi bi-receipt me-1"></i> Montant total
-                </h6>
-              </div>
-              <div class="card-body text-center py-4">
-                <div class="display-6 fw-bold text-success">
-                  {{ achatForm.get('montant_total')?.value | number:'1.0-0':'fr' }}
-                </div>
-                <div class="text-muted small mt-1">FCFA</div>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-          <a routerLink="/gestion-des-approvisionnements/historique" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Retour
-          </a>
-          <button type="submit" class="btn btn-success px-4" [disabled]="loading">
-            @if (loading) {
-              <span class="spinner-border spinner-border-sm me-1"></span>
-              Enregistrement...
-            } @else {
-              <i class="bi bi-save me-1"></i>
-              {{ isEditMode ? 'Modifier l\'approvisionnement' : 'Enregistrer' }}
-            }
-          </button>
+      </div>
+
+      <!-- ── Panneau latéral ───────────────────────────────────────────────── -->
+      <div class="col-md-4 d-flex flex-column">
+
+        <!-- Paiement -->
+        <div class="ac-sidebar-section">
+          <div class="ac-sidebar-header"><i class="bi bi-credit-card"></i> Paiement</div>
+          <div class="ac-sidebar-body">
+            <div class="mb-3">
+              <label class="ac-label">Mode de paiement <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm ac-input" formControlName="mode_paiement"
+                [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+                @for (mode of modesPaiement; track mode) {
+                  <option [value]="mode">{{ mode | titlecase }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="ac-label">Statut <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm ac-input" formControlName="statut">
+                <option value="payer">Payé</option>
+                <option value="non_payer">Non payé</option>
+                <option value="partiel">Paiement partiel</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-      </form>
+        <!-- Montant total -->
+        <div class="ac-sidebar-section">
+          <div class="ac-sidebar-header"><i class="bi bi-receipt"></i> Montant total</div>
+          <div class="ac-sidebar-body text-center py-3">
+            <div class="ac-total-amount">
+              {{ achatForm.get('montant_total')?.value | number:'1.0-0':'fr' }}
+            </div>
+            <div class="text-muted small mt-1">FCFA</div>
+          </div>
+        </div>
+
+      </div>
     </div>
-  </div>
+
+    <!-- ── Actions ─────────────────────────────────────────────────────────── -->
+    <div class="ac-actions">
+      <a routerLink="/gestion-des-approvisionnements/historique" class="btn ac-btn-back">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+      </a>
+      <button type="submit" class="btn ac-btn-save" [disabled]="loading">
+        @if (loading) {
+          <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement…
+        } @else {
+          <i class="bi bi-save me-1"></i>
+          {{ isEditMode ? 'Modifier l\'approvisionnement' : 'Enregistrer' }}
+        }
+      </button>
+    </div>
+
+  </form>
 </section>

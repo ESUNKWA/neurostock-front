@@ -1,0 +1,87 @@
+<div class="pos-layout d-flex flex-column">
+
+  <!-- ── Top navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="pos-navbar navbar px-3 py-0">
+    <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden">
+
+      <!-- Brand -->
+      <a class="pos-brand d-flex align-items-center gap-2 text-decoration-none me-2" routerLink="/pos/vente">
+        <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
+        <span class="fw-bold text-white d-none d-sm-inline">NeuroStock</span>
+      </a>
+
+      <!-- Boutique -->
+      @if (boutiqueName) {
+        <span class="text-white-50 small border-start border-secondary ps-3 d-none d-md-inline">
+          <i class="bi bi-shop me-1"></i>{{ boutiqueName }}
+        </span>
+      }
+
+      <!-- Nav tabs -->
+      <ul class="pos-nav d-flex gap-1 list-unstyled mb-0 ms-2 overflow-auto">
+        <li>
+          <a routerLink="/pos/dashboard" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-grid me-1"></i>
+            <span class="d-none d-sm-inline">Tableau de bord</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pos/vente" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-cash-register me-1"></i>
+            <span>Vente</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pos/commandes" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-bag-check me-1"></i>
+            <span class="d-none d-sm-inline">Commandes</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pos/devis" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-file-earmark-text me-1"></i>
+            <span class="d-none d-sm-inline">Devis</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pos/historique" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-clock-history me-1"></i>
+            <span class="d-none d-sm-inline">Historique</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/pos/caisse" routerLinkActive="active" class="pos-nav-link">
+            <i class="bi bi-cash-coin me-1"></i>
+            <span class="d-none d-sm-inline">Caisse</span>
+          </a>
+        </li>
+        @if (peutFaireRetour) {
+          <li>
+            <a routerLink="/pos/retours" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-arrow-return-left me-1"></i>
+              <span class="d-none d-sm-inline">Retours</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- User area -->
+    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+      <div class="d-none d-md-flex flex-column align-items-end me-1">
+        <span class="text-white fw-semibold" style="font-size:.8rem; line-height:1.2">{{ userName }}</span>
+        <span class="text-white-50" style="font-size:.7rem">{{ profilLabel }}</span>
+      </div>
+      <button class="btn btn-sm btn-outline-danger" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span class="d-none d-sm-inline ms-1">Quitter</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Content ─────────────────────────────────────────────────────────────── -->
+  <main class="pos-main">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

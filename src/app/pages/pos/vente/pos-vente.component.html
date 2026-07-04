@@ -1,0 +1,609 @@
+<div class="pos-screen d-flex">
+
+  <!-- ── Mobile tab bar ───────────────────────────────────────────────────── -->
+  <div class="pos-mobile-tabbar">
+    <button class="pos-mobile-tab" [class.active]="mobileTab === 'catalog'"
+            (click)="mobileTab = 'catalog'">
+      <i class="bi bi-grid-3x3-gap me-1"></i>Produits
+    </button>
+    <button class="pos-mobile-tab position-relative" [class.active]="mobileTab === 'cart'"
+            (click)="mobileTab = 'cart'">
+      <i class="bi bi-cart3 me-1"></i>Panier
+      @if (cart.length > 0) {
+        <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem">{{ cart.length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       LEFT — Catalogue
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div class="pos-catalog d-flex flex-column flex-grow-1 overflow-hidden"
+       [class.mobile-hidden]="mobileTab === 'cart'">
+
+    <!-- Search + Scan bar -->
+    <div class="pos-search-bar border-bottom px-3 pt-3 pb-2 d-flex flex-column gap-2">
+
+      <!-- Ligne 1 : recherche + scanner -->
+      <div class="d-flex align-items-center gap-3">
+        <div class="pos-search-field input-group input-group-lg flex-grow-1">
+          <span class="input-group-text border-end-0">
+            <i class="bi bi-search text-primary"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 shadow-none"
+                 placeholder="Rechercher un produit…"
+                 [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+          @if (searchQuery) {
+            <button class="btn btn-outline-secondary border-start-0" (click)="searchQuery=''; applyFilter()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          }
+        </div>
+        <div class="input-group pos-scanner-field d-none d-sm-flex" style="width:200px; min-width:160px">
+          <span class="input-group-text bg-light border-end-0 border">
+            <i class="bi bi-upc-scan text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 bg-light shadow-none"
+                 placeholder="Scanner…"
+                 [(ngModel)]="barcodeInput"
+                 (keydown)="onScanBarcode($event)">
+        </div>
+      </div>
+
+      <!-- Ligne 2 : total ventes du jour, aligné à droite -->
+      <div class="d-flex justify-content-end">
+        <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2"
+             style="background:linear-gradient(135deg,#198754 0%,#20c997 100%);">
+          <i class="bi bi-graph-up-arrow text-white fs-5"></i>
+          <div class="lh-1">
+            <div class="text-white-50" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;">Total du jour</div>
+            <div class="text-white fw-bold" style="font-size:1.1rem;">
+              {{ totalVentesJour | number:'1.0-0':'fr' }}
+              <span class="fw-normal" style="font-size:.7rem;opacity:.8;">FCFA</span>
+            </div>
+            <div class="text-white-50" style="font-size:.62rem;">
+              <i class="bi bi-receipt me-1"></i>{{ nbVentesJour }} vente{{ nbVentesJour !== 1 ? 's' : '' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Session tabs -->
+    <div class="pos-sessions-bar bg-white border-bottom px-3 pt-2 d-flex align-items-end gap-1">
+      @for (s of sessions; track s.id; let i = $index) {
+        <div class="pos-session-tab"
+             [class.active]="i === activeSessionIdx"
+             (click)="switchSession(i)">
+          <span class="pos-session-label">{{ s.label }}</span>
+          @if (s.cart.length > 0) {
+            <span class="badge rounded-pill ms-1 pos-session-badge">{{ s.cart.length }}</span>
+          }
+          @if (sessions.length > 1) {
+            <button class="pos-session-close" title="Fermer"
+                    (click)="$event.stopPropagation(); closeSession(i)">
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      }
+      @if (sessions.length < 5) {
+        <button class="pos-session-add" title="Nouvelle vente" (click)="addSession()">
+          <i class="bi bi-plus-lg me-1"></i>Nouvelle vente
+        </button>
+      }
+    </div>
+
+    <!-- Category chips -->
+    @if (categories.length > 0) {
+      <div class="pos-categories px-3 py-2 bg-white border-bottom">
+        <button class="btn btn-sm rounded-pill me-1"
+                [class.btn-primary]="selectedCategoryId === null"
+                [class.btn-outline-secondary]="selectedCategoryId !== null"
+                (click)="selectCategory(null)">Tous</button>
+        @for (c of categories; track c.id) {
+          <button class="btn btn-sm rounded-pill me-1"
+                  [class.btn-primary]="selectedCategoryId === c.id"
+                  [class.btn-outline-secondary]="selectedCategoryId !== c.id"
+                  (click)="selectCategory(c.id)">{{ c.nom }}</button>
+        }
+      </div>
+    }
+
+    <!-- Product grid -->
+    <div class="pos-products flex-grow-1 overflow-auto p-3">
+
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement des produits…</p>
+        </div>
+      }
+
+      @if (!loading && filtered.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-search display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucun produit trouvé</p>
+        </div>
+      }
+
+      @if (!loading) {
+        <div class="row g-2 g-md-3">
+          @for (p of filtered; track p.id) {
+            <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
+              <div class="pos-product-card card border-0 shadow-sm h-100"
+                   [class.out-of-stock]="(p.stock_disponible ?? 0) <= 0"
+                   (click)="addToCart(p)">
+
+                <!-- Image / Placeholder -->
+                <div class="pos-product-img">
+                  @if (productImage(p)) {
+                    <img [src]="productImage(p)" [alt]="p.nom">
+                  } @else {
+                    <i class="bi bi-box-seam pos-product-icon"></i>
+                  }
+                  <!-- Stock badge overlay -->
+                  <span class="pos-stock-badge badge bg-{{ stockBadge(p) }}">
+                    {{ p.stock_disponible ?? 0 }}
+                  </span>
+                </div>
+
+                <div class="card-body p-2 text-center">
+                  <p class="pos-product-name mb-1">{{ p.nom }}</p>
+                  <p class="pos-product-price mb-0">
+                    {{ p.prix_vente | number:'1.0-0':'fr' }}
+                    <small class="fw-normal text-muted">FCFA</small>
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div><!-- /catalog -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       RIGHT — Panier
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div class="pos-cart d-flex flex-column border-start bg-white"
+       [class.mobile-hidden]="mobileTab === 'catalog'">
+
+    <!-- Cart header -->
+    <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between">
+      <span class="fw-bold">
+        <i class="bi bi-cart3 text-primary me-2"></i>Panier
+        @if (cart.length > 0) {
+          <span class="badge bg-primary rounded-pill ms-1 fs-xs">{{ cart.length }}</span>
+        }
+      </span>
+      <div class="d-flex align-items-center gap-2">
+        @if (peutFaireRetour) {
+          <button class="btn btn-link btn-sm text-warning p-0 text-decoration-none" (click)="openRetourModal()" title="Retour produit">
+            <i class="bi bi-arrow-return-left me-1"></i>Retour
+          </button>
+        }
+        @if (cart.length > 0) {
+          <button class="btn btn-link btn-sm text-danger p-0 text-decoration-none" (click)="clearCart()">
+            <i class="bi bi-trash me-1"></i>Vider
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Cart lines -->
+    <div class="pos-cart-lines flex-grow-1 overflow-auto">
+
+      @if (cart.length === 0) {
+        <div class="text-center py-5 text-muted px-3">
+          <i class="bi bi-cart-x display-4 d-block mb-2 opacity-25"></i>
+          <p class="small">Cliquez sur un produit<br>pour l'ajouter au panier</p>
+        </div>
+      }
+
+      @for (line of cart; track $index; let i = $index) {
+        <div class="pos-cart-line px-3 py-2 border-bottom">
+          <div class="d-flex align-items-start gap-2">
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold text-truncate" style="font-size:.85rem">{{ line.produit.nom }}</div>
+              <div class="text-muted" style="font-size:.75rem">
+                {{ line.prix | number:'1.0-0':'fr' }} FCFA / unité
+              </div>
+            </div>
+            <button class="btn btn-link text-danger p-0 flex-shrink-0" (click)="removeFromCart(i)">
+              <i class="bi bi-x-lg" style="font-size:.75rem"></i>
+            </button>
+          </div>
+          <div class="d-flex align-items-center justify-content-between mt-1">
+            <!-- Qty stepper -->
+            <div class="qty-stepper d-flex align-items-center">
+              <button class="btn btn-outline-secondary btn-qty" (click)="decreaseQty(i)">
+                <i class="bi bi-dash"></i>
+              </button>
+              <span class="qty-value">{{ line.quantite }}</span>
+              <button class="btn btn-outline-secondary btn-qty" (click)="increaseQty(i)">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+            <!-- Line total -->
+            <span class="fw-bold text-primary" style="font-size:.9rem">
+              {{ (line.quantite * line.prix) | number:'1.0-0':'fr' }}
+              <small class="fw-normal text-muted">FCFA</small>
+            </span>
+          </div>
+        </div>
+      }
+    </div><!-- /cart lines -->
+
+    <!-- Cart footer -->
+    <div class="pos-cart-footer border-top px-3 py-3">
+
+      <!-- Remise -->
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <label class="form-label small mb-0 text-muted flex-shrink-0">Remise</label>
+        <div class="input-group input-group-sm">
+          <input type="number" class="form-control text-end" [(ngModel)]="remise" min="0"
+                 placeholder="0">
+          <span class="input-group-text">FCFA</span>
+        </div>
+      </div>
+
+      <!-- Totals -->
+      <div class="d-flex justify-content-between small text-muted mb-1">
+        <span>Sous-total</span>
+        <span>{{ sousTotal | number:'1.0-0':'fr' }} FCFA</span>
+      </div>
+      @if (remise > 0) {
+        <div class="d-flex justify-content-between small text-danger mb-1">
+          <span>Remise</span>
+          <span>− {{ remise | number:'1.0-0':'fr' }} FCFA</span>
+        </div>
+      }
+      <div class="d-flex justify-content-between fw-bold mb-3">
+        <span class="fs-5">Total TTC</span>
+        <span class="fs-5 text-success">{{ totalTTC | number:'1.0-0':'fr' }} <small class="fw-normal fs-6 text-muted">FCFA</small></span>
+      </div>
+
+      <!-- CTA -->
+      <button class="btn btn-success w-100 fw-bold py-3"
+              style="font-size:1.1rem; letter-spacing:.03em"
+              [disabled]="cart.length === 0"
+              (click)="openPayModal()">
+        <i class="bi bi-cash-register me-2"></i> ENCAISSER
+      </button>
+
+      <!-- Caisse warning -->
+      @if (caisseActivee && !activeSessionId) {
+        <p class="text-danger text-center small mt-2 mb-0">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          Session caisse non ouverte
+        </p>
+      }
+    </div>
+  </div><!-- /cart -->
+
+</div><!-- /pos-screen -->
+
+<!-- ── Floating cart button (mobile only) ─────────────────────────────────── -->
+@if (cart.length > 0 && mobileTab === 'catalog') {
+  <div class="pos-mobile-cart-fab d-md-none" (click)="mobileTab = 'cart'">
+    <i class="bi bi-cart3 me-2"></i>
+    <span>Voir le panier ({{ cart.length }})</span>
+    <span class="ms-auto fw-bold">{{ totalTTC | number:'1.0-0':'fr' }} FCFA</span>
+  </div>
+}
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     MODAL — Encaissement
+     ════════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════════════════════════
+     MODAL — Retour produit
+     ════════════════════════════════════════════════════════════════════════════ -->
+@if (showRetourModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.65);z-index:1060">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content mf-modal mf-modal--orange">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-arrow-return-left"></i></div>
+          <div>
+            <div class="mf-header-title">Retour produit</div>
+            <div class="mf-header-subtitle">Recherchez la vente et sélectionnez les articles à retourner</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="showRetourModal = false"></button>
+        </div>
+
+        <div class="modal-body pt-2" style="background:#f8fafc">
+
+          <!-- ── Succès ── -->
+          @if (retourResult) {
+            <div class="text-center py-4">
+              <div style="font-size:2.5rem">✅</div>
+              <h5 class="fw-bold text-success mt-2">Retour enregistré</h5>
+              <div class="text-muted mb-1">Réf : <strong>{{ retourResult.reference }}</strong></div>
+              <div class="text-muted mb-3">Remboursé : <strong class="text-success">{{ (retourResult.montant_total_rembourse ?? 0).toLocaleString('fr-FR') }} FCFA</strong></div>
+              <button class="btn btn-outline-primary btn-sm me-2" (click)="openRetourModal()">
+                <i class="bi bi-arrow-repeat me-1"></i>Nouveau retour
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="showRetourModal = false">Fermer</button>
+            </div>
+          }
+
+          <!-- ── Formulaire ── -->
+          @if (!retourResult) {
+            <!-- Recherche vente -->
+            <div class="mb-3">
+              <p class="small fw-semibold text-muted text-uppercase mb-2">Rechercher la vente</p>
+              <div class="row g-2 mb-2">
+                <div class="col-sm-6">
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="retourSearchRef"
+                         placeholder="Référence (ex: VNT/20260703)"
+                         (keyup.enter)="rechercherVenteRetour()">
+                </div>
+                <div class="col-sm-6">
+                  <input type="number" class="form-control form-control-sm" [(ngModel)]="retourSearchMontant"
+                         placeholder="Montant exact">
+                </div>
+                <div class="col-sm-6">
+                  <input type="date" class="form-control form-control-sm" [(ngModel)]="retourSearchDebut">
+                </div>
+                <div class="col-sm-6">
+                  <input type="date" class="form-control form-control-sm" [(ngModel)]="retourSearchFin">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" [disabled]="retourSearchLoading" (click)="rechercherVenteRetour()">
+                @if (retourSearchLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                @else { <i class="bi bi-search me-1"></i> }
+                Rechercher
+              </button>
+            </div>
+
+            <!-- Résultats -->
+            @if (retourSearchDone && retourVentes.length === 0) {
+              <div class="alert alert-warning py-2 small">Aucune vente trouvée.</div>
+            }
+            @if (retourVentes.length > 0 && !retourVente) {
+              <div class="list-group mb-3">
+                @for (v of retourVentes; track v.id) {
+                  <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                          (click)="selectionnerVenteRetour(v)">
+                    <div>
+                      <div class="fw-semibold small">{{ v.reference }}</div>
+                      <div class="text-muted" style="font-size:.72rem">{{ v.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+                    </div>
+                    <span class="fw-bold text-primary small">{{ (v.montant_total_apres_remise ?? v.montant_total ?? 0).toLocaleString('fr-FR') }} FCFA</span>
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- Produits de la vente sélectionnée -->
+            @if (retourVente) {
+              <div class="border rounded-3 mb-3 overflow-hidden">
+                <div class="px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                  <span class="fw-semibold small"><i class="bi bi-receipt me-1 text-primary"></i>{{ retourVente.reference }}</span>
+                  <button class="btn btn-link btn-sm p-0 text-muted" (click)="retourVente = null; retourLignes = []">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Produit</th>
+                      <th class="text-center">Vendu</th>
+                      <th class="text-center" style="width:110px">À retourner</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of retourLignes; track l.produit_id) {
+                      <tr [class.table-warning]="l.quantite_retournee > 0">
+                        <td class="ps-3">
+                          <div class="fw-semibold small">{{ l.nom }}</div>
+                          <div class="text-muted" style="font-size:.72rem">{{ l.prix_unitaire.toLocaleString('fr-FR') }} FCFA/u</div>
+                        </td>
+                        <td class="text-center"><span class="badge bg-secondary">{{ l.quantite_vendue }}</span></td>
+                        <td class="text-center">
+                          <input type="number" class="form-control form-control-sm text-center"
+                                 [(ngModel)]="l.quantite_retournee"
+                                 [min]="0" [max]="l.quantite_vendue"
+                                 style="width:70px;margin:auto">
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Total + motif -->
+              @if (retourLignesSelectionnees.length > 0) {
+                <div class="d-flex justify-content-between fw-bold mb-3 px-1">
+                  <span>Total remboursé</span>
+                  <span class="text-success">{{ retourTotal.toLocaleString('fr-FR') }} FCFA</span>
+                </div>
+              }
+              <div class="mb-3">
+                <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="retourMotif"
+                          placeholder="Motif du retour (optionnel)…"></textarea>
+              </div>
+            }
+          }
+
+        </div>
+
+        @if (!retourResult && retourVente && retourLignesSelectionnees.length > 0) {
+          <div class="mf-footer">
+            <button class="btn mf-btn-save" (click)="submitRetour()" [disabled]="retourSubmitting">
+              @if (retourSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              @else { <i class="bi bi-check2-circle me-1"></i> }
+              Valider le retour
+            </button>
+            <button class="btn mf-btn-cancel" (click)="showRetourModal = false">
+              <i class="bi bi-x-lg"></i> Annuler
+            </button>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+}
+
+@if (showPayModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.55)">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+      <div class="modal-content mf-modal mf-modal--emerald">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-cash-register"></i></div>
+          <div>
+            <div class="mf-header-title">Encaissement</div>
+            <div class="mf-header-subtitle">Choisissez le mode de paiement et confirmez</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closePayModal()" [disabled]="isSubmitting"></button>
+        </div>
+
+        <div class="modal-body pt-2">
+
+          <!-- Total recap -->
+          <div class="pay-total-banner rounded-3 mb-4 p-3 d-flex justify-content-between align-items-center">
+            <span class="text-white-50 fw-semibold">Total à encaisser</span>
+            <span class="text-white fw-bold fs-3">{{ totalTTC | number:'1.0-0':'fr' }} <small class="fs-6 fw-normal text-white-50">FCFA</small></span>
+          </div>
+
+          <!-- Mode de paiement -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-muted text-uppercase mb-2">Mode de paiement</label>
+            <div class="d-flex flex-wrap gap-2">
+              @for (m of MODES; track m.value) {
+                <button type="button"
+                        class="btn btn-sm pay-mode-btn"
+                        [class.active]="modePaiement === m.value"
+                        (click)="modePaiement = m.value; onModeChange()">
+                  <i class="bi {{ m.icon }} me-1"></i>{{ m.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Mixte breakdown -->
+          @if (isMixte) {
+            <div class="card bg-light border-0 p-3 mb-3">
+              <p class="small fw-semibold text-muted mb-2">Répartition du paiement</p>
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Espèces</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.espece" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Mobile Money</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.mobile_money" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Carte</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.carte" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Crédit</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.credit" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between small mt-2 fw-semibold"
+                   [class.text-danger]="totalMixte !== totalTTC"
+                   [class.text-success]="totalMixte === totalTTC">
+                <span>Total saisi</span>
+                <span>{{ totalMixte | number:'1.0-0':'fr' }} / {{ totalTTC | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+            </div>
+          }
+
+          <!-- Montant reçu -->
+          @if (!isCredit && !isMixte) {
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Montant reçu <span class="text-danger">*</span></label>
+              <div class="input-group input-group-lg">
+                <input type="number" class="form-control text-end fw-bold"
+                       [(ngModel)]="montantRecu" min="0"
+                       style="font-size:1.2rem">
+                <span class="input-group-text fw-semibold">FCFA</span>
+              </div>
+            </div>
+
+            @if (montantRecu >= totalTTC && totalTTC > 0) {
+              <div class="alert py-2 mb-3 d-flex justify-content-between align-items-center"
+                   [class.alert-info]="monnaie >= 0">
+                <span class="fw-semibold">Monnaie à rendre</span>
+                <span class="fw-bold fs-5">{{ monnaie | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+            }
+          }
+
+          @if (isCredit) {
+            <div class="alert alert-warning py-2 mb-3 small">
+              <i class="bi bi-hourglass-split me-1"></i>
+              La vente sera enregistrée en statut <strong>non payé</strong>. Le montant sera à recouvrer.
+            </div>
+          }
+
+          <!-- Client (optionnel) -->
+          <div class="border-top pt-3 mt-1">
+            <p class="small fw-semibold text-muted mb-2">
+              <i class="bi bi-person me-1"></i>Client
+              <span class="fw-normal">(optionnel)</span>
+            </p>
+            <nz-select class="w-100 mb-2" nzShowSearch nzAllowClear
+                       nzPlaceHolder="Sélectionner un client existant…"
+                       [(ngModel)]="selectedClientId"
+                       (ngModelChange)="onClientSelect($event)">
+              @for (c of clients; track c.id) {
+                <nz-option
+                  [nzLabel]="(c.prenoms ? c.prenoms + ' ' : '') + c.nom + (c.telephone ? ' — ' + c.telephone : '')"
+                  [nzValue]="c.id">
+                </nz-option>
+              }
+            </nz-select>
+            <div class="row g-2">
+              <div class="col">
+                <input type="text" class="form-control form-control-sm"
+                       placeholder="Nom du client" [(ngModel)]="clientNom">
+              </div>
+              <div class="col">
+                <input type="tel" class="form-control form-control-sm"
+                       placeholder="Téléphone" [(ngModel)]="clientTel">
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /modal-body -->
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" (click)="submit()" [disabled]="isSubmitting">
+            @if (isSubmitting) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            } @else {
+              <i class="bi bi-check2-circle me-1"></i>
+            }
+            Valider la vente
+          </button>
+          <button class="btn mf-btn-cancel" (click)="closePayModal()" [disabled]="isSubmitting">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

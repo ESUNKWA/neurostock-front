@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
+import { AlerteService } from '../../services/alerte/alerte.service';
 import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoaderService } from '../../services/loader/loader.service';
@@ -14,8 +15,12 @@ import { LoaderService } from '../../services/loader/loader.service';
 })
 export class HeaderComponent implements OnInit {
   currentUser: any | null = null;
+  alerteCount = 0;
+  commandesCount = 0;
+
   constructor(
     private authService: AuthService,
+    private alerteService: AlerteService,
     private router: Router,
     private toastr: ToastrService,
     private loaderService: LoaderService
@@ -25,6 +30,8 @@ export class HeaderComponent implements OnInit {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
     });
+    this.alerteService.count$.subscribe(n => this.alerteCount = n);
+    this.alerteService.commandesCount$.subscribe(n => this.commandesCount = n);
   }
 
   toggleSidebar(): void {

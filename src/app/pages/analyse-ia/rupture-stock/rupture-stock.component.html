@@ -1,0 +1,190 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+      <h1 class="d-flex align-items-center gap-2">
+        <span class="ia-icon-badge">
+          <i class="bi bi-graph-up-arrow"></i>
+        </span>
+        Prévision de rupture de stock
+      </h1>
+      <p class="text-muted mb-0 small">Analyse IA — consommation journalière sur la fenêtre sélectionnée</p>
+    </div>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item">Analyse IA</li>
+      <li class="breadcrumb-item active">Rupture de stock</li>
+    </ol></nav>
+  </div>
+</div>
+
+<hr>
+
+<section class="section">
+
+  <!-- ── Sélecteur boutique (admin / responsable) ── -->
+  @if (isAdmin) {
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-shop"></i></span>
+          <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
+            <option [ngValue]="0">— Sélectionner une boutique —</option>
+            @for (b of boutiques; track b.id) {
+              <option [ngValue]="b.id">{{ b.nom }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Contrôles ── -->
+  <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+    <label class="fw-semibold mb-0">Fenêtre d'analyse :</label>
+    <div class="btn-group btn-group-sm" role="group">
+      @for (j of joursOptions; track j) {
+        <button type="button" class="btn"
+                [class.btn-primary]="jours === j"
+                [class.btn-outline-primary]="jours !== j"
+                (click)="jours = j; onJoursChange()">
+          {{ j }}j
+        </button>
+      }
+    </div>
+    <button class="btn btn-outline-secondary btn-sm ms-auto" (click)="charger()" [disabled]="isLoading">
+      <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
+    </button>
+  </div>
+
+  <!-- ── Résumé statistiques ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card stat-card--danger" (click)="filtreStatut = 'critique'"
+           [class.active]="filtreStatut === 'critique'">
+        <i class="bi bi-exclamation-octagon-fill stat-icon"></i>
+        <div class="stat-body">
+          <div class="stat-value">{{ compteurs['critique'] || 0 }}</div>
+          <div class="stat-label">Critique</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card stat-card--warning" (click)="filtreStatut = 'alerte'"
+           [class.active]="filtreStatut === 'alerte'">
+        <i class="bi bi-exclamation-triangle-fill stat-icon"></i>
+        <div class="stat-body">
+          <div class="stat-value">{{ compteurs['alerte'] || 0 }}</div>
+          <div class="stat-label">Alerte</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card stat-card--info" (click)="filtreStatut = 'attention'"
+           [class.active]="filtreStatut === 'attention'">
+        <i class="bi bi-exclamation-circle-fill stat-icon"></i>
+        <div class="stat-body">
+          <div class="stat-value">{{ compteurs['attention'] || 0 }}</div>
+          <div class="stat-label">Attention</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card stat-card--success" (click)="filtreStatut = 'ok'"
+           [class.active]="filtreStatut === 'ok'">
+        <i class="bi bi-check-circle-fill stat-icon"></i>
+        <div class="stat-body">
+          <div class="stat-value">{{ compteurs['ok'] || 0 }}</div>
+          <div class="stat-label">Stock OK</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filtre actif + reset ── -->
+  @if (filtreStatut !== 'tous') {
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="badge bg-secondary">Filtre : {{ statutConfig[filtreStatut].label }}</span>
+      <button class="btn btn-link btn-sm p-0 text-muted" (click)="filtreStatut = 'tous'">
+        <i class="bi bi-x-circle me-1"></i>Tout afficher
+      </button>
+    </div>
+  }
+
+  <!-- ── Loading ── -->
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Analyse en cours…</p>
+    </div>
+  }
+
+  <!-- ── Tableau ── -->
+  @if (!isLoading) {
+    @if (previsionsFiltrees.length === 0) {
+      <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill fs-5"></i>
+        Aucun produit en situation de risque sur cette période.
+      </div>
+    } @else {
+      <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Statut</th>
+                <th>Produit</th>
+                <th class="d-none d-md-table-cell">Catégorie</th>
+                <th class="text-center">Stock actuel</th>
+                <th class="text-center d-none d-lg-table-cell">Conso/jour</th>
+                <th class="text-center">Jours restants</th>
+                <th class="d-none d-lg-table-cell">Rupture estimée</th>
+                <th class="text-center">Qté à commander</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of previsionsFiltrees; track item.produit.id) {
+                <tr [class.table-danger]="item.statut === 'critique'"
+                    [class.table-warning]="item.statut === 'alerte'">
+                  <td>
+                    <span class="badge bg-{{ statutDe(item).badge }} d-inline-flex align-items-center gap-1">
+                      <i class="bi {{ statutDe(item).icon }}"></i>
+                      {{ statutDe(item).label }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ item.produit.nom }}</div>
+                    <small class="text-muted">{{ item.produit.unite_mesure }}</small>
+                  </td>
+                  <td class="d-none d-md-table-cell text-muted small">{{ item.produit.categorie }}</td>
+                  <td class="text-center fw-semibold">{{ item.stock_actuel }}</td>
+                  <td class="text-center text-muted small d-none d-lg-table-cell">
+                    {{ item.consommation_journaliere | number:'1.1-1' }}
+                  </td>
+                  <td class="text-center">
+                    <span class="jours-badge jours-badge--{{ item.statut }}">
+                      {{ jourRestantsLabel(item.jours_restants) }}
+                    </span>
+                  </td>
+                  <td class="d-none d-lg-table-cell small">
+                    @if (item.date_rupture_estimee) {
+                      {{ item.date_rupture_estimee | date:'dd/MM/yyyy' }}
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-primary">{{ item.qte_a_commander }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer text-muted small">
+          {{ previsionsFiltrees.length }} produit(s) affichés — Fenêtre : {{ jours }} jours
+        </div>
+      </div>
+    }
+  }
+
+</section>

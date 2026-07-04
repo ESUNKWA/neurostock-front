@@ -1,0 +1,130 @@
+<div class="p-4">
+
+  <!-- Breadcrumb / header -->
+  <div class="d-flex align-items-center gap-2 mb-1">
+    <a routerLink="/ekwatech/tenants" class="text-muted small text-decoration-none">
+      <i class="bi bi-diagram-3 me-1"></i>Tenants
+    </a>
+    <span class="text-muted small">/</span>
+    <span class="small fw-semibold">{{ tenant?.database ?? ('Structure #' + structureId) }}</span>
+  </div>
+
+  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-0">
+        <i class="bi bi-database-fill text-primary me-2"></i>{{ tenant?.database ?? '…' }}
+      </h4>
+      @if (tenant?.structure) {
+        <p class="text-muted small mb-0 mt-1">
+          <i class="bi bi-building me-1"></i>{{ tenant.structure.nom }}
+          @if (tenant.structure.telephone) {
+            &nbsp;·&nbsp;<i class="bi bi-telephone me-1"></i>{{ tenant.structure.telephone }}
+          }
+        </p>
+      }
+    </div>
+    <a routerLink="/ekwatech/tenants" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- ── Colonne gauche : liste des tables ───────────────────────────────── -->
+    <div class="col-md-3 col-lg-2">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header py-2 px-3 d-flex align-items-center justify-content-between">
+          <span class="fw-semibold small">
+            <i class="bi bi-table me-1 text-primary"></i>Tables
+          </span>
+          @if (!loadingTables) {
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ tables.length }}</span>
+          }
+        </div>
+        <div class="card-body p-0" style="max-height:70vh;overflow-y:auto">
+
+          @if (loadingTables) {
+            <div class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          }
+
+          @if (!loadingTables && tables.length === 0) {
+            <p class="text-muted small text-center py-4 px-3">Aucune table trouvée</p>
+          }
+
+          @if (!loadingTables && tables.length > 0) {
+            <ul class="list-unstyled mb-0">
+              @for (t of tables; track t) {
+                <li>
+                  <button class="btn btn-link text-start w-100 px-3 py-2 border-bottom rounded-0 text-decoration-none ek-table-item"
+                          [class.active]="selectedTable === t"
+                          (click)="selectTable(t)">
+                    <i class="bi bi-grid me-2 opacity-50" style="font-size:.8rem"></i>
+                    <span class="small">{{ t }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Colonne droite : contenu DataTable ─────────────────────────────── -->
+    <div class="col-md-9 col-lg-10">
+      <div class="card border-0 shadow-sm">
+
+        @if (!selectedTable) {
+          <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-hand-index display-4 d-block mb-3 opacity-25"></i>
+            <p>Sélectionnez une table à gauche pour voir son contenu</p>
+          </div>
+        }
+
+        @if (selectedTable) {
+          <div class="card-header py-2 px-3 d-flex align-items-center gap-2">
+            <i class="bi bi-table text-primary"></i>
+            <span class="fw-semibold">{{ selectedTable }}</span>
+            @if (!loadingContent && totalRows > 0) {
+              <span class="badge bg-primary-subtle text-primary rounded-pill ms-1">
+                {{ totalRows }} ligne{{ totalRows !== 1 ? 's' : '' }}
+              </span>
+            }
+            @if (loadingContent) {
+              <span class="spinner-border spinner-border-sm text-primary ms-1"></span>
+              <span class="text-muted small">Chargement…</span>
+            }
+          </div>
+
+          <div class="card-body">
+
+            @if (contentError) {
+              <div class="alert alert-danger py-2 small">
+                <i class="bi bi-exclamation-triangle me-1"></i>{{ contentError }}
+              </div>
+            }
+
+            <!-- DataTable — toujours présent dans le DOM quand une table est sélectionnée -->
+            <div [class.d-none]="loadingContent || !!contentError">
+              <div class="table-responsive">
+                <table id="ek-inspect-dt" class="table table-sm table-bordered table-hover align-middle w-100">
+                </table>
+              </div>
+            </div>
+
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .ek-table-item { color: #495057; }
+  .ek-table-item:hover { background: #f8f9fa; color: #0d6efd; }
+  .ek-table-item.active { background: #e7f1ff; color: #0d6efd; font-weight: 600; }
+</style>

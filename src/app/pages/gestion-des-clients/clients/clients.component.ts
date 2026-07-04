@@ -39,7 +39,7 @@ export default class ClientsComponent implements OnInit, OnDestroy {
     this.clientForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: [''],
-      telephone: ['', Validators.required],
+      telephone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(10)]],
       email: ['', [Validators.email]],
       adresse: [''],
     });
@@ -187,7 +187,7 @@ export default class ClientsComponent implements OnInit, OnDestroy {
     this.isSubmitted = true;
     if (this.clientForm.invalid) return;
 
-    const body = { ...this.clientForm.value, boutique: this.currentUser.boutique.id };
+    const body = { ...this.clientForm.value, boutique: this.currentUser.boutique_id };
     const request = this.isEditMode
       ? this.clientService.updateClient(this.selectedClient.id, body)
       : this.clientService.addClient(body);

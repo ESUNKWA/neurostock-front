@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { ekwatechGuard } from './guards/ekwatech.guard';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full', title: 'neurostock | Connexion' },
@@ -63,7 +64,42 @@ export const routes: Routes = [
             loadChildren:()=> import('./pages/gestion-boutiques/gestion.boutique.route').then((u) => u.boutiqueRoute),
             title: 'neurostock | Gestion des boutiques'
         },
-    ] 
+        {
+            path: 'analyse-ia',
+            loadChildren: () => import('./pages/analyse-ia/routes'),
+            title: 'neurostock | Analyse IA'
+        },
+        {
+            path: 'mon-abonnement',
+            loadComponent: () => import('./pages/mon-abonnement/mon-abonnement.component'),
+            title: 'neurostock | Mon abonnement'
+        },
+        {
+            path: 'retours',
+            loadChildren: () => import('./pages/gestion-des-retours/routes'),
+            title: 'neurostock | Retours produits'
+        },
+    ]
     },
+    // POS layout — for vendeur / caissier roles
+    {
+        path: 'pos',
+        loadComponent: () => import('./layout/pos/pos-layout.component'),
+        canActivate: [AuthGuard],
+        children: [
+            { path: '', loadChildren: () => import('./pages/pos/routes') }
+        ]
+    },
+    // Ekwatech Super Admin — layout dédié, isolé du shell principal
+    {
+        path: 'ekwatech',
+        loadComponent: () => import('./layout/ekwatech-admin/ekwatech-admin-layout.component'),
+        canActivate: [ekwatechGuard],
+        children: [
+            { path: '', loadChildren: () => import('./pages/ekwatech-admin/routes') }
+        ]
+    },
+    { path: 'abonnement-expire', loadComponent: () => import('./pages/abonnement-expire/abonnement-expire.component'), title: 'Abonnement expiré' },
+    { path: 'no-access', loadComponent: () => import('./pages/no-access/no-access.component'), title: 'Accès non configuré' },
     { path: '**', redirectTo: 'dashboard' }
 ];

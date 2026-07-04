@@ -16,7 +16,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   filteredMenu: any[] = [];
   currentUserProfile = '';
 
-  @HostBinding('class.collapsed') collapsed = false;
+  @HostBinding('class.collapsed')   collapsed   = false;
+  @HostBinding('class.mobile-open') mobileOpen  = false;
 
   private authService = inject(AuthService);
   private bodyObserver?: MutationObserver;
@@ -33,15 +34,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user?.profil) {
         this.currentUserProfile = user.profil.code?.toLowerCase() || '';
-        this.filteredMenu = this.filterMenuByRole(this.menu, this.currentUserProfile);
+        this.filteredMenu = this.filterMenuByRole(this.menu, this.currentUserProfile, user);
       } else {
         this.filteredMenu = this.menu;
       }
     });
 
-    // Sync collapsed state when toggled from the header button
+    // Sync collapsed/mobile-open state when toggled from the header button
     this.bodyObserver = new MutationObserver(() => {
-      this.collapsed = document.body.classList.contains('sidebar-collapsed');
+      this.collapsed  = document.body.classList.contains('sidebar-collapsed');
+      this.mobileOpen = document.body.classList.contains('sidebar-mobile-open');
     });
     this.bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
@@ -59,8 +61,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
     document.body.classList.remove('sidebar-mobile-open');
   }
 
-  filterMenuByRole(menu: any[], role: string): any[] {
+  filterMenuByRole(menu: any[], role: string, user?: any): any[] {
     const filteredMenu = JSON.parse(JSON.stringify(menu));
+    const peutFaireRetour: boolean = !!user?.peut_faire_retour;
+
+    // Caissier / vendeur : menu POS uniquement, sauf permission retour
+    if (role === 'caissier' || role === 'vendeur') {
+      if (!peutFaireRetour) return [];
+      // Seulement la section "Gestion des stocks" réduite à "Retours produits"
+      return filteredMenu
+        .filter((s: any) => s.titre === 'Gestion des stocks')
+        .map((s: any) => ({
+          ...s,
+          menu: (s.menu ?? []).filter((item: any) => item.libelle === 'Retours produits'),
+        }))
+        .filter((s: any) => s.menu.length > 0);
+    }
 
     if (role === 'admin') return filteredMenu;
 
@@ -68,29 +84,37 @@ export class SidebarComponent implements OnInit, OnDestroy {
       filteredMenu.forEach((section: any) => {
         section.menu?.forEach((item: any) => {
           if (item.sousMenu) {
-            item.sousMenu = item.sousMenu.filter((s: any) =>
-              s.libelle !== 'Profil' && s.libelle !== 'Structure'
-            );
+            item.sousMenu = item.sousMenu.filter((s: any) => s.libelle !== 'Structure');
           }
         });
       });
+      return filteredMenu;
     }
 
     if (role === 'gerant' || role === 'user') {
       return filteredMenu
-        .filter((section: any) =>
-          section.titre !== 'Gestion des utilisateurs' && section.titre !== 'Paramétrages'
-        )
+        .filter((section: any) => section.titre !== 'Paramétrages')
         .map((section: any) => {
           section.menu?.forEach((item: any) => {
             if (item.sousMenu) {
               item.sousMenu = item.sousMenu.filter((s: any) =>
-                s.libelle !== 'Catégories' && s.libelle !== 'Fournisseurs' && s.libelle !== 'Structure'
+                s.libelle !== 'Catégories' &&
+                s.libelle !== 'Fournisseurs' &&
+                s.libelle !== 'Structure' &&
+                s.libelle !== 'Utilisateurs'
               );
             }
+            // Masquer "Retours produits" au gérant s'il n'a pas la permission
+            if (item.libelle === 'Retours produits' && !peutFaireRetour) {
+              item._hidden = true;
+            }
           });
+          section.menu = section.menu?.filter((item: any) =>
+            !item._hidden && (!item.sousMenu || item.sousMenu.length > 0)
+          );
           return section;
-        });
+        })
+        .filter((section: any) => section.menu?.length > 0);
     }
 
     return filteredMenu;

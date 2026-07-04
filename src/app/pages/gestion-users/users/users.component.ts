@@ -6,6 +6,7 @@ import { UserService } from '../../../services/user/user.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProfilService } from '../../../services/profil/profil.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { StructureService } from '../../../services/structure/structure.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 declare var $: any;
 declare var bootstrap: any;
@@ -24,6 +25,7 @@ export class UsersComponent {
   userService: any = inject(UserService);
   profilService: any = inject(ProfilService);
   boutiqueService: any = inject(BoutiqueService);
+  structureService: any = inject(StructureService);
   fb: any = inject(FormBuilder);
   toastr = inject(ToastrService)
 
@@ -31,6 +33,7 @@ export class UsersComponent {
   usersData: any = {};
   profils: any[] = [];
   boutiques: any[] = [];
+  structures: any[] = [];
   // selectedProfil: any = '';
 
   isLoading: boolean = false;
@@ -50,25 +53,53 @@ export class UsersComponent {
     this.userForm = this.fb.group({
       nom: ['', [Validators.required]],
       prenoms: ['', [Validators.required]],
-      email: ['', [Validators.required]],
-      telephone: ['', [Validators.required]],
+      email: ['', [Validators.email]],
+      telephone: ['', [Validators.required, Validators.pattern(/^(01|05|07)\d{8}$/)]],
       mot_de_passe: this.fb.control('12345', { nonNullable: true }),
       profil: ['', [Validators.required]],
       boutique: ['', [Validators.required]],
-      description: ['', []]
+      structure_id: ['', [Validators.required]],
+      description: ['', []],
+      peut_faire_retour: [false],
     })
   }
 
   // getter pour un accès facile aux champs du formulaire
   get f() { return this.userForm.controls; }
+
+  get parsedUser(): any {
+    try { return JSON.parse(this.currentUser || '{}'); } catch { return {}; }
+  }
+
+  /** Seul le super-admin global peut choisir la structure librement */
+  get isGlobalAdmin(): boolean {
+    return this.parsedUser?.profil?.code === 'admin';
+  }
+
+  /** Profil sélectionné dans le form (lookup dans this.profils) */
+  get selectedProfilCode(): string {
+    const id = this.userForm.get('profil')?.value;
+    return this.profils.find(p => p.id == id)?.code?.toLowerCase() ?? '';
+  }
+
+  /** Affiche le toggle "Retours produits" pour les rôles non-admin */
+  get showRetourPermission(): boolean {
+    const code = this.selectedProfilCode;
+    return code === 'gerant' || code === 'caissier' || code === 'vendeur';
+  }
+
+  get currentStructureId(): number | null {
+    const u = this.parsedUser;
+    return u?.structure?.[0]?.id ?? u?.structure_id ?? null;
+  }
   
   ngOnInit(): void {
     
     this.currentUser = localStorage.getItem('user');
     
-    this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique?.id);
+    this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique_id);
     this.profilFind();
-  
+    this.structureFind();
     this.boutiqueFind(JSON.parse(this.currentUser)?.structure[0]?.id);
     
     
@@ -132,15 +163,15 @@ export class UsersComponent {
     });
 
     // Mettre à jour les valeurs sélectionnées en fonction du formulaire
-    if (this.isEditMode && this.usersData) {
+    if (this.usersData) {
       const profilId = this.userForm.get('profil')?.value;
       const boutiqueId = this.userForm.get('boutique')?.value;
-      
+
       if (profilId) {
-        $('.js-example-basic-single').val(profilId).trigger('change');
+        $('.js-example-basic-single').val(String(profilId)).trigger('change');
       }
       if (boutiqueId) {
-        $('.js-example-tags').val(boutiqueId).trigger('change');
+        $('.js-example-tags').val(String(boutiqueId)).trigger('change');
       }
     } else {
       $('.js-example-basic-single').val('').trigger('change');
@@ -149,40 +180,32 @@ export class UsersComponent {
   }
 
   openNewModal(): void {
-     this.profilFind();
+    this.profilFind();
     this.userForm.reset();
     this.userForm.enable();
     this.isEditMode = false;
     this.usersData = null;
-    const title = 'Ajouter un nouveau user';
-    this.titleModal = title.toUpperCase();
+    this.titleModal = 'AJOUTER UN NOUVEAU UTILISATEUR';
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
     this.isSubmitted = false;
+
+    // Pré-remplir et verrouiller la structure pour les non-super-admins
+    if (!this.isGlobalAdmin && this.currentStructureId) {
+      this.userForm.get('structure_id')?.setValue(this.currentStructureId);
+      this.userForm.get('structure_id')?.disable();
+    }
   }
 
   openView(user: any): void {
-    this.userForm.disable();
     this.usersData = user;
+    this.isEditMode = false;
     const title = `Visualiser le user [ ${user?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
-    
     this.isSubmitted = false;
-    
-    this.userForm.patchValue(user);
-    this.userForm.disable();
 
-    const modal = document.getElementById('modal-fadein');
-    if (modal) {
-      const modalInstance = new bootstrap.Modal(modal);
-      modalInstance.show();
-    }
-  }
-
-  openEdit(user: any): void {
-    this.usersData = user;
     this.userForm.patchValue({
       nom: user.nom,
       prenoms: user.prenoms,
@@ -190,22 +213,52 @@ export class UsersComponent {
       telephone: user.telephone,
       description: user.description,
       profil: user.profil?.id || '',
-      boutique: user.boutique?.id || ''
+      boutique: user.boutique_id || '',
+      structure_id: user.structure_id || '',
+      peut_faire_retour: !!user.peut_faire_retour,
     });
-    
+    this.userForm.disable();
+
+    if (user.structure_id) this.boutiqueFind(user.structure_id);
+
+    const modal = document.getElementById('modal-fadein');
+    if (modal) {
+      const modalInstance = bootstrap.Modal.getInstance(modal) ?? new bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+  }
+
+  openEdit(user: any): void {
+    this.usersData = user;
     this.userForm.enable();
     this.isEditMode = true;
     this.buttonText = 'Modifier';
     this.icon = 'bi bi-pencil-square';
-    const title = `Modifier le user [${user?.nom}]`;
-    this.titleModal = title;
-    
+    this.titleModal = `Modifier le user [${user?.nom}]`;
     this.isSubmitted = false;
 
-    // Ouvrir le modal
+    this.userForm.patchValue({
+      nom: user.nom,
+      prenoms: user.prenoms,
+      email: user.email,
+      telephone: user.telephone,
+      description: user.description,
+      profil: user.profil?.id || '',
+      boutique: user.boutique_id || '',
+      structure_id: user.structure_id || '',
+      peut_faire_retour: !!user.peut_faire_retour,
+    });
+
+    // Toujours verrouiller la structure pour les non-super-admins
+    if (!this.isGlobalAdmin) {
+      this.userForm.get('structure_id')?.disable();
+    }
+
+    if (user.structure_id) this.boutiqueFind(user.structure_id);
+
     const modal = document.getElementById('modal-fadein');
     if (modal) {
-      const modalInstance = new bootstrap.Modal(modal);
+      const modalInstance = bootstrap.Modal.getInstance(modal) ?? new bootstrap.Modal(modal);
       modalInstance.show();
     }
   }
@@ -258,14 +311,11 @@ export class UsersComponent {
     let request;
     //const user = this.userForm.value;
     if (this.isEditMode && this.usersData) {
-      // Mode modification
-      
-      request = this.userService.update(this.userForm.value, this.usersData.id);
+      request = this.userService.update(this.userForm.getRawValue(), this.usersData.id);
     } else {
-      // Mode création
-      request = this.userService.create(this.userForm.value);
+      request = this.userService.create(this.userForm.getRawValue());
     }
-
+  
     // Afficher l'indicateur de chargement sans masquer le tableau
     this.isLoading = true;
 
@@ -287,7 +337,7 @@ export class UsersComponent {
             'user ajoutée avec succès');
             
           // Recharger les données sans détruire complètement le tableau
-          this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique?.id);
+          this.userFind(JSON.parse(this.currentUser).profil.code, JSON.parse(this.currentUser)?.boutique_id);
 
           // Réinitialiser le formulaire et les états
           this.userForm.reset();
@@ -492,6 +542,24 @@ export class UsersComponent {
         next: (response: any = {})=> { this.boutiques = response.data;}
       })
     );
+  }
+
+  structureFind(): void {
+    this.souscription.add(
+      this.structureService.find().subscribe({
+        next: (response: any) => { this.structures = response?.data ?? []; },
+      })
+    );
+  }
+
+  onStructureChange(structureId: any): void {
+    this.userForm.get('boutique')?.setValue('');
+    if (structureId) this.boutiqueFind(+structureId);
+  }
+
+  onBoutiqueChange(event: Event): void {
+    const boutiqueId = (event.target as HTMLSelectElement).value;
+    this.userFind(this.parsedUser.profil.code, boutiqueId || this.parsedUser?.boutique_id);
   }
 
   ngOnDestroy(): void {

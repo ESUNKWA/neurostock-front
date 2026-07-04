@@ -50,6 +50,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
       email: ['', []],
       interlocuteur: ['', Validators.required],
       contact_interlocuteur: ['', Validators.required],
+      boutique: ['', Validators.required],
     });
   }
 
@@ -80,24 +81,17 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
 
   loadBoutiques(): void {
     
-    switch(this.currentUser.is_admin){
+    console.log(this.currentUser.boutiques);
+    
+    switch(this.currentUser.profil.code){
 
-      case true:
+      case "responsable_structure":
         
-        this.boutiqueService.find().subscribe({
-          next: (response: any) => {
-            if (response.status === 'success' && response.data) {
-              this.boutiques = response.data;
-            }
-          },
-          error: (error: any) => {
-            console.error('Erreur lors du chargement des boutiques:', error);
-          }
-        });
+         this.boutiques = this.currentUser.boutiques;
         break;
 
-      case false:
-        this.boutiques = this.currentUser.structure[0].boutique;
+      case "admin":
+        this.boutiques = this.currentUser.boutiques;
         break;
 
         default:
@@ -320,6 +314,8 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.reset();
     this.isSubmitted = false;
 
+    this.fournisseurForm.patchValue({ boutique: this.currentUser?.boutique_id ?? '' });
+
     // Activer les champs du formulaire
     this.fournisseurForm.get('nom')?.enable();
     this.fournisseurForm.get('addresse_geo')?.enable();
@@ -327,6 +323,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.enable();
     this.fournisseurForm.get('interlocuteur')?.enable();
     this.fournisseurForm.get('contact_interlocuteur')?.enable();
+    this.fournisseurForm.get('boutique')?.enable();
   }
 
   openViewFournisseur(fournisseur: any): void {
@@ -345,7 +342,8 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
       contact: fournisseur.contact || '',
       email: fournisseur.email || '',
       interlocuteur: fournisseur.interlocuteur || '',
-      contact_interlocuteur: fournisseur.contact_interlocuteur || ''
+      contact_interlocuteur: fournisseur.contact_interlocuteur || '',
+      boutique: fournisseur.boutique_id ?? fournisseur.boutique?.id ?? this.currentUser?.boutique_id ?? '',
     });
 
     // Désactiver les champs du formulaire
@@ -355,6 +353,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.disable();
     this.fournisseurForm.get('interlocuteur')?.disable();
     this.fournisseurForm.get('contact_interlocuteur')?.disable();
+    this.fournisseurForm.get('boutique')?.disable();
 
     const modal = document.getElementById('modal-fadein');
     if (modal) {
@@ -379,6 +378,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.enable();
     this.fournisseurForm.get('interlocuteur')?.enable();
     this.fournisseurForm.get('contact_interlocuteur')?.enable();
+    this.fournisseurForm.get('boutique')?.enable();
 
     if (this.isEditMode && fournisseur) {
       // Remplir le formulaire avec les données du fournisseur
@@ -388,7 +388,8 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
         contact: fournisseur.contact || '',
         email: fournisseur.email || '',
         interlocuteur: fournisseur.interlocuteur || '',
-        contact_interlocuteur: fournisseur.contact_interlocuteur || ''
+        contact_interlocuteur: fournisseur.contact_interlocuteur || '',
+        boutique: fournisseur.boutique_id ?? fournisseur.boutique?.id ?? this.currentUser?.boutique_id ?? '',
       });
     } else {
       // Réinitialiser le formulaire pour un nouveau fournisseur
@@ -413,7 +414,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     }
 
     let request;
-    this.fournisseurForm.value.boutique = this.currentUser.boutique.id;
     const fournisseur = this.fournisseurForm.value;
     if (this.isEditMode && this.selectedFournisseur) {
       // Mode modification
@@ -443,7 +443,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             'Fournisseur ajouté avec succès');
 
           // Recharger les données sans détruire complètement le tableau
-          this.loadFournisseurs(this.currentUser.boutique.id);
+          this.loadFournisseurs(this.currentUser.boutique_id);
 
           // Réinitialiser le formulaire et les états
           this.fournisseurForm.reset();
@@ -482,7 +482,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             if (response.affected === 1) {
               this.toastr.success('Le fournisseur a été supprimé avec succès.');
               // Recharger les données sans détruire complètement le tableau
-              this.loadFournisseurs(this.currentUser.boutique.id);
+              this.loadFournisseurs(this.currentUser.boutique_id);
             } else {
               this.toastr.error('Le fournisseur n\'a pas pu être supprimé.');
               this.isLoading = false;

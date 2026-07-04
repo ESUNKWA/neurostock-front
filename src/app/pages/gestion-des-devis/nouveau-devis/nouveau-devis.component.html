@@ -1,162 +1,167 @@
-<div class="pagetitle">
-  <div class="d-flex justify-content-between">
-    <h1>Gestion des Devis</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
-        <li class="breadcrumb-item"><a routerLink="/gestion-des-devis/historique">Devis</a></li>
-        <li class="breadcrumb-item active">{{ isEditMode ? 'Modification' : 'Nouveau' }}</li>
-      </ol>
-    </nav>
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="dv-page-header">
+  <div class="dv-header-icon"><i class="bi bi-file-earmark-text"></i></div>
+  <div>
+    <div class="dv-header-title">{{ isEditMode ? 'Modifier le devis' : 'Nouveau devis' }}</div>
+    <div class="dv-header-subtitle">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0" style="font-size:.75rem;opacity:.85">
+          <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-white opacity-75">Accueil</a></li>
+          <li class="breadcrumb-item"><a routerLink="/gestion-des-devis/historique" class="text-white opacity-75">Devis</a></li>
+          <li class="breadcrumb-item active text-white">{{ isEditMode ? 'Modification' : 'Nouveau' }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div class="ms-auto d-flex gap-2 align-items-center">
+    <a routerLink="/gestion-des-devis/historique" class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:8px">
+      <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
   </div>
 </div>
 
 <section class="section">
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title">
-        {{ isEditMode ? 'Modification du devis' : 'Nouveau devis' }}
-      </h5>
+  <form novalidate [formGroup]="devisForm" (ngSubmit)="onSubmit()">
+    <div class="row g-4">
 
-      <form novalidate [formGroup]="devisForm" (ngSubmit)="onSubmit()">
-        <div class="row g-3">
+      <!-- ── Colonne principale : lignes du devis ──────────────────────────── -->
+      <div class="col-md-8">
 
-          <!-- Colonne principale : lignes du devis -->
-          <div class="col-md-9">
-
-            <h6 class="fw-semibold mb-3">Lignes du devis</h6>
-
-            <div formArrayName="detail_devis">
-              @for (ligne of detailDevis.controls; track $index) {
-                <div [formGroupName]="$index" class="row g-2 mb-3 py-3 border-bottom align-items-end">
-
-                  <div class="col-auto fw-bold text-muted align-self-center">{{ $index + 1 }}</div>
-
-                  @if (ligne.get('image')?.value) {
-                    <div class="col-auto">
-                      <img [src]="ligne.get('image')?.value" alt="produit" width="55" height="55" class="rounded border">
-                      <div class="text-center mt-1">
-                        <span class="badge badge-sm" [ngClass]="ligne.get('stock')?.value > 5 ? 'bg-success' : 'bg-danger'">
-                          Stock : {{ ligne.get('stock')?.value }}
-                        </span>
-                      </div>
-                    </div>
-                  }
-
-                  <div class="col-md-5">
-                    <label class="form-label">Produit <span class="text-danger">*</span></label>
-                    <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit" formControlName="produit"
-                      [ngClass]="{'is-invalid': isSubmitting && ligne.get('produit')?.errors}">
-                      @for (p of produits; track p.id) {
-                        <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
-                      }
-                    </nz-select>
-                    @if (isSubmitting && ligne.get('produit')?.errors?.['required']) {
-                      <div class="text-danger small mt-1">Le produit est requis</div>
-                    }
-                  </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label">Prix unitaire <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" formControlName="prix_unitaire"
-                      thousandSeparator (input)="calculerTotal()"
-                      [ngClass]="{'is-invalid': isSubmitting && ligne.get('prix_unitaire')?.errors}">
-                    @if (isSubmitting && ligne.get('prix_unitaire')?.errors?.['required']) {
-                      <div class="invalid-feedback">Requis</div>
-                    }
-                  </div>
-
-                  <div class="col-md-2">
-                    <label class="form-label">Quantité <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" formControlName="quantite" min="1"
-                      (input)="calculerTotal()"
-                      [ngClass]="{'is-invalid': ligne.get('quantite')?.errors?.['stockExceeded'] || (isSubmitting && ligne.get('quantite')?.errors)}">
-                    @if (ligne.get('quantite')?.errors?.['stockExceeded']) {
-                      <div class="invalid-feedback">Stock insuffisant (dispo : {{ ligne.get('stock')?.value }})</div>
-                    }
-                    @if (isSubmitting && ligne.get('quantite')?.errors?.['required']) {
-                      <div class="invalid-feedback">Requis</div>
-                    }
-                  </div>
-
-                  <div class="col-auto">
-                    <button type="button" class="btn btn-danger btn-sm" (click)="removeLigne($index)"
-                      [disabled]="detailDevis.length === 1">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-
-                </div>
-              }
-            </div>
-
-            <button type="button" class="btn btn-outline-primary mb-4" (click)="addLigne()">
+        <div class="dv-card">
+          <div class="dv-card-header">
+            <span class="dv-card-title"><i class="bi bi-list-ul"></i> Lignes du devis</span>
+            <button type="button" class="dv-btn-add" style="width:auto;margin:0;padding:.3rem .875rem" (click)="addLigne()">
               <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
             </button>
+          </div>
+          <div class="dv-card-body p-0">
+            <div formArrayName="detail_devis">
+              @for (ligne of detailDevis.controls; track $index) {
+                <div [formGroupName]="$index" class="px-4 py-3 border-bottom">
+                  <div class="row g-2 align-items-end">
 
-            <!-- Résumé financier -->
-            <div class="card bg-light">
-              <div class="card-body">
-                <h6 class="fw-semibold mb-3">Résumé</h6>
-                <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label">Remise (FCFA)</label>
-                    <div class="input-group">
-                      <span class="input-group-text">FCFA</span>
-                      <input type="text" class="form-control" formControlName="remise"
-                        thousandSeparator (input)="calculerTotal()">
+                    <!-- Numéro -->
+                    <div class="col-auto" style="padding-bottom:.5rem">
+                      <span class="dv-ligne-num">{{ $index + 1 }}</span>
                     </div>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Montant total HT</label>
-                    <div class="input-group">
-                      <span class="input-group-text">FCFA</span>
-                      <input type="text" class="form-control fw-bold text-success"
-                        [value]="devisForm.get('montant_total')?.value | number:'1.0-0':'fr'" readonly>
+
+                    <!-- Produit (image inline + select) -->
+                    <div class="col-md-5">
+                      <label class="dv-label">Produit <span class="text-danger">*</span></label>
+                      <div class="dv-produit-field">
+                        @if (ligne.get('image')?.value) {
+                          <div class="dv-thumb">
+                            <img [src]="ligne.get('image')?.value" alt="produit">
+                            <span class="dv-stock-badge badge"
+                              [ngClass]="ligne.get('stock')?.value > 5 ? 'bg-success' : 'bg-danger'">
+                              {{ ligne.get('stock')?.value }}
+                            </span>
+                          </div>
+                        }
+                        <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
+                          formControlName="produit"
+                          [ngClass]="{'is-invalid': isSubmitting && ligne.get('produit')?.errors}">
+                          @for (p of produits; track p.id) {
+                            <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
+                          }
+                        </nz-select>
+                      </div>
+                      @if (isSubmitting && ligne.get('produit')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">Produit requis</div>
+                      }
                     </div>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Total après remise</label>
-                    <div class="input-group">
-                      <span class="input-group-text">FCFA</span>
-                      <input type="text" class="form-control fw-bold text-success"
-                        [value]="devisForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr'" readonly>
+
+                    <!-- Prix unitaire -->
+                    <div class="col-md-2">
+                      <label class="dv-label">Prix unitaire <span class="text-danger">*</span></label>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">F</span>
+                        <input type="text" class="form-control dv-input" formControlName="prix_unitaire"
+                          thousandSeparator (input)="calculerTotal()"
+                          [ngClass]="{'is-invalid': isSubmitting && ligne.get('prix_unitaire')?.errors}">
+                      </div>
+                      @if (isSubmitting && ligne.get('prix_unitaire')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">Requis</div>
+                      }
                     </div>
+
+                    <!-- Quantité -->
+                    <div class="col-md-2">
+                      <label class="dv-label">Quantité <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-sm dv-input"
+                        formControlName="quantite" min="1"
+                        (input)="calculerTotal()"
+                        [ngClass]="{'is-invalid': ligne.get('quantite')?.errors?.['stockExceeded'] || (isSubmitting && ligne.get('quantite')?.errors)}">
+                      @if (ligne.get('quantite')?.errors?.['stockExceeded']) {
+                        <div class="text-danger small mt-1">Dispo : {{ ligne.get('stock')?.value }}</div>
+                      }
+                      @if (isSubmitting && ligne.get('quantite')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">Requis</div>
+                      }
+                    </div>
+
+                    <!-- Sous-total + suppr -->
+                    <div class="col-auto d-flex align-items-end gap-2">
+                      <div class="dv-ligne-total" style="min-width:90px">
+                        {{ ((ligne.value.quantite || 0) * (ligne.value.prix_unitaire || 0)) | number:'1.0-0':'fr' }} F
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline-danger"
+                        style="border-radius:8px;padding:.3rem .5rem"
+                        (click)="removeLigne($index)" [disabled]="detailDevis.length === 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+
                   </div>
                 </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Sidebar : infos devis + client -->
-          <div class="col-md-3">
-
-            <div class="mb-3">
-              <label class="form-label">Date d'expiration <span class="text-danger">*</span></label>
-              <input type="date" class="form-control" formControlName="date_expiration"
-                [ngClass]="{'is-invalid': isSubmitting && f['date_expiration'].errors}">
-              @if (isSubmitting && f['date_expiration'].errors?.['required']) {
-                <div class="invalid-feedback">La date d'expiration est requise</div>
               }
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Notes</label>
-              <textarea class="form-control" formControlName="notes" rows="3"
-                placeholder="Ex : Devis valable 30 jours, livraison incluse..."></textarea>
+            <div class="px-4 py-3">
+              <button type="button" class="dv-btn-add" (click)="addLigne()">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+              </button>
             </div>
+          </div>
+        </div>
 
-            <hr>
+      </div>
 
-            <!-- Informations client -->
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-person me-1"></i> Informations client
-            </h6>
+      <!-- ── Panneau latéral ───────────────────────────────────────────────── -->
+      <div class="col-md-4">
 
+        <!-- Paramètres du devis -->
+        <div class="dv-sidebar-section">
+          <div class="dv-sidebar-header">
+            <i class="bi bi-calendar3"></i> Paramètres
+          </div>
+          <div class="dv-sidebar-body">
             <div class="mb-3">
-              <label class="form-label form-label-sm">Client existant</label>
-              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher par nom..."
+              <label class="dv-label">Date d'expiration <span class="text-danger">*</span></label>
+              <input type="date" class="form-control dv-input" formControlName="date_expiration"
+                [ngClass]="{'is-invalid': isSubmitting && f['date_expiration'].errors}">
+              @if (isSubmitting && f['date_expiration'].errors?.['required']) {
+                <div class="text-danger small mt-1">Date requise</div>
+              }
+            </div>
+            <div>
+              <label class="dv-label">Notes</label>
+              <textarea class="form-control dv-input" formControlName="notes" rows="3"
+                style="height:auto;resize:vertical"
+                placeholder="Ex : Devis valable 30 jours…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client -->
+        <div class="dv-sidebar-section">
+          <div class="dv-sidebar-header">
+            <i class="bi bi-person"></i> Client
+          </div>
+          <div class="dv-sidebar-body">
+            <div class="mb-3">
+              <label class="dv-label">Client existant</label>
+              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher par nom…"
                 [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onClientSelect($event)">
                 @for (c of clients; track c.id) {
@@ -166,52 +171,82 @@
                   </nz-option>
                 }
               </nz-select>
-              <small class="text-muted d-block mt-1">Ou saisissez manuellement ci-dessous</small>
+              <small class="text-muted d-block mt-1" style="font-size:.74rem">Ou saisissez manuellement ci-dessous</small>
             </div>
 
-            <div formGroupName="clientdata">
-              <div class="mb-3">
-                <label class="form-label">Nom <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" formControlName="nom" placeholder="Nom du client"
+            <div formGroupName="clientdata" class="d-flex flex-column gap-2">
+              <div>
+                <label class="dv-label">Nom <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm dv-input" formControlName="nom"
+                  placeholder="Nom du client"
                   [ngClass]="{'is-invalid': isSubmitting && clientdata.get('nom')?.errors}">
                 @if (isSubmitting && clientdata.get('nom')?.errors?.['required']) {
-                  <div class="invalid-feedback">Le nom est requis</div>
+                  <div class="text-danger small mt-1">Le nom est requis</div>
                 }
               </div>
-              <div class="mb-3">
-                <label class="form-label">Prénoms</label>
-                <input type="text" class="form-control" formControlName="prenoms" placeholder="Prénoms">
+              <div>
+                <label class="dv-label">Prénoms</label>
+                <input type="text" class="form-control form-control-sm dv-input" formControlName="prenoms" placeholder="Prénoms">
               </div>
-              <div class="mb-3">
-                <label class="form-label">Téléphone</label>
-                <input type="tel" class="form-control" formControlName="telephone" placeholder="+225 XX XX XX XX">
+              <div>
+                <label class="dv-label">Téléphone</label>
+                <input type="tel" class="form-control form-control-sm dv-input" formControlName="telephone" placeholder="+225 XX XX XX XX">
               </div>
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" formControlName="email" placeholder="email@exemple.com">
+              <div>
+                <label class="dv-label">Email</label>
+                <input type="email" class="form-control form-control-sm dv-input" formControlName="email" placeholder="email@exemple.com">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totaux -->
+        <div class="dv-sidebar-section">
+          <div class="dv-sidebar-header">
+            <i class="bi bi-calculator"></i> Récapitulatif
+          </div>
+          <div class="dv-sidebar-body">
+            <div class="mb-3">
+              <label class="dv-label">Remise (FCFA)</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">FCFA</span>
+                <input type="text" class="form-control dv-input" formControlName="remise"
+                  thousandSeparator (input)="calculerTotal()">
               </div>
             </div>
 
+            <div class="dv-totals">
+              <div class="dv-total-row">
+                <span class="text-muted small">Sous-total HT</span>
+                <span class="fw-semibold">
+                  {{ devisForm.get('montant_total')?.value | number:'1.0-0':'fr' }} FCFA
+                </span>
+              </div>
+              <div class="dv-total-row dv-total-final">
+                <span>Total après remise</span>
+                <span>{{ devisForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} FCFA</span>
+              </div>
+            </div>
           </div>
-
         </div>
 
-        <div class="text-end mt-3">
-          <a routerLink="/gestion-des-devis/historique" class="btn btn-secondary me-2">
-            <i class="bi bi-arrow-left me-1"></i> Retour
-          </a>
-          <button type="submit" class="btn btn-primary" [disabled]="loading">
-            @if (loading) {
-              <span class="spinner-border spinner-border-sm me-1"></span>
-              Enregistrement...
-            } @else {
-              <i class="bi bi-save me-1"></i>
-              {{ isEditMode ? 'Modifier le devis' : 'Enregistrer le devis' }}
-            }
-          </button>
-        </div>
-
-      </form>
+      </div>
     </div>
-  </div>
+
+    <!-- ── Actions ─────────────────────────────────────────────────────────── -->
+    <div class="dv-actions">
+      <a routerLink="/gestion-des-devis/historique" class="btn dv-btn-back">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+      </a>
+      <button type="submit" class="btn dv-btn-save" [disabled]="loading">
+        @if (loading) {
+          <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement...
+        } @else {
+          <i class="bi bi-save me-1"></i>
+          {{ isEditMode ? 'Modifier le devis' : 'Enregistrer le devis' }}
+        }
+      </button>
+    </div>
+
+  </form>
 </section>

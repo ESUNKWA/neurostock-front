@@ -1,0 +1,225 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+      <h1 class="d-flex align-items-center gap-2">
+        <span class="ia-icon-badge"><i class="bi bi-tags-fill"></i></span>
+        Prix suggérés IA
+      </h1>
+      <p class="text-muted mb-0 small">Optimisation des prix de vente par analyse IA — marge et vélocité</p>
+    </div>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item">Analyse IA</li>
+      <li class="breadcrumb-item active">Prix suggérés</li>
+    </ol></nav>
+  </div>
+</div>
+
+<hr>
+
+<section class="section">
+
+  <!-- Barre de contrôles -->
+  <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+    @if (isAdmin) {
+      <div class="input-group input-group-sm" style="max-width:280px">
+        <span class="input-group-text"><i class="bi bi-shop"></i></span>
+        <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
+          <option [ngValue]="0">— Sélectionner une boutique —</option>
+          @for (b of boutiques; track b.id) {
+            <option [ngValue]="b.id">{{ b.nom }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <div class="form-check form-switch mb-0 ms-auto">
+      <input class="form-check-input" type="checkbox" id="filtreMargeOnly" [(ngModel)]="filtreMargeOnly">
+      <label class="form-check-label small" for="filtreMargeOnly">
+        Marge &lt; 20% uniquement
+      </label>
+    </div>
+
+    <button class="btn btn-outline-secondary btn-sm" (click)="loadProduits()" [disabled]="!boutiqueId || isLoadingProduits">
+      <i class="bi bi-arrow-clockwise" [class.spin]="isLoadingProduits"></i> Actualiser
+    </button>
+  </div>
+
+  <!-- Pas de boutique -->
+  @if (isAdmin && !boutiqueId) {
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-shop fs-1 d-block mb-2 opacity-25"></i>
+      Sélectionnez une boutique pour analyser les prix
+    </div>
+  }
+
+  <!-- Loading produits -->
+  @if (isLoadingProduits) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Chargement des produits…</p>
+    </div>
+  }
+
+  @if (!isLoadingProduits && boutiqueId) {
+
+    <!-- Panel suggestion (produit sélectionné) -->
+    @if (selectedProduit) {
+      <div class="suggestion-panel mb-4">
+        <div class="suggestion-panel__header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="ia-icon-badge ia-icon-badge--sm"><i class="bi bi-robot"></i></span>
+            <div>
+              <div class="fw-semibold">{{ selectedProduit.nom }}</div>
+              <div class="small text-muted">
+                Prix d'achat : <strong>{{ selectedProduit.prix_achat | number:'1.0-0':'fr' }} F</strong> &nbsp;·&nbsp;
+                Prix actuel : <strong>{{ selectedProduit.prix_vente | number:'1.0-0':'fr' }} F</strong> &nbsp;·&nbsp;
+                Marge : <strong>{{ margePercent(selectedProduit) }}%</strong>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" (click)="ignorer()">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
+        <!-- Loading suggestion -->
+        @if (isLoadingPrix) {
+          <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-muted small">Analyse IA en cours…</span>
+          </div>
+        }
+
+        <!-- Erreur -->
+        @if (!isLoadingPrix && prixSuggereError) {
+          <div class="alert alert-warning py-2 small mb-0 mt-3">
+            <i class="bi bi-exclamation-triangle me-1"></i>{{ prixSuggereError }}
+          </div>
+        }
+
+        <!-- Résultat -->
+        @if (!isLoadingPrix && prixSuggereData) {
+          <div class="suggestion-panel__result">
+            <div class="row g-3 mb-3">
+              <div class="col-6 col-md-3">
+                <div class="metric-box metric-box--green">
+                  <div class="metric-box__label">Prix suggéré</div>
+                  <div class="metric-box__value">{{ prixSuggereData.prix_suggere | number:'1.0-0':'fr' }} F</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="metric-box metric-box--green">
+                  <div class="metric-box__label">Marge cible</div>
+                  <div class="metric-box__value">{{ prixSuggereData.marge_cible }}</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="metric-box"
+                     [class.metric-box--green]="prixSuggereData.gain_potentiel_mensuel >= 0"
+                     [class.metric-box--red]="prixSuggereData.gain_potentiel_mensuel < 0">
+                  <div class="metric-box__label">Gain / mois</div>
+                  <div class="metric-box__value">
+                    {{ prixSuggereData.gain_potentiel_mensuel >= 0 ? '+' : '' }}{{ prixSuggereData.gain_potentiel_mensuel | number:'1.0-0':'fr' }} F
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="metric-box metric-box--amber">
+                  <div class="metric-box__label">Ventes / jour</div>
+                  <div class="metric-box__value">{{ prixSuggereData.velocite_journaliere | number:'1.1-2':'fr' }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-info py-2 small mb-3">
+              <i class="bi bi-lightbulb-fill text-warning me-1"></i>{{ prixSuggereData.conseil }}
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-success btn-sm" (click)="appliquerPrix()" [disabled]="isAppliquerPrix">
+                @if (isAppliquerPrix) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                } @else {
+                  <i class="bi bi-check2-circle me-1"></i>
+                }
+                Appliquer {{ prixSuggereData.prix_suggere | number:'1.0-0':'fr' }} F
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="ignorer()">Ignorer</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tableau produits -->
+    @if (produits.length === 0) {
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-box-seam fs-1 d-block mb-2 opacity-25"></i>
+        Aucun produit trouvé pour cette boutique
+      </div>
+    } @else if (produitsFiltres.length === 0) {
+      <div class="alert alert-success">
+        <i class="bi bi-check-circle-fill me-1"></i>
+        Tous les produits ont une marge ≥ 20% — aucune optimisation nécessaire.
+      </div>
+    } @else {
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent py-3 d-flex align-items-center justify-content-between">
+          <span class="fw-semibold small text-uppercase text-muted">
+            {{ produitsFiltres.length }} produit(s)
+            @if (filtreMargeOnly) { <span class="badge bg-warning text-dark ms-1">Marge &lt; 20%</span> }
+          </span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Produit</th>
+                <th class="text-center">Prix achat</th>
+                <th class="text-center">Prix vente</th>
+                <th class="text-center">Marge</th>
+                <th class="text-center d-none d-md-table-cell">Stock</th>
+                <th class="text-center">Suggestion IA</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of produitsFiltres; track p.id) {
+                <tr [class.table-active]="selectedProduit?.id === p.id">
+                  <td>
+                    <div class="fw-semibold">{{ p.nom }}</div>
+                    <small class="text-muted">{{ p.categorie?.nom }}</small>
+                  </td>
+                  <td class="text-center">{{ p.prix_achat | number:'1.0-0':'fr' }} F</td>
+                  <td class="text-center">{{ p.prix_vente | number:'1.0-0':'fr' }} F</td>
+                  <td class="text-center">
+                    <span class="badge {{ margeBadge(p).cls }}">{{ margePercent(p) }}%</span>
+                  </td>
+                  <td class="text-center d-none d-md-table-cell">
+                    <span [class.text-danger]="p.stock_disponible <= p.seuil_alert">
+                      {{ p.stock_disponible }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <button class="btn btn-sm"
+                            [class.btn-warning]="margePercent(p) < 20"
+                            [class.btn-outline-secondary]="margePercent(p) >= 20"
+                            [class.active]="selectedProduit?.id === p.id"
+                            (click)="voirSuggestion(p)"
+                            [disabled]="isLoadingPrix && selectedProduit?.id === p.id">
+                      @if (isLoadingPrix && selectedProduit?.id === p.id) {
+                        <span class="spinner-border spinner-border-sm"></span>
+                      } @else {
+                        <i class="bi bi-robot me-1"></i>Suggestion IA
+                      }
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }
+
+</section>

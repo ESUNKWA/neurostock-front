@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
 
@@ -32,5 +33,11 @@ export class CategorieService {
 
   deleteCategorie(id: number) {
     return this.http.delete(`${this.API_URL}/categorie/${id}`);
+  }
+
+  importCategories(file: File, boutiqueId: number): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.API_URL}/categorie/import?boutique=${boutiqueId}`, formData, {});
   }
 }

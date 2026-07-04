@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
@@ -52,8 +52,13 @@ export default class ListeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
     private toastr: ToastrService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: any,
   ) {}
+
+  get isPos(): boolean {
+    return this.router.url.startsWith('/pos');
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user: any) => {
@@ -74,7 +79,7 @@ export default class ListeComponent implements OnInit, OnDestroy {
     if (code === 'admin') {
       this.boutiqueService.find().subscribe({ next: (r: any) => { this.boutiques = r?.data ?? []; } });
     } else if (code === 'responsable_structure') {
-      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+      this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
         next: (r: any) => { this.boutiques = r?.data ?? []; }
       });
     } else {
@@ -175,7 +180,7 @@ export default class ListeComponent implements OnInit, OnDestroy {
                   <button class="btn btn-outline-secondary btn-detail" data-id="${id}" title="Détail">
                     <i class="bi bi-eye"></i>
                   </button>
-                  ${peutModifier ? `<a href="/commandes-clients/${id}/edit" class="btn btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>` : ''}
+                  ${peutModifier ? `<a href="${self.isPos ? '/pos/commandes' : '/commandes-clients'}/${id}/edit" class="btn btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>` : ''}
                   ${peutChanger  ? `<button class="btn btn-outline-info btn-statut" data-id="${id}" data-statut="${statut}" title="Changer le statut"><i class="bi bi-arrow-repeat"></i></button>` : ''}
                   ${peutLivrer   ? `<button class="btn btn-success btn-livrer" data-id="${id}" title="Confirmer la livraison"><i class="bi bi-truck"></i></button>` : ''}
                   ${peutSuppr    ? `<button class="btn btn-outline-danger btn-suppr" data-id="${id}" title="Supprimer"><i class="bi bi-trash"></i></button>` : ''}

@@ -56,7 +56,7 @@ export class StructureComponent {
         prenoms: ['', [Validators.required]],
         email: ['', [Validators.required]],
         mot_de_passe: this.fb.control('12345', { nonNullable: true }),
-        telephone: ['', []],
+        telephone: ['', [Validators.minLength(10), Validators.maxLength(10)]],
       })
     })
   }

@@ -24,12 +24,41 @@
               <h5 class="card-title mb-0 text-uppercase">Liste des catégories</h5>
             </div>
             <div class="col-md-6 text-end">
+              <input type="file" #importInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
+              <button type="button" class="btn btn-outline-secondary me-2 mt-3" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
+                <i class="bi bi-download"></i> Modèle Excel
+              </button>
+              <button type="button" class="btn btn-success me-2 mt-3" (click)="importInput.click()" [disabled]="isParsingFile">
+                @if (isParsingFile) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span> Lecture du fichier...
+                } @else {
+                  <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
+                }
+              </button>
               <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
                 <i class="bi bi-plus-circle"></i> Nouvelle Catégorie
               </button>
             </div>
           </div>
         </div>
+
+        @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+          @if (boutiques.length >= 1) {
+            <div class="card-body border-bottom pb-3">
+              <div class="row">
+                <div class="col-md-4">
+                  <select class="form-select" (change)="onBoutiqueChange($event)">
+                    <option value="">— Sélectionner une boutique —</option>
+                    @for (boutique of boutiques; track boutique.id) {
+                      <option [value]="boutique.id">{{ boutique.nom }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+        }
+
         <div class="card-body">
           @if (isLoading) {
             <div class="text-center py-3">
@@ -61,52 +90,149 @@
   </div>
 </section>
 
-<!-- Modal pour ajouter ou visualiser une nouvelle catégorie -->
+<!-- Modal catégorie -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">{{ titleModal }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+    <div class="modal-content mf-modal mf-modal--teal">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-tags"></i></div>
+        <div>
+          <div class="mf-header-title">{{ titleModal }}</div>
+          <div class="mf-header-subtitle">Renseignez les informations de la catégorie</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
+
       <form novalidate [formGroup]="categorieForm" (ngSubmit)="saveOrUpdateCategorie()">
-        <div class="modal-body">
-          <div class="block-content fs-sm">
-            <div class="mb-4">
-              <label class="form-label" for="nom">Nom</label>
-              <input type="text" class="form-control" id="nom" placeholder="Nom de la catégorie" formControlName="nom" [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
-              @if (isSubmitted && f['nom'].errors) {
-                <div class="invalid-feedback">
-                  @if (f['nom'].errors['required']) {
-                    <div>Le nom est obligatoire</div>
-                  }
+        <div class="mf-body">
+
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label" for="nom">Nom de la catégorie <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-tag mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" id="nom"
+                    placeholder="Ex : Alimentation, Électronique…"
+                    formControlName="nom"
+                    [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                 </div>
-              }
-            </div>
-            <div class="mb-4">
-              <label class="form-label" for="description">Description</label>
-              <textarea class="form-control" id="description" rows="5" placeholder="Description de la catégorie" formControlName="description" [ngClass]="{'is-invalid': isSubmitted && f['description'].errors}"></textarea>
-              @if (isSubmitted && f['description'].errors) {
-                <div class="invalid-feedback">
-                  @if (f['description'].errors['required']) {
-                    <div>La description est obligatoire</div>
-                  }
-                </div>
-              }
+                @if (isSubmitted && f['nom'].errors?.['required']) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="mf-label" for="description">Description</label>
+                <textarea class="form-control mf-input" id="description" rows="4"
+                  placeholder="Décrivez cette catégorie…"
+                  formControlName="description"></textarea>
+              </div>
             </div>
           </div>
+
         </div>
-        <div class="modal-footer">
+        <div class="mf-footer">
           @if (!titleModal.includes('VISUALISER')) {
-              <button type="submit" class="btn btn-primary me-2">
-                <i [class]="icon"></i> {{ buttonText }}
-              </button>
-            }
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="ri ri-close-circle-line"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
+            <button type="submit" class="btn mf-btn-save"><i [class]="icon"></i> {{ buttonText }}</button>
+          }
+          <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'aperçu de l'import CSV/Excel -->
+<div class="modal fade" id="modal-import-preview" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content mf-modal mf-modal--slate">
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-file-earmark-spreadsheet"></i></div>
+        <div>
+          <div class="mf-header-title">Aperçu de l'import</div>
+          <div class="mf-header-subtitle">{{ pendingImportFile?.name }}</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" (click)="cancelImport()"></button>
+      </div>
+      <div class="modal-body" style="background:#f8fafc">
+
+        <!-- Sélection de la boutique cible -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Boutique cible <span class="text-danger">*</span>
+          </label>
+          @if (boutiques.length > 1) {
+            <select class="form-select" [(ngModel)]="importBoutiqueId" [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="null">— Sélectionnez une boutique —</option>
+              @for (b of boutiques; track b.id) {
+                <option [ngValue]="b.id">{{ b.nom }}</option>
+              }
+            </select>
+          } @else if (boutiques.length === 1) {
+            <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
+          } @else {
+            <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
+          }
+        </div>
+
+        @if (importPreview && importPreview.rows.length) {
+          <p class="text-muted">{{ importPreview.rows.length }} ligne(s) détectée(s) dans le fichier.</p>
+          <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+            <table class="table table-bordered table-sm table-striped">
+              <thead class="table-light" style="position: sticky; top: 0;">
+                <tr>
+                  @for (col of importPreview.columns; track col) {
+                    <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of importPreview.rows; track $index) {
+                  <tr>
+                    @for (col of importPreview.columns; track col) {
+                      <td>{{ row[col] }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (importPreview) {
+          <div class="alert alert-warning mb-0">Le fichier ne contient aucune ligne exploitable.</div>
+        }
+
+        @if (importResult) {
+          <hr>
+          <div class="alert" [ngClass]="importResult.errors.length ? 'alert-warning' : 'alert-success'">
+            <strong>Import terminé :</strong> {{ importResult.created }} créé(s), {{ importResult.skipped }} ignoré(s).
+            @if (importResult.errors.length) {
+              <ul class="mb-0 mt-2">
+                @for (err of importResult.errors; track $index) {
+                  <li>{{ err }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+      <div class="mf-footer">
+        @if (!importResult) {
+          <button type="button" class="btn mf-btn-save" [disabled]="isImporting || !importPreview?.rows?.length || !importBoutiqueId" (click)="confirmImport()">
+            @if (isImporting) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span> Importation...
+            } @else {
+              <i class="bi bi-cloud-upload me-1"></i> Confirmer l'import
+            }
+          </button>
+        }
+        <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal" (click)="cancelImport()">
+          <i class="bi bi-x-lg me-1"></i> {{ importResult ? 'Fermer' : 'Annuler' }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

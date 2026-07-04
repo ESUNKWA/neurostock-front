@@ -37,6 +37,12 @@ export class ProduitService {
   scanByCodeBarre(code: string, boutique: number) {
     return this.http.get(`${this.API_URL}/produit/scan/${code}`, { params: { boutique } });
   }
+
+  importProduits(file: File, boutiqueId: number) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.API_URL}/produit/import?boutique=${boutiqueId}`, formData, {});
+  }
 }
 
 // Fonction utilitaire pour vérifier si l'objet est un FormData

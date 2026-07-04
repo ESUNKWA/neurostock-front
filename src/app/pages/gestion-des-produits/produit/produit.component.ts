@@ -9,6 +9,9 @@ import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
+import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../helpers/file-import-preview';
+import { PrevisionService } from '../../../services/analyse-ia/prevision.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -16,7 +19,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-produit',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule, ThousandSeparatorDirective],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastrModule, ThousandSeparatorDirective, NzSelectModule],
   templateUrl: './produit.component.html',
   styleUrl: './produit.component.scss'
 })
@@ -35,7 +38,27 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   isSubmitted: boolean = false;
   selectedFile: File | null = null;
   previewImageUrl: string | null = null;
+  isImporting: boolean = false;
+  isParsingFile: boolean = false;
+  importPreview: FilePreview | null = null;
+  pendingImportFile: File | null = null;
+  importResult: { created: number; skipped: number; errors: string[] } | null = null;
+  importBoutiqueId: number | string | null = null;
   currentUser: any;
+
+  // Prix suggéré IA
+  produitPrixSuggere: any | null = null;
+  prixSuggereData: any | null = null;
+  prixSuggereError: string | null = null;
+  isLoadingPrixSuggere = false;
+  isAppliquerPrix = false;
+
+  get margeActuelle(): number {
+    if (!this.produitPrixSuggere) return 0;
+    const { prix_achat, prix_vente } = this.produitPrixSuggere;
+    if (!prix_achat) return 0;
+    return Math.round(((prix_vente - prix_achat) / prix_achat) * 1000) / 10;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -44,6 +67,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     private boutiqueService: BoutiqueService,
     private authService: AuthService,
     private toastr: ToastrService,
+    private previsionService: PrevisionService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
     this.produitForm = this.fb.group({
@@ -160,18 +184,24 @@ export default class ProduitComponent implements OnInit, OnDestroy {
                 return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
               }
             },
-            { 
+            {
               data: null,
               className: 'text-center',
-              width: '15%',
+              width: '18%',
               orderable: false,
               render: (data: any, type: any, row: any) => {
+                const marge = row.prix_achat > 0 ? ((row.prix_vente - row.prix_achat) / row.prix_achat) * 100 : 0;
+                const iaClass = marge < 15 ? 'btn-warning' : 'btn-outline-secondary';
+                const iaTitle = marge < 15 ? `Marge faible (${Math.round(marge)}%) — Suggestion IA` : 'Suggestion IA prix';
                 return `
                   <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="visualiser" data-action="view" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm ${iaClass} me-1" data-bs-toggle="tooltip" title="${iaTitle}" data-action="ia" data-id="${row.id}">
+                      <i class="bi bi-robot"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm btn-success me-1" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
                       <i class="bi bi-pencil-square"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
@@ -232,6 +262,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               if (!produit) return;
               
               switch (action) {
+                case 'ia':
+                  this.voirPrixSuggere(produit);
+                  break;
                 case 'view':
                   this.openViewProduit(produit);
                   break;
@@ -253,6 +286,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   loadBoutiques(): void {
 
+    console.log(this.currentUser);
+    
+
     if (this.currentUser.is_admin === true) {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
@@ -266,7 +302,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       });
     }else{
       if (this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
-        this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+        this.boutiqueService.findByStructure(this.currentUser.structure[0].id).subscribe({
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
@@ -285,7 +321,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     
-    this.categorieService.getCategoriesByBoutik(this.currentUser?.boutique?.id).subscribe({
+    this.categorieService.getCategoriesByBoutik(this.currentUser.boutique_id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.categories = response.data;
@@ -307,14 +343,14 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   loadProduits(): void {
     this.isLoading = true;
 
-    if (this.currentUser.profil.description.toLowerCase() === 'administrateur' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+    if (this.currentUser.profil.code.toLowerCase() === 'admini' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
       if (!this.selectedBoutique) {
         this.produits = [];
         this.isLoading = false;
         return;
       }
     } else {
-      this.selectedBoutique = this.currentUser.boutique.id;
+      this.selectedBoutique = this.currentUser.boutique_id
     }
     
     const body: any = {
@@ -514,6 +550,154 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  async onImportFileSelected(event: any): Promise<void> {
+    const file: File = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+
+    this.importResult = null;
+    this.pendingImportFile = file;
+    this.importBoutiqueId = this.currentUser?.boutique_id || this.selectedBoutique || null;
+    this.isParsingFile = true;
+
+    try {
+      this.importPreview = await parseFileToRows(file);
+    } catch (error) {
+      console.error('Erreur lors de la lecture du fichier:', error);
+      this.toastr.error('Impossible de lire ce fichier. Vérifiez le format (.csv, .xlsx, .xls).');
+      this.pendingImportFile = null;
+      this.isParsingFile = false;
+      return;
+    }
+
+    this.isParsingFile = false;
+
+    const modal = document.getElementById('modal-import-preview');
+    if (modal) {
+      const modalInstance = new bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+  }
+
+  confirmImport(): void {
+    if (!this.pendingImportFile) return;
+    if (!this.importBoutiqueId) {
+      this.toastr.error('Veuillez sélectionner une boutique avant d\'importer.');
+      return;
+    }
+
+    this.isImporting = true;
+    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId).pipe(first()).subscribe({
+      next: (response: any) => {
+        this.isImporting = false;
+        this.importResult = {
+          created: response?.created ?? 0,
+          skipped: response?.skipped ?? 0,
+          errors: response?.errors ?? []
+        };
+        this.toastr.success(`Import terminé : ${this.importResult.created} créé(s), ${this.importResult.skipped} ignoré(s).`);
+        this.loadProduits();
+      },
+      error: (err: any) => {
+        this.isImporting = false;
+        this.toastr.error(err?.error?.message || 'Erreur lors de l\'import des produits.');
+      }
+    });
+  }
+
+  downloadTemplate(): void {
+    downloadXlsxTemplate(
+      ['nom', 'prix_achat', 'prix_vente', 'stock_initial', 'seuil_alert', 'unite_mesure', 'code_barre'],
+      [
+        { nom: 'Téléphone XR', prix_achat: 80000, prix_vente: 100000, stock_initial: 10, seuil_alert: 2, unite_mesure: 'pièce', code_barre: 'ABC123' },
+        { nom: 'Casque audio', prix_achat: 15000, prix_vente: 25000, stock_initial: 5, seuil_alert: 1, unite_mesure: 'pièce', code_barre: '' }
+      ],
+      'modele_produits.xlsx'
+    );
+  }
+
+  cancelImport(): void {
+    this.pendingImportFile = null;
+    this.importPreview = null;
+    this.importResult = null;
+    this.importBoutiqueId = null;
+    const modal = document.getElementById('modal-import-preview');
+    if (modal) {
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  }
+
+  voirPrixSuggere(produit: any): void {
+    this.produitPrixSuggere = produit;
+    this.prixSuggereData = null;
+    this.prixSuggereError = null;
+    this.isLoadingPrixSuggere = true;
+
+    // Ouvre le modal avant l'appel API (affiche le spinner)
+    const modalEl = document.getElementById('modal-prix-suggere');
+    if (modalEl) {
+      let inst = bootstrap.Modal.getInstance(modalEl);
+      if (!inst) inst = new bootstrap.Modal(modalEl);
+      inst.show();
+    }
+
+    const boutiqueId = produit.boutique?.id ?? this.currentUser?.boutique_id;
+    if (!boutiqueId) {
+      this.isLoadingPrixSuggere = false;
+      this.prixSuggereError = 'Boutique introuvable pour ce produit.';
+      return;
+    }
+
+    this.previsionService.getPrixSuggere(produit.id, boutiqueId).subscribe({
+      next: (res: any) => {
+        this.prixSuggereData = res?.data ?? res;
+        this.isLoadingPrixSuggere = false;
+      },
+      error: (err: any) => {
+        this.isLoadingPrixSuggere = false;
+        this.prixSuggereError = err?.error?.message || 'Suggestion IA temporairement indisponible.';
+      }
+    });
+  }
+
+  appliquerPrixSuggere(): void {
+    if (!this.produitPrixSuggere || !this.prixSuggereData) return;
+    this.isAppliquerPrix = true;
+
+    this.produitService.updateProduit(this.produitPrixSuggere.id, { prix_vente: this.prixSuggereData.prix_suggere })
+      .pipe(first())
+      .subscribe({
+        next: () => {
+          this.isAppliquerPrix = false;
+          this.toastr.success(`Prix mis à jour : ${this.prixSuggereData.prix_suggere.toLocaleString('fr-FR')} FCFA`);
+          const modal = document.getElementById('modal-prix-suggere');
+          if (modal) {
+            const inst = bootstrap.Modal.getInstance(modal);
+            if (inst) inst.hide();
+          }
+          this.prixSuggereData = null;
+          this.loadProduits();
+        },
+        error: () => {
+          this.isAppliquerPrix = false;
+          this.toastr.error('Erreur lors de l\'application du prix.');
+        }
+      });
+  }
+
+  ignorerPrixSuggere(): void {
+    this.prixSuggereData = null;
+    this.prixSuggereError = null;
+    const modal = document.getElementById('modal-prix-suggere');
+    if (modal) {
+      const inst = bootstrap.Modal.getInstance(modal);
+      if (inst) inst.hide();
+    }
   }
 
   deleteProduit(produit: any): void {

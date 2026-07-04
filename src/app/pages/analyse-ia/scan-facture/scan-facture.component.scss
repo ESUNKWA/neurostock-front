@@ -1,0 +1,132 @@
+// ── IA icon badge ─────────────────────────────────────────────────────────────
+.ia-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: .5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+
+  &--lg {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    font-size: 1.8rem;
+  }
+}
+
+// ── Upload zone ───────────────────────────────────────────────────────────────
+.upload-zone {
+  border: 2px dashed #c7d2fe;
+  border-radius: .75rem;
+  background: #fafafe;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .15s, background .15s;
+
+  &:hover {
+    border-color: #6366f1;
+    background: #f5f3ff;
+  }
+
+  &--has-file {
+    border-style: solid;
+    border-color: #6366f1;
+    min-height: 300px;
+  }
+
+  &__inner {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  &__icon {
+    font-size: 3rem;
+    color: #a5b4fc;
+    display: block;
+    margin-bottom: .75rem;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: .25rem;
+  }
+
+  &__hint {
+    font-size: .8rem;
+    color: #9ca3af;
+    margin-bottom: 0;
+  }
+
+  &__preview {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+  }
+
+  &__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(99, 102, 241, .75);
+    text-align: center;
+    padding: .5rem;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  &:hover &__overlay {
+    opacity: 1;
+  }
+}
+
+// ── Scanning animation ────────────────────────────────────────────────────────
+.scanning-screen {
+  padding: 4rem 1rem;
+}
+
+.scanning-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanning-rings {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 2px solid rgba(99,102,241,.3);
+  animation: pulse-ring 1.4s ease-out infinite;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 2px solid rgba(139,92,246,.2);
+    animation: pulse-ring 1.4s ease-out .35s infinite;
+  }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(.9); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+// ── Result header ─────────────────────────────────────────────────────────────
+.result-header {
+  border-left: 4px solid #6366f1 !important;
+}

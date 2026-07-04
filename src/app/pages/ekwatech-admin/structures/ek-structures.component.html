@@ -1,0 +1,200 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Structures</h4>
+      <p class="text-muted small mb-0">Entités légales du réseau Ekwatech</p>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openCreate()">
+      <i class="bi bi-plus-lg me-1"></i>Nouvelle structure
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      @if (!loading && structures.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-building display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucune structure enregistrée</p>
+          <button class="btn btn-sm btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg me-1"></i>Créer la première
+          </button>
+        </div>
+      }
+
+      @if (!loading && structures.length > 0) {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">ID</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>RCCM</th>
+                <th>Boutiques</th>
+                <th class="text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of structures; track s.id) {
+                <tr>
+                  <td class="ps-4">
+                    <span class="badge bg-secondary-subtle text-secondary fw-semibold">#{{ s.id }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ s.nom }}</div>
+                    @if (s.situation_geo) {
+                      <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ s.situation_geo }}</div>
+                    }
+                  </td>
+                  <td class="text-muted small">{{ s.email || '—' }}</td>
+                  <td class="text-muted small">{{ s.rccm || '—' }}</td>
+                  <td>
+                    <a [routerLink]="['/ekwatech/boutiques']" [queryParams]="{structure: s.id}"
+                       class="badge bg-primary-subtle text-primary text-decoration-none">
+                      <i class="bi bi-shop me-1"></i>{{ s.boutiques?.length ?? 0 }} boutique(s)
+                    </a>
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex gap-1 justify-content-end">
+                      <a [routerLink]="['/ekwatech/provision']" [queryParams]="{structureId: s.id}"
+                         class="btn btn-sm btn-outline-primary" title="Provisionner la DB">
+                        <i class="bi bi-database-add"></i>
+                      </a>
+                      <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(s)" title="Modifier">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(s)" title="Supprimer">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modal structure -->
+@if (showModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content mf-modal mf-modal--violet">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-building"></i></div>
+          <div>
+            <div class="mf-header-title">{{ isEditMode ? 'Modifier la structure' : 'Nouvelle structure' }}</div>
+            <div class="mf-header-subtitle">Renseignez les informations de l'entité légale</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeModal()" [disabled]="isSubmitting"></button>
+        </div>
+
+        <div class="mf-body" [formGroup]="form">
+
+          <!-- Logo -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-image"></i> Logo</div>
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-3 d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0 border"
+                   style="width:72px;height:72px;background:#f8fafc">
+                @if (previewUrl) {
+                  <img [src]="previewUrl" alt="logo" style="width:100%;height:100%;object-fit:cover">
+                } @else {
+                  <i class="bi bi-building text-muted" style="font-size:1.8rem"></i>
+                }
+              </div>
+              <div>
+                <label class="mf-label mb-1">Logo <span class="text-muted fw-normal" style="font-size:.75rem">(optionnel)</span></label>
+                <input type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
+                <div class="text-muted" style="font-size:.72rem">PNG, JPG</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations -->
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="mf-label">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-building mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="nom"
+                    [class.is-invalid]="f['nom'].invalid && f['nom'].touched">
+                </div>
+                @if (f['nom'].invalid && f['nom'].touched) {
+                  <div class="mf-error">Le nom est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="mf-label">Email <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-envelope mf-input-icon"></i>
+                  <input type="email" class="form-control mf-input" formControlName="email"
+                    [class.is-invalid]="f['email'].invalid && f['email'].touched">
+                </div>
+                @if (f['email'].invalid && f['email'].touched) {
+                  <div class="mf-error">L'email est obligatoire</div>
+                }
+              </div>
+              <div class="col-md-4">
+                <label class="mf-label">Téléphone</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-telephone mf-input-icon"></i>
+                  <input type="tel" class="form-control mf-input" formControlName="telephone"
+                    placeholder="07 00 00 00 00" maxlength="10"
+                    [class.is-invalid]="f['telephone'].errors && f['telephone'].dirty">
+                </div>
+                @if (f['telephone'].errors && f['telephone'].dirty) {
+                  <div class="mf-error">10 chiffres requis</div>
+                }
+              </div>
+              <div class="col-md-4">
+                <label class="mf-label">RCCM</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-file-earmark-text mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="rccm">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="mf-label">Localisation</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-geo-alt mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" formControlName="situation_geo" placeholder="Ville, quartier…">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" (click)="submit()" [disabled]="isSubmitting">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2 me-1"></i> }
+            {{ isEditMode ? 'Enregistrer' : 'Créer la structure' }}
+          </button>
+          <button class="btn mf-btn-cancel" (click)="closeModal()" [disabled]="isSubmitting">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

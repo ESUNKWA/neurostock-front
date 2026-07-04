@@ -1,0 +1,234 @@
+$cmd-h1: #312e81;
+$cmd-h2: #4338ca;
+$cmd-accent: #4f46e5;
+$cmd-tint: #eef2ff;
+$cmd-txt: #312e81;
+$cmd-border: #c7d2fe;
+
+/* ── Page header ──────────────────────────────────────────────────────────── */
+.cmd-page-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, $cmd-h1, $cmd-h2);
+  color: #fff;
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(49, 46, 129, 0.22);
+
+  .cmd-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .cmd-header-title  { font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+  .cmd-header-subtitle { font-size: 0.78rem; opacity: 0.8; margin-top: 2px; }
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.cmd-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  overflow: hidden;
+  margin-bottom: 1rem;
+
+  .cmd-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+
+    .cmd-card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $cmd-accent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+  .cmd-card-body { padding: 1.25rem; background: #fff; }
+}
+
+/* ── Ligne produit ────────────────────────────────────────────────────────── */
+.cmd-ligne {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+}
+
+/* Image inline à gauche du select produit */
+.cmd-produit-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+
+  .cmd-thumb {
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 1px;
+
+    img {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      object-fit: cover;
+      border: 1px solid #e2e8f0;
+    }
+
+    .cmd-stock-badge {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      font-size: 0.6rem;
+      padding: 1px 4px;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
+  }
+
+  nz-select { flex: 1; min-width: 0; }
+}
+
+.cmd-ligne-subtotal {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $cmd-txt;
+  padding: 0.25rem 0.625rem;
+  background: $cmd-tint;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ── Label & Input ────────────────────────────────────────────────────────── */
+.cmd-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.cmd-input {
+  border-color: #e2e8f0 !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+
+  &:focus {
+    border-color: $cmd-accent !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
+  }
+}
+
+/* ── Sidebar sections ─────────────────────────────────────────────────────── */
+.cmd-sidebar-section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  margin-bottom: 1rem;
+  overflow: hidden;
+
+  .cmd-sidebar-header {
+    padding: 0.75rem 1.125rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $cmd-accent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .cmd-sidebar-body { padding: 1rem 1.125rem; }
+}
+
+/* ── Totaux ───────────────────────────────────────────────────────────────── */
+.cmd-totals {
+  background: $cmd-tint;
+  border: 1px solid $cmd-border;
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
+
+  .cmd-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid $cmd-border;
+    &:last-child { border-bottom: none; }
+  }
+  .cmd-total-final {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $cmd-txt;
+  }
+}
+
+/* ── Bouton ajouter ligne ─────────────────────────────────────────────────── */
+.cmd-btn-add {
+  color: $cmd-accent;
+  border: 1.5px dashed rgba(79,70,229,0.35);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  transition: all .15s;
+
+  &:hover {
+    background: $cmd-tint;
+    border-color: $cmd-accent;
+  }
+}
+
+/* ── Footer actions ───────────────────────────────────────────────────────── */
+.cmd-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 1rem 0;
+  margin-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cmd-btn-save {
+  background: linear-gradient(135deg, $cmd-h1, $cmd-h2);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: opacity .15s;
+  &:hover:not(:disabled) { opacity: 0.92; }
+  &:disabled { opacity: 0.6; }
+}
+
+.cmd-btn-back {
+  background: #fff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  &:hover { background: #f8fafc; }
+}

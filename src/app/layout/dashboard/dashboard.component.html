@@ -14,8 +14,202 @@
 
 <section class="section dashboard">
 
+@if (isCaissierView) {
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!--  Dashboard caissier / vendeur                                         -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+      <span class="badge bg-primary-subtle text-primary fw-semibold me-2">
+        <i class="bi bi-calendar3 me-1"></i>{{ today | date:'dd/MM/yyyy' }}
+      </span>
+      @if (caissierStats?.caissier) {
+        <span class="text-muted small">
+          <i class="bi bi-person-badge me-1"></i>
+          {{ caissierStats.caissier.prenoms || caissierStats.caissier.prenom }} {{ caissierStats.caissier.nom }}
+        </span>
+      }
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" (click)="loadCaissierStats()" [disabled]="isLoadingCaissier">
+      @if (isLoadingCaissier) {
+        <span class="spinner-border spinner-border-sm me-1"></span>
+      } @else {
+        <i class="bi bi-arrow-clockwise me-1"></i>
+      }
+      Actualiser
+    </button>
+  </div>
+
+  @if (isLoadingCaissier && !caissierStats) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Chargement des données…</p>
+    </div>
+  }
+
+  @if (caissierStats) {
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+
+      <!-- Nb ventes -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+              <div>
+                <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Ventes du jour</p>
+                <h3 class="fw-bold mb-0">{{ caissierStats.nb_ventes }}</h3>
+                <span class="text-muted small">transactions</span>
+              </div>
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                   style="width:48px;height:48px;flex-shrink:0;">
+                <i class="bi bi-receipt text-primary fs-5"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chiffre d'affaires -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+              <div>
+                <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Chiffre d'affaires</p>
+                <h3 class="fw-bold mb-0">{{ caissierStats.chiffre_affaires | number:'1.0-0':'fr' }}</h3>
+                <span class="text-muted small">FCFA</span>
+              </div>
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10"
+                   style="width:48px;height:48px;flex-shrink:0;">
+                <i class="bi bi-cash-stack text-success fs-5"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panier moyen -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+              <div>
+                <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Panier moyen</p>
+                <h3 class="fw-bold mb-0">
+                  {{ caissierStats.nb_ventes ? (caissierStats.chiffre_affaires / caissierStats.nb_ventes | number:'1.0-0':'fr') : '0' }}
+                </h3>
+                <span class="text-muted small">FCFA / vente</span>
+              </div>
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10"
+                   style="width:48px;height:48px;flex-shrink:0;">
+                <i class="bi bi-bag text-warning fs-5"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modes de paiement + Top produits -->
+    <div class="row g-3 mb-4">
+
+      <!-- Répartition par mode de paiement -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 pb-0 pt-3">
+            <h6 class="fw-semibold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-pie-chart me-1"></i> Répartition par mode de paiement
+            </h6>
+          </div>
+          <div class="card-body">
+            @let modes = modeEntries(caissierStats.par_mode_paiement);
+            @if (modes.length) {
+              @let total = caissierStats.chiffre_affaires || 1;
+              @for (m of modes; track m.mode) {
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-semibold">{{ m.label }}</span>
+                    <span class="text-muted">{{ m.val | number:'1.0-0':'fr' }} FCFA</span>
+                  </div>
+                  <div class="progress" style="height:8px;border-radius:4px;">
+                    <div class="progress-bar bg-primary" [style.width.%]="(m.val / total) * 100" style="border-radius:4px;"></div>
+                  </div>
+                  <div class="text-end text-muted" style="font-size:.7rem;">
+                    {{ (m.val / total) * 100 | number:'1.0-0':'fr' }}%
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="text-muted small mb-0">Aucune vente enregistrée aujourd'hui.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Produits vendus -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 pb-0 pt-3">
+            <h6 class="fw-semibold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-box-seam me-1"></i> Produits vendus aujourd'hui
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            @if (caissierStats.produits?.length) {
+              <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0 align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Produit</th>
+                      <th class="text-end">P.U</th>
+                      <th class="text-end">Qté</th>
+                      <th class="text-end">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of caissierStats.produits; track p.produit_id) {
+                      <tr>
+                        <td class="fw-semibold small">{{ p.nom }}</td>
+                        <td class="text-end small text-muted">{{ p.prix_unitaire | number:'1.0-0':'fr' }}</td>
+                        <td class="text-end">
+                          <span class="badge bg-secondary-subtle text-secondary">{{ p.quantite_vendue }}</span>
+                        </td>
+                        <td class="text-end fw-semibold small">{{ p.montant_total | number:'1.0-0':'fr' }} F</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot class="table-light">
+                    <tr>
+                      <td colspan="3" class="fw-bold small">Total</td>
+                      <td class="text-end fw-bold text-primary small">
+                        {{ caissierStats.chiffre_affaires | number:'1.0-0':'fr' }} FCFA
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            } @else {
+              <div class="text-center py-4 text-muted small">
+                <i class="bi bi-inbox fs-4 d-block mb-2 opacity-50"></i>
+                Aucun produit vendu aujourd'hui.
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+} @else {
+
   <!-- Sélecteur boutique (admin / responsable seulement) -->
-  @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.is_admin === true) {
+  @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.is_admin === true) {
     <div class="row mb-3">
       <div class="col-md-4">
         <div class="input-group input-group-sm">
@@ -31,6 +225,83 @@
     </div>
   }
 
+  <!-- ── Résumé IA journalier ── -->
+  @if (isLoadingResume) {
+    <div class="resume-ia-card resume-ia-card--loading mb-4">
+      <span class="spinner-border spinner-border-sm text-white opacity-75 me-2"></span>
+      <span class="text-white opacity-75 small">Analyse IA en cours…</span>
+    </div>
+  }
+  @if (resumeJournalier && !isLoadingResume) {
+    <div class="resume-ia-card mb-4">
+      <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-2">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="resume-ia-badge"><i class="bi bi-stars"></i></span>
+            <span class="fw-semibold text-white">Aujourd'hui · {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</span>
+          </div>
+          <div class="d-flex flex-wrap gap-4">
+            <div>
+              <div class="resume-ia-sublabel">Ventes</div>
+              <div class="resume-ia-value">
+                {{ resumeJournalier.ventes?.aujourd_hui ?? 0 }}
+                @if (resumeJournalier.ventes?.evolution !== null && resumeJournalier.ventes?.evolution !== undefined) {
+                  <span class="resume-ia-pill"
+                        [class.resume-ia-pill--up]="resumeJournalier.ventes.evolution >= 0"
+                        [class.resume-ia-pill--down]="resumeJournalier.ventes.evolution < 0">
+                    {{ resumeJournalier.ventes.evolution >= 0 ? '+' : '' }}{{ resumeJournalier.ventes.evolution }}% vs hier
+                  </span>
+                }
+              </div>
+            </div>
+            <div>
+              <div class="resume-ia-sublabel">Chiffre d'affaires</div>
+              <div class="resume-ia-value">
+                {{ resumeJournalier.chiffre_affaires?.aujourd_hui | number:'1.0-0':'fr' }} F CFA
+                @if (resumeJournalier.chiffre_affaires?.evolution !== null && resumeJournalier.chiffre_affaires?.evolution !== undefined) {
+                  <span class="resume-ia-pill"
+                        [class.resume-ia-pill--up]="resumeJournalier.chiffre_affaires.evolution >= 0"
+                        [class.resume-ia-pill--down]="resumeJournalier.chiffre_affaires.evolution < 0">
+                    {{ resumeJournalier.chiffre_affaires.evolution >= 0 ? '+' : '' }}{{ resumeJournalier.chiffre_affaires.evolution }}%
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="resume-ia-divider">
+      <div class="d-flex flex-wrap gap-4 small">
+        @if (resumeJournalier.top_produits?.length) {
+          <span class="text-white">
+            <i class="bi bi-star-fill text-warning me-1"></i>
+            <strong>Meilleure vente :</strong>
+            {{ resumeJournalier.top_produits[0].nom }}
+            ({{ resumeJournalier.top_produits[0].quantite_vendue }} unités)
+          </span>
+        }
+        @if (resumeJournalier.stock?.produits_en_rupture || resumeJournalier.stock?.produits_en_alerte) {
+          <span class="text-warning">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            @if (resumeJournalier.stock.produits_en_rupture) {
+              {{ resumeJournalier.stock.produits_en_rupture }}
+              produit{{ resumeJournalier.stock.produits_en_rupture > 1 ? 's' : '' }} en rupture
+            }
+            @if (resumeJournalier.stock.produits_en_rupture && resumeJournalier.stock.produits_en_alerte) { · }
+            @if (resumeJournalier.stock.produits_en_alerte) {
+              {{ resumeJournalier.stock.produits_en_alerte }} sous seuil d'alerte
+            }
+          </span>
+        }
+        @if (!resumeJournalier.stock?.produits_en_rupture && !resumeJournalier.stock?.produits_en_alerte) {
+          <span class="text-white opacity-75">
+            <i class="bi bi-check-circle-fill text-success me-1"></i> Aucune alerte stock
+          </span>
+        }
+      </div>
+    </div>
+  }
+
   @if (!stats) {
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status"></div>
@@ -40,64 +311,82 @@
 
   @if (stats) {
 
-    <!-- ── KPI Cards ── -->
-    <div class="row g-3 mb-4">
+    <!-- ── Row 1 : KPIs principaux ── -->
+    <div class="row g-3 mb-3">
 
-      <!-- Vente du jour -->
+      <!-- Ventes du jour -->
       <div class="col-xl-3 col-md-6">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body">
             <div class="d-flex align-items-start justify-content-between">
               <div>
                 <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Ventes du jour</p>
-                <h4 class="fw-bold mb-1">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }}</h4>
-                <span class="text-muted small">FCFA</span>
+                <h4 class="fw-bold mb-0">{{ stats.dash.vente?.nbre_vente_jr || 0 }}</h4>
+                <div class="text-primary fw-semibold small mt-1">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} FCFA</div>
               </div>
-              <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
-                   style="width:48px;height:48px;flex-shrink:0;">
-                <i class="bi bi-cart3 text-primary fs-5"></i>
+              <div class="db-kpi-icon bg-primary bg-opacity-10">
+                <i class="bi bi-cart3 text-primary"></i>
               </div>
             </div>
             <hr class="my-2">
-            <div class="d-flex align-items-center gap-1 small">
-              @if (variationJr >= 0) {
-                <i class="bi bi-arrow-up-circle-fill text-success"></i>
-                <span class="text-success fw-semibold">+{{ variationJr }}%</span>
+            <div class="small">
+              @if (variationJr > 0) {
+                <span class="db-trend db-trend--up"><i class="bi bi-arrow-up-short"></i>+{{ variationJr }}% vs hier</span>
+              } @else if (variationJr < 0) {
+                <span class="db-trend db-trend--down"><i class="bi bi-arrow-down-short"></i>{{ variationJr }}% vs hier</span>
               } @else {
-                <i class="bi bi-arrow-down-circle-fill text-danger"></i>
-                <span class="text-danger fw-semibold">{{ variationJr }}%</span>
+                <span class="db-trend db-trend--flat"><i class="bi bi-dash"></i>Stable vs hier</span>
               }
-              <span class="text-muted">vs hier</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- CA mensuel -->
+      <!-- CA du mois -->
       <div class="col-xl-3 col-md-6">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body">
             <div class="d-flex align-items-start justify-content-between">
               <div>
                 <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">CA du mois</p>
-                <h4 class="fw-bold mb-1">{{ stats.dash.vente?.total_vente_mois | number:'1.0-0':'fr' }}</h4>
+                <h4 class="fw-bold mb-0">{{ stats.dash.vente?.total_vente_mois | number:'1.0-0':'fr' }}</h4>
                 <span class="text-muted small">FCFA</span>
               </div>
-              <div class="rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10"
-                   style="width:48px;height:48px;flex-shrink:0;">
-                <i class="bi bi-graph-up text-success fs-5"></i>
+              <div class="db-kpi-icon bg-success bg-opacity-10">
+                <i class="bi bi-graph-up text-success"></i>
               </div>
             </div>
             <hr class="my-2">
-            <div class="d-flex align-items-center gap-1 small">
-              @if (variationMois >= 0) {
-                <i class="bi bi-arrow-up-circle-fill text-success"></i>
-                <span class="text-success fw-semibold">+{{ variationMois }}%</span>
+            <div class="small">
+              @if (variationMois > 0) {
+                <span class="db-trend db-trend--up"><i class="bi bi-arrow-up-short"></i>+{{ variationMois }}% vs mois dernier</span>
+              } @else if (variationMois < 0) {
+                <span class="db-trend db-trend--down"><i class="bi bi-arrow-down-short"></i>{{ variationMois }}% vs mois dernier</span>
               } @else {
-                <i class="bi bi-arrow-down-circle-fill text-danger"></i>
-                <span class="text-danger fw-semibold">{{ variationMois }}%</span>
+                <span class="db-trend db-trend--flat"><i class="bi bi-dash"></i>Stable</span>
               }
-              <span class="text-muted">vs mois dernier</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bénéfice estimé -->
+      <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+              <div>
+                <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Bénéfice estimé</p>
+                <h4 class="fw-bold mb-0 text-success">{{ stats.dash.benefice_estime?.jr | number:'1.0-0':'fr' }}</h4>
+                <span class="text-muted small">FCFA aujourd'hui</span>
+              </div>
+              <div class="db-kpi-icon" style="background:rgba(16,185,129,.12);">
+                <i class="bi bi-graph-up-arrow" style="color:#059669;"></i>
+              </div>
+            </div>
+            <hr class="my-2">
+            <div class="text-muted small">
+              Ce mois : <strong class="text-dark">{{ stats.dash.benefice_estime?.mois | number:'1.0-0':'fr' }} FCFA</strong>
             </div>
           </div>
         </div>
@@ -110,48 +399,16 @@
             <div class="d-flex align-items-start justify-content-between">
               <div>
                 <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Valeur du stock</p>
-                <h4 class="fw-bold mb-1">{{ stats.dash.produit?.total_stock_dispo | number:'1.0-0':'fr' }}</h4>
+                <h4 class="fw-bold mb-0">{{ stats.dash.produit?.valeur_stock | number:'1.0-0':'fr' }}</h4>
                 <span class="text-muted small">FCFA</span>
               </div>
-              <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10"
-                   style="width:48px;height:48px;flex-shrink:0;">
-                <i class="bi bi-boxes text-warning fs-5"></i>
+              <div class="db-kpi-icon" style="background:rgba(245,158,11,.12);">
+                <i class="bi bi-boxes" style="color:#d97706;"></i>
               </div>
             </div>
             <hr class="my-2">
-            <div class="d-flex align-items-center gap-1 small text-muted">
-              <i class="bi bi-info-circle"></i>
-              <span>Stock disponible valorisé</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Alertes stock -->
-      <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm h-100"
-          [ngClass]="(stats.dash.produit?.stock_rupture?.length || 0) > 0 ? 'border-danger border-start border-3' : ''">
-          <div class="card-body">
-            <div class="d-flex align-items-start justify-content-between">
-              <div>
-                <p class="text-muted small mb-1 text-uppercase fw-semibold" style="letter-spacing:.05em;">Alertes stock</p>
-                <h4 class="fw-bold mb-1"
-                  [ngClass]="(stats.dash.produit?.stock_rupture?.length || 0) > 0 ? 'text-danger' : 'text-success'">
-                  {{ (stats.dash.produit?.stock_rupture?.length || 0) + (stats.dash.produit?.stock_alert?.length || 0) }}
-                </h4>
-                <span class="text-muted small">produits concernés</span>
-              </div>
-              <div class="rounded-circle d-flex align-items-center justify-content-center"
-                   [ngClass]="(stats.dash.produit?.stock_rupture?.length || 0) > 0 ? 'bg-danger bg-opacity-10' : 'bg-success bg-opacity-10'"
-                   style="width:48px;height:48px;flex-shrink:0;">
-                <i class="fs-5"
-                  [ngClass]="(stats.dash.produit?.stock_rupture?.length || 0) > 0 ? 'bi bi-exclamation-triangle-fill text-danger' : 'bi bi-check-circle-fill text-success'"></i>
-              </div>
-            </div>
-            <hr class="my-2">
-            <div class="d-flex align-items-center gap-1 small">
-              <span class="badge bg-danger bg-opacity-75">{{ stats.dash.produit?.stock_rupture?.length || 0 }} ruptures</span>
-              <span class="badge bg-warning text-dark bg-opacity-75">{{ stats.dash.produit?.stock_alert?.length || 0 }} seuils bas</span>
+            <div class="text-muted small">
+              <i class="bi bi-box-seam opacity-50 me-1"></i>{{ stats.dash.produit?.total_produits || 0 }} produits en stock
             </div>
           </div>
         </div>
@@ -159,28 +416,195 @@
 
     </div>
 
-    <!-- ── Graphique + Alertes ── -->
+    <!-- ── Row 2 : KPIs secondaires ── -->
+    <div class="row g-3 mb-4">
+
+      <!-- Achats du jour -->
+      <div class="col-xl-3 col-md-6">
+        <div class="db-mini-card db-mini-card--amber">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="mb-0" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:600;">Achats du jour</p>
+              <div class="db-mini-value mt-1">{{ stats.dash.achat?.total_achat_jr | number:'1.0-0':'fr' }} <span class="unit">FCFA</span></div>
+            </div>
+            <i class="db-mini-icon bi bi-truck" style="color:#b45309;"></i>
+          </div>
+          <div class="db-mini-sub">{{ stats.dash.achat?.nbre_achat_jr || 0 }} approvisionnement(s)</div>
+        </div>
+      </div>
+
+      <!-- Commandes client du jour -->
+      <div class="col-xl-3 col-md-6">
+        <div class="db-mini-card db-mini-card--purple">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="mb-0" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:600;">Commandes du jour</p>
+              <div class="db-mini-value mt-1">{{ stats.dash.commandes_client?.montant_prevues_aujourd_hui | number:'1.0-0':'fr' }} <span class="unit">FCFA</span></div>
+            </div>
+            <i class="db-mini-icon bi bi-bag-check-fill" style="color:#7c3aed;"></i>
+          </div>
+          <div class="db-mini-sub">{{ stats.dash.commandes_client?.prevues_aujourd_hui || 0 }} commande(s) prévue(s)</div>
+        </div>
+      </div>
+
+      <!-- Retours du jour -->
+      <div class="col-xl-3 col-md-6">
+        <div class="db-mini-card db-mini-card--red">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="mb-0" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:600;">Retours du jour</p>
+              <div class="db-mini-value mt-1">{{ stats.dash.retour?.montant_retour_jr | number:'1.0-0':'fr' }} <span class="unit">FCFA</span></div>
+            </div>
+            <i class="db-mini-icon bi bi-arrow-return-left" style="color:#dc2626;"></i>
+          </div>
+          <div class="db-mini-sub">{{ stats.dash.retour?.nbre_retour_jr || 0 }} retour(s)</div>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div class="col-xl-3 col-md-6">
+        <div class="db-mini-card db-mini-card--teal">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="mb-0" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:600;">Clients</p>
+              <div class="db-mini-value mt-1">{{ stats.dash.clients?.total_uniques || 0 }} <span class="unit">uniques</span></div>
+            </div>
+            <i class="db-mini-icon bi bi-people-fill" style="color:#0d9488;"></i>
+          </div>
+          <div class="db-mini-sub">+{{ stats.dash.clients?.nouveaux_ce_mois || 0 }} nouveau(x) ce mois</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Row 3 : Graphique + Paiements + Commandes liste ── -->
     <div class="row g-3 mb-4">
 
       <!-- Graphique CA annuel -->
       <div class="col-lg-8">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body">
-            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
-              <i class="bi bi-bar-chart-line me-1"></i> Chiffre d'affaires — {{ today | date:'yyyy':'':'fr' }}
-            </h6>
-            <canvas id="myChart" style="max-height:280px;"></canvas>
+            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+              <h6 class="fw-semibold text-uppercase text-muted mb-0" style="font-size:.75rem;letter-spacing:.05em;">
+                <i class="bi bi-bar-chart-line me-1"></i> Chiffre d'affaires — {{ today | date:'yyyy':'':'fr' }}
+              </h6>
+              <div class="d-flex gap-3 small text-muted">
+                <span>
+                  <i class="bi bi-calendar-week me-1"></i>
+                  Semaine : <strong class="text-dark">{{ stats.dash.vente?.total_vente_semaine | number:'1.0-0':'fr' }}</strong> F
+                </span>
+                <span>
+                  <i class="bi bi-calendar-year me-1"></i>
+                  Année : <strong class="text-dark">{{ stats.dash.vente?.total_vente_annee | number:'1.0-0':'fr' }}</strong> F
+                </span>
+              </div>
+            </div>
+            <canvas id="myChart" style="max-height:260px;"></canvas>
           </div>
         </div>
       </div>
 
+      <!-- Paiements du jour + Commandes liste -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
+
+        <!-- Modes de paiement -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.73rem;letter-spacing:.05em;">
+              <i class="bi bi-credit-card-2-front me-1"></i> Paiements du jour
+            </h6>
+            @let modes = modeEntries(stats.dash?.vente?.mode_paiement_jr);
+            @if (modes.length) {
+              @let totalModes = stats.dash.vente?.total_vente_jr || 1;
+              @for (m of modes; track m.mode) {
+                <div class="mb-2">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-semibold">{{ m.label }}</span>
+                    <span class="text-muted">{{ m.val | number:'1.0-0':'fr' }} F</span>
+                  </div>
+                  <div class="progress" style="height:6px;border-radius:4px;">
+                    <div class="progress-bar bg-primary" [style.width.%]="(m.val / totalModes) * 100" style="border-radius:4px;"></div>
+                  </div>
+                  <div class="text-end text-muted" style="font-size:.68rem;">{{ ((m.val / totalModes) * 100) | number:'1.0-0':'fr' }}%</div>
+                </div>
+              }
+            } @else {
+              <p class="text-muted small mb-0 text-center">
+                <i class="bi bi-inbox d-block fs-4 mb-1 opacity-40"></i>
+                Aucun paiement aujourd'hui
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- Commandes client prévues aujourd'hui -->
+        @if (stats.dash.commandes_client?.liste_prevues_aujourd_hui?.length) {
+          <div class="card border-0 shadow-sm flex-grow-1">
+            <div class="card-body">
+              <h6 class="fw-semibold text-uppercase text-muted mb-2" style="font-size:.73rem;letter-spacing:.05em;">
+                <i class="bi bi-bag-check me-1"></i> Commandes prévues
+                <span class="badge rounded-pill ms-1" style="background:#ede9fe;color:#7c3aed;font-size:.65rem;">
+                  {{ stats.dash.commandes_client.liste_prevues_aujourd_hui.length }}
+                </span>
+              </h6>
+              @for (cmd of stats.dash.commandes_client.liste_prevues_aujourd_hui; track cmd.id) {
+                <div class="db-cmd-item mb-2">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <div class="overflow-hidden">
+                      <div class="fw-semibold small text-truncate">{{ cmd.reference }}</div>
+                      <div class="text-muted" style="font-size:.7rem;">
+                        @if (cmd.client?.nom) { {{ cmd.client.nom }} {{ cmd.client.prenoms || '' }}
+                        } @else { Client inconnu }
+                      </div>
+                    </div>
+                    <div class="text-end flex-shrink-0">
+                      <div class="fw-semibold small" style="color:#7c3aed;">{{ cmd.montant_total | number:'1.0-0':'fr' }} F</div>
+                      <span class="badge" style="font-size:.6rem;background:#fef9c3;color:#854d0e;">{{ cmd.statut }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-3">
+              <i class="bi bi-bag-x fs-3 d-block mb-1 opacity-40"></i>
+              <p class="small mb-0">Aucune commande prévue</p>
+            </div>
+          </div>
+        }
+
+      </div>
+
+    </div>
+
+    <!-- ── Row 4 : Alertes + Top ventes ── -->
+    <div class="row g-3 mb-4">
+
       <!-- Alertes stock -->
       <div class="col-lg-4">
         <div class="card border-0 shadow-sm h-100">
-          <div class="card-body overflow-auto" style="max-height:360px;">
-            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
-              <i class="bi bi-bell me-1 text-danger"></i> Alertes en temps réel
-            </h6>
+          <div class="card-body overflow-auto" style="max-height:400px;">
+            <div class="d-flex align-items-center justify-content-between mb-3"
+                 [class.alert-card-header]="alertesCount > 0">
+              <h6 class="fw-semibold text-uppercase text-muted mb-0 d-flex align-items-center gap-2"
+                  style="font-size:.75rem;letter-spacing:.05em;">
+                <span class="bell-wrapper" [class.ringing]="alertesCount > 0">
+                  <i class="bi bi-bell text-danger"></i>
+                  @if (alertesCount > 0) { <span class="bell-dot"></span> }
+                </span>
+                Alertes en temps réel
+                @if (alertesCount > 0) {
+                  <span class="badge bg-danger rounded-pill" style="font-size:.65rem;">{{ alertesCount }}</span>
+                }
+              </h6>
+              @if (alertesCount > 0) {
+                <button class="btn btn-sm p-0 text-danger" (click)="replayAlert()" style="line-height:1;font-size:1rem;">
+                  <i class="bi bi-volume-up-fill"></i>
+                </button>
+              }
+            </div>
 
             @if (!(stats.dash.produit?.stock_rupture?.length) && !(stats.dash.produit?.stock_alert?.length) && !(stats.dash.vente?.jamais_vendu_un_mois_apres_saisie?.length)) {
               <div class="text-center py-4 text-success">
@@ -238,19 +662,13 @@
                 </div>
               }
             }
-
           </div>
         </div>
       </div>
 
-    </div>
-
-    <!-- ── Top ventes + Moins vendus ── -->
-    <div class="row g-3">
-
       <!-- Top 10 ventes du mois -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
           <div class="card-body">
             <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
               <i class="bi bi-trophy me-1 text-warning"></i> Top 10 ventes du mois
@@ -262,17 +680,17 @@
 
             @for (produit of stats.dash.vente?.top_dix; track $index) {
               <div class="d-flex align-items-center gap-2 mb-3">
-                <span class="fw-bold text-muted" style="width:20px;font-size:.8rem;">{{ $index + 1 }}</span>
+                <span class="fw-bold text-muted" style="width:22px;font-size:.8rem;flex-shrink:0;">{{ $index + 1 }}</span>
                 <img [src]="api_url + '/' + produit.image" alt="{{ produit.nom }}"
-                     width="36" height="36" class="rounded border object-fit-cover">
+                     width="34" height="34" class="rounded border object-fit-cover flex-shrink-0">
                 <div class="flex-grow-1 overflow-hidden">
                   <div class="fw-semibold small text-truncate mb-1">{{ produit.nom }}</div>
-                  <div class="progress" style="height:6px;">
+                  <div class="progress" style="height:5px;">
                     <div class="progress-bar bg-warning" [style.width.%]="getBarWidth(produit.quantite_vendu)"></div>
                   </div>
                 </div>
-                <div class="text-end" style="min-width:80px;">
-                  <div class="fw-bold small text-success">{{ produit.prix_total | number:'1.0-0':'fr' }}</div>
+                <div class="text-end" style="min-width:90px;flex-shrink:0;">
+                  <div class="fw-bold small text-success">{{ produit.montant_total | number:'1.0-0':'fr' }} F</div>
                   <div class="text-muted" style="font-size:.7rem;">qté : {{ produit.quantite_vendu }}</div>
                 </div>
               </div>
@@ -281,9 +699,14 @@
         </div>
       </div>
 
-      <!-- Produits les moins vendus -->
+    </div>
+
+    <!-- ── Row 5 : Moins vendus + Vue annuelle ── -->
+    <div class="row g-3">
+
+      <!-- Produits les moins vendus du mois -->
       <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm h-100">
           <div class="card-body">
             <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
               <i class="bi bi-arrow-down-circle me-1 text-danger"></i> Produits les moins vendus du mois
@@ -299,12 +722,12 @@
                      width="36" height="36" class="rounded border object-fit-cover">
                 <div class="flex-grow-1 overflow-hidden">
                   <div class="fw-semibold small text-truncate mb-1">{{ produit.nom }}</div>
-                  <div class="progress" style="height:6px;">
+                  <div class="progress" style="height:5px;">
                     <div class="progress-bar bg-danger" style="width:20%"></div>
                   </div>
                 </div>
                 <div class="text-end" style="min-width:80px;">
-                  <div class="fw-bold small">{{ produit.montant_total | number:'1.0-0':'fr' }}</div>
+                  <div class="fw-bold small">{{ produit.montant_total | number:'1.0-0':'fr' }} F</div>
                   <div class="text-muted" style="font-size:.7rem;">qté : {{ produit.quantite_vendue || 0 }}</div>
                 </div>
               </div>
@@ -313,8 +736,51 @@
         </div>
       </div>
 
+      <!-- Vue annuelle -->
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+              <i class="bi bi-bar-chart me-1"></i> Vue annuelle
+            </h6>
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="db-stat-box" style="background:#eff6ff;">
+                  <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Ventes (année)</div>
+                  <div class="fw-bold mt-1">{{ stats.dash.vente?.total_vente_annee | number:'1.0-0':'fr' }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">FCFA</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="db-stat-box" style="background:#f0fdf4;">
+                  <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Bénéfice (année)</div>
+                  <div class="fw-bold mt-1 text-success">{{ stats.dash.benefice_estime?.annee | number:'1.0-0':'fr' }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">FCFA</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="db-stat-box" style="background:#fffbeb;">
+                  <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Achats (mois)</div>
+                  <div class="fw-bold mt-1">{{ stats.dash.achat?.total_achat_mois | number:'1.0-0':'fr' }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">FCFA</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="db-stat-box" style="background:#fff7ed;">
+                  <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Achats (année)</div>
+                  <div class="fw-bold mt-1">{{ stats.dash.achat?.total_achat_annee | number:'1.0-0':'fr' }}</div>
+                  <div class="text-muted" style="font-size:.72rem;">FCFA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   }
+
+} <!-- end @else -->
 
 </section>

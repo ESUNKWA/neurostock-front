@@ -1,0 +1,211 @@
+$dv-accent: #0d9488;
+$dv-tint:   #f0fdfa;
+$dv-border: #ccfbf1;
+$dv-txt:    #0f766e;
+
+/* ── Corps modal ──────────────────────────────────────────────────────────── */
+.dv-detail-body {
+  padding: 1.25rem 1.5rem;
+}
+
+/* ── Cards info/client ────────────────────────────────────────────────────── */
+.dv-detail-card {
+  border: 1px solid $dv-border;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 100%;
+
+  .dv-detail-card-head {
+    padding: 0.625rem 1rem;
+    background: $dv-tint;
+    border-bottom: 1px solid $dv-border;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $dv-accent;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dv-detail-card-body {
+    padding: 1rem;
+    background: #fff;
+  }
+}
+
+/* ── Lignes d'info (label : valeur) ──────────────────────────────────────── */
+.dv-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.85rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.dv-info-label {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dv-info-value {
+  text-align: right;
+}
+
+/* ── Avatar client ────────────────────────────────────────────────────────── */
+.dv-client-avatar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+
+  .dv-client-initials {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $dv-txt, $dv-accent);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+}
+
+.dv-no-client {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding: 1rem 0;
+}
+
+/* ── Bloc produits ────────────────────────────────────────────────────────── */
+.dv-detail-products {
+  border: 1px solid $dv-border;
+  border-radius: 12px;
+  overflow: hidden;
+
+  .dv-detail-products-head {
+    padding: 0.625rem 1rem;
+    background: $dv-tint;
+    border-bottom: 1px solid $dv-border;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $dv-accent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.dv-count-badge {
+  background: rgba(13,148,136,.12) !important;
+  color: $dv-accent !important;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ── Table produits ───────────────────────────────────────────────────────── */
+.dv-detail-table {
+  font-size: 0.85rem;
+  margin: 0;
+
+  thead tr th {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    padding: 0.625rem 0.875rem;
+  }
+
+  tbody tr {
+    transition: background .1s;
+    &:hover { background: $dv-tint; }
+
+    td {
+      padding: 0.625rem 0.875rem;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    &:last-child td { border-bottom: none; }
+  }
+}
+
+.dv-qty-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: $dv-tint;
+  border: 1px solid $dv-border;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $dv-txt;
+}
+
+/* ── Totaux ───────────────────────────────────────────────────────────────── */
+.dv-detail-totals {
+  border-top: 1px solid $dv-border;
+  padding: 0.75rem 1rem;
+  background: $dv-tint;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.dv-detail-total-row {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.85rem;
+}
+
+.dv-detail-total-final {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $dv-txt;
+  padding-top: 0.375rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid $dv-border;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* ── Boutons footer ───────────────────────────────────────────────────────── */
+.dv-btn-print {
+  background: linear-gradient(135deg, #78350f, #b45309);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.125rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: opacity .15s;
+  &:hover { opacity: 0.92; color: #fff; }
+}
+
+.dv-btn-convert {
+  background: linear-gradient(135deg, #064e3b, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.125rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: opacity .15s;
+  &:hover { opacity: 0.92; color: #fff; }
+}

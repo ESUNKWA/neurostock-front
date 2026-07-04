@@ -1,0 +1,190 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <h1>Retours de produits</h1>
+    <div class="d-flex align-items-center gap-2">
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+          <li class="breadcrumb-item active">Retours</li>
+        </ol>
+      </nav>
+      @if (peutFaireRetour) {
+        <a [routerLink]="nouveauRetourRoute" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Nouveau retour
+        </a>
+      }
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<section class="section">
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="card-title mb-0 text-uppercase">Liste des retours</h5>
+        @if (boutiques.length > 1 || currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'gerant') {
+          <div style="min-width:220px">
+            <select class="form-select form-select-sm" [(ngModel)]="idBoutique" (change)="onBoutiqueChange()">
+              <option [value]="0">— Sélectionner une boutique —</option>
+              @for (b of boutiques; track b.id) {
+                <option [value]="b.id">{{ b.nom }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card-body border-bottom pb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-sm-6 col-md-3">
+          <label class="form-label form-label-sm mb-1">Référence vente</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="filterReference"
+                 placeholder="ex: VNT/20260703" (keyup.enter)="appliquerFiltres()">
+        </div>
+        <div class="col-sm-6 col-md-2">
+          <label class="form-label form-label-sm mb-1">Date début</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateDebut">
+        </div>
+        <div class="col-sm-6 col-md-2">
+          <label class="form-label form-label-sm mb-1">Date fin</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDateFin">
+        </div>
+        <div class="col-sm-6 col-md-2">
+          <label class="form-label form-label-sm mb-1">Montant</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="filterMontant"
+                 placeholder="ex: 15000">
+        </div>
+        <div class="col-sm-6 col-md-3 d-flex gap-2">
+          <button class="btn btn-primary btn-sm flex-grow-1" (click)="appliquerFiltres()">
+            <i class="bi bi-search me-1"></i>Filtrer
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="resetFiltres()" title="Réinitialiser">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (isLoading) {
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+        </div>
+      }
+      <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped table-vcenter js-retours-dt">
+          <thead>
+            <tr>
+              <th>Référence retour / vente</th>
+              <th>Montant remboursé</th>
+              <th>Statut</th>
+              <th>Utilisateurs</th>
+              <th>Motif</th>
+              <th>Date</th>
+              <th class="text-center" style="width:100px">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Modal détail retour ─────────────────────────────────────────────────── -->
+<div class="modal fade" id="modal-detail-retour" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-arrow-return-left me-2 text-warning"></i>
+          Retour {{ selectedRetour?.reference }}
+        </h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      @if (selectedRetour) {
+        <div class="modal-body">
+          <!-- Infos générales -->
+          <div class="row mb-3 g-2">
+            <div class="col-sm-4">
+              <div class="text-muted small">Référence retour</div>
+              <div class="fw-semibold">{{ selectedRetour.reference }}</div>
+            </div>
+            <div class="col-sm-4">
+              <div class="text-muted small">Vente d'origine</div>
+              <div class="fw-semibold">{{ selectedRetour.vente?.reference ?? '—' }}</div>
+              <div class="text-muted small">{{ selectedRetour.vente?.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            <div class="col-sm-4">
+              <div class="text-muted small">Statut</div>
+              <span class="badge" [class.bg-success]="selectedRetour.statut === 'valide'"
+                                  [class.bg-danger]="selectedRetour.statut === 'annule'">
+                {{ selectedRetour.statut }}
+              </span>
+            </div>
+            <div class="col-sm-4">
+              <div class="text-muted small">Montant remboursé</div>
+              <div class="fw-bold text-success fs-6">{{ (selectedRetour.montant_total_rembourse ?? 0).toLocaleString('fr-FR') }} FCFA</div>
+            </div>
+            <div class="col-sm-4">
+              <div class="text-muted small">Enregistré par (caissier)</div>
+              <div>{{ selectedRetour.user?.nom ?? selectedRetour.user?.telephone ?? '—' }}</div>
+            </div>
+            <div class="col-sm-4">
+              <div class="text-muted small">Vendeur d'origine</div>
+              <div>{{ selectedRetour.vente?.user?.nom ?? selectedRetour.vente?.user?.telephone ?? '—' }}</div>
+            </div>
+            @if (selectedRetour.motif) {
+              <div class="col-12">
+                <div class="text-muted small">Motif</div>
+                <div>{{ selectedRetour.motif }}</div>
+              </div>
+            }
+          </div>
+
+          <hr>
+
+          <h6 class="fw-semibold mb-2">Produits retournés</h6>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th class="text-center">Qté retournée</th>
+                  <th class="text-end">Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of (selectedRetour.details ?? []); track d.produit?.id) {
+                  <tr>
+                    <td class="fw-semibold">{{ d.produit?.nom ?? '—' }}</td>
+                    <td class="text-center">{{ d.quantite_retournee }}</td>
+                    <td class="text-end fw-semibold">{{ (d.montant ?? 0).toLocaleString('fr-FR') }} FCFA</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="fw-bold">
+                  <td colspan="2">Total remboursé</td>
+                  <td class="text-end text-success">{{ (selectedRetour.montant_total_rembourse ?? 0).toLocaleString('fr-FR') }} FCFA</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      }
+      <div class="modal-footer">
+        @if (selectedRetour?.statut === 'valide') {
+          <button class="btn btn-danger me-auto" (click)="annuler(selectedRetour)" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Annuler ce retour
+          </button>
+        }
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -68,11 +68,11 @@ export default class AchatsComponent implements OnInit {
 
   initForm(): void {
     // Vérifier si currentUser existe avant d'accéder à ses propriétés
-    const userId = this.currentUser ? this.currentUser.id : null;
-    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique.id : null;
-    
+    const userTelephone = this.currentUser ? this.currentUser.telephone : null;
+    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique_id : null;
+
     this.achatForm = this.fb.group({
-      user: [userId, Validators.required],
+      user: [userTelephone, Validators.required],
       libelle: [''],
       description: [''],
       boutique: [null, Validators.required],
@@ -133,7 +133,7 @@ export default class AchatsComponent implements OnInit {
     this.achatForm.patchValue({
       libelle: achat.libelle || '',
       description: achat.description || '',
-      boutique: this.currentUser.boutique.id,
+      boutique: this.currentUser.boutique_id,
       montant_total: achat.montant_total || 0,
       date_achat: dateAchat,
       mode_paiement: achat.mode_paiement || 'espece',
@@ -238,7 +238,6 @@ export default class AchatsComponent implements OnInit {
 
   loadBoutiques(): void {
     const code = this.currentUser.profil.code.toLowerCase();
-
     if (code === 'admin') {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
@@ -251,7 +250,7 @@ export default class AchatsComponent implements OnInit {
         }
       });
     } else if (code === 'responsable_structure') {
-      this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+      this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
@@ -273,7 +272,7 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadFournisseurs(): void {
-    this.fournisseurService.getFournisseursByBoutik(this.currentUser.boutique.id).subscribe({
+    this.fournisseurService.getFournisseursByBoutik(this.currentUser.boutique_id).subscribe({
       next: (response: any) => {
         this.fournisseurs = response.data;
       },
@@ -290,7 +289,7 @@ export default class AchatsComponent implements OnInit {
         return;
       }
     } else {
-      this.selectedBoutique = this.currentUser.boutique.id;
+      this.selectedBoutique = this.currentUser.boutique_id
     }
     
     const body: any = {

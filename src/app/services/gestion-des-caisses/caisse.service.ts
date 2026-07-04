@@ -21,7 +21,7 @@ export class CaisseService {
   }
 
   /** Session active — caissier optionnel */
-  getActiveSession(boutique: number, caissier?: number | null) {
+  getActiveSession(boutique: number, caissier?: string | null) {
     const params: any = { boutique };
     if (caissier) params['caissier'] = caissier;
     return this.http.get(`${this.BASE}/active`, { params });
@@ -30,7 +30,7 @@ export class CaisseService {
   /** Ouvrir une session */
   ouvrirSession(body: {
     boutique: number;
-    caissier?: number | null;
+    caissier?: string | null;
     fond_ouverture: FondCaisse;
     note?: string;
   }) {
@@ -38,7 +38,7 @@ export class CaisseService {
   }
 
   /** Fermer une session — caissier en query param optionnel */
-  fermerSession(id: number, body: { fond_fermeture: FondCaisse; notes?: string }, caissier?: number | null) {
+  fermerSession(id: number, body: { fond_fermeture: FondCaisse; notes?: string }, caissier?: string | null) {
     const params: any = {};
     if (caissier) params['caissier'] = caissier;
     return this.http.post(`${this.BASE}/${id}/fermer`, body, { params });
@@ -50,7 +50,7 @@ export class CaisseService {
     montant: number;
     motif: string;
     mode_paiement?: string;
-    caissier?: number;
+    caissier?: string;
   }) {
     return this.http.post(`${this.BASE}/${id}/mouvement`, body);
   }
