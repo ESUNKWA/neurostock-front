@@ -11,7 +11,7 @@
   "lang": "fr",
   "icons": [
     {
-      "src": "assets/img/favicon-neurostock.png",
+      "src": "assets/img/logo_neurostock_icone.png",
       "sizes": "48x48",
       "type": "image/png",
       "purpose": "any"
@@ -41,14 +41,14 @@
       "short_name": "Vente",
       "description": "Ouvrir le point de vente",
       "url": "/pos/vente",
-      "icons": [{ "src": "assets/img/favicon-neurostock.png", "sizes": "96x96" }]
+      "icons": [{ "src": "assets/img/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Tableau de bord",
       "short_name": "Dashboard",
       "description": "Voir le tableau de bord",
       "url": "/dashboard",
-      "icons": [{ "src": "assets/img/favicon-neurostock.png", "sizes": "96x96" }]
+      "icons": [{ "src": "assets/img/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [
