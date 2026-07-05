@@ -38,6 +38,10 @@ export class ProduitService {
     return this.http.get(`${this.API_URL}/produit/scan/${code}`, { params: { boutique } });
   }
 
+  getEtiquetteUrl(id: number, copies = 1): string {
+    return `${this.API_URL}/produit/${id}/etiquette?copies=${copies}`;
+  }
+
   importProduits(file: File, boutiqueId: number) {
     const formData = new FormData();
     formData.append('file', file);

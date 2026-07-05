@@ -1,0 +1,273 @@
+<div class="ins-page">
+
+  <!-- Header -->
+  <header class="ins-header">
+    <a routerLink="/landing" class="ins-brand">
+      <div class="ins-brand-icon">N</div>
+      <span>NeuroStock</span>
+    </a>
+    <a routerLink="/login" class="ins-login-link">
+      Déjà inscrit ? <strong>Se connecter →</strong>
+    </a>
+  </header>
+
+  <!-- Body -->
+  <main class="ins-body">
+    <div class="ins-card">
+
+      @if (!done) {
+        <!-- Title -->
+        <div class="ins-title">
+          <h1>Créer votre espace NeuroStock</h1>
+          <p>Essai gratuit 1 mois · Aucune carte bancaire · Configuration en 5 min</p>
+        </div>
+
+        <!-- Stepper -->
+        <div class="ins-stepper">
+          <div class="ins-step" [class.active]="step >= 1" [class.done]="step > 1">
+            <div class="step-circle">{{ step > 1 ? '✓' : '1' }}</div>
+            <span class="step-label">Entreprise</span>
+          </div>
+          <div class="step-line" [class.active]="step > 1"></div>
+          <div class="ins-step" [class.active]="step >= 2" [class.done]="step > 2">
+            <div class="step-circle">{{ step > 2 ? '✓' : '2' }}</div>
+            <span class="step-label">Boutique</span>
+          </div>
+          <div class="step-line" [class.active]="step > 2"></div>
+          <div class="ins-step" [class.active]="step >= 3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Compte</span>
+          </div>
+        </div>
+
+        <!-- ─── Étape 1 : Votre entreprise ──────────────────────────────── -->
+        @if (step === 1) {
+          <div class="step-block">
+            <div class="step-intro">
+              <i class="bi bi-building step-ico"></i>
+              <div>
+                <div class="step-ttl">Votre entreprise</div>
+                <div class="step-sub">Informations générales sur votre structure</div>
+              </div>
+            </div>
+
+            <form [formGroup]="step1" class="row g-3" (ngSubmit)="next()">
+              <div class="col-12">
+                <label class="form-label">Nom de l'entreprise / structure <span class="req">*</span></label>
+                <input type="text" class="form-control"
+                  formControlName="structure_nom"
+                  placeholder="Ex : Commerce Konan SARL"
+                  [class.is-invalid]="f1('structure_nom')?.invalid && f1('structure_nom')?.touched">
+                @if (f1('structure_nom')?.invalid && f1('structure_nom')?.touched) {
+                  <div class="invalid-feedback">Ce champ est requis</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Téléphone</label>
+                <input type="tel" class="form-control"
+                  formControlName="structure_telephone"
+                  placeholder="Ex : 0700000000"
+                  maxlength="10"
+                  [class.is-invalid]="f1('structure_telephone')?.invalid && f1('structure_telephone')?.touched">
+                @if (f1('structure_telephone')?.invalid && f1('structure_telephone')?.touched) {
+                  <div class="invalid-feedback">Le numéro doit contenir exactement 10 chiffres</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control"
+                  formControlName="structure_email"
+                  placeholder="contact@entreprise.com">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Localisation</label>
+                <input type="text" class="form-control"
+                  formControlName="structure_situation_geo"
+                  placeholder="Ex : Abidjan, Cocody">
+              </div>
+            </form>
+          </div>
+
+          <div class="ins-footer">
+            <span></span>
+            <button class="btn btn-primary ins-btn" (click)="next()">
+              Suivant <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        }
+
+        <!-- ─── Étape 2 : Votre boutique ────────────────────────────────── -->
+        @if (step === 2) {
+          <div class="step-block">
+            <div class="step-intro">
+              <i class="bi bi-shop step-ico"></i>
+              <div>
+                <div class="step-ttl">Votre boutique</div>
+                <div class="step-sub">Le premier point de vente qui sera créé</div>
+              </div>
+            </div>
+
+            <form [formGroup]="step2" class="row g-3" (ngSubmit)="next()">
+              <div class="col-12">
+                <label class="form-label">Nom de la boutique <span class="req">*</span></label>
+                <input type="text" class="form-control"
+                  formControlName="boutique_nom"
+                  placeholder="Ex : Épicerie du Centre"
+                  [class.is-invalid]="f2('boutique_nom')?.invalid && f2('boutique_nom')?.touched">
+                @if (f2('boutique_nom')?.invalid && f2('boutique_nom')?.touched) {
+                  <div class="invalid-feedback">Ce champ est requis</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="form-label">Adresse / localisation</label>
+                <input type="text" class="form-control"
+                  formControlName="boutique_situation_geo"
+                  placeholder="Ex : Rue des Jardins, Yopougon">
+              </div>
+            </form>
+          </div>
+
+          <div class="ins-footer">
+            <button class="btn btn-outline-secondary" (click)="prev()">
+              <i class="bi bi-arrow-left me-1"></i>Retour
+            </button>
+            <button class="btn btn-primary ins-btn" (click)="next()">
+              Suivant <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        }
+
+        <!-- ─── Étape 3 : Votre compte ───────────────────────────────────── -->
+        @if (step === 3) {
+          <div class="step-block">
+            <div class="step-intro">
+              <i class="bi bi-person-badge step-ico"></i>
+              <div>
+                <div class="step-ttl">Compte responsable</div>
+                <div class="step-sub">Identifiants du gestionnaire principal</div>
+              </div>
+            </div>
+
+            <form [formGroup]="step3" class="row g-3" (ngSubmit)="submit()">
+              <div class="col-md-6">
+                <label class="form-label">Nom <span class="req">*</span></label>
+                <input type="text" class="form-control"
+                  formControlName="responsable_nom"
+                  placeholder="Ex : Konan"
+                  [class.is-invalid]="f3('responsable_nom')?.invalid && f3('responsable_nom')?.touched">
+                @if (f3('responsable_nom')?.invalid && f3('responsable_nom')?.touched) {
+                  <div class="invalid-feedback">Ce champ est requis</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Prénoms</label>
+                <input type="text" class="form-control"
+                  formControlName="responsable_prenoms"
+                  placeholder="Ex : Jean-Pierre">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Téléphone</label>
+                <input type="tel" class="form-control"
+                  formControlName="responsable_telephone"
+                  placeholder="Ex : 0700000000"
+                  maxlength="10"
+                  [class.is-invalid]="f3('responsable_telephone')?.invalid && f3('responsable_telephone')?.touched">
+                @if (f3('responsable_telephone')?.invalid && f3('responsable_telephone')?.touched) {
+                  <div class="invalid-feedback">Le numéro doit contenir exactement 10 chiffres</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control"
+                  formControlName="responsable_email"
+                  placeholder="jean@email.com">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Mot de passe <span class="req">*</span></label>
+                <div class="input-group" [class.is-invalid]="f3('responsable_password')?.invalid && f3('responsable_password')?.touched">
+                  <input [type]="showPwd ? 'text' : 'password'" class="form-control"
+                    formControlName="responsable_password"
+                    placeholder="Min. 6 caractères"
+                    [class.is-invalid]="f3('responsable_password')?.invalid && f3('responsable_password')?.touched">
+                  <button class="btn btn-outline-secondary" type="button" (click)="showPwd = !showPwd" tabindex="-1">
+                    <i class="bi" [class.bi-eye]="!showPwd" [class.bi-eye-slash]="showPwd"></i>
+                  </button>
+                </div>
+                @if (f3('responsable_password')?.invalid && f3('responsable_password')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    @if (f3('responsable_password')?.errors?.['required']) { Ce champ est requis }
+                    @else { Minimum 6 caractères }
+                  </div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Confirmer le mot de passe <span class="req">*</span></label>
+                <div class="input-group">
+                  <input [type]="showPwd2 ? 'text' : 'password'" class="form-control"
+                    formControlName="confirmer_password"
+                    placeholder="Répéter le mot de passe"
+                    [class.is-invalid]="(f3('confirmer_password')?.invalid && f3('confirmer_password')?.touched) || pwdMismatch">
+                  <button class="btn btn-outline-secondary" type="button" (click)="showPwd2 = !showPwd2" tabindex="-1">
+                    <i class="bi" [class.bi-eye]="!showPwd2" [class.bi-eye-slash]="showPwd2"></i>
+                  </button>
+                </div>
+                @if (f3('confirmer_password')?.errors?.['required'] && f3('confirmer_password')?.touched) {
+                  <div class="invalid-feedback d-block">Ce champ est requis</div>
+                }
+                @if (pwdMismatch) {
+                  <div class="invalid-feedback d-block">Les mots de passe ne correspondent pas</div>
+                }
+              </div>
+            </form>
+
+            @if (serverError) {
+              <div class="alert alert-danger mt-3 mb-0">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>{{ serverError }}
+              </div>
+            }
+          </div>
+
+          <div class="ins-footer">
+            <button class="btn btn-outline-secondary" (click)="prev()" [disabled]="isSubmitting">
+              <i class="bi bi-arrow-left me-1"></i>Retour
+            </button>
+            <button class="btn btn-success ins-btn" (click)="submit()" [disabled]="isSubmitting">
+              @if (isSubmitting) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>Envoi en cours…
+              } @else {
+                <i class="bi bi-send me-1"></i>Soumettre ma demande
+              }
+            </button>
+          </div>
+        }
+      }
+
+      <!-- ─── Succès ──────────────────────────────────────────────────── -->
+      @if (done) {
+        <div class="ins-success">
+          <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <h2>Demande enregistrée !</h2>
+          <p class="text-muted">
+            Votre demande a bien été enregistrée. Elle sera validée dans 1h maximum.
+          </p>
+          <p class="text-muted small">
+            Vous recevrez vos identifiants de connexion par SMS dès que votre espace sera activé.
+          </p>
+          <a routerLink="/login" class="btn btn-primary mt-3">
+            Aller à la connexion <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      }
+
+    </div>
+
+    <!-- Pied de page -->
+    <p class="ins-foot-note">
+      © 2026 NeuroStock ·
+      <a routerLink="/landing">À propos</a>
+    </p>
+  </main>
+
+</div>

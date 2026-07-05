@@ -13,6 +13,11 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  private abonnementSubject = new BehaviorSubject<any | null>(
+    (() => { const a = localStorage.getItem('abonnement'); return a ? JSON.parse(a) : null; })()
+  );
+  public abonnement$ = this.abonnementSubject.asObservable();
+
   constructor(
     private http: HttpClientService,
     private router: Router
@@ -29,6 +34,7 @@ export class AuthService {
         localStorage.setItem('access_token', response.access_token);
         if (response.abonnement) {
           localStorage.setItem('abonnement', JSON.stringify(response.abonnement));
+          this.abonnementSubject.next(response.abonnement);
         }
       }),
       switchMap((response: any) => {
@@ -86,11 +92,17 @@ export class AuthService {
     });
   }
 
+  setAbonnement(ab: any): void {
+    localStorage.setItem('abonnement', JSON.stringify(ab));
+    this.abonnementSubject.next(ab);
+  }
+
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
     localStorage.removeItem('abonnement');
     this.currentUserSubject.next(null);
+    this.abonnementSubject.next(null);
     this.router.navigateByUrl('/login');
   }
 

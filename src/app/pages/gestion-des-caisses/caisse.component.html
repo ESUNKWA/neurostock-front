@@ -168,7 +168,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                  @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
                     @let fo  = theorique.fond_ouverture?.[mode]          ?? 0;
                     @let v   = theorique.ventes_par_mode?.[mode]         ?? 0;
                     @let ent = theorique.mouvements_par_mode?.[mode]?.entrees ?? 0;
@@ -279,7 +279,7 @@
 <!--  Modal : Ouvrir la caisse                                                -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-ouvrir" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content mf-modal mf-modal--emerald">
 
       <div class="mf-header">
@@ -334,10 +334,38 @@
                 </div>
               </div>
               <div class="col-6">
-                <label class="mf-label mb-1">Mobile Money</label>
+                <label class="mf-label mb-1">Orange Money</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control mf-input" formControlName="mobile_money" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="orange_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Wave</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="wave" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">MTN Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="mtn_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Moov Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="moov_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Dajmo</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="dajmo" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
@@ -381,7 +409,7 @@
 <!--  Modal : Fermer la caisse                                                -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-fermer" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content mf-modal mf-modal--rose">
 
       <div class="mf-header">
@@ -408,7 +436,7 @@
           @if (theorique?.montant_theorique) {
             <div class="mf-section">
               <div class="mf-section-label"><i class="bi bi-calculator"></i> Montant théorique attendu</div>
-              @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+              @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
                 @if (theorique.montant_theorique[mode]) {
                   <div class="d-flex justify-content-between small py-1">
                     <span class="text-muted">{{ modesLabels[mode] }}</span>
@@ -435,10 +463,38 @@
                 </div>
               </div>
               <div class="col-6">
-                <label class="mf-label mb-1">Mobile Money</label>
+                <label class="mf-label mb-1">Orange Money</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control mf-input" formControlName="mobile_money" thousandSeparator placeholder="0">
+                  <input type="text" class="form-control mf-input" formControlName="orange_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Wave</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="wave" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">MTN Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="mtn_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Moov Money</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="moov_money" thousandSeparator placeholder="0">
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="mf-label mb-1">Dajmo</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">FCFA</span>
+                  <input type="text" class="form-control mf-input" formControlName="dajmo" thousandSeparator placeholder="0">
                 </div>
               </div>
               <div class="col-6">
@@ -482,7 +538,7 @@
 <!--  Modal : Mouvement de caisse                                             -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modal-mouvement" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content mf-modal mf-modal--indigo">
 
       <div class="mf-header">

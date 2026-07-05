@@ -41,10 +41,13 @@ export class FactureModalComponent implements OnInit {
     this.abonnementSvc.getFacturePdf(this.abonnementId)
       .pipe(finalize(() => (this.pdfLoading = false)))
       .subscribe({
-        next: (r: any) => {
-          const url = r?.data?.path;
-          if (url) { window.open(url, '_blank'); }
-          else { this.toastr.error('URL du PDF introuvable'); }
+        next: (blob: any) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `facture-${this.facture?.reference ?? this.abonnementId}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
         },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la génération du PDF'),
       });

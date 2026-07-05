@@ -17,14 +17,15 @@ export class AbonnementService {
   }
   suspend(id: number)               { return this.http.patch(`${this.base}/${id}/suspendre`, {}); }
   reactivate(id: number)            { return this.http.patch(`${this.base}/${id}/reactiver`, {}); }
+  valider(id: number)               { return this.http.patch(`${this.base}/${id}/valider`, {}); }
   getPlans()                        { return this.http.get(`${this.base}/plans`); }
   savePlan(dto: { plan: string; montant: number; devise: string }) {
     return this.http.post(`${this.base}/plans`, dto);
   }
 
   // Config prix boutique supplémentaire (super_admin)
-  getPrixBoutique()                 { return this.http.get(`${this.base}/config/prix-boutique`); }
-  savePrixBoutique(dto: { montant: number; devise?: string }) {
+  getPrixBoutique() { return this.http.get(`${this.base}/config/prix-boutique`); }
+  savePrixBoutique(dto: { valeur: number; type: 'pourcentage' | 'montant' }) {
     return this.http.post(`${this.base}/config/prix-boutique`, dto);
   }
 
@@ -42,7 +43,9 @@ export class AbonnementService {
 
   // Factures
   getFacture(abonnementId: number)    { return this.http.get(`${this.base}/${abonnementId}/facture`); }
-  getFacturePdf(abonnementId: number) { return this.http.get(`${this.base}/${abonnementId}/facture/pdf`); }
+  getFacturePdf(abonnementId: number) {
+    return this.http.get(`${this.base}/${abonnementId}/facture/pdf`, { responseType: 'blob' });
+  }
 
   // Tenant user
   getMySubscription()               { return this.http.get(`${this.base}/mon-abonnement`); }

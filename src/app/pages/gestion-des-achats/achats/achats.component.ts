@@ -23,7 +23,7 @@ declare var $: any;
 })
 export default class AchatsComponent implements OnInit {
   achatForm!: FormGroup;
-  modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte'];
+  modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte', 'orange_money', 'wave', 'mtn_money', 'moov_money', 'dajmo'];
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
   fournisseurs: any[] = [];
   produits: any[] = [];

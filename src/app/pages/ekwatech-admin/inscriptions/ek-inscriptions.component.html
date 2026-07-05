@@ -1,0 +1,223 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">Demandes d'inscription</h4>
+      <p class="text-muted small mb-0">Validez ou rejetez les demandes reçues depuis la page publique</p>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary" (click)="load()" [disabled]="loading">
+      <i class="bi bi-arrow-clockwise me-1"></i>Actualiser
+    </button>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Structure</th>
+            <th>Boutique</th>
+            <th>Responsable</th>
+            <th>Contact</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <span class="spinner-border spinner-border-sm me-2"></span>Chargement…
+              </td>
+            </tr>
+          } @else if (inscriptions.length === 0) {
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                Aucune demande d'inscription
+              </td>
+            </tr>
+          } @else {
+            @for (ins of inscriptions; track ins.id) {
+              <tr>
+                <td class="text-muted small">{{ ins.id }}</td>
+                <td>
+                  <div class="fw-semibold">{{ ins.structure_nom }}</div>
+                  @if (ins.structure_situation_geo) {
+                    <small class="text-muted">{{ ins.structure_situation_geo }}</small>
+                  }
+                </td>
+                <td>
+                  <div>{{ ins.boutique_nom }}</div>
+                  @if (ins.boutique_situation_geo) {
+                    <small class="text-muted">{{ ins.boutique_situation_geo }}</small>
+                  }
+                </td>
+                <td>
+                  <div>{{ ins.responsable_prenoms }} {{ ins.responsable_nom }}</div>
+                </td>
+                <td>
+                  @if (ins.responsable_telephone) {
+                    <div class="small"><i class="bi bi-telephone me-1 text-muted"></i>{{ ins.responsable_telephone }}</div>
+                  }
+                  @if (ins.responsable_email) {
+                    <div class="small text-muted">{{ ins.responsable_email }}</div>
+                  }
+                </td>
+                <td>
+                  <span class="badge rounded-pill px-2 py-1" [ngClass]="statutClass(ins.statut)">
+                    {{ statutLabel(ins.statut) }}
+                  </span>
+                </td>
+                <td class="small text-muted">
+                  {{ ins.created_at | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                <td class="text-end">
+                  @if (ins.statut === 'en_attente') {
+                    <button class="btn btn-sm btn-success me-1"
+                      (click)="openValider(ins)"
+                      [disabled]="actionLoading === ins.id"
+                      title="Valider">
+                      <i class="bi bi-check-lg"></i> Valider
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                      (click)="rejeter(ins)"
+                      [disabled]="actionLoading === ins.id"
+                      title="Rejeter">
+                      @if (actionLoading === ins.id) {
+                        <span class="spinner-border spinner-border-sm"></span>
+                      } @else {
+                        <i class="bi bi-x-lg"></i>
+                      }
+                      Rejeter
+                    </button>
+                  }
+                  @if (ins.statut !== 'en_attente') {
+                    <span class="text-muted small fst-italic">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Modal : Valider une inscription
+══════════════════════════════════════════════════════════════ -->
+@if (showValiderModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)" (click)="closeValiderModal()">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content shadow-lg border-0 rounded-3">
+
+        <!-- Header -->
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h5 class="modal-title fw-bold">Valider l'inscription</h5>
+            <p class="text-muted small mb-0">
+              <strong>{{ validerTarget?.structure_nom }}</strong> ·
+              Boutique : {{ validerTarget?.boutique_nom }}
+            </p>
+          </div>
+          <button class="btn-close" (click)="closeValiderModal()"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- Résultat après validation réussie -->
+          @if (validerResult) {
+            <div class="alert alert-success border-0">
+              <div class="fw-bold mb-2"><i class="bi bi-check-circle-fill me-2"></i>Espace créé avec succès !</div>
+              <ul class="mb-2 small ps-3">
+                @if (validerResult.structure) {
+                  <li>Structure : <strong>{{ validerResult.structure.nom }}</strong> (ID {{ validerResult.structure.id }})</li>
+                }
+                @if (validerResult.boutique) {
+                  <li>Boutique : <strong>{{ validerResult.boutique.nom }}</strong> (ID {{ validerResult.boutique.id }})</li>
+                }
+                @if (validerResult.admin) {
+                  <li>Admin : <strong>{{ validerResult.admin.prenoms }} {{ validerResult.admin.nom }}</strong></li>
+                }
+              </ul>
+            </div>
+
+            <!-- Identifiants à communiquer -->
+            <div class="alert alert-warning border-0 mb-0">
+              <div class="fw-bold mb-2">
+                <i class="bi bi-key-fill me-2"></i>Identifiants à communiquer au client
+              </div>
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <div class="text-muted">Téléphone (identifiant)</div>
+                  <div class="fw-semibold font-monospace">{{ validerTarget?.responsable_telephone || validerResult?.admin?.telephone || '—' }}</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">Mot de passe</div>
+                  <div class="fw-semibold font-monospace">{{ validerTarget?.responsable_password || '(tel que saisi)' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Formulaire de credentials DB -->
+          @if (!validerResult) {
+            <p class="text-muted small mb-3">
+              Renseignez les credentials de la base de données PostgreSQL à provisionner pour cette structure.
+            </p>
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small">Nom de la base de données <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="validerForm.database" placeholder="Ex : GESTION_STOCK_5_DB">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Hôte</label>
+                <input type="text" class="form-control" [(ngModel)]="validerForm.host" placeholder="localhost">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Utilisateur DB <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="validerForm.username" placeholder="postgres">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Mot de passe DB <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" [(ngModel)]="validerForm.password" placeholder="••••••••">
+              </div>
+            </div>
+
+            <div class="alert alert-info border-0 mt-3 mb-0 small">
+              <i class="bi bi-info-circle me-1"></i>
+              Le système créera la base si elle n'existe pas et synchronisera le schéma,
+              puis créera la structure, la boutique et le compte responsable automatiquement.
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          @if (!validerResult) {
+            <button class="btn btn-secondary btn-sm" (click)="closeValiderModal()">Annuler</button>
+            <button class="btn btn-success btn-sm" (click)="submitValider()"
+              [disabled]="!validerFormValid || isValiding">
+              @if (isValiding) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Validation en cours…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Valider et provisionner
+              }
+            </button>
+          } @else {
+            <button class="btn btn-primary btn-sm" (click)="closeValiderModal()">
+              <i class="bi bi-check-lg me-1"></i>Fermer
+            </button>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

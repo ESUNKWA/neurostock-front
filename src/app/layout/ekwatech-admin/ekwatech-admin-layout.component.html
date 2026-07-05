@@ -70,8 +70,17 @@
         </li>
       </ul>
 
-      <p class="ek-nav-label mt-3">Abonnements</p>
+      <p class="ek-nav-label mt-3">Inscriptions & Abonnements</p>
       <ul class="list-unstyled">
+        <li>
+          <a routerLink="/ekwatech/inscriptions" routerLinkActive="active" class="ek-nav-link">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Inscriptions</span>
+            @if (inscriptionsEnAttente > 0) {
+              <span class="ek-badge-count">{{ inscriptionsEnAttente }}</span>
+            }
+          </a>
+        </li>
         <li>
           <a routerLink="/ekwatech/abonnements" routerLinkActive="active" class="ek-nav-link">
             <i class="bi bi-calendar-check-fill"></i>

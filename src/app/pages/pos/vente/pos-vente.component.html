@@ -452,7 +452,7 @@
 
 @if (showPayModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.55)">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px">
       <div class="modal-content mf-modal mf-modal--emerald">
 
         <div class="mf-header">
@@ -500,9 +500,37 @@
                   </div>
                 </div>
                 <div class="col-6">
-                  <label class="form-label form-label-sm">Mobile Money</label>
+                  <label class="form-label form-label-sm">Orange Money</label>
                   <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.mobile_money" min="0">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.orange_money" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Wave</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.wave" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">MTN Money</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.mtn_money" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Moov Money</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.moov_money" min="0">
+                    <span class="input-group-text">F</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label form-label-sm">Dajmo</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.dajmo" min="0">
                     <span class="input-group-text">F</span>
                   </div>
                 </div>

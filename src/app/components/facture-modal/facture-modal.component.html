@@ -1,5 +1,5 @@
 <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
     <div class="modal-content">
 
       <div class="modal-header border-bottom">
@@ -86,7 +86,9 @@
                 <tr>
                   <td>
                     <div class="fw-semibold">{{ facture.detail.plan_base.label }}</div>
-                    <div class="text-muted small">1 boutique incluse</div>
+                    <div class="text-muted small">
+                      {{ facture.detail.plan_base.boutiques_incluses ?? 1 }} boutique{{ (facture.detail.plan_base.boutiques_incluses ?? 1) > 1 ? 's' : '' }} incluse{{ (facture.detail.plan_base.boutiques_incluses ?? 1) > 1 ? 's' : '' }}
+                    </div>
                   </td>
                   <td class="text-end fw-semibold">
                     {{ facture.detail.plan_base.montant | number:'1.0-0':'fr' }} {{ facture.detail.plan_base.devise }}

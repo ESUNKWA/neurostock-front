@@ -37,7 +37,14 @@ export default class CaisseComponent implements OnInit {
   activating = false;
 
   readonly modesLabels: Record<string, string> = {
-    espece: 'Espèces', mobile_money: 'Mobile Money', carte: 'Carte', credit: 'Crédit',
+    espece:       'Espèces',
+    carte:        'Carte',
+    credit:       'Crédit',
+    orange_money: 'Orange Money',
+    wave:         'Wave',
+    mtn_money:    'MTN Money',
+    moov_money:   'Moov Money',
+    dajmo:        'Dajmo',
   };
 
   ouvrirForm!: FormGroup;
@@ -55,7 +62,11 @@ export default class CaisseComponent implements OnInit {
 
   readonly modesPaiement = [
     { value: 'espece',       label: 'Espèces' },
-    { value: 'mobile_money', label: 'Mobile Money' },
+    { value: 'orange_money', label: 'Orange Money' },
+    { value: 'wave',         label: 'Wave' },
+    { value: 'mtn_money',    label: 'MTN Money' },
+    { value: 'moov_money',   label: 'Moov Money' },
+    { value: 'dajmo',        label: 'Dajmo' },
     { value: 'carte',        label: 'Carte bancaire' },
     { value: 'credit',       label: 'Crédit' },
   ];
@@ -98,7 +109,11 @@ export default class CaisseComponent implements OnInit {
   initForms(): void {
     const fondGroup = () => this.fb.group({
       espece:       [0, [Validators.required, Validators.min(0)]],
-      mobile_money: [0, Validators.min(0)],
+      orange_money: [0, Validators.min(0)],
+      wave:         [0, Validators.min(0)],
+      mtn_money:    [0, Validators.min(0)],
+      moov_money:   [0, Validators.min(0)],
+      dajmo:        [0, Validators.min(0)],
       carte:        [0, Validators.min(0)],
       credit:       [0, Validators.min(0)],
     });
@@ -259,7 +274,7 @@ export default class CaisseComponent implements OnInit {
     caissierCtrl?.enable();
     this.ouvrirForm.reset({
       caissier: null,
-      fond_ouverture: { espece: 0, mobile_money: 0, carte: 0, credit: 0 },
+      fond_ouverture: { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0, credit: 0 },
       note: ''
     });
 
@@ -285,7 +300,7 @@ export default class CaisseComponent implements OnInit {
 
   openModalFermer(): void {
     this.fermerForm.reset({
-      fond_fermeture: { espece: 0, mobile_money: 0, carte: 0, credit: 0 },
+      fond_fermeture: { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0, credit: 0 },
       notes: ''
     });
     const m = document.getElementById('modal-fermer');
@@ -323,7 +338,7 @@ export default class CaisseComponent implements OnInit {
 
     const fondFermeture: Record<string, number> = this.fermerForm.value.fond_fermeture ?? {};
     const theorique: Record<string, number>     = this.theorique?.montant_theorique    ?? {};
-    const modes = ['espece', 'mobile_money', 'carte', 'credit'] as const;
+    const modes = ['espece', 'orange_money', 'wave', 'mtn_money', 'moov_money', 'dajmo', 'carte', 'credit'] as const;
     const fmt   = (n: number) => n.toLocaleString('fr-FR');
 
     // Lignes de récap par mode (seulement ceux qui ont une valeur)

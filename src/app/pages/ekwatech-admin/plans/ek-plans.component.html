@@ -57,28 +57,49 @@
 
       <!-- Prix boutique supplémentaire -->
       <div class="card border-0 shadow-sm mt-4">
-        <div class="card-header py-2 px-3">
+        <div class="card-header py-2 px-3 d-flex align-items-center justify-content-between">
           <span class="fw-semibold small"><i class="bi bi-shop-window me-2 text-warning"></i>Prix boutique supplémentaire</span>
+          @if (prixBoutique) {
+            <span class="badge bg-warning-subtle text-warning fw-semibold" style="font-size:.75rem;">
+              Actuel :
+              {{ prixBoutique.valeur | number:'1.0-0':'fr' }}{{ prixBoutique.type === 'pourcentage' ? '%' : ' XOF' }}
+              <span class="opacity-75">({{ prixBoutique.type === 'pourcentage' ? 'pourcentage' : 'montant fixe' }})</span>
+            </span>
+          }
         </div>
         <div class="card-body">
           <p class="text-muted small mb-3">
-            Prix facturé par boutique supplémentaire (2ème boutique et +) lors d'un renouvellement.
-            @if (prixBoutique) {
-              <span class="ms-1 badge bg-warning-subtle text-warning fw-semibold">
-                Actuel : {{ prixBoutique.valeur | number:'1.0-0':'fr' }} {{ prixBoutique.devise }}
-              </span>
-            }
+            Coût facturé par boutique supplémentaire (2ème boutique et +) lors d'un renouvellement.
+            Choisissez un montant fixe en XOF ou un pourcentage du plan.
           </p>
-          <div class="d-flex gap-2 align-items-end">
-            <div class="flex-grow-1">
-              <label class="form-label fw-semibold small mb-1">Montant (XOF)</label>
-              <input type="number" class="form-control" [(ngModel)]="prixBoutiqueForm.montant" min="0" placeholder="5000">
+          <div class="row g-2 align-items-end">
+            <div class="col-5">
+              <label class="form-label fw-semibold small mb-1">Type de calcul</label>
+              <select class="form-select" [(ngModel)]="prixBoutiqueForm.type">
+                <option value="montant">Montant fixe</option>
+                <option value="pourcentage">Pourcentage (%)</option>
+              </select>
             </div>
-            <button class="btn btn-warning" [disabled]="isSavingPrixBoutique" (click)="savePrixBoutique()">
-              @if (isSavingPrixBoutique) { <span class="spinner-border spinner-border-sm me-1"></span> }
-              @else { <i class="bi bi-floppy me-1"></i> }
-              Enregistrer
-            </button>
+            <div class="col-4">
+              <label class="form-label fw-semibold small mb-1">
+                Valeur {{ prixBoutiqueForm.type === 'pourcentage' ? '(%)' : '(XOF)' }}
+              </label>
+              <div class="input-group">
+                <input type="number" class="form-control"
+                       [(ngModel)]="prixBoutiqueForm.valeur"
+                       [max]="prixBoutiqueForm.type === 'pourcentage' ? 100 : null"
+                       min="0"
+                       [placeholder]="prixBoutiqueForm.type === 'pourcentage' ? '20' : '5000'">
+                <span class="input-group-text">{{ prixBoutiqueForm.type === 'pourcentage' ? '%' : 'XOF' }}</span>
+              </div>
+            </div>
+            <div class="col-3">
+              <button class="btn btn-warning w-100" [disabled]="isSavingPrixBoutique" (click)="savePrixBoutique()">
+                @if (isSavingPrixBoutique) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                @else { <i class="bi bi-floppy me-1"></i> }
+                Enregistrer
+              </button>
+            </div>
           </div>
         </div>
       </div>

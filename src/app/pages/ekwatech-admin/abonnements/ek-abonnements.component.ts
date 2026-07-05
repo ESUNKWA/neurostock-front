@@ -302,9 +302,36 @@ export default class EkAbonnementsComponent implements OnInit {
       });
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  valider(ab: any): void {
+    Swal.fire({
+      title: 'Valider ce renouvellement ?',
+      html: `Structure <strong>${this.structureName(ab.structureId)}</strong> — plan <strong>${this.planLabel(ab.plan)}</strong>.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Valider',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#16a34a',
+    }).then(r => {
+      if (!r.isConfirmed) return;
+      this.actionLoading = ab.id;
+      this.abonnementSvc.valider(ab.id)
+        .pipe(finalize(() => (this.actionLoading = null)))
+        .subscribe({
+          next: () => { this.toastr.success('Abonnement validé'); this.load(); },
+          error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
+        });
+    });
+  }
+
+  // ── Helpers ──────────────────────────���─────────────────────────────────────
   statutClass(statut: string): string {
-    return { actif: 'bg-success-subtle text-success', expire: 'bg-danger-subtle text-danger', suspendu: 'bg-warning-subtle text-warning' }[statut] ?? 'bg-secondary-subtle text-secondary';
+    const map: Record<string, string> = {
+      actif:      'bg-success-subtle text-success',
+      expire:     'bg-danger-subtle text-danger',
+      suspendu:   'bg-warning-subtle text-warning',
+      en_attente: 'bg-info-subtle text-info',
+    };
+    return map[statut] ?? 'bg-secondary-subtle text-secondary';
   }
 
   joursClass(j: number, statut: string): string {

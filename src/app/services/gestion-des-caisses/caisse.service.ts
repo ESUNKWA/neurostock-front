@@ -4,7 +4,11 @@ import { HttpClientService } from '../http-client/http-client.service';
 
 export interface FondCaisse {
   espece?: number;
-  mobile_money?: number;
+  orange_money?: number;
+  wave?: number;
+  mtn_money?: number;
+  moov_money?: number;
+  dajmo?: number;
   carte?: number;
   credit?: number;
 }

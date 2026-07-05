@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterModule, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
+import { InscriptionService } from '../../services/inscription/inscription.service';
 
 @Component({
   selector: 'app-ekwatech-admin-layout',
@@ -14,12 +16,32 @@ import { AuthService } from '../../services/auth/auth.service';
 export default class EkwatechAdminLayoutComponent implements OnInit {
   currentUser: any;
   sidebarOpen = false;
+  inscriptionsEnAttente = 0;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private inscriptionSvc: InscriptionService,
+  ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(u => (this.currentUser = u));
     this.router.events.subscribe(() => { this.sidebarOpen = false; });
+    this.loadInscriptionsCount();
+    // Rafraîchit le compteur à chaque navigation (ex: après validation)
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      this.loadInscriptionsCount();
+    });
+  }
+
+  private loadInscriptionsCount(): void {
+    this.inscriptionSvc.getAll().subscribe({
+      next: (r: any) => {
+        const list: any[] = r?.data ?? (Array.isArray(r) ? r : []);
+        this.inscriptionsEnAttente = list.filter(i => i.statut === 'en_attente').length;
+      },
+      error: () => { this.inscriptionsEnAttente = 0; },
+    });
   }
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }

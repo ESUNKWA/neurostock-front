@@ -29,7 +29,11 @@ export default class VenteComponent implements OnInit {
   modesPaiement: { value: string; label: string }[] = [
     { value: 'espece',       label: 'Espèces' },
     { value: 'carte',        label: 'Carte bancaire' },
-    { value: 'mobile_money', label: 'Mobile Money' },
+    { value: 'orange_money', label: 'Orange Money' },
+    { value: 'wave',         label: 'Wave' },
+    { value: 'mtn_money',    label: 'MTN Money' },
+    { value: 'moov_money',   label: 'Moov Money' },
+    { value: 'dajmo',        label: 'Dajmo' },
     { value: 'credit',       label: 'Crédit (à recouvrer)' },
     { value: 'mixte',        label: 'Paiement mixte' },
   ];
@@ -67,7 +71,10 @@ export default class VenteComponent implements OnInit {
   get totalDetailsPaiement(): number {
     const d = this.venteForm?.get('details_paiement')?.value || {};
     return (Number(d.espece) || 0) + (Number(d.carte) || 0)
-         + (Number(d.mobile_money) || 0) + (Number(d.credit) || 0);
+         + (Number(d.credit) || 0)
+         + (Number(d.orange_money) || 0) + (Number(d.wave) || 0)
+         + (Number(d.mtn_money) || 0) + (Number(d.moov_money) || 0)
+         + (Number(d.dajmo) || 0);
   }
 
   constructor(
@@ -146,7 +153,11 @@ export default class VenteComponent implements OnInit {
       details_paiement: this.fb.group({
         espece:       [null],
         carte:        [null],
-        mobile_money: [null],
+        orange_money: [null],
+        wave:         [null],
+        mtn_money:    [null],
+        moov_money:   [null],
+        dajmo:        [null],
         credit:       [null],
       }),
       clientdata: this.fb.group({
@@ -163,35 +174,22 @@ export default class VenteComponent implements OnInit {
 
   checkForEditData(): void {
     const editDataStr = localStorage.getItem('editVenteData');
-    if (editDataStr) {
-      try {
-        this.editVenteData = JSON.parse(editDataStr);
-        this.isEditMode = true;
-        this.editVenteId = this.editVenteData.id;
-        
-        // Supprimer les données du localStorage après les avoir récupérées
-        localStorage.removeItem('editVenteData');
+    if (!editDataStr) {
+      this.addDetailVente();
+      return;
+    }
+    try {
+      this.editVenteData = JSON.parse(editDataStr);
+      this.isEditMode    = true;
+      this.editVenteId   = this.editVenteData.id;
+      localStorage.removeItem('editVenteData');
 
-        // Charger les produits de la boutique associée à la vente
-        if (this.editVenteData.vente && this.editVenteData.vente.boutique) {
-          this.selectedBoutique = this.editVenteData.vente.boutique.id.toString();
-          this.loadProduits();
-        } else if (this.currentUser && this.currentUser.boutique) {
-          // Utiliser la boutique de l'utilisateur courant comme fallback
-          this.selectedBoutique = this.currentUser.boutique_id.toString();
-          this.loadProduits();
-        }
-        
-        // Attendre que les produits soient chargés avant de remplir le formulaire
-        setTimeout(() => {
-          this.populateFormWithEditData();
-        }, 1000);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des données d\'édition:', error);
-        localStorage.removeItem('editVenteData');
-      }
-    } else {
-      // Si pas en mode édition, ajouter un détail de vente par défaut
+      // Peupler le formulaire immédiatement avec les données du serveur
+      // (nom/image/stock viennent de l'objet produit inclus dans detail_vente)
+      this.populateFormWithEditData();
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données d\'édition:', error);
+      localStorage.removeItem('editVenteData');
       this.addDetailVente();
     }
   }
@@ -226,56 +224,75 @@ export default class VenteComponent implements OnInit {
 
   populateFormWithEditData(): void {
     if (!this.editVenteData || !this.editVenteData.vente) return;
-    
-    const vente = this.editVenteData.vente;
-    
-    // Formater la date correctement (yyyy-MM-dd)
-    let dateVente = new Date().toISOString().slice(0, 10);
-    if (vente.created_at) {
-      const date = new Date(vente.created_at);
-      dateVente = date.toISOString().slice(0, 10);
-    }
-    
-    // Vérifier que currentUser et boutique existent avant d'accéder à leurs propriétés
-    const boutiqueId = this.currentUser && this.currentUser.boutique ? this.currentUser.boutique_id : null;
-    const userTelephone = this.currentUser ? this.currentUser.telephone : null;
 
-    // Mettre à jour les champs principaux du formulaire
+    const vente = this.editVenteData.vente;
+
+    // Date (préférer date_vente, fallback sur created_at)
+    const rawDate = vente.date_vente || vente.created_at;
+    const dateVente = rawDate
+      ? new Date(rawDate).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+
+    const boutiqueId = vente.boutique?.id ?? this.currentUser?.boutique_id ?? null;
+    const userTelephone = this.currentUser?.telephone ?? null;
+
+    // Champs principaux (y compris financiers)
     this.venteForm.patchValue({
-      libelle: vente.libelle || '',
-      description: vente.description || '',
-      boutique: boutiqueId,
-      user: userTelephone,
-      montant_total: vente.montant_total || 0,
-      date_vente: dateVente,
-      mode_paiement: vente.mode_paiement || 'espece',
-      statut: vente.statut || 'payer'
+      libelle:                    vente.libelle || '',
+      description:                vente.description || '',
+      boutique:                   boutiqueId,
+      user:                       userTelephone,
+      date_vente:                 dateVente,
+      mode_paiement:              vente.mode_paiement || 'espece',
+      statut:                     vente.statut || 'payer',
+      montant_total:              vente.montant_total || 0,
+      remise:                     vente.remise || 0,
+      montant_total_apres_remise: vente.montant_total_apres_remise ?? vente.montant_total ?? 0,
+      montant_recu:               vente.montant_recu || 0,
+      monnaie_rendu:              vente.monnaie_rendu || 0,
     });
-    
-    // Vider le FormArray des détails de vente existants
+
+    // Client
+    const client = vente.clientdata || vente.client;
+    if (client) {
+      (this.venteForm.get('clientdata') as FormGroup).patchValue({
+        nom:       client.nom || '',
+        telephone: client.telephone || '',
+        email:     client.email || '',
+      });
+    }
+
+    // Vider les lignes existantes
     while (this.detailVente.length > 0) {
       this.detailVente.removeAt(0);
     }
-    
-    // Ajouter les détails de vente
-    if (vente.detail_vente && vente.detail_vente.length > 0) {
+
+    // Ajouter les lignes de vente
+    if (vente.detail_vente?.length > 0) {
       vente.detail_vente.forEach((detail: any) => {
+        const produit = detail.produit;
+        // Créer le groupe directement avec toutes les données de la vente sauvegardée
+        // sans passer par createDetailVente() pour éviter que valueChanges déclenche
+        // la vérification de doublon / l'écrasement du prix historique.
         const detailGroup = this.fb.group({
-          produit: [detail.produit.id, Validators.required],
+          image:               [produit?.imageUrl || produit?.image || ''],
+          nom:                 [produit?.nom || ''],
+          stock:               [produit?.stock_disponible ?? null],
+          image_produit:       [null],
+          produit:             [produit?.id ?? null, Validators.required],
           prix_unitaire_vente: [detail.prix_unitaire_vente, [Validators.required, Validators.min(0)]],
-          quantite: [detail.quantite, [Validators.required, Validators.min(1)]]
+          quantite:            [detail.quantite, [Validators.required, Validators.min(1)]],
         });
         this.detailVente.push(detailGroup);
+
+        // Ajouter le listener APRÈS le push pour les changements ultérieurs par l'utilisateur
+        detailGroup.get('produit')?.valueChanges.subscribe((idProduit: any) => {
+          this.selectProduit(detailGroup, idProduit);
+        });
       });
     } else {
-      // Si aucun détail n'est présent, ajouter une ligne vide
       this.addDetailVente();
     }
-    
-    // Calculer le montant total
-    this.calculerMontantTotal();
-    
-    // Le titre est géré par le binding isEditMode dans le template
   }
 
   get f() {
@@ -611,41 +628,51 @@ calculerMontantTotalApresRemise(): void {
   }
   
   updateVente(): void {
-    this.ventesService.updateVente(this.editVenteId, this.venteForm.value)
+    const body = {
+      ...this.venteForm.value,
+      boutique:      this.currentUser?.boutique_id ?? this.venteForm.value.boutique,
+      session_caisse: this.activeSessionId,
+    };
+    this.ventesService.updateVente(this.editVenteId, body)
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
-          //this.toastr.success('Modification effectuée avec succès');
+          this.isSubmitting = false;
+          this.isEditMode   = false;
+          this.editVenteId  = null;
+          this.editVenteData = null;
+          this.initForm();
+          this.addDetailVente();
+
           Swal.fire({
-            title: 'Vente effectuée avec succès',
+            title: 'Vente modifiée avec succès',
             text: 'Souhaitez-vous imprimer le reçu ?',
             icon: 'success',
             showCancelButton: true,
             confirmButtonText: '🖨️ Imprimer le reçu',
             cancelButtonText: 'Fermer',
-            confirmButtonColor: '#198754', // vert Bootstrap
-            cancelButtonColor: '#6c757d'
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: async () => {
+              try {
+                const venteId = response?.data?.id ?? response?.data?.idVente ?? this.editVenteId;
+                return await this.ventesService.imprimerRecu(venteId).toPromise();
+              } catch {
+                Swal.showValidationMessage('Impossible de générer la facture');
+                return false;
+              }
+            }
           }).then((result) => {
-            if (result.isConfirmed) {
-              
+            if (result.isConfirmed && result.value?.path) {
+              window.open(result.value.path, '_blank');
             }
           });
-          this.isSubmitting = false;
-          
-          // Réinitialiser le mode édition
-          this.isEditMode = false;
-          this.editVenteId = null;
-          this.editVenteData = null;
-          
-          // Réinitialiser le formulaire
-          this.initForm();
-          this.addDetailVente();
-          
-          // Le titre est géré par le binding isEditMode dans le template
         },
         error: (error: any) => {
           console.error('Erreur lors de la modification de la vente', error);
-          this.toastr.error('Erreur lors de la modification de la vente');
+          this.toastr.error(error?.error?.message || 'Erreur lors de la modification de la vente');
           this.isSubmitting = false;
         }
       });

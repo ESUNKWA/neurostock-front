@@ -93,7 +93,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     if (role === 'gerant' || role === 'user') {
       return filteredMenu
-        .filter((section: any) => section.titre !== 'Paramétrages')
+        .filter((section: any) => section.titre !== 'Paramétrages' && section.titre !== 'Rapports')
         .map((section: any) => {
           section.menu?.forEach((item: any) => {
             if (item.sousMenu) {

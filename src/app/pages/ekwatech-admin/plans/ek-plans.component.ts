@@ -18,8 +18,8 @@ export default class EkPlansComponent implements OnInit {
   isSubmitting = false;
 
   // Prix boutique supplémentaire
-  prixBoutique: { valeur: number; devise: string } | null = null;
-  prixBoutiqueForm = { montant: 0, devise: 'XOF' };
+  prixBoutique: { valeur: number; type: string } | null = null;
+  prixBoutiqueForm: { valeur: number; type: 'pourcentage' | 'montant' } = { valeur: 0, type: 'montant' };
   isSavingPrixBoutique = false;
 
   readonly PLAN_OPTIONS = [
@@ -50,7 +50,10 @@ export default class EkPlansComponent implements OnInit {
       next: (r: any) => {
         this.prixBoutique = r?.data ?? null;
         if (this.prixBoutique) {
-          this.prixBoutiqueForm = { montant: this.prixBoutique.valeur, devise: this.prixBoutique.devise };
+          this.prixBoutiqueForm = {
+            valeur: this.prixBoutique.valeur,
+            type:   (this.prixBoutique.type as 'pourcentage' | 'montant') ?? 'montant',
+          };
         }
       },
     });
@@ -72,8 +75,11 @@ export default class EkPlansComponent implements OnInit {
   }
 
   savePrixBoutique(): void {
-    if (!this.prixBoutiqueForm.montant && this.prixBoutiqueForm.montant !== 0) {
-      this.toastr.warning('Le montant est obligatoire'); return;
+    if (this.prixBoutiqueForm.valeur == null || this.prixBoutiqueForm.valeur < 0) {
+      this.toastr.warning('La valeur est obligatoire'); return;
+    }
+    if (this.prixBoutiqueForm.type === 'pourcentage' && this.prixBoutiqueForm.valeur > 100) {
+      this.toastr.warning('Le pourcentage ne peut pas dépasser 100'); return;
     }
     this.isSavingPrixBoutique = true;
     this.abonnementSvc.savePrixBoutique(this.prixBoutiqueForm)

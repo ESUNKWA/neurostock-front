@@ -198,6 +198,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
                     <button type="button" class="btn btn-sm ${iaClass} me-1" data-bs-toggle="tooltip" title="${iaTitle}" data-action="ia" data-id="${row.id}">
                       <i class="bi bi-robot"></i>
                     </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="Imprimer étiquette" data-action="label" data-id="${row.id}">
+                      <i class="bi bi-tag"></i>
+                    </button>
                     <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
@@ -264,6 +267,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               switch (action) {
                 case 'ia':
                   this.voirPrixSuggere(produit);
+                  break;
+                case 'label':
+                  this.imprimerEtiquette(produit);
                   break;
                 case 'view':
                   this.openViewProduit(produit);
@@ -698,6 +704,32 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       const inst = bootstrap.Modal.getInstance(modal);
       if (inst) inst.hide();
     }
+  }
+
+  copierCodeBarre(code: string): void {
+    navigator.clipboard.writeText(code).then(() => {
+      this.toastr.info('Code-barres copié');
+    });
+  }
+
+  imprimerEtiquette(produit: any): void {
+    Swal.fire({
+      title: 'Imprimer étiquette',
+      html: `<strong>${produit.nom}</strong><br><small class="text-muted">Code-barres : ${produit.code_barre || '(auto)'}</small>`,
+      input: 'number',
+      inputLabel: 'Nombre de copies',
+      inputValue: 1,
+      inputAttributes: { min: '1', max: '200', step: '1' },
+      inputValidator: (v) => (!v || Number(v) < 1 ? 'Entrez au moins 1 copie' : undefined),
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-printer me-1"></i> Imprimer',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#0d6efd',
+    }).then(({ isConfirmed, value }) => {
+      if (isConfirmed && value) {
+        window.open(this.produitService.getEtiquetteUrl(produit.id, Number(value)), '_blank');
+      }
+    });
   }
 
   deleteProduit(produit: any): void {

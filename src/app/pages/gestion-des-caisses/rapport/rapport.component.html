@@ -83,7 +83,7 @@
               {{ sumModes(rapport.recap?.fond_ouverture) | number:'1.0-0':'fr' }}
             </h4>
             <small class="text-muted d-block mb-2">FCFA</small>
-            @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+            @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
               @if ((rapport.fond_ouverture || rapport.recap?.fond_ouverture)?.[mode]) {
                 <div class="d-flex justify-content-between align-items-center px-1" style="font-size:.72rem;">
                   <span class="text-muted">{{ labelMode(mode) }}</span>
@@ -137,7 +137,7 @@
                   [ngClass]="ecartTotal > 0 ? 'text-success' : ecartTotal < 0 ? 'text-danger' : 'text-muted'">
                 {{ ecartSign(ecartTotal) }}{{ ecartTotal | number:'1.0-0':'fr' }} FCFA
               </h4>
-              @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+              @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
                 @if (rapport.recap.ecart[mode] != null && rapport.recap.ecart[mode] !== 0) {
                   <div class="d-flex justify-content-between align-items-center px-1 mt-1" style="font-size:.72rem;">
                     <span class="text-muted">{{ labelMode(mode) }}</span>
@@ -231,7 +231,7 @@
                 <i class="bi bi-safe me-1"></i> Fond de fermeture (compté)
               </h6>
               <div class="row g-2">
-                @for (mode of ['espece','mobile_money','carte','credit']; track mode) {
+                @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
                   @if (rapport.recap.fond_fermeture[mode] != null) {
                     <div class="col-6 col-md-3">
                       <div class="p-2 rounded bg-light text-center">

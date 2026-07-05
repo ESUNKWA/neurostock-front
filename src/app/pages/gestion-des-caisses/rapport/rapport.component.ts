@@ -20,11 +20,15 @@ export default class RapportComponent implements OnInit {
   modeLabels: Record<string, string> = {
     espece:       'Espèces',
     carte:        'Carte bancaire',
-    mobile_money: 'Mobile Money',
     credit:       'Crédit',
     mixte:        'Mixte',
     cheque:       'Chèque',
     virement:     'Virement',
+    orange_money: 'Orange Money',
+    wave:         'Wave',
+    mtn_money:    'MTN Money',
+    moov_money:   'Moov Money',
+    dajmo:        'Dajmo',
   };
 
   constructor(
@@ -47,7 +51,7 @@ export default class RapportComponent implements OnInit {
       });
   }
 
-  /** Somme toutes les valeurs d'un objet par mode (espece, mobile_money, carte, credit) */
+  /** Somme toutes les valeurs d'un objet par mode */
   sumModes(obj: any): number {
     if (obj == null) return 0;
     if (typeof obj === 'number') return obj;

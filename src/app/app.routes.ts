@@ -70,6 +70,11 @@ export const routes: Routes = [
             title: 'neurostock | Analyse IA'
         },
         {
+            path: 'recette',
+            loadComponent: () => import('./pages/recette/recette.component'),
+            title: 'neurostock | Recette'
+        },
+        {
             path: 'mon-abonnement',
             loadComponent: () => import('./pages/mon-abonnement/mon-abonnement.component'),
             title: 'neurostock | Mon abonnement'
@@ -101,5 +106,7 @@ export const routes: Routes = [
     },
     { path: 'abonnement-expire', loadComponent: () => import('./pages/abonnement-expire/abonnement-expire.component'), title: 'Abonnement expiré' },
     { path: 'no-access', loadComponent: () => import('./pages/no-access/no-access.component'), title: 'Accès non configuré' },
+    { path: 'landing', loadComponent: () => import('./pages/landing/landing.component'), title: 'NeuroStock · Gérez vos boutiques intelligemment' },
+    { path: 'inscription', loadComponent: () => import('./pages/inscription/inscription.component'), title: 'NeuroStock · Créer votre espace' },
     { path: '**', redirectTo: 'dashboard' }
 ];

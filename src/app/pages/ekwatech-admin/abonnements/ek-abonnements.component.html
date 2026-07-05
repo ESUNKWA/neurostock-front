@@ -82,8 +82,9 @@
                     <span class="badge" [class]="statutClass(ab.statut)">
                       @if (ab.statut === 'actif') { <i class="bi bi-check-circle-fill me-1"></i> }
                       @else if (ab.statut === 'expire') { <i class="bi bi-x-circle-fill me-1"></i> }
+                      @else if (ab.statut === 'en_attente') { <i class="bi bi-hourglass-split me-1"></i> }
                       @else { <i class="bi bi-pause-circle-fill me-1"></i> }
-                      {{ ab.statut | titlecase }}
+                      @if (ab.statut === 'en_attente') { En attente } @else { {{ ab.statut | titlecase }} }
                     </span>
                   </td>
                   <td class="text-end pe-4">
@@ -92,24 +93,34 @@
                               title="Voir la facture">
                         <i class="bi bi-receipt"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-primary" (click)="openSubscribeModal(ab)"
-                              title="Souscrire / Renouveler">
-                        <i class="bi bi-arrow-repeat me-1"></i>Renouveler
-                      </button>
-                      @if (ab.statut === 'actif') {
-                        <button class="btn btn-sm btn-outline-warning"
+                      @if (ab.statut === 'en_attente') {
+                        <button class="btn btn-sm btn-success"
                                 [disabled]="actionLoading === ab.id"
-                                (click)="suspend(ab)" title="Suspendre">
+                                (click)="valider(ab)" title="Valider ce renouvellement">
                           @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
-                          @else { <i class="bi bi-pause-fill"></i> }
+                          @else { <i class="bi bi-check2-circle me-1"></i> }
+                          Valider
                         </button>
-                      } @else if (ab.statut === 'suspendu') {
-                        <button class="btn btn-sm btn-outline-success"
-                                [disabled]="actionLoading === ab.id"
-                                (click)="reactivate(ab)" title="Réactiver">
-                          @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
-                          @else { <i class="bi bi-play-fill"></i> }
+                      } @else {
+                        <button class="btn btn-sm btn-outline-primary" (click)="openSubscribeModal(ab)"
+                                title="Souscrire / Renouveler">
+                          <i class="bi bi-arrow-repeat me-1"></i>Renouveler
                         </button>
+                        @if (ab.statut === 'actif') {
+                          <button class="btn btn-sm btn-outline-warning"
+                                  [disabled]="actionLoading === ab.id"
+                                  (click)="suspend(ab)" title="Suspendre">
+                            @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
+                            @else { <i class="bi bi-pause-fill"></i> }
+                          </button>
+                        } @else if (ab.statut === 'suspendu') {
+                          <button class="btn btn-sm btn-outline-success"
+                                  [disabled]="actionLoading === ab.id"
+                                  (click)="reactivate(ab)" title="Réactiver">
+                            @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
+                            @else { <i class="bi bi-play-fill"></i> }
+                          </button>
+                        }
                       }
                     </div>
                   </td>
@@ -126,7 +137,7 @@
 <!-- ── Modal souscrire / renouveler ────────────────────────────────────────── -->
 @if (showModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:520px">
       <div class="modal-content mf-modal mf-modal--blue">
 
         <div class="mf-header">
@@ -177,13 +188,30 @@
           @if (devis && !devisLoading) {
             <div class="mf-section" style="background:#eff6ff">
               <div class="mf-section-label"><i class="bi bi-calculator"></i> Devis estimatif</div>
+              <!-- Plan de base -->
               <div class="d-flex justify-content-between small py-1">
-                <span class="text-muted">Prix de base ({{ planLabel(devis.plan) }})</span>
+                <span class="text-muted">
+                  Plan {{ planLabel(devis.plan) }}
+                  @if (devis.boutiques_incluses) {
+                    <span class="opacity-75 ms-1">({{ devis.boutiques_incluses }} boutique{{ devis.boutiques_incluses > 1 ? 's' : '' }} incluse{{ devis.boutiques_incluses > 1 ? 's' : '' }})</span>
+                  }
+                </span>
                 <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
               </div>
+              <!-- Boutiques supplémentaires -->
               @if (devis.boutiques_supplementaires > 0) {
                 <div class="d-flex justify-content-between small py-1">
-                  <span class="text-muted">{{ devis.boutiques_supplementaires }} boutique(s) sup. × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }}</span>
+                  <span class="text-muted">
+                    {{ devis.boutiques_supplementaires }} boutique(s) sup.
+                    @if (devis.config_boutique) {
+                      <span class="opacity-75">
+                        × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise }}
+                        ({{ devis.config_boutique.valeur }}{{ devis.config_boutique.type === 'pourcentage' ? '%' : ' XOF' }} du plan)
+                      </span>
+                    } @else {
+                      <span class="opacity-75">× {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                    }
+                  </span>
                   <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
                 </div>
               }
@@ -233,7 +261,7 @@
 <!-- ── Modal boutiques facturées ───────────────────────────────────────────── -->
 @if (showBoutiquesModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:520px">
       <div class="modal-content mf-modal mf-modal--orange">
 
         <div class="mf-header">
@@ -354,7 +382,7 @@
 <!-- ── Modal démarrer un essai ─────────────────────────────────────────────── -->
 @if (showTrialModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:420px">
       <div class="modal-content mf-modal mf-modal--emerald">
 
         <div class="mf-header">

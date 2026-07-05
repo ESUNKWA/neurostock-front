@@ -1,0 +1,244 @@
+.ins-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f4f6fb;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.ins-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.ins-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #1a2e1a;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.ins-brand-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #1e7a5a, #2da870);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .95rem;
+}
+
+.ins-login-link {
+  font-size: .875rem;
+  color: #666;
+  text-decoration: none;
+  &:hover { color: #1e7a5a; }
+  strong { color: #1e7a5a; }
+}
+
+/* ── Body ────────────────────────────────────────────────────── */
+.ins-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 16px 24px;
+}
+
+/* ── Card ────────────────────────────────────────────────────── */
+.ins-card {
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.07);
+  overflow: hidden;
+}
+
+/* ── Title ───────────────────────────────────────────────────── */
+.ins-title {
+  padding: 28px 32px 0;
+  text-align: center;
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a2e1a;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: .82rem;
+    color: #888;
+    margin-bottom: 0;
+  }
+}
+
+/* ── Stepper ─────────────────────────────────────────────────── */
+.ins-stepper {
+  display: flex;
+  align-items: center;
+  padding: 24px 32px 0;
+  gap: 0;
+}
+
+.ins-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #d0d7df;
+    background: #fff;
+    color: #b0b8c4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    transition: all .2s;
+  }
+
+  .step-label {
+    font-size: .72rem;
+    color: #aaa;
+    font-weight: 500;
+  }
+
+  &.active {
+    .step-circle {
+      border-color: #1e7a5a;
+      background: #1e7a5a;
+      color: #fff;
+    }
+    .step-label { color: #1e7a5a; font-weight: 600; }
+  }
+
+  &.done {
+    .step-circle {
+      border-color: #1e7a5a;
+      background: #e8f5ef;
+      color: #1e7a5a;
+    }
+    .step-label { color: #1e7a5a; }
+  }
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e0e6ee;
+  margin: 0 6px;
+  margin-bottom: 22px;
+  transition: background .2s;
+
+  &.active { background: #1e7a5a; }
+}
+
+/* ── Step block ──────────────────────────────────────────────── */
+.step-block {
+  padding: 24px 32px 8px;
+}
+
+.step-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .step-ico {
+    font-size: 1.5rem;
+    color: #1e7a5a;
+  }
+
+  .step-ttl {
+    font-weight: 700;
+    font-size: .95rem;
+    color: #1a2e1a;
+  }
+
+  .step-sub {
+    font-size: .78rem;
+    color: #888;
+  }
+}
+
+.req { color: #e53e3e; }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.ins-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px 28px;
+  gap: 10px;
+}
+
+.ins-btn {
+  min-width: 150px;
+  background: #1e7a5a;
+  border-color: #1e7a5a;
+  font-weight: 600;
+
+  &:hover, &:focus {
+    background: #176449;
+    border-color: #176449;
+  }
+}
+
+/* ── Success ─────────────────────────────────────────────────── */
+.ins-success {
+  padding: 48px 32px;
+  text-align: center;
+
+  .success-icon {
+    font-size: 3rem;
+    color: #1e7a5a;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a2e1a;
+    margin-bottom: 10px;
+  }
+}
+
+/* ── Footnote ────────────────────────────────────────────────── */
+.ins-foot-note {
+  margin-top: 18px;
+  font-size: .78rem;
+  color: #aaa;
+  text-align: center;
+
+  a {
+    color: #1e7a5a;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .ins-card { border-radius: 0; box-shadow: none; }
+  .ins-body { padding: 0 0 24px; }
+  .ins-title, .step-block, .ins-footer { padding-left: 20px; padding-right: 20px; }
+  .ins-stepper { padding-left: 20px; padding-right: 20px; }
+  .step-label { display: none; }
+}

@@ -478,3 +478,22 @@ textarea.mf-input {
   &:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
   i { margin-right: 5px; }
 }
+
+// ── mf-modal scroll fix ───────────────────────────────────────────────────────
+// Bootstrap's modal-dialog-scrollable only scrolls .modal-body by default.
+// mf-modal wraps content in <form> + .mf-body instead, so we wire flex manually.
+.modal-dialog-scrollable .modal-content {
+  form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .mf-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}

@@ -16,10 +16,14 @@ export default class PosDashboardComponent implements OnInit {
   today = new Date();
 
   readonly modesLabels: Record<string, string> = {
-    espece: 'Espèces',
-    mobile_money: 'Mobile Money',
-    carte: 'Carte bancaire',
-    credit: 'Crédit',
+    espece:       'Espèces',
+    carte:        'Carte bancaire',
+    credit:       'Crédit',
+    orange_money: 'Orange Money',
+    wave:         'Wave',
+    mtn_money:    'MTN Money',
+    moov_money:   'Moov Money',
+    dajmo:        'Dajmo',
   };
 
   constructor(

@@ -93,7 +93,7 @@
 
 <!-- Modal produit -->
 <div class="modal fade" id="modal-fadein" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content prd-modal">
 
             <!-- En-tête coloré -->
@@ -266,9 +266,18 @@
                                 <div class="prd-input-wrap">
                                     <i class="bi bi-upc-scan prd-input-icon"></i>
                                     <input type="text" class="form-control prd-input" id="code_barre"
-                                        placeholder="Optionnel"
+                                        placeholder="Laissez vide pour générer automatiquement"
                                         formControlName="code_barre">
                                 </div>
+                                @if (titleModal.includes('VISUALISER') && selectedProduit?.code_barre) {
+                                    <div class="mt-1 d-flex align-items-center gap-2">
+                                        <span class="badge bg-secondary font-monospace">{{ selectedProduit.code_barre }}</span>
+                                        <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                                            title="Copier" (click)="copierCodeBarre(selectedProduit.code_barre)">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -314,6 +323,11 @@
                             <i [class]="icon"></i> {{ buttonText }}
                         </button>
                     }
+                    @if (titleModal.includes('VISUALISER') && selectedProduit?.id) {
+                        <button type="button" class="btn btn-outline-primary" (click)="imprimerEtiquette(selectedProduit)">
+                            <i class="bi bi-tag me-1"></i> Imprimer étiquette
+                        </button>
+                    }
                     <button type="button" class="btn prd-btn-cancel" data-bs-dismiss="modal">
                         <i class="bi bi-x-lg"></i> {{ titleModal.includes('VISUALISER') ? 'Fermer' : 'Annuler' }}
                     </button>
@@ -326,7 +340,7 @@
 
 <!-- Modal Suggestion IA — Prix suggéré -->
 <div class="modal fade" id="modal-prix-suggere" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header border-0 pb-1">
         <h5 class="modal-title fw-semibold d-flex align-items-center gap-2">
@@ -432,7 +446,7 @@
 
 <!-- Modal d'aperçu de l'import CSV/Excel -->
 <div class="modal fade" id="modal-import-preview" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content mf-modal mf-modal--slate">
       <div class="mf-header">
         <div class="mf-header-icon"><i class="bi bi-file-earmark-spreadsheet"></i></div>

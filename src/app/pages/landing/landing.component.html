@@ -1,0 +1,595 @@
+<div class="ns-lp">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="wrap nav-in">
+      <div class="logo"><div class="logo-i">N</div>NeuroStock</div>
+      <ul class="nav-links">
+        <li><a (click)="scrollTo('modules')">Modules</a></li>
+        <li><a (click)="scrollTo('apercu')">Aperçu</a></li>
+        <li><a (click)="scrollTo('pricing')">Tarifs</a></li>
+        <li><a routerLink="/inscription">Essai gratuit</a></li>
+      </ul>
+      <button class="theme-btn" aria-label="Thème">☀</button>
+      <a routerLink="/inscription" class="nav-cta">Démarrer gratuitement</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-tag">✦ Gestion de stock intelligente · SaaS</div>
+          <h1 class="hero-h">Gérez votre boutique avec <em>l'intelligence</em> de données</h1>
+          <p class="hero-sub">NeuroStock centralise vos ventes, votre stock, votre caisse et vos clients dans une seule plateforme. Simple à utiliser, puissant en coulisses.</p>
+          <div class="hero-btns">
+            <a routerLink="/inscription" class="btn-p">Essai gratuit 1 mois →</a>
+            <a href="#apercu" class="btn-g">▷ Voir une démo</a>
+          </div>
+          <div class="hero-meta">
+            <span>Aucune carte bancaire requise</span>
+            <span>Configuration en 5 minutes</span>
+            <span>Support en français</span>
+          </div>
+        </div>
+        <div class="mock-wrap">
+          <div class="mock-glow"></div>
+          <div class="mock">
+            <div class="mock-bar">
+              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+              <span class="mock-bar-ttl">NEUROSTOCK · POINT DE VENTE</span>
+            </div>
+            <div class="mock-body">
+              <div class="mock-sb">
+                <div class="mk-ni on">🏪</div>
+                <div class="mk-ni">📦</div>
+                <div class="mk-ni">📊</div>
+                <div class="mk-ni">👥</div>
+                <div class="mk-ni">💰</div>
+              </div>
+              <div class="mock-main">
+                <div class="mk-kpis">
+                  <div class="mk-kpi"><div class="mk-kl">Ventes du jour</div><div class="mk-kv am">347 500</div></div>
+                  <div class="mk-kpi"><div class="mk-kl">Transactions</div><div class="mk-kv">28</div></div>
+                  <div class="mk-kpi"><div class="mk-kl">Stock alerte</div><div class="mk-kv or">3</div></div>
+                </div>
+                <div class="mk-prods">
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(245,171,42,.1)">🧴</div><div class="mk-pnm">Huile Palme</div><div class="mk-ppr">1 200 F</div><span class="mk-pst ok">48</span></div>
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(74,222,128,.08)">🌾</div><div class="mk-pnm">Farine 1kg</div><div class="mk-ppr">650 F</div><span class="mk-pst lw">3 ⚠</span></div>
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(96,165,250,.08)">🥤</div><div class="mk-pnm">Jus Tamarin</div><div class="mk-ppr">350 F</div><span class="mk-pst ok">22</span></div>
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(251,113,133,.08)">🍬</div><div class="mk-pnm">Bonbons Mix</div><div class="mk-ppr">100 F</div><span class="mk-pst ok">150</span></div>
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(167,139,250,.08)">🧼</div><div class="mk-pnm">Savon Lux</div><div class="mk-ppr">450 F</div><span class="mk-pst ok">30</span></div>
+                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(34,197,94,.08)">🫘</div><div class="mk-pnm">Haricot 1kg</div><div class="mk-ppr">900 F</div><span class="mk-pst lw">5</span></div>
+                </div>
+              </div>
+              <div class="mock-cart">
+                <div class="mk-ct">Panier</div>
+                <div class="mk-items">
+                  <div class="mk-it"><span class="mk-it-n">Huile ×2</span><span class="mk-it-p">2 400</span></div>
+                  <div class="mk-it"><span class="mk-it-n">Farine ×1</span><span class="mk-it-p">650</span></div>
+                  <div class="mk-it"><span class="mk-it-n">Savon ×3</span><span class="mk-it-p">1 350</span></div>
+                </div>
+                <div class="mk-div"></div>
+                <div class="mk-tot"><span class="mk-tot-l">Total</span><span class="mk-tot-v">4 400 F</span></div>
+                <button class="mk-pay">💳 Encaisser</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="wrap met-in">
+      <div><div class="met-nb">8</div><div class="met-lb">Modules intégrés</div></div>
+      <div><div class="met-nb">9</div><div class="met-lb">Modes de paiement</div></div>
+      <div><div class="met-nb">IA</div><div class="met-lb">Prix suggérés</div></div>
+      <div><div class="met-nb">100%</div><div class="met-lb">Données isolées</div></div>
+      <div><div class="met-nb">1 mois</div><div class="met-lb">Essai gratuit</div></div>
+    </div>
+  </div>
+
+  <!-- MODULES -->
+  <section class="sec" id="modules">
+    <div class="wrap">
+      <div class="sec-hd rv">
+        <p class="eyebrow">Fonctionnalités</p>
+        <h2 class="t-h2">Tous les outils pour piloter votre activité</h2>
+        <p class="t-body">De la caisse au rapport, chaque module est pensé pour les réalités du commerce en Afrique de l'Ouest.</p>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-card rv" style="--ca:#F5AB2A;--cai:rgba(245,171,42,.12)">
+          <div class="mod-ico">📦</div>
+          <div class="mod-title">Gestion des Produits</div>
+          <p class="mod-desc">Catalogue complet avec code-barres, impression d'étiquettes PDF et suggestions de prix par l'IA.</p>
+          <ul class="mod-ul">
+            <li>Code-barres auto-généré + impression PDF</li>
+            <li>Import / export Excel en masse</li>
+            <li>Alertes de seuil de stock</li>
+            <li>Suggestion de prix optimale par IA</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#E85325;--cai:rgba(232,83,37,.1)">
+          <div class="mod-ico">🖥️</div>
+          <div class="mod-title">Point de Vente (POS)</div>
+          <p class="mod-desc">Interface caisse tactile et rapide. Scan code-barres, multi-sessions et impression de reçus.</p>
+          <ul class="mod-ul">
+            <li>Scan code-barres (douchette ou téléphone)</li>
+            <li>Jusqu'à 5 sessions simultanées</li>
+            <li>Reçu A4 et thermique 80mm</li>
+            <li>Orange Money, Wave, MTN, Espèces…</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#1E7A5A;--cai:rgba(30,122,90,.1)">
+          <div class="mod-ico">💳</div>
+          <div class="mod-title">Gestion des Ventes</div>
+          <p class="mod-desc">Historique complet des transactions, modification possible, avoirs et clients créditeurs.</p>
+          <ul class="mod-ul">
+            <li>Historique filtrable et exportable</li>
+            <li>Modification après enregistrement</li>
+            <li>Retours et avoirs automatisés</li>
+            <li>9 modes de paiement supportés</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#6366F1;--cai:rgba(99,102,241,.1)">
+          <div class="mod-ico">🏦</div>
+          <div class="mod-title">Gestion de Caisse</div>
+          <p class="mod-desc">Sessions ouverture/fermeture avec fond par mode de paiement, rapport et suivi des écarts.</p>
+          <ul class="mod-ul">
+            <li>Fond d'ouverture par mode</li>
+            <li>Mouvements manuels (entrées/sorties)</li>
+            <li>Rapport de session imprimable</li>
+            <li>Suivi des écarts en temps réel</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#0EA5E9;--cai:rgba(14,165,233,.1)">
+          <div class="mod-ico">🚚</div>
+          <div class="mod-title">Approvisionnements</div>
+          <p class="mod-desc">Commandes fournisseurs, réception des livraisons et historique complet de vos achats.</p>
+          <ul class="mod-ul">
+            <li>Commandes fournisseurs</li>
+            <li>Réception partielle ou totale</li>
+            <li>Historique et suivi des achats</li>
+            <li>Alertes de réapprovisionnement</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#F59E0B;--cai:rgba(245,158,11,.1)">
+          <div class="mod-ico">👥</div>
+          <div class="mod-title">Gestion des Clients</div>
+          <p class="mod-desc">Fiches clients complètes, historique d'achat et gestion du crédit pour fidéliser votre clientèle.</p>
+          <ul class="mod-ul">
+            <li>Fiche client avec historique</li>
+            <li>Gestion des ventes à crédit</li>
+            <li>Relances et suivi des impayés</li>
+            <li>Base clients partagée par boutique</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#EC4899;--cai:rgba(236,72,153,.1)">
+          <div class="mod-ico">🤖</div>
+          <div class="mod-title">Analyse IA</div>
+          <p class="mod-desc">Intelligence artificielle intégrée pour optimiser vos prix, anticiper vos besoins et maximiser vos marges.</p>
+          <ul class="mod-ul">
+            <li>Prix de vente suggéré par l'IA</li>
+            <li>Prévisions de rupture de stock</li>
+            <li>Tableau de bord avec indicateurs clés</li>
+            <li>Alertes sur les marges faibles</li>
+          </ul>
+        </div>
+        <div class="mod-card rv" style="--ca:#10B981;--cai:rgba(16,185,129,.1)">
+          <div class="mod-ico">🏪</div>
+          <div class="mod-title">Multi-Boutiques</div>
+          <p class="mod-desc">Gérez plusieurs points de vente depuis une seule interface, données isolées et vue consolidée.</p>
+          <ul class="mod-ul">
+            <li>Base de données isolée par structure</li>
+            <li>Vue consolidée pour le responsable</li>
+            <li>Profils et permissions par rôle</li>
+            <li>Déploiement multi-tenant sécurisé</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREENSHOTS -->
+  <section class="sec screenshots" id="apercu">
+    <div class="wrap">
+      <div class="sec-hd rv">
+        <p class="eyebrow">Aperçu de l'interface</p>
+        <h2 class="t-h2">Une interface pensée pour l'usage quotidien</h2>
+        <p class="t-body">Simple à prendre en main, efficace à l'usage. Vos équipes apprennent en quelques heures.</p>
+      </div>
+      <div class="sc-tabs">
+        <button class="sc-tab" [class.on]="activeTab==='pos'" (click)="activeTab='pos'">POS Caisse</button>
+        <button class="sc-tab" [class.on]="activeTab==='stock'" (click)="activeTab='stock'">Stock & Produits</button>
+        <button class="sc-tab" [class.on]="activeTab==='ventes'" (click)="activeTab='ventes'">Ventes</button>
+        <button class="sc-tab" [class.on]="activeTab==='caisse'" (click)="activeTab='caisse'">Rapport Caisse</button>
+        <button class="sc-tab" [class.on]="activeTab==='ia'" (click)="activeTab='ia'">Analyse IA</button>
+      </div>
+      <div class="sc-box rv">
+
+        <!-- POS -->
+        <div class="sc-pane" [class.on]="activeTab==='pos'">
+          <div class="sc-mock">
+            <div class="sc-h">Point de vente <span class="sc-badge">● Session ouverte</span></div>
+            <div style="display:grid;grid-template-columns:1fr 210px;gap:14px">
+              <div>
+                <div style="background:rgba(255,255,255,.04);border-radius:7px;padding:9px;display:flex;align-items:center;gap:8px;margin-bottom:11px">
+                  <span style="font-size:12px;color:rgba(255,255,255,.3)">🔍</span>
+                  <span style="font-size:.75rem;color:rgba(255,255,255,.28)">Rechercher ou scanner un produit…</span>
+                  <span style="margin-left:auto;background:rgba(255,255,255,.07);border-radius:4px;padding:2px 7px;color:rgba(255,255,255,.3);font-size:.62rem">📷 Scan</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🧴</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Huile 5L</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">1 200 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🌾</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Farine 1kg</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">650 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">☕</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Café Nescafé</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">750 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🧼</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Savon Lux</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">450 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🍅</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Tomate boîte</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">350 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🥛</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Lait Gloria</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">1 100 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🍬</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Bonbons Mix</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">100 F</div></div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:8px;text-align:center"><div style="font-size:18px;margin-bottom:3px">🫘</div><div style="font-size:.58rem;color:rgba(255,255,255,.55)">Haricot 1kg</div><div style="font-size:.62rem;color:var(--amber);font-weight:700">900 F</div></div>
+                </div>
+              </div>
+              <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:11px;display:flex;flex-direction:column">
+                <div style="font-size:.6rem;color:rgba(255,255,255,.38);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px">Panier · Vente 1</div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:5px;margin-bottom:9px">
+                  <div style="display:flex;justify-content:space-between;font-size:.62rem"><span style="color:rgba(255,255,255,.6)">Huile 5L × 2</span><span style="color:#fff;font-weight:600">2 400 F</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:.62rem"><span style="color:rgba(255,255,255,.6)">Farine × 1</span><span style="color:#fff;font-weight:600">650 F</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:.62rem"><span style="color:rgba(255,255,255,.6)">Savon Lux × 3</span><span style="color:#fff;font-weight:600">1 350 F</span></div>
+                </div>
+                <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:7px"></div>
+                <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:9px"><span style="color:rgba(255,255,255,.45)">Total</span><span style="color:var(--amber);font-weight:700">4 400 F</span></div>
+                <div style="background:var(--cta);color:#fff;text-align:center;padding:8px;border-radius:5px;font-size:.65rem;font-weight:700">💳 Encaisser</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="sc-pane" [class.on]="activeTab==='stock'">
+          <div class="sc-mock">
+            <div class="sc-h">Gestion des produits
+              <div style="display:flex;gap:6px">
+                <span style="background:rgba(245,171,42,.15);color:var(--amber);font-size:.6rem;padding:3px 8px;border-radius:5px;font-weight:600">🏷 Étiquette</span>
+                <span style="background:rgba(74,222,128,.13);color:#4ADE80;font-size:.6rem;padding:3px 8px;border-radius:5px;font-weight:600">+ Nouveau</span>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="sc-tbl">
+                <thead><tr><th>Img</th><th>Nom</th><th>Prix achat</th><th>Prix vente</th><th>Stock</th><th>Catégorie</th><th>Actions</th></tr></thead>
+                <tbody>
+                  <tr><td>🧴</td><td class="sc-name">Huile de Palme 5L</td><td class="sc-muted">800 F</td><td class="sc-price">1 200 F</td><td><span class="sc-st-ok">48</span></td><td class="sc-muted">Aliment.</td><td><div class="sc-acts"><span class="sc-act sc-act-t">🏷</span><span class="sc-act sc-act-e">✏</span><span class="sc-act sc-act-d">🗑</span></div></td></tr>
+                  <tr><td>🌾</td><td class="sc-name">Farine de blé 1kg</td><td class="sc-muted">400 F</td><td class="sc-price">650 F</td><td><span class="sc-st-lw">3 ⚠</span></td><td class="sc-muted">Aliment.</td><td><div class="sc-acts"><span class="sc-act sc-act-t">🏷</span><span class="sc-act sc-act-e">✏</span><span class="sc-act sc-act-d">🗑</span></div></td></tr>
+                  <tr><td>🧼</td><td class="sc-name">Savon Lux</td><td class="sc-muted">250 F</td><td class="sc-price">450 F</td><td><span class="sc-st-ok">30</span></td><td class="sc-muted">Hygiène</td><td><div class="sc-acts"><span class="sc-act sc-act-t">🏷</span><span class="sc-act sc-act-e">✏</span><span class="sc-act sc-act-d">🗑</span></div></td></tr>
+                  <tr><td>☕</td><td class="sc-name">Nescafé sachet</td><td class="sc-muted">500 F</td><td class="sc-price">750 F</td><td><span class="sc-st-ok">15</span></td><td class="sc-muted">Boissons</td><td><div class="sc-acts"><span class="sc-act sc-act-t">🏷</span><span class="sc-act sc-act-e">✏</span><span class="sc-act sc-act-d">🗑</span></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VENTES -->
+        <div class="sc-pane" [class.on]="activeTab==='ventes'">
+          <div class="sc-mock">
+            <div class="sc-h">Historique des ventes</div>
+            <div class="sc-kpis">
+              <div class="sc-kpi"><div class="sc-kpi-l">Total du jour</div><div class="sc-kpi-v">347 500 F</div></div>
+              <div class="sc-kpi"><div class="sc-kpi-l">Transactions</div><div class="sc-kpi-v">28</div></div>
+              <div class="sc-kpi"><div class="sc-kpi-l">Panier moyen</div><div class="sc-kpi-v">12 410 F</div></div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="sc-tbl">
+                <thead><tr><th>Référence</th><th>Date</th><th>Client</th><th>Mode</th><th>Montant</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td style="color:#6EE7F7;font-weight:600;font-size:.65rem">VTE-001</td><td class="sc-muted">03/07 14:22</td><td class="sc-muted">Kouassi F.</td><td class="sc-muted">Orange Money</td><td class="sc-price">15 600 F</td><td><span style="color:#4ADE80">✅ Payé</span></td></tr>
+                  <tr><td style="color:#6EE7F7;font-weight:600;font-size:.65rem">VTE-002</td><td class="sc-muted">03/07 13:45</td><td class="sc-muted">—</td><td class="sc-muted">Espèces</td><td class="sc-price">4 400 F</td><td><span style="color:#4ADE80">✅ Payé</span></td></tr>
+                  <tr><td style="color:#6EE7F7;font-weight:600;font-size:.65rem">VTE-003</td><td class="sc-muted">03/07 12:10</td><td class="sc-muted">Diabaté A.</td><td class="sc-muted">Wave</td><td class="sc-price">22 000 F</td><td><span style="color:#FB923C">⏳ Crédit</span></td></tr>
+                  <tr><td style="color:#6EE7F7;font-weight:600;font-size:.65rem">VTE-004</td><td class="sc-muted">03/07 11:30</td><td class="sc-muted">—</td><td class="sc-muted">Espèces</td><td class="sc-price">8 200 F</td><td><span style="color:#4ADE80">✅ Payé</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAISSE -->
+        <div class="sc-pane" [class.on]="activeTab==='caisse'">
+          <div class="sc-mock">
+            <div class="sc-h">Rapport de caisse · Session #42</div>
+            <div class="sc-kpis" style="grid-template-columns:repeat(4,1fr)">
+              <div class="sc-kpi"><div class="sc-kpi-l">Fond ouverture</div><div class="sc-kpi-v">50 000 F</div></div>
+              <div class="sc-kpi"><div class="sc-kpi-l">Total ventes</div><div class="sc-kpi-v">347 500 F</div></div>
+              <div class="sc-kpi"><div class="sc-kpi-l">Théorique</div><div class="sc-kpi-v">397 500 F</div></div>
+              <div class="sc-kpi"><div class="sc-kpi-l">Écart</div><div class="sc-kpi-v" style="color:#4ADE80">0 F ✓</div></div>
+            </div>
+            <div style="background:rgba(255,255,255,.03);border-radius:7px;padding:10px;margin-top:4px">
+              <div style="font-size:.6rem;color:rgba(255,255,255,.38);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px">Ventes par mode de paiement</div>
+              <div class="sc-bar-row"><span class="sc-bar-label">Espèces</span><div class="sc-bar-bg"><div class="sc-bar-fill" style="width:50%;background:#4ADE80"></div></div><span class="sc-bar-val" style="color:#4ADE80">175 000 F</span></div>
+              <div class="sc-bar-row"><span class="sc-bar-label">Orange Money</span><div class="sc-bar-bg"><div class="sc-bar-fill" style="width:26%;background:#F97316"></div></div><span class="sc-bar-val" style="color:#F97316">89 500 F</span></div>
+              <div class="sc-bar-row"><span class="sc-bar-label">Wave</span><div class="sc-bar-bg"><div class="sc-bar-fill" style="width:13%;background:#60A5FA"></div></div><span class="sc-bar-val" style="color:#60A5FA">45 000 F</span></div>
+              <div class="sc-bar-row"><span class="sc-bar-label">MTN Money</span><div class="sc-bar-bg"><div class="sc-bar-fill" style="width:8%;background:#FBBF24"></div></div><span class="sc-bar-val" style="color:#FBBF24">28 000 F</span></div>
+              <div class="sc-bar-row"><span class="sc-bar-label">Carte</span><div class="sc-bar-bg"><div class="sc-bar-fill" style="width:3%;background:#A78BFA"></div></div><span class="sc-bar-val" style="color:#A78BFA">10 000 F</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IA -->
+        <div class="sc-pane" [class.on]="activeTab==='ia'">
+          <div class="sc-mock" style="max-width:480px">
+            <div class="sc-h">Suggestion IA · Prix de vente</div>
+            <div style="background:rgba(255,255,255,.04);border-radius:7px;padding:10px;margin-bottom:10px">
+              <div style="font-size:.62rem;color:rgba(255,255,255,.38);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Farine de blé 1kg</div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:.68rem">
+                <span style="color:rgba(255,255,255,.65)">Prix achat : <strong style="color:#fff">400 F</strong></span>
+                <span style="color:rgba(255,255,255,.65)">Prix actuel : <strong style="color:#fff">650 F</strong></span>
+                <span style="color:rgba(255,255,255,.65)">Marge : <strong style="color:#FB923C">62%</strong></span>
+              </div>
+            </div>
+            <div style="border:1px solid rgba(245,171,42,.22);background:rgba(245,171,42,.06);border-radius:8px;padding:13px">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:9px"><span style="font-size:15px">💡</span><span style="color:var(--amber);font-size:.78rem;font-weight:700">Suggestion IA</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px">
+                <div style="background:rgba(74,222,128,.1);border-radius:6px;padding:8px;text-align:center"><div style="font-size:.56rem;color:rgba(255,255,255,.45);margin-bottom:2px">Prix suggéré</div><div style="font-size:1.05rem;font-weight:700;color:#4ADE80">720 F</div></div>
+                <div style="background:rgba(74,222,128,.1);border-radius:6px;padding:8px;text-align:center"><div style="font-size:.56rem;color:rgba(255,255,255,.45);margin-bottom:2px">Gain / mois</div><div style="font-size:1.05rem;font-weight:700;color:#4ADE80">+14 200 F</div></div>
+              </div>
+              <div style="background:rgba(96,165,250,.08);border-radius:5px;padding:7px;font-size:.65rem;color:rgba(255,255,255,.58);margin-bottom:9px">💬 Concurrents : 700–750 F en moyenne. Augmenter à 720 F maximise la marge tout en restant compétitif.</div>
+              <div style="background:#1E7A5A;color:#fff;text-align:center;padding:7px;border-radius:5px;font-size:.68rem;font-weight:700">✓ Appliquer ce prix</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <section class="sec video-sec" id="video">
+    <div class="wrap">
+      <div class="vid-grid">
+        <div class="vid-player rv">
+          <div class="play-ring">▶</div>
+          <span class="vid-lbl">Démo complète · 3 min</span>
+        </div>
+        <div class="vid-text rv">
+          <p class="eyebrow" style="color:rgba(255,255,255,.38);margin-bottom:10px">Pourquoi NeuroStock</p>
+          <h2 class="t-h2" style="color:#fff;margin-bottom:12px">Tout ce dont votre boutique a besoin, sans la complexité</h2>
+          <p style="color:rgba(255,255,255,.62);margin-bottom:22px;line-height:1.72">NeuroStock est conçu pour les commerçants, pas pour les informaticiens. Prenez le contrôle de votre stock et de votre caisse sans formation longue.</p>
+          <ul class="feat-list">
+            <li><span class="feat-chk">✓</span>Interface en français, adaptée au marché local</li>
+            <li><span class="feat-chk">✓</span>Orange Money, Wave, MTN Money, Dajmo, Espèces…</li>
+            <li><span class="feat-chk">✓</span>Vos données sont isolées et sécurisées</li>
+            <li><span class="feat-chk">✓</span>Fonctionne sur PC, tablette et mobile</li>
+            <li><span class="feat-chk">✓</span>Rapport de caisse imprimable à chaque fermeture</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="sec" id="pricing">
+    <div class="wrap" style="text-align:center">
+      <div class="rv">
+        <p class="eyebrow" style="margin-bottom:10px">Offre de lancement</p>
+        <h2 class="t-h2" style="margin-bottom:10px">Commencez sans risque</h2>
+        <p class="t-body" style="max-width:460px;margin:0 auto">Essayez NeuroStock gratuitement pendant 1 mois. Aucune carte bancaire, aucun engagement.</p>
+      </div>
+      <div class="price-card rv">
+        <span class="price-badge">✦ Offre Essai</span>
+        <div class="price-big">Gratuit <span style="font-size:.95rem;font-weight:400;color:var(--muted)">/ 1 mois</span></div>
+        <p class="price-note">Puis sur devis selon votre volume d'activité</p>
+        <ul class="price-ul">
+          <li>Toutes les fonctionnalités</li><li>Multi-boutiques inclus</li>
+          <li>Analyse IA incluse</li><li>Support prioritaire</li>
+          <li>Import / Export Excel</li><li>Reçus et étiquettes PDF</li>
+          <li>Gestion de caisse complète</li><li>Données sécurisées &amp; isolées</li>
+        </ul>
+        <a routerLink="/inscription" class="btn-p" style="display:inline-flex;width:100%;justify-content:center;font-size:.97rem;padding:14px">Démarrer mon essai gratuit →</a>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Configuration en 5 min · Aucun engagement</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="sec form-sec" id="essai">
+    <div class="wrap">
+      <div class="form-wrap">
+
+        <div class="form-side rv">
+          <p class="eyebrow" style="margin-bottom:10px">Inscription gratuite</p>
+          <h2 class="t-h2" style="margin-bottom:12px">Votre boutique opérationnelle aujourd'hui</h2>
+          <p class="t-body" style="margin-bottom:28px">Remplissez le formulaire en 3 étapes. Votre espace est créé instantanément, prêt à l'emploi.</p>
+          <ul class="perks">
+            <li class="perk"><div class="perk-ico">🏗️</div><div class="perk-body"><strong>Votre structure créée</strong><span>Nom de l'entreprise, secteur, localisation</span></div></li>
+            <li class="perk"><div class="perk-ico">🏪</div><div class="perk-body"><strong>Votre boutique configurée</strong><span>Nom du point de vente, adresse, type</span></div></li>
+            <li class="perk"><div class="perk-ico">👤</div><div class="perk-body"><strong>Votre compte responsable</strong><span>Accès sécurisé, gestion des droits</span></div></li>
+            <li class="perk"><div class="perk-ico">🚀</div><div class="perk-body"><strong>Démarrage immédiat</strong><span>Identifiants par SMS, première vente en 5 min</span></div></li>
+          </ul>
+        </div>
+
+        <div class="form-card rv">
+          <div class="form-hd">
+            <h3>Créer mon espace NeuroStock</h3>
+            <p>Essai gratuit 1 mois · Sans engagement</p>
+          </div>
+
+          @if (!formDone) {
+            <!-- Barre de progression -->
+            <div class="form-prog">
+              <div class="p-step">
+                <div class="p-dot" [class.on]="formStep===1" [class.dn]="formStep>1">{{ formStep > 1 ? '✓' : '1' }}</div>
+                <div class="p-line" [class.dn]="formStep>1"></div>
+              </div>
+              <div class="p-step">
+                <div class="p-dot" [class.on]="formStep===2" [class.dn]="formStep>2">{{ formStep > 2 ? '✓' : '2' }}</div>
+                <div class="p-line" [class.dn]="formStep>2"></div>
+              </div>
+              <div class="p-step">
+                <div class="p-dot" [class.on]="formStep===3">3</div>
+              </div>
+            </div>
+
+            <!-- Étape 1 — Structure -->
+            @if (formStep === 1) {
+              <div class="form-body">
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px">Étape 1 / 3 · <strong style="color:var(--ink)">Votre structure</strong></p>
+                <div class="f-grp">
+                  <label class="f-lbl">Nom de la structure / entreprise <span style="color:var(--cta)">*</span></label>
+                  <input class="f-in" [class.err]="stepErrors['s_nom']" type="text" [(ngModel)]="form.s_nom" placeholder="Ex : Commerce Konan SARL">
+                </div>
+                <div class="f-row">
+                  <div class="f-grp">
+                    <label class="f-lbl">Type d'activité</label>
+                    <select class="f-sel" [(ngModel)]="form.s_type">
+                      <option value="">— Sélectionner —</option>
+                      <option>Commerce général</option><option>Alimentation / Épicerie</option>
+                      <option>Pharmacie</option><option>Prêt-à-porter</option>
+                      <option>Électronique</option><option>Quincaillerie</option>
+                      <option>Restauration</option><option>Autre</option>
+                    </select>
+                  </div>
+                  <div class="f-grp">
+                    <label class="f-lbl">Pays <span style="color:var(--cta)">*</span></label>
+                    <select class="f-sel" [class.err]="stepErrors['s_pays']" [(ngModel)]="form.s_pays">
+                      <option value="">— Pays —</option>
+                      <option>Côte d'Ivoire</option><option>Sénégal</option><option>Mali</option>
+                      <option>Burkina Faso</option><option>Guinée</option><option>Cameroun</option><option>Autre</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="f-row">
+                  <div class="f-grp"><label class="f-lbl">Ville</label><input class="f-in" type="text" [(ngModel)]="form.s_ville" placeholder="Ex : Abidjan"></div>
+                  <div class="f-grp"><label class="f-lbl">Commune / Quartier</label><input class="f-in" type="text" [(ngModel)]="form.s_commune" placeholder="Ex : Cocody"></div>
+                </div>
+              </div>
+              <div class="form-ft">
+                <span style="font-size:.78rem;color:var(--muted)">Étape 1 sur 3</span>
+                <button class="btn-nx" (click)="go(1,2)">Suivant → Boutique</button>
+              </div>
+            }
+
+            <!-- Étape 2 — Boutique -->
+            @if (formStep === 2) {
+              <div class="form-body">
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px">Étape 2 / 3 · <strong style="color:var(--ink)">Votre boutique</strong></p>
+                <div class="f-grp">
+                  <label class="f-lbl">Nom de la boutique <span style="color:var(--cta)">*</span></label>
+                  <input class="f-in" [class.err]="stepErrors['b_nom']" type="text" [(ngModel)]="form.b_nom" placeholder="Ex : Épicerie du Centre">
+                </div>
+                <div class="f-grp">
+                  <label class="f-lbl">Adresse</label>
+                  <input class="f-in" type="text" [(ngModel)]="form.b_adr" placeholder="Ex : Rue des Jardins, face à la mairie">
+                </div>
+                <div class="f-row">
+                  <div class="f-grp">
+                    <label class="f-lbl">Type de boutique</label>
+                    <select class="f-sel" [(ngModel)]="form.b_type">
+                      <option>Boutique physique</option><option>Kiosque / Stand</option>
+                      <option>Magasin</option><option>Superette</option><option>Entrepôt</option>
+                    </select>
+                  </div>
+                  <div class="f-grp">
+                    <label class="f-lbl">Devise</label>
+                    <select class="f-sel" [(ngModel)]="form.b_devise">
+                      <option value="FCFA">FCFA (XOF)</option>
+                      <option value="GNF">Franc Guinéen (GNF)</option>
+                      <option value="XAF">CFA Central (XAF)</option>
+                      <option value="USD">Dollar (USD)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="f-grp">
+                  <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.86rem;font-weight:500">
+                    <input type="checkbox" [(ngModel)]="form.b_caisse" style="width:15px;height:15px;accent-color:var(--hero)">
+                    Activer la gestion de caisse (sessions d'ouverture/fermeture)
+                  </label>
+                </div>
+              </div>
+              <div class="form-ft">
+                <button class="btn-bk" (click)="go(2,1)">← Retour</button>
+                <button class="btn-nx" (click)="go(2,3)">Suivant → Responsable</button>
+              </div>
+            }
+
+            <!-- Étape 3 — Responsable -->
+            @if (formStep === 3) {
+              <div class="form-body">
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px">Étape 3 / 3 · <strong style="color:var(--ink)">Compte responsable</strong></p>
+                <div class="f-row">
+                  <div class="f-grp"><label class="f-lbl">Prénom <span style="color:var(--cta)">*</span></label><input class="f-in" [class.err]="stepErrors['r_prenom']" type="text" [(ngModel)]="form.r_prenom" placeholder="Ex : Kouadio"></div>
+                  <div class="f-grp"><label class="f-lbl">Nom <span style="color:var(--cta)">*</span></label><input class="f-in" [class.err]="stepErrors['r_nom']" type="text" [(ngModel)]="form.r_nom" placeholder="Ex : Brou"></div>
+                </div>
+                <div class="f-grp">
+                  <label class="f-lbl">Téléphone <span style="color:var(--cta)">*</span></label>
+                  <input class="f-in" [class.err]="stepErrors['r_tel']" type="tel" [(ngModel)]="form.r_tel" placeholder="Ex : 0701234567">
+                </div>
+                <div class="f-grp">
+                  <label class="f-lbl">Email</label>
+                  <input class="f-in" type="email" [(ngModel)]="form.r_email" placeholder="Ex : kouadio&#64;email.com">
+                </div>
+                <div class="f-row">
+                  <div class="f-grp"><label class="f-lbl">Mot de passe <span style="color:var(--cta)">*</span></label><input class="f-in" [class.err]="stepErrors['r_pwd']" type="password" [(ngModel)]="form.r_pwd" placeholder="Min. 8 caractères"></div>
+                  <div class="f-grp"><label class="f-lbl">Confirmer</label><input class="f-in" [class.err]="stepErrors['r_pwd2']" type="password" [(ngModel)]="form.r_pwd2" placeholder="Répétez le mot de passe"></div>
+                </div>
+                <p style="font-size:.76rem;color:var(--muted);margin-top:4px">En soumettant, vous acceptez les <a href="#" style="color:var(--green);text-decoration:underline">conditions d'utilisation</a>.</p>
+              </div>
+              <div class="form-ft">
+                <button class="btn-bk" (click)="go(3,2)">← Retour</button>
+                <button class="btn-sub" (click)="submitForm()" [disabled]="formSubmitting">
+                  {{ formSubmitting ? '⏳ Création en cours…' : '🚀 Créer mon espace' }}
+                </button>
+              </div>
+            }
+          }
+
+          <!-- Succès -->
+          @if (formDone) {
+            <div class="form-ok">
+              <div class="ok-ico">✅</div>
+              <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:8px">Votre espace est créé !</h3>
+              <p style="color:var(--ink-2);margin-bottom:18px">Vos identifiants ont été envoyés par SMS. Vous pouvez vous connecter dès maintenant.</p>
+              <a routerLink="/login" class="btn-p" style="display:inline-flex">Se connecter →</a>
+              <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Votre période d'essai de 30 jours a démarré</p>
+            </div>
+          }
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="contact">
+    <div class="wrap">
+      <div class="foot-top">
+        <div>
+          <div class="foot-logo"><div class="foot-logo-i">N</div>NeuroStock</div>
+          <p class="foot-desc">Solution de gestion de stock et de caisse pensée pour le commerce en Afrique de l'Ouest. Simple, rapide, fiable.</p>
+        </div>
+        <div>
+          <div class="foot-col-t">Produit</div>
+          <ul class="foot-ul">
+            <li><a href="#modules">Fonctionnalités</a></li>
+            <li><a href="#apercu">Aperçu</a></li>
+            <li><a href="#pricing">Tarifs</a></li>
+            <li><a href="#essai">Essai gratuit</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="foot-col-t">Contact</div>
+          <ul class="foot-ul">
+            <li><a href="#">📞 Support client</a></li>
+            <li><a href="#">✉ contact&#64;neurostock.app</a></li>
+            <li><a href="#">📍 Abidjan, Côte d'Ivoire</a></li>
+            <li><a href="#">WhatsApp</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot-bot">
+        <span>© 2026 NeuroStock · Tous droits réservés</span>
+        <div style="display:flex;gap:14px"><a href="#">Confidentialité</a><a href="#">CGU</a></div>
+      </div>
+    </div>
+  </footer>
+
+</div>

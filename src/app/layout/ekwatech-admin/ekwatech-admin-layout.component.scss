@@ -133,6 +133,22 @@ $accent-soft: rgba(99, 102, 241, 0.18);
   }
 }
 
+.ek-badge-count {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #ef4444;
+  color: #fff;
+  font-size: .62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 // User footer
 
 .ek-sidebar-footer {

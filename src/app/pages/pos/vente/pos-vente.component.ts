@@ -82,7 +82,7 @@ export default class PosVenteComponent implements OnInit {
   showPayModal  = false;
   modePaiement  = 'espece';
   montantRecu   = 0;
-  detailsPaiement = { espece: 0, carte: 0, mobile_money: 0, credit: 0 };
+  detailsPaiement = { espece: 0, carte: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, credit: 0 };
 
   // Barcode
   barcodeInput = '';
@@ -118,7 +118,11 @@ export default class PosVenteComponent implements OnInit {
 
   readonly MODES = [
     { value: 'espece',       label: 'Espèces',       icon: 'bi-cash' },
-    { value: 'mobile_money', label: 'Mobile Money',  icon: 'bi-phone' },
+    { value: 'orange_money', label: 'Orange Money',  icon: 'bi-phone' },
+    { value: 'wave',         label: 'Wave',          icon: 'bi-phone' },
+    { value: 'mtn_money',    label: 'MTN Money',     icon: 'bi-phone' },
+    { value: 'moov_money',   label: 'Moov Money',    icon: 'bi-phone' },
+    { value: 'dajmo',        label: 'Dajmo',         icon: 'bi-phone' },
     { value: 'carte',        label: 'Carte',         icon: 'bi-credit-card' },
     { value: 'credit',       label: 'Crédit',        icon: 'bi-hourglass-split' },
     { value: 'mixte',        label: 'Mixte',         icon: 'bi-layers' },
@@ -324,7 +328,10 @@ export default class PosVenteComponent implements OnInit {
   get totalMixte(): number {
     const d = this.detailsPaiement;
     return (Number(d.espece) || 0) + (Number(d.carte) || 0)
-         + (Number(d.mobile_money) || 0) + (Number(d.credit) || 0);
+         + (Number(d.credit) || 0)
+         + (Number(d.orange_money) || 0) + (Number(d.wave) || 0)
+         + (Number(d.mtn_money) || 0) + (Number(d.moov_money) || 0)
+         + (Number(d.dajmo) || 0);
   }
 
   // ── Clients ───────────────────────────────────────────────────────────────
@@ -393,7 +400,7 @@ export default class PosVenteComponent implements OnInit {
     }
     this.modePaiement = 'espece';
     this.montantRecu  = this.totalTTC;
-    this.detailsPaiement = { espece: 0, carte: 0, mobile_money: 0, credit: 0 };
+    this.detailsPaiement = { espece: 0, carte: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, credit: 0 };
     this.showPayModal = true;
   }
 
@@ -401,7 +408,7 @@ export default class PosVenteComponent implements OnInit {
 
   onModeChange(): void {
     this.montantRecu  = this.isCredit ? 0 : this.totalTTC;
-    this.detailsPaiement = { espece: 0, carte: 0, mobile_money: 0, credit: 0 };
+    this.detailsPaiement = { espece: 0, carte: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, credit: 0 };
   }
 
   submit(): void {

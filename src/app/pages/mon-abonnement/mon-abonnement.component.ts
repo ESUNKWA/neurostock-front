@@ -18,6 +18,7 @@ export default class MonAbonnementComponent implements OnInit {
   abonnement: any = null;
   loading = false;
   error: string | null = null;
+  enAttenteValidation = false;
 
   // Plans disponibles
   plans: any[] = [];
@@ -53,11 +54,25 @@ export default class MonAbonnementComponent implements OnInit {
   loadAbonnement(): void {
     this.loading = true;
     this.error = null;
+    this.enAttenteValidation = false;
     this.abonnementSvc.getMySubscription()
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (r: any) => { this.abonnement = r?.data ?? r; },
-        error: (e: any) => { this.error = e?.error?.message || 'Impossible de charger l\'abonnement'; },
+        next: (r: any) => {
+          this.abonnement = r?.data ?? r;
+          if (this.abonnement) { this.authService.setAbonnement(this.abonnement); }
+        },
+        error: (e: any) => {
+          const status  = e?.status;
+          const message: string = e?.error?.message ?? e?.message ?? '';
+          // 403 "Accès refusé" signifie que l'abonnement est en attente de validation
+          if (status === 403 || message.toLowerCase().includes('refus') || message.toLowerCase().includes('attente')) {
+            this.enAttenteValidation = true;
+            this.authService.setAbonnement({ statut: 'en_attente' });
+          } else {
+            this.error = message || 'Impossible de charger l\'abonnement';
+          }
+        },
       });
   }
 
@@ -108,9 +123,10 @@ export default class MonAbonnementComponent implements OnInit {
       notes: this.form.notes || undefined,
     }).pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: (r: any) => {
-        this.toastr.success('Abonnement souscrit avec succès !');
+        const newAb = r?.data ?? null;
+        if (newAb) { this.authService.setAbonnement(newAb); }
+        this.toastr.success('Demande envoyée — en attente de validation par l\'administrateur.');
         this.showModal = false;
-        this.abonnement = r?.data ?? this.abonnement;
         this.loadAbonnement();
       },
       error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la souscription'),
@@ -124,9 +140,10 @@ export default class MonAbonnementComponent implements OnInit {
 
   get statutClass(): string {
     const map: Record<string, string> = {
-      actif: 'border-success text-success',
-      expire: 'border-danger text-danger',
-      suspendu: 'border-warning text-warning',
+      actif:       'border-success text-success',
+      expire:      'border-danger text-danger',
+      suspendu:    'border-warning text-warning',
+      en_attente:  'border-warning text-warning',
     };
     return map[this.abonnement?.statut] ?? 'border-secondary text-secondary';
   }
@@ -142,5 +159,9 @@ export default class MonAbonnementComponent implements OnInit {
   get canSubscribe(): boolean {
     const s = this.abonnement?.statut;
     return !s || s === 'expire' || s === 'actif' || s === 'suspendu';
+  }
+
+  get isEnAttente(): boolean {
+    return this.abonnement?.statut === 'en_attente';
   }
 }

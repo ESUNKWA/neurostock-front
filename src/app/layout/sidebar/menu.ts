@@ -15,18 +15,13 @@ export const Menu: any = [
         full: true,
         menu: [
             {
-                libelle: 'Gestion des produits',
+                libelle: 'Gestion produits',
                 icon: 'bi bi-menu-button-wide',
                 target: 'products-nav',
                 sousMenu: [
                     {
                         libelle: 'Catégories',
                         lien: '/gestion-des-produits/categorie',
-                        icon: 'bi bi-circle'
-                    },
-                    {
-                        libelle: 'Fournisseurs',
-                        lien: '/gestion-des-produits/fournisseur',
                         icon: 'bi bi-circle'
                     },
                     {
@@ -42,7 +37,12 @@ export const Menu: any = [
                 lien: '/clients/list'
             },
             {
-                libelle: 'Gestion des boutiques',
+                libelle: 'Fournisseurs',
+                icon: 'bi bi-truck',
+                lien: '/gestion-des-produits/fournisseur'
+            },
+            {
+                libelle: 'Gestion boutiques',
                 icon: 'bi bi-houses',
                 target: 'boutique-nav',
                 sousMenu: [
@@ -83,7 +83,7 @@ export const Menu: any = [
                 ]
             },
             {
-                libelle: 'Gestion des ventes',
+                libelle: 'Gestion ventes',
                 icon: 'bi bi-currency-dollar',
                 target: 'ventes-nav',
                 sousMenu: [
@@ -93,7 +93,7 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Historique des ventes',
+                        libelle: 'Voir les ventes',
                         lien: '/gestion-des-ventes/historique-ventes',
                         icon: 'bi bi-circle'
                     }
@@ -110,7 +110,7 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Historique des devis',
+                        libelle: 'Voir les devis',
                         lien: '/gestion-des-devis/historique',
                         icon: 'bi bi-circle'
                     }
@@ -127,7 +127,7 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Toutes les commandes',
+                        libelle: 'Voir les commandes',
                         lien: '/commandes-clients/liste',
                         icon: 'bi bi-circle'
                     }
@@ -159,6 +159,17 @@ export const Menu: any = [
                 libelle: 'Gestion de caisse',
                 icon: 'bi bi-cash-coin',
                 lien: '/caisse'
+            }
+        ]
+    },
+    {
+        titre: 'Rapports',
+        full: true,
+        menu: [
+            {
+                libelle: 'Recette',
+                lien: '/recette',
+                icon: 'bi bi-cash-stack'
             }
         ]
     },

@@ -48,6 +48,9 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   idBoutique: number = 0;
   currentUser: any = {};
 
+  private sseSource: EventSource | null = null;
+  private sseBoutiqueId: number | null = null;
+
   boutiqueService = inject(BoutiqueService);
   authService = inject(AuthService);
   chart: Chart | null = null;
@@ -72,10 +75,14 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   }
 
   readonly modesLabels: Record<string, string> = {
-    espece: 'Espèces',
-    mobile_money: 'Mobile Money',
-    carte: 'Carte bancaire',
-    credit: 'Crédit',
+    espece:       'Espèces',
+    carte:        'Carte bancaire',
+    credit:       'Crédit',
+    orange_money: 'Orange Money',
+    wave:         'Wave',
+    mtn_money:    'MTN Money',
+    moov_money:   'Moov Money',
+    dajmo:        'Dajmo',
   };
 
   modeEntries(obj: any): { mode: string; label: string; val: number }[] {
@@ -111,6 +118,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.speechSynthesis?.cancel();
+    this.stopSSE();
   }
 
   getCurrentUser() {
@@ -158,11 +166,12 @@ export default class DashboardComponent implements OnInit, OnDestroy {
     const boutiqueId = this.currentUser?.boutique_id ?? 0;
     const caissier = this.currentUser?.id ?? this.currentUser?.telephone;
     if (!boutiqueId || !caissier) {
-      this.caissierStats = {};  // show empty state rather than staying null
+      this.caissierStats = {};
       return;
     }
     this.isLoadingCaissier = true;
-    
+    this.startSSE(boutiqueId);
+
     this.dashService.findCaissier(boutiqueId, caissier).subscribe({
       next: (res: any) => {
         this.caissierStats = res;
@@ -181,44 +190,90 @@ export default class DashboardComponent implements OnInit, OnDestroy {
       : this.currentUser.boutique_id;
 
     this.loadResumeJournalier(boutiqueId);
+    this.startSSE(boutiqueId);
 
     this.dashService.find(boutiqueId).subscribe({
       next: (response) => {
-        if (!response?.dash) return; // réponse vide ou erreur catchée
-        this.stats = response;
-        this.ventesParMois = this.stats.dash.vente_par_mois;
-
-        // Mettre à jour le compteur commandes dans le header
-        this.alerteService.setCommandesCount(response.dash?.commandes_client?.prevues_aujourd_hui ?? 0);
-
-        // Variation ventes du jour
-        const jr   = this.stats?.dash?.vente?.total_vente_jr   ?? 0;
-        const hier = this.stats?.dash?.vente?.total_vente_hier  ?? 0;
-        if (jr === 0 && hier === 0) {
-          this.variationJr = 0;
-        } else if (!hier) {
-          this.variationJr = 100;
-        } else {
-          this.variationJr = Math.round(((jr - hier) / hier) * 100);
-        }
-
-        // Variation CA mensuel
-        const mois      = this.stats?.dash?.vente?.total_vente_mois       ?? 0;
-        const moisPasse = this.stats?.dash?.vente?.total_vente_mois_passe  ?? 0;
-        if (mois === 0 && moisPasse === 0) {
-          this.variationMois = 0;
-        } else if (!moisPasse) {
-          this.variationMois = 100;
-        } else {
-          this.variationMois = Math.round(((mois - moisPasse) / moisPasse) * 100);
-        }
-
+        if (!response?.dash) return;
+        this.applyStats(response);
         this.createChart();
       },
       error: (err) => {
         console.error('❌ Erreur lors du chargement des stats :', err);
       }
     });
+  }
+
+  // ── SSE — mise à jour temps réel ───────────────────────────────────────────
+  private startSSE(boutiqueId: number): void {
+    if (!boutiqueId) return;
+    if (this.sseBoutiqueId === boutiqueId && this.sseSource) return;
+    this.stopSSE();
+    const url = `${this.api_url}/events/stream?boutique=${boutiqueId}`;
+    this.sseSource     = new EventSource(url);
+    this.sseBoutiqueId = boutiqueId;
+
+    // Événement nommé — format SSE standard : "event: vente.created"
+    this.sseSource.addEventListener('vente.created', () => {
+      this.refreshStatsSilent(boutiqueId);
+    });
+
+    // Fallback : si le backend envoie un événement générique "message" sans event:
+    this.sseSource.addEventListener('message', (e: MessageEvent) => {
+      const payload = e.data?.trim?.();
+      if (!payload || payload === 'ping') return; // ignorer heartbeat
+      this.refreshStatsSilent(boutiqueId);
+    });
+  }
+
+  private stopSSE(): void {
+    this.sseSource?.close();
+    this.sseSource     = null;
+    this.sseBoutiqueId = null;
+  }
+
+  // Rafraîchit les stats sans spinner ni clignotement
+  private refreshStatsSilent(boutiqueId: number): void {
+    if (this.isCaissierView) {
+      this.loadCaissierStatsSilent();
+    } else {
+      this.dashService.find(boutiqueId).subscribe({
+        next: (response) => {
+          if (!response?.dash) return;
+          this.applyStats(response);
+          this.createChart();
+        }
+      });
+    }
+  }
+
+  private loadCaissierStatsSilent(): void {
+    const boutiqueId = this.currentUser?.boutique_id ?? 0;
+    const caissier   = this.currentUser?.id ?? this.currentUser?.telephone;
+    if (!boutiqueId || !caissier) return;
+    this.dashService.findCaissier(boutiqueId, caissier).subscribe({
+      next: (res: any) => { this.caissierStats = res; }
+    });
+  }
+
+  // Applique la réponse API aux propriétés du composant (partagé entre chargement initial et SSE)
+  private applyStats(response: any): void {
+    this.stats         = response;
+    this.ventesParMois = this.stats.dash.vente_par_mois;
+
+    this.alerteService.setCommandesCount(response.dash?.commandes_client?.prevues_aujourd_hui ?? 0);
+
+    const jr   = this.stats?.dash?.vente?.total_vente_jr   ?? 0;
+    const hier = this.stats?.dash?.vente?.total_vente_hier  ?? 0;
+    if (jr === 0 && hier === 0)  { this.variationJr = 0; }
+    else if (!hier)               { this.variationJr = 100; }
+    else                          { this.variationJr = Math.round(((jr - hier) / hier) * 100); }
+
+    const mois      = this.stats?.dash?.vente?.total_vente_mois       ?? 0;
+    const moisPasse = this.stats?.dash?.vente?.total_vente_mois_passe  ?? 0;
+    if (mois === 0 && moisPasse === 0) { this.variationMois = 0; }
+    else if (!moisPasse)                { this.variationMois = 100; }
+    else                                { this.variationMois = Math.round(((mois - moisPasse) / moisPasse) * 100); }
   }
 
   loadResumeJournalier(boutiqueId: number): void {
