@@ -1,87 +1,220 @@
-<div class="pos-layout d-flex flex-column">
+@if (isMobile) {
 
-  <!-- ── Top navbar ──────────────────────────────────────────────────────────── -->
-  <nav class="pos-navbar navbar px-3 py-0">
-    <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden">
+  <!-- ══════════════════════════════════════════════════════════════
+       Layout POS mobile
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="pos-mobile-shell">
 
-      <!-- Brand -->
-      <a class="pos-brand d-flex align-items-center gap-2 text-decoration-none me-2" routerLink="/pos/vente">
-        <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
-        <span class="fw-bold text-white d-none d-sm-inline">NeuroStock</span>
+    <!-- Top bar -->
+    <header class="pos-mtb">
+      <div class="pos-mtb-brand">
+        @if (currentUser?.boutique?.logo) {
+          <img [src]="currentUser.boutique.logo"
+               [alt]="boutiqueName"
+               class="pos-mtb-logo"
+               (error)="onLogoError($event)">
+        } @else {
+          <i class="bi bi-graph-up-arrow pos-mtb-icon"></i>
+        }
+        <div class="pos-mtb-brand-text">
+          <span class="pos-mtb-title">{{ boutiqueName || 'NeuroStock' }}</span>
+          @if (boutiqueName) {
+            <span class="pos-mtb-sub">Point de vente</span>
+          }
+        </div>
+      </div>
+      <div class="pos-mtb-actions">
+        <button class="pos-mtb-avatar" (click)="userMenuOpen = !userMenuOpen">
+          {{ userInitials }}
+        </button>
+        @if (userMenuOpen) {
+          <div class="pos-mtb-backdrop" (click)="userMenuOpen = false"></div>
+          <div class="pos-mtb-menu">
+            <div class="pos-mtb-info">
+              <span class="pos-mtb-name">{{ userName }}</span>
+              <span class="pos-mtb-role">{{ profilLabel }}</span>
+            </div>
+            <button class="pos-mtb-logout" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="pos-mobile-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="pos-bnav">
+      <a routerLink="/pos/dashboard" routerLinkActive="pos-bnav-active" [routerLinkActiveOptions]="{exact:true}" class="pos-bnav-tab">
+        <i class="bi bi-grid-fill"></i>
+        <span>Accueil</span>
       </a>
+      <a routerLink="/pos/commandes" routerLinkActive="pos-bnav-active" class="pos-bnav-tab">
+        <i class="bi bi-bag-check"></i>
+        <span>Commandes</span>
+      </a>
+      <!-- FAB central — action principale -->
+      <a routerLink="/pos/vente" routerLinkActive="pos-bnav-active" class="pos-bnav-tab pos-bnav-fab-tab">
+        <div class="pos-bnav-fab">
+          <i class="bi bi-cash-register"></i>
+        </div>
+        <span>Vente</span>
+      </a>
+      <a routerLink="/pos/historique" routerLinkActive="pos-bnav-active" class="pos-bnav-tab">
+        <i class="bi bi-clock-history"></i>
+        <span>Historique</span>
+      </a>
+      <button class="pos-bnav-tab" [class.pos-bnav-active]="posMenuOpen" (click)="posMenuOpen = !posMenuOpen">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <span>Plus</span>
+      </button>
+    </nav>
 
-      <!-- Boutique -->
-      @if (boutiqueName) {
-        <span class="text-white-50 small border-start border-secondary ps-3 d-none d-md-inline">
-          <i class="bi bi-shop me-1"></i>{{ boutiqueName }}
-        </span>
-      }
+    <!-- Drawer "Plus" -->
+    @if (posMenuOpen) {
+      <div class="pos-drawer-overlay" (click)="posMenuOpen = false">
+        <div class="pos-drawer" (click)="$event.stopPropagation()">
+          <div class="pos-drawer-header">
+            <span>Autres modules</span>
+            <button class="pos-drawer-close" (click)="posMenuOpen = false">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="pos-drawer-grid">
+            <a routerLink="/pos/caisse" class="pos-drawer-item" (click)="posMenuOpen = false">
+              <div class="pos-di-icon" style="background:#e0f2fe;color:#0369a1">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+              <span>Caisse</span>
+            </a>
+            <a routerLink="/pos/devis" class="pos-drawer-item" (click)="posMenuOpen = false">
+              <div class="pos-di-icon" style="background:#e0e7ff;color:#4f46e5">
+                <i class="bi bi-file-earmark-text"></i>
+              </div>
+              <span>Devis</span>
+            </a>
+            <a routerLink="/pos/devis/nouveau" class="pos-drawer-item" (click)="posMenuOpen = false">
+              <div class="pos-di-icon" style="background:#fef3c7;color:#d97706">
+                <i class="bi bi-file-earmark-plus"></i>
+              </div>
+              <span>Nouveau devis</span>
+            </a>
+            <a routerLink="/pos/commandes/nouvelle" class="pos-drawer-item" (click)="posMenuOpen = false">
+              <div class="pos-di-icon" style="background:#fce7f3;color:#db2777">
+                <i class="bi bi-bag-plus"></i>
+              </div>
+              <span>Nouvelle commande</span>
+            </a>
+            @if (peutFaireRetour) {
+              <a routerLink="/pos/retours" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#fee2e2;color:#dc2626">
+                  <i class="bi bi-arrow-return-left"></i>
+                </div>
+                <span>Retours</span>
+              </a>
+              <a routerLink="/pos/retours/nouveau" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#fef2f2;color:#b91c1c">
+                  <i class="bi bi-arrow-return-left"></i>
+                </div>
+                <span>Nouveau retour</span>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
-      <!-- Nav tabs -->
-      <ul class="pos-nav d-flex gap-1 list-unstyled mb-0 ms-2 overflow-auto">
-        <li>
-          <a routerLink="/pos/dashboard" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-grid me-1"></i>
-            <span class="d-none d-sm-inline">Tableau de bord</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/pos/vente" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-cash-register me-1"></i>
-            <span>Vente</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/pos/commandes" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-bag-check me-1"></i>
-            <span class="d-none d-sm-inline">Commandes</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/pos/devis" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-file-earmark-text me-1"></i>
-            <span class="d-none d-sm-inline">Devis</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/pos/historique" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-clock-history me-1"></i>
-            <span class="d-none d-sm-inline">Historique</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/pos/caisse" routerLinkActive="active" class="pos-nav-link">
-            <i class="bi bi-cash-coin me-1"></i>
-            <span class="d-none d-sm-inline">Caisse</span>
-          </a>
-        </li>
-        @if (peutFaireRetour) {
+  </div>
+
+} @else {
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Layout POS desktop — inchangé
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="pos-layout d-flex flex-column">
+
+    <nav class="pos-navbar navbar px-3 py-0">
+      <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden">
+
+        <a class="pos-brand d-flex align-items-center gap-2 text-decoration-none me-2" routerLink="/pos/vente">
+          <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
+          <span class="fw-bold text-white d-none d-sm-inline">NeuroStock</span>
+        </a>
+
+        @if (boutiqueName) {
+          <span class="text-white-50 small border-start border-secondary ps-3 d-none d-md-inline">
+            <i class="bi bi-shop me-1"></i>{{ boutiqueName }}
+          </span>
+        }
+
+        <ul class="pos-nav d-flex gap-1 list-unstyled mb-0 ms-2 overflow-auto">
           <li>
-            <a routerLink="/pos/retours" routerLinkActive="active" class="pos-nav-link">
-              <i class="bi bi-arrow-return-left me-1"></i>
-              <span class="d-none d-sm-inline">Retours</span>
+            <a routerLink="/pos/dashboard" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-grid me-1"></i>
+              <span class="d-none d-sm-inline">Tableau de bord</span>
             </a>
           </li>
-        }
-      </ul>
-    </div>
-
-    <!-- User area -->
-    <div class="d-flex align-items-center gap-2 flex-shrink-0">
-      <div class="d-none d-md-flex flex-column align-items-end me-1">
-        <span class="text-white fw-semibold" style="font-size:.8rem; line-height:1.2">{{ userName }}</span>
-        <span class="text-white-50" style="font-size:.7rem">{{ profilLabel }}</span>
+          <li>
+            <a routerLink="/pos/vente" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-cash-register me-1"></i>
+              <span>Vente</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/pos/commandes" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-bag-check me-1"></i>
+              <span class="d-none d-sm-inline">Commandes</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/pos/devis" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-file-earmark-text me-1"></i>
+              <span class="d-none d-sm-inline">Devis</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/pos/historique" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-clock-history me-1"></i>
+              <span class="d-none d-sm-inline">Historique</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/pos/caisse" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-cash-coin me-1"></i>
+              <span class="d-none d-sm-inline">Caisse</span>
+            </a>
+          </li>
+          @if (peutFaireRetour) {
+            <li>
+              <a routerLink="/pos/retours" routerLinkActive="active" class="pos-nav-link">
+                <i class="bi bi-arrow-return-left me-1"></i>
+                <span class="d-none d-sm-inline">Retours</span>
+              </a>
+            </li>
+          }
+        </ul>
       </div>
-      <button class="btn btn-sm btn-outline-danger" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i>
-        <span class="d-none d-sm-inline ms-1">Quitter</span>
-      </button>
-    </div>
-  </nav>
 
-  <!-- ── Content ─────────────────────────────────────────────────────────────── -->
-  <main class="pos-main">
-    <router-outlet></router-outlet>
-  </main>
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        <div class="d-none d-md-flex flex-column align-items-end me-1">
+          <span class="text-white fw-semibold" style="font-size:.8rem; line-height:1.2">{{ userName }}</span>
+          <span class="text-white-50" style="font-size:.7rem">{{ profilLabel }}</span>
+        </div>
+        <button class="btn btn-sm btn-outline-danger" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="d-none d-sm-inline ms-1">Quitter</span>
+        </button>
+      </div>
+    </nav>
 
-</div>
+    <main class="pos-main">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+}

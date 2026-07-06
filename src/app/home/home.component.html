@@ -1,7 +1,61 @@
-<app-header></app-header>
-<app-sidebar></app-sidebar>
-<main id="main" class="main">
-  <app-abonnement-banner></app-abonnement-banner>
-  <router-outlet></router-outlet>
-</main>
-<app-footer></app-footer>
+@if (isMobile) {
+  <!-- ══════════════════════════════════════════════════════════════
+       Layout mobile : top bar + contenu scrollable + bottom nav
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="mobile-shell">
+    <header class="mobile-top-bar">
+      <div class="mtb-brand">
+        @if (currentUser?.boutique?.logo) {
+          <img [src]="currentUser.boutique.logo"
+               [alt]="currentUser.boutique.nom"
+               class="mtb-logo mtb-logo-boutique"
+               (error)="onLogoError($event)">
+        } @else {
+          <img src="assets/img/logo_neurostock_icone.png" alt="NeuroStock" class="mtb-logo">
+        }
+        <div class="mtb-brand-text">
+          <span class="mtb-title">{{ currentUser?.boutique?.nom || 'NeuroStock' }}</span>
+          @if (currentUser?.boutique?.nom) {
+            <span class="mtb-subtitle">Gestion de stock</span>
+          }
+        </div>
+      </div>
+      <div class="mtb-actions">
+        <button class="mtb-avatar" (click)="userMenuOpen = !userMenuOpen">
+          {{ getUserInitials() }}
+        </button>
+        @if (userMenuOpen) {
+          <div class="mtb-backdrop" (click)="userMenuOpen = false"></div>
+          <div class="mtb-user-menu">
+            <div class="mtb-user-info">
+              <span class="mtb-user-name">{{ currentUser?.prenom || currentUser?.prenoms || '' }} {{ currentUser?.nom || '' }}</span>
+              <span class="mtb-user-role">{{ currentUser?.profil?.libelle || '' }}</span>
+            </div>
+            <button class="mtb-logout-btn" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="mobile-content">
+      <app-abonnement-banner></app-abonnement-banner>
+      <router-outlet></router-outlet>
+    </main>
+
+    <app-mobile-nav></app-mobile-nav>
+  </div>
+
+} @else {
+  <!-- ══════════════════════════════════════════════════════════════
+       Layout desktop : sidebar + header + footer classique
+  ══════════════════════════════════════════════════════════════ -->
+  <app-header></app-header>
+  <app-sidebar></app-sidebar>
+  <main id="main" class="main">
+    <app-abonnement-banner></app-abonnement-banner>
+    <router-outlet></router-outlet>
+  </main>
+  <app-footer></app-footer>
+}

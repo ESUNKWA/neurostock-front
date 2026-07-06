@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { PrevisionService } from '../../services/analyse-ia/prevision.service';
+import { RouterLink } from '@angular/router';
+import { DeviceService } from '../../services/device/device.service';
 
 declare var $: any;
 
@@ -20,7 +22,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule],
+  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -92,11 +94,29 @@ export default class DashboardComponent implements OnInit, OnDestroy {
       .map(([mode, val]) => ({ mode, label: this.modesLabels[mode] ?? mode, val: Number(val) }));
   }
 
+  isMobile = false;
+
+  readonly mobileModules = [
+    { label: 'Ventes',          icon: 'bi-receipt',           lien: '/gestion-des-ventes/vente',                              color: '#059669', bg: '#d1fae5' },
+    { label: 'Produits',        icon: 'bi-box-seam',          lien: '/gestion-des-produits/produit',                          color: '#8b5cf6', bg: '#ede9fe' },
+    { label: 'Approvisionnements', icon: 'bi-cart4',          lien: '/gestion-des-approvisionnements/approvisionnement',      color: '#d97706', bg: '#fef3c7' },
+    { label: 'Caisse',          icon: 'bi-cash-coin',         lien: '/caisse',                                                color: '#0369a1', bg: '#e0f2fe' },
+    { label: 'Clients',         icon: 'bi-people',            lien: '/clients/list',                                          color: '#0891b2', bg: '#cffafe' },
+    { label: 'Devis',           icon: 'bi-file-earmark-text', lien: '/gestion-des-devis/historique',                          color: '#4f46e5', bg: '#e0e7ff' },
+    { label: 'Commandes',       icon: 'bi-bag-check',         lien: '/commandes-clients/liste',                               color: '#db2777', bg: '#fce7f3' },
+    { label: 'Retours',         icon: 'bi-arrow-return-left', lien: '/retours/historique',                                    color: '#dc2626', bg: '#fee2e2' },
+    { label: 'Mouvements',      icon: 'bi-arrow-left-right',  lien: '/stocks/mouvements',                                     color: '#374151', bg: '#f3f4f6' },
+    { label: 'Recette',         icon: 'bi-cash-stack',        lien: '/recette',                                               color: '#0d9488', bg: '#ccfbf1' },
+    { label: 'Analyse IA',      icon: 'bi-stars',             lien: '/analyse-ia/resume-journalier',                          color: '#7c3aed', bg: '#ede9fe' },
+    { label: 'Utilisateurs',    icon: 'bi-person-workspace',  lien: '/utilisateurs/list',                                     color: '#374151', bg: '#f9fafb' },
+  ];
+
   constructor(
     private loaderService: LoaderService,
     private dashService: DashService,
     private previsionService: PrevisionService,
-    public alerteService: AlerteService
+    public alerteService: AlerteService,
+    private deviceSvc: DeviceService
   ) {
     this.loaderService.showLoading();
     setTimeout(() => {
@@ -106,6 +126,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.deviceSvc.isMobile$.subscribe(m => this.isMobile = m);
     this.getCurrentUser();
 
     if (this.isCaissierView) {

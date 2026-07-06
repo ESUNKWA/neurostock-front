@@ -1,0 +1,47 @@
+<nav class="mnav">
+  <a routerLink="/dashboard" routerLinkActive="mnav-active" [routerLinkActiveOptions]="{exact:true}" class="mnav-tab">
+    <i class="bi bi-house-fill"></i>
+    <span>Accueil</span>
+  </a>
+  <a routerLink="/gestion-des-ventes/vente" routerLinkActive="mnav-active" class="mnav-tab">
+    <i class="bi bi-currency-dollar"></i>
+    <span>Ventes</span>
+  </a>
+  <a routerLink="/caisse" routerLinkActive="mnav-active" class="mnav-tab mnav-fab-tab">
+    <div class="mnav-fab">
+      <i class="bi bi-cash-coin"></i>
+    </div>
+    <span>Caisse</span>
+  </a>
+  <a routerLink="/gestion-des-produits/produit" routerLinkActive="mnav-active" class="mnav-tab">
+    <i class="bi bi-box-seam"></i>
+    <span>Produits</span>
+  </a>
+  <button class="mnav-tab" [class.mnav-active]="menuOpen" (click)="toggleMenu()">
+    <i class="bi bi-grid-3x3-gap-fill"></i>
+    <span>Menu</span>
+  </button>
+</nav>
+
+@if (menuOpen) {
+  <div class="mnav-overlay" (click)="closeMenu()">
+    <div class="mnav-drawer" (click)="$event.stopPropagation()">
+      <div class="mnav-drawer-header">
+        <span>Tous les modules</span>
+        <button class="mnav-drawer-close" (click)="closeMenu()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="mnav-drawer-grid">
+        @for (mod of modules; track mod.lien) {
+          <a class="mnav-module-item" [routerLink]="mod.lien" (click)="closeMenu()">
+            <div class="mnav-module-icon" [style.background]="mod.bg" [style.color]="mod.color">
+              <i [class]="'bi ' + mod.icon"></i>
+            </div>
+            <span class="mnav-module-label">{{ mod.label }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+}

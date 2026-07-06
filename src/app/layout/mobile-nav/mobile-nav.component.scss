@@ -1,0 +1,173 @@
+// ── Bottom navigation bar ─────────────────────────────────────────────────────
+.mnav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, .07);
+}
+
+.mnav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: .6rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+
+  i { font-size: 1.25rem; line-height: 1; }
+
+  &.mnav-active, &:active { color: #0B4332; }
+}
+
+// ── Centre FAB (Caisse) ───────────────────────────────────────────────────────
+.mnav-fab-tab {
+  position: relative;
+  flex: 1.1;
+  padding-top: 0;
+
+  .mnav-fab {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #0B4332, #1e7a5a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(11, 67, 50, .35);
+    margin-top: -22px;
+    transition: transform .15s;
+
+    i { font-size: 1.3rem; }
+  }
+
+  span { margin-top: 2px; }
+
+  &.mnav-active .mnav-fab,
+  &:active .mnav-fab { transform: scale(.93); }
+}
+
+// ── Module drawer overlay ─────────────────────────────────────────────────────
+.mnav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  animation: mnav-fade-in .15s ease;
+}
+
+@keyframes mnav-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mnav-drawer {
+  width: 100%;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: mnav-slide-up .22s cubic-bezier(.33, 1, .68, 1);
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes mnav-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.mnav-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  position: sticky;
+  top: 0;
+  background: #fff;
+
+  span {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.mnav-drawer-close {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #374151;
+  font-size: .85rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// ── Module grid inside drawer ─────────────────────────────────────────────────
+.mnav-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 0;
+  padding: 12px 8px;
+}
+
+.mnav-module-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  padding: 10px 4px 8px;
+  border-radius: 14px;
+  transition: background .1s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { background: #f3f4f6; }
+}
+
+.mnav-module-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+}
+
+.mnav-module-label {
+  font-size: .6rem;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 68px;
+  word-break: break-word;
+}
