@@ -28,21 +28,43 @@
                       </div>
                     </div>
                 </div>
-                @if (currentUser?.profil?.code.toLowerCase() === 'admin' || currentUser?.profil?.code.toLowerCase() === 'gerant') {
-                  <div class="card-body mt-3">
-                      <div class="row">
-                          <div class="col-md-4">
-                              <select class="form-select" id="mySelect">
-                                <option value="">Sélectionner une boutique</option>
-                                @for (boutique of boutiques; track boutique.id) {
-                                  <option [value]="boutique.id">{{ boutique.nom }}</option>
-                                }
-                              </select>
-                          </div>
-                      </div>
-                  </div>
-                }
                 <div class="card-body">
+                  <div class="row g-2 align-items-end mb-3">
+                    @if (currentUser?.profil?.code.toLowerCase() === 'admin' || currentUser?.profil?.code.toLowerCase() === 'gerant' || currentUser?.profil?.code.toLowerCase() === 'responsable_structure') {
+                      <div class="col-md-4">
+                        <label class="form-label small mb-1">Boutique</label>
+                        <select class="form-select form-select-sm" id="mySelect">
+                          <option value="">— Sélectionner une boutique —</option>
+                          @for (boutique of boutiques; track boutique.id) {
+                            <option [value]="boutique.id">{{ boutique.nom }}</option>
+                          }
+                        </select>
+                      </div>
+                    } @else {
+                      <div class="col-md-4">
+                        <label class="form-label small mb-1">Boutique</label>
+                        <input type="text" class="form-control form-control-sm bg-light" [value]="currentUser?.boutique?.nom || ''" disabled>
+                      </div>
+                    }
+                    <div class="col-auto">
+                      <label class="form-label small mb-1">Du</label>
+                      <input type="date" class="form-control form-control-sm" [(ngModel)]="dateDebut">
+                    </div>
+                    <div class="col-auto">
+                      <label class="form-label small mb-1">Au</label>
+                      <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFin">
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-sm btn-primary" (click)="loadVentes()" [disabled]="isLoading">
+                        @if (isLoading) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        } @else {
+                          <i class="bi bi-search me-1"></i>
+                        }
+                        Rechercher
+                      </button>
+                    </div>
+                  </div>
                   @if (isLoading) {
                     <div class="text-center py-3">
                         <div class="spinner-border text-primary" role="status">

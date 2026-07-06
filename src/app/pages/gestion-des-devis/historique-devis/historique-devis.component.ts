@@ -1,5 +1,6 @@
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { DevisService } from '../../../services/gestion-des-devis/devis.service';
@@ -31,7 +32,7 @@ const TRANSITIONS: Record<string, string[]> = {
 @Component({
   selector: 'app-historique-devis',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './historique-devis.component.html',
   styleUrl: './historique-devis.component.scss'
 })
@@ -43,6 +44,8 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
   isLoading = false;
   detailDevis: any;
   selectedDevis: any = {};
+  dateDebut: string = '';
+  dateFin: string = '';
 
   statutMap = STATUT_MAP;
 
@@ -63,7 +66,20 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
     @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
+  private initDateRange(): void {
+    const today = new Date();
+    const debut = new Date();
+    debut.setDate(today.getDate() - 30);
+    this.dateFin   = today.toISOString().split('T')[0];
+    this.dateDebut = debut.toISOString().split('T')[0];
+  }
+
+  onDateChange(): void {
+    this.loadDevis();
+  }
+
   ngOnInit(): void {
+    this.initDateRange();
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
       this.loadBoutiques();
@@ -109,7 +125,11 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
     }
     const boutiqueId = this.idBoutique || this.currentUser.boutique_id;
 
-    this.devisService.getAllDevis({ boutique: boutiqueId, page: 1, limit: 100 }).subscribe({
+    this.devisService.getAllDevis({
+      boutique: boutiqueId, page: 1, limit: 100,
+      ...(this.dateDebut && { date_debut: this.dateDebut }),
+      ...(this.dateFin   && { date_fin:   this.dateFin }),
+    }).subscribe({
       next: (response: any) => {
 
         if (Array.isArray(response)) {

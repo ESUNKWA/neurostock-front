@@ -1,27 +1,3 @@
-<!-- ══════════════════════════════════════════════════════════════════════════
-     Écran d'accueil mobile — grille de modules (masqué sur desktop via SCSS)
-══════════════════════════════════════════════════════════════════════════ -->
-@if (isMobile) {
-  <div class="mob-home">
-    <div class="mob-greeting">
-      <div>
-        <div class="mob-greeting-title">Bonjour, {{ currentUser?.prenom || currentUser?.prenoms || currentUser?.nom || 'Utilisateur' }} 👋</div>
-        <div class="mob-greeting-date">{{ today | date:'EEEE d MMMM':'':'fr' }}</div>
-      </div>
-    </div>
-
-    <div class="mob-modules-grid">
-      @for (mod of mobileModules; track mod.lien) {
-        <a class="mob-module-item" [routerLink]="mod.lien">
-          <div class="mob-module-icon" [style.background]="mod.bg" [style.color]="mod.color">
-            <i [class]="'bi ' + mod.icon"></i>
-          </div>
-          <span class="mob-module-label">{{ mod.label }}</span>
-        </a>
-      }
-    </div>
-  </div>
-}
 
 <div class="pagetitle">
   <div class="d-flex justify-content-between align-items-center">

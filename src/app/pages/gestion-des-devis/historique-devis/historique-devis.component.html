@@ -43,6 +43,21 @@
         </div>
 
         <div class="card-body">
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+              <label class="form-label small mb-1">Du</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="dateDebut" (change)="onDateChange()">
+            </div>
+            <div class="col-auto">
+              <label class="form-label small mb-1">Au</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFin" (change)="onDateChange()">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-primary" (click)="onDateChange()">
+                <i class="bi bi-funnel"></i> Filtrer
+              </button>
+            </div>
+          </div>
           @if (isLoading) {
             <div class="text-center py-3">
               <div class="spinner-border text-primary" role="status">

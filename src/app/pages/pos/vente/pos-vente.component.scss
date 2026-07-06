@@ -321,14 +321,24 @@
 }
 
 @media (max-width: 767.98px) {
+  // Colle le POS exactement entre la top bar et la bottom nav — quel que soit le téléphone
+  // top bar = 52px + safe-area-top (iPhone notch), bottom nav = 60px + safe-area-bottom
   .pos-screen {
+    position: fixed;
+    top: calc(52px + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    height: auto;
     flex-direction: column;
-    height: calc(100dvh - 50px);
+    margin: 0 !important;
     overflow: hidden;
+    z-index: 10;
   }
 
   .pos-mobile-tabbar {
     display: flex;
+    flex-shrink: 0;
   }
 
   .pos-catalog {
@@ -346,12 +356,33 @@
 
     &.mobile-hidden { display: none !important; }
 
-    // add bottom padding so content isn't hidden under FAB
+    // Pas de padding supplémentaire — la bottom nav est hors du pos-screen
     .pos-cart-footer {
-      padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+      padding-bottom: .5rem;
     }
   }
 
+  // Le FAB panier monte au-dessus de la bottom nav
+  .pos-mobile-cart-fab {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  // Sur très petits écrans : réduire la barre de recherche
+  .pos-search-bar {
+    padding: .5rem .75rem !important;
+    gap: .4rem !important;
+
+    // Masquer le total ventes du jour sur les très petits écrans
+    @media (max-height: 650px) {
+      .d-flex:last-child { display: none !important; }
+    }
+  }
+
+  // Produits : 3 colonnes au lieu de 2 pour maximiser l'espace
+  .pos-products .row > div {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+  }
 }
 
 // ── Payment modal ─────────────────────────────────────────────────────────────

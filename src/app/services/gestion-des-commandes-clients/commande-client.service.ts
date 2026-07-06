@@ -2,13 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpClientService } from '../http-client/http-client.service';
 import { environnement } from '../../environnement/environnement';
 
+export interface CommandeParams {
+  boutique: number;
+  date_debut?: string;
+  date_fin?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommandeClientService {
   private readonly BASE = `${environnement.API_URL}/commande-client`;
 
   constructor(private http: HttpClientService) {}
 
-  getAll(params: { boutique: number; page?: number; limit?: number }) {
+  getAll(params: CommandeParams) {
     return this.http.get(this.BASE, { params });
   }
 

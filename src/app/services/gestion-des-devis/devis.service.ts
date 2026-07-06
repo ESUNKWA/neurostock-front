@@ -2,13 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpClientService } from '../http-client/http-client.service';
 import { environnement } from '../../environnement/environnement';
 
+export interface DevisParams {
+  boutique: number;
+  date_debut?: string;
+  date_fin?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DevisService {
   private readonly API_URL = environnement.API_URL;
 
   constructor(private http: HttpClientService) {}
 
-  getAllDevis(params: any) {
+  getAllDevis(params: DevisParams) {
     return this.http.get(`${this.API_URL}/devis`, { params });
   }
 

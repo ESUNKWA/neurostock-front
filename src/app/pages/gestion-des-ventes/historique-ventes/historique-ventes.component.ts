@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -14,7 +14,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-ventes',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './historique-ventes.component.html',
   styleUrl: './historique-ventes.component.scss',
   providers: [ToastrService]
@@ -25,6 +25,8 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   idBoutique: number = 0;
   boutiques: any[] = [];
   isLoading: boolean = false;
+  dateDebut: string = '';
+  dateFin: string = '';
   loadingDetails = false;
   printingA4 = false;
   printingThermique = false;
@@ -45,6 +47,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initDateRange();
     this.getCurrentUser();
     this.loadBoutiques();
     this.loadVentes();
@@ -67,11 +70,9 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       width: 'resolve',
     });
 
-    // Gérer les changements
-    ($('#mySelect') as any).on('change', (e: any) => {
-      const idBoutique = ($('#mySelect') as any).val();
-      this.idBoutique = parseInt(idBoutique);
-    this.loadVentes();
+    // Gérer les changements — on stocke juste l'id, la recherche se fait via le bouton
+    ($('#mySelect') as any).on('change', () => {
+      this.idBoutique = parseInt(($('#mySelect') as any).val()) || 0;
     });
   }
 
@@ -85,6 +86,18 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
     });
+  }
+
+  private initDateRange(): void {
+    const today = new Date();
+    const debut = new Date();
+    debut.setDate(today.getDate() - 30);
+    this.dateFin   = today.toISOString().split('T')[0];
+    this.dateDebut = debut.toISOString().split('T')[0];
+  }
+
+  onDateChange(): void {
+    this.loadVentes();
   }
 
   loadBoutiques(): void {
@@ -101,7 +114,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       });
     }else{
       if (this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
-        this.boutiqueService.findByStructure(this.currentUser.structure.id).subscribe({
+        this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
@@ -129,19 +142,22 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   loadVentes(): void {
     this.isLoading = true;
     
-    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'gerant') {
+    const code = this.currentUser.profil.code.toLowerCase();
+    if (code === 'admin' || code === 'gerant' || code === 'responsable_structure') {
       if (!this.idBoutique) {
         this.ventes = [];
         this.isLoading = false;
         return;
       }
     } else {
-      this.idBoutique = this.currentUser.boutique_id
+      this.idBoutique = this.currentUser.boutique_id;
     }
     
     const body: any = {
-      boutique: this.idBoutique
-    }
+      boutique: this.idBoutique,
+      ...(this.dateDebut && { date_debut: this.dateDebut }),
+      ...(this.dateFin   && { date_fin:   this.dateFin }),
+    };
 
     this.ventesService.getAllVentes(body).subscribe({
       next: (response: any) => {

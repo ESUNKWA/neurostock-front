@@ -25,6 +25,7 @@ export default class LoginComponent implements OnInit {
   showPassword = false;
   loading = false;
   error = '';
+  readonly currentYear = new Date().getFullYear();
 
   constructor(
     private formBuilder: FormBuilder,

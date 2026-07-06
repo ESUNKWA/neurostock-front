@@ -28,6 +28,8 @@ export default class ListeComponent implements OnInit, OnDestroy {
   isLoading   = false;
   actionId: number | null = null;
   detailCommande: any = null;
+  dateDebut: string = '';
+  dateFin: string = '';
 
   readonly STATUTS: { value: string; label: string; css: string }[] = [
     { value: 'en_attente',     label: 'En attente',     css: 'warning'  },
@@ -60,7 +62,20 @@ export default class ListeComponent implements OnInit, OnDestroy {
     return this.router.url.startsWith('/pos');
   }
 
+  private initDateRange(): void {
+    const today = new Date();
+    const debut = new Date();
+    debut.setDate(today.getDate() - 30);
+    this.dateFin   = today.toISOString().split('T')[0];
+    this.dateDebut = debut.toISOString().split('T')[0];
+  }
+
+  onDateChange(): void {
+    this.loadCommandes();
+  }
+
   ngOnInit(): void {
+    this.initDateRange();
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
       this.loadBoutiques();
@@ -93,7 +108,11 @@ export default class ListeComponent implements OnInit, OnDestroy {
     if (!this.selectedBoutiqueId) { this.commandes = []; return; }
     this.isLoading = true;
     this.destroyDataTable();
-    this.commandeService.getAll({ boutique: this.selectedBoutiqueId, page: 1, limit: 500 })
+    this.commandeService.getAll({
+      boutique: this.selectedBoutiqueId, page: 1, limit: 500,
+      ...(this.dateDebut && { date_debut: this.dateDebut }),
+      ...(this.dateFin   && { date_fin:   this.dateFin }),
+    })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (r: any) => {

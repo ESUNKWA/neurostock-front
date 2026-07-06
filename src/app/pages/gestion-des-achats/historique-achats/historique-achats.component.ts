@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -13,7 +13,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-achats',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './historique-achats.component.html',
   styleUrl: './historique-achats.component.scss',
   providers: [ToastrService]
@@ -25,6 +25,8 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   boutiques: any[] = [];
   isLoading: boolean = false;
   detailsAchat: any;
+  dateDebut: string = '';
+  dateFin: string = '';
   
   constructor(
     private achatsService: AchatsService,
@@ -36,6 +38,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initDateRange();
     this.getCurrentUser();
     this.loadBoutiques();
     //this.loadAchats();
@@ -89,9 +92,21 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private initDateRange(): void {
+    const today = new Date();
+    const debut = new Date();
+    debut.setDate(today.getDate() - 30);
+    this.dateFin   = today.toISOString().split('T')[0];
+    this.dateDebut = debut.toISOString().split('T')[0];
+  }
+
   onBoutiqueChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     this.idBoutique = parseInt(selectElement.value);
+    this.loadAchats();
+  }
+
+  onDateChange(): void {
     this.loadAchats();
   }
 
@@ -128,8 +143,10 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     }
     
     const body: any = {
-      boutique: this.idBoutique
-    }
+      boutique: this.idBoutique,
+      ...(this.dateDebut && { date_debut: this.dateDebut }),
+      ...(this.dateFin   && { date_fin:   this.dateFin }),
+    };
 
     this.achatsService.getAllAchats(body).subscribe({
       next: (response: any) => {

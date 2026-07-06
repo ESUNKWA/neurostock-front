@@ -21,6 +21,24 @@
         </div>
       </div>
       <div class="mtb-actions">
+        <!-- Alerte rupture de stock -->
+        <a routerLink="/dashboard" class="mtb-alert-btn" [class.mtb-alert-active]="alerteCount > 0"
+           title="{{ alerteCount > 0 ? alerteCount + ' alerte(s) stock' : 'Alertes stock' }}">
+          <i class="bi bi-bell-fill"></i>
+          @if (alerteCount > 0) {
+            <span class="mtb-badge">{{ alerteCount > 99 ? '99+' : alerteCount }}</span>
+          }
+        </a>
+
+        <!-- Commandes du jour -->
+        @if (commandesCount > 0) {
+          <a routerLink="/commandes-clients/liste" class="mtb-orders-btn"
+             title="{{ commandesCount }} commande(s) aujourd'hui">
+            <i class="bi bi-bag-check-fill"></i>
+            <span class="mtb-badge mtb-badge--orders">{{ commandesCount > 99 ? '99+' : commandesCount }}</span>
+          </a>
+        }
+
         <button class="mtb-avatar" (click)="userMenuOpen = !userMenuOpen">
           {{ getUserInitials() }}
         </button>

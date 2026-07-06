@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { PrevisionService } from '../../services/analyse-ia/prevision.service';
-import { RouterLink } from '@angular/router';
 import { DeviceService } from '../../services/device/device.service';
 
 declare var $: any;
@@ -22,7 +21,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule, RouterLink],
+  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

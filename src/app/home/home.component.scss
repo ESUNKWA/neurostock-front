@@ -67,7 +67,65 @@
   object-fit: contain;
 }
 
-.mtb-actions { position: relative; }
+.mtb-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ── Icônes d'alerte dans la top bar ──────────────────────────────────────────
+.mtb-alert-btn,
+.mtb-orders-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .65);
+  font-size: 1rem;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s, color .15s;
+
+  &:active { background: rgba(255, 255, 255, .22); }
+}
+
+.mtb-alert-btn.mtb-alert-active {
+  color: #fbbf24; // amber quand il y a des alertes
+  animation: mtb-bell .6s ease infinite alternate;
+}
+
+@keyframes mtb-bell {
+  from { transform: rotate(-8deg); }
+  to   { transform: rotate(8deg); }
+}
+
+.mtb-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  background: #ef4444;
+  color: #fff;
+  font-size: .55rem;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 1.5px solid #0B4332;
+}
+
+.mtb-badge--orders {
+  background: #f59e0b;
+}
 
 .mtb-avatar {
   width: 36px;

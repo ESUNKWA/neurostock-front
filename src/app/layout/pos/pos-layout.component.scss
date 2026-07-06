@@ -72,14 +72,17 @@ $nav-h: 50px;
 
 // ── Mobile top bar ────────────────────────────────────────────────────────────
 .pos-mtb {
-  height: 52px;
+  // La hauteur totale = 52px + safe-area-top (iPhone notch)
+  // On utilise min-height pour que la barre s'agrandisse sur les iPhones avec encoche
+  min-height: 52px;
+  height: calc(52px + env(safe-area-inset-top, 0px));
   background: #1a1d21;
   display: flex;
-  align-items: center;
+  align-items: flex-end; // contenu en bas pour laisser la safe-area en haut
   justify-content: space-between;
-  padding: 0 14px;
-  flex-shrink: 0;
+  padding: 0 14px calc(8px) 14px;
   padding-top: env(safe-area-inset-top, 0px);
+  flex-shrink: 0;
   border-bottom: 1px solid rgba(255,255,255,.06);
 }
 

@@ -2,9 +2,10 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { HeaderComponent } from '../layout/header/header.component';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { FooterComponent } from '../layout/footer/footer.component';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { AbonnementBannerComponent } from '../components/abonnement-banner/abonnement-banner.component';
 import { AuthService } from '../services/auth/auth.service';
+import { AlerteService } from '../services/alerte/alerte.service';
 import { DeviceService } from '../services/device/device.service';
 import { MobileNavComponent } from '../layout/mobile-nav/mobile-nav.component';
 import { CommonModule } from '@angular/common';
@@ -18,6 +19,7 @@ const POS_ROLES = ['caissier', 'vendeur'];
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterLink,
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
@@ -29,12 +31,15 @@ const POS_ROLES = ['caissier', 'vendeur'];
 })
 export default class HomeComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private alerteService = inject(AlerteService);
   private router = inject(Router);
   readonly deviceSvc = inject(DeviceService);
 
   isMobile = false;
   currentUser: any = null;
   userMenuOpen = false;
+  alerteCount = 0;
+  commandesCount = 0;
 
   private subs: Subscription[] = [];
 
@@ -52,6 +57,8 @@ export default class HomeComponent implements OnInit, OnDestroy {
         }
       })
     );
+    this.subs.push(this.alerteService.count$.subscribe(n => this.alerteCount = n));
+    this.subs.push(this.alerteService.commandesCount$.subscribe(n => this.commandesCount = n));
   }
 
   ngOnDestroy(): void {
