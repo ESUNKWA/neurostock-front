@@ -22,10 +22,43 @@
        [class.mobile-hidden]="mobileTab === 'cart'">
 
     <!-- Search + Scan bar -->
-    <div class="pos-search-bar border-bottom px-3 pt-3 pb-2 d-flex flex-column gap-2">
+    <div class="pos-search-bar border-bottom px-3 pt-2 pb-2 d-flex flex-column gap-2">
 
-      <!-- Ligne 1 : recherche + scanner -->
-      <div class="d-flex align-items-center gap-3">
+      <!-- Ligne 1 : logo boutique (gauche) + total du jour (droite) -->
+      <div class="d-flex align-items-center justify-content-between gap-2">
+        <div class="pos-boutique-info d-flex align-items-center gap-2">
+          @if (currentUser?.boutique?.logo) {
+            <img [src]="currentUser.boutique.logo" [alt]="currentUser.boutique.nom" class="pos-boutique-logo">
+          } @else {
+            <div class="pos-boutique-logo-placeholder">
+              <i class="bi bi-shop"></i>
+            </div>
+          }
+          <div class="lh-1">
+            <div class="pos-boutique-nom fw-bold text-truncate" style="max-width:180px">
+              {{ currentUser?.boutique?.nom }}
+            </div>
+            <div class="text-muted" style="font-size:.68rem;letter-spacing:.03em">Point de vente</div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2 pos-today-pill">
+          <i class="bi bi-graph-up-arrow text-white fs-5"></i>
+          <div class="lh-1">
+            <div class="text-white-50" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.06em">Total du jour</div>
+            <div class="text-white fw-bold" style="font-size:1.05rem">
+              {{ totalVentesJour | number:'1.0-0':'fr' }}
+              <span class="fw-normal" style="font-size:.68rem;opacity:.8">FCFA</span>
+            </div>
+            <div class="text-white-50" style="font-size:.6rem">
+              <i class="bi bi-receipt me-1"></i>{{ nbVentesJour }} vente{{ nbVentesJour !== 1 ? 's' : '' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ligne 2 : recherche + scanner, même largeur sur PC -->
+      <div class="d-flex flex-column flex-sm-row align-items-stretch gap-2">
         <div class="pos-search-field input-group input-group-lg flex-grow-1">
           <span class="input-group-text border-end-0">
             <i class="bi bi-search text-primary"></i>
@@ -39,34 +72,16 @@
             </button>
           }
         </div>
-        <div class="input-group pos-scanner-field d-none d-sm-flex" style="width:200px; min-width:160px">
-          <span class="input-group-text bg-light border-end-0 border">
-            <i class="bi bi-upc-scan text-muted"></i>
+        <div class="input-group input-group-lg pos-scanner-field flex-grow-1">
+          <span class="input-group-text pos-scanner-icon-wrap border-end-0">
+            <i class="bi bi-upc-scan pos-scanner-icon"></i>
           </span>
           <input #scannerInput
-                 type="text" class="form-control border-start-0 bg-light shadow-none"
-                 placeholder="Scanner…"
+                 type="text" class="form-control border-start-0 shadow-none"
+                 placeholder="Scanner un code-barres…"
                  [(ngModel)]="barcodeInput"
                  (keydown)="onScanBarcode($event)"
                  (input)="onBarcodeInput()">
-        </div>
-      </div>
-
-      <!-- Ligne 2 : total ventes du jour, aligné à droite -->
-      <div class="d-flex justify-content-end">
-        <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2"
-             style="background:linear-gradient(135deg,#198754 0%,#20c997 100%);">
-          <i class="bi bi-graph-up-arrow text-white fs-5"></i>
-          <div class="lh-1">
-            <div class="text-white-50" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;">Total du jour</div>
-            <div class="text-white fw-bold" style="font-size:1.1rem;">
-              {{ totalVentesJour | number:'1.0-0':'fr' }}
-              <span class="fw-normal" style="font-size:.7rem;opacity:.8;">FCFA</span>
-            </div>
-            <div class="text-white-50" style="font-size:.62rem;">
-              <i class="bi bi-receipt me-1"></i>{{ nbVentesJour }} vente{{ nbVentesJour !== 1 ? 's' : '' }}
-            </div>
-          </div>
         </div>
       </div>
 
