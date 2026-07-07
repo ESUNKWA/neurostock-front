@@ -2,6 +2,7 @@ import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -32,10 +33,25 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   printingThermique = false;
   detailsVente: any[] = [];
   vente: any = {};
-  facture: any = {
-    vente: {},
-      details: []
-  };
+  facture: any = { vente: {}, details: [] };
+
+  // ── Régularisation ────────────────────────────────────────────────────────
+  showRegularModal = false;
+  regularVente: any = null;
+  regularSubmitting = false;
+  regularForm = { mode_paiement: 'espece', montant_recu: 0 };
+  regularDetailsPaiement: Record<string, number> = { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0 };
+
+  readonly MODES_PAIEMENT = [
+    { value: 'espece',       label: 'Espèces',      icon: 'bi-cash' },
+    { value: 'orange_money', label: 'Orange Money', icon: 'bi-phone' },
+    { value: 'wave',         label: 'Wave',         icon: 'bi-phone' },
+    { value: 'mtn_money',    label: 'MTN Money',    icon: 'bi-phone' },
+    { value: 'moov_money',   label: 'Moov Money',   icon: 'bi-phone' },
+    { value: 'dajmo',        label: 'Dajmo',        icon: 'bi-phone' },
+    { value: 'carte',        label: 'Carte',        icon: 'bi-credit-card' },
+    { value: 'mixte',        label: 'Mixte',        icon: 'bi-layers' },
+  ];
   
   constructor(
     private ventesService: VentesService,
@@ -261,15 +277,23 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               width: '15%',
               orderable: false,
               render: (data: any, type: any, row: any) => {
+                const isNonPaye = row.statut?.toLowerCase() === 'non_payer';
+                const regularBtn = isNonPaye
+                  ? `<button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip"
+                        title="Régulariser le paiement" data-action="regulariser" data-id="${row.id}">
+                       <i class="bi bi-cash-coin"></i>
+                     </button>`
+                  : '';
                 return `
-                  <div class="btn-group">
+                  <div class="btn-group flex-wrap">
+                    ${regularBtn}
                     <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-warning me-2" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
                       <i class="bi bi-printer"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
+                    <button type="button" class="btn btn-sm btn-secondary me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
                       <i class="bi bi-pencil-square"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
@@ -330,6 +354,9 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               if (!vente) return;
               
               switch (action) {
+                case 'regulariser':
+                  this.openRegularModal(vente);
+                  break;
                 case 'view':
                   this.viewDetails(vente);
                   break;
@@ -453,5 +480,43 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       },
       error: () => { this.printingThermique = false; }
     });
+  }
+
+  // ── Régularisation ────────────────────────────────────────────────────────
+
+  openRegularModal(vente: any): void {
+    this.regularVente = vente;
+    this.regularForm = {
+      mode_paiement: 'espece',
+      montant_recu: vente.montant_total_apres_remise ?? 0,
+    };
+    this.regularDetailsPaiement = { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0 };
+    this.showRegularModal = true;
+  }
+
+  get regularMontantMixte(): number {
+    return Object.values(this.regularDetailsPaiement).reduce((s: number, v: any) => s + (Number(v) || 0), 0);
+  }
+
+  submitRegularisation(): void {
+    if (!this.regularVente) return;
+    const isMixte = this.regularForm.mode_paiement === 'mixte';
+    const montant = isMixte ? this.regularMontantMixte : this.regularForm.montant_recu;
+    const body = {
+      mode_paiement: this.regularForm.mode_paiement,
+      montant_recu: montant,
+      details_paiement: isMixte ? { ...this.regularDetailsPaiement } : null,
+    };
+    this.regularSubmitting = true;
+    this.ventesService.regulariser(this.regularVente.id, body)
+      .pipe(finalize(() => (this.regularSubmitting = false)))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Vente régularisée avec succès');
+          this.showRegularModal = false;
+          this.loadVentes();
+        },
+        error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la régularisation'),
+      });
   }
 }

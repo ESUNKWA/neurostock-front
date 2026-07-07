@@ -41,4 +41,8 @@ export class VentesService {
   imprimerThermique(idVente: any) {
     return this.http.get(`${this.API_URL}/pdf/generate/facture/${idVente}/thermique`);
   }
+
+  regulariser(id: number, body: { mode_paiement: string; montant_recu: number; details_paiement: any }) {
+    return this.http.patch(`${this.API_URL}/vente/${id}/regulariser`, body);
+  }
 }

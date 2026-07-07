@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -309,6 +309,19 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
     });
   }
 
+  printThermique(venteId: number): void {
+    const token = this.authService.getToken();
+    const url = `/api/pdf/generate/facture/${venteId}/thermique/print?token=${token}`;
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;';
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      iframe.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(iframe), 2000);
+    };
+    iframe.src = url;
+  }
+
   // ── Cart ──────────────────────────────────────────────────────────────────
 
   addToCart(product: any): void {
@@ -508,25 +521,28 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
           this.loadProduits();   // refresh stock
           this.loadTotalJour();  // refresh total du jour
 
+          const venteId = res?.data?.idVente;
           Swal.fire({
             icon: 'success',
             title: 'Vente enregistrée !',
             html: '<small class="text-muted">Choisissez le format d\'impression</small>',
             showCancelButton: true,
             showDenyButton: true,
-            confirmButtonText: '<i class="bi bi-file-earmark-pdf me-1"></i> A4',
-            denyButtonText: '<i class="bi bi-printer me-1"></i> Thermique 80mm',
+            confirmButtonText: '<i class="bi bi-printer me-1"></i> Imprimer (thermique)',
+            denyButtonText: '<i class="bi bi-file-earmark-pdf me-1"></i> PDF A4',
             cancelButtonText: 'Fermer',
-            confirmButtonColor: '#0d6efd',
-            denyButtonColor: '#f59e0b',
-            preConfirm: () =>
-              this.ventesSvc.imprimerRecu(res?.data?.idVente).toPromise()
-                .catch(() => Swal.showValidationMessage('Impossible de générer le reçu A4')),
+            confirmButtonColor: '#198754',
+            denyButtonColor: '#0d6efd',
+            preConfirm: () => true,
             preDeny: () =>
-              this.ventesSvc.imprimerThermique(res?.data?.idVente).toPromise()
-                .catch(() => Swal.showValidationMessage('Impossible de générer le reçu thermique')),
+              firstValueFrom(this.ventesSvc.imprimerRecu(venteId))
+                .catch(() => Swal.showValidationMessage('Impossible de générer le reçu A4')),
           }).then(r => {
-            if ((r.isConfirmed || r.isDenied) && r.value?.path) window.open(r.value.path, '_blank');
+            if (r.isConfirmed) {
+              this.printThermique(venteId);
+            } else if (r.isDenied && r.value?.path) {
+              window.open(r.value.path, '_blank');
+            }
           });
         },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la vente'),

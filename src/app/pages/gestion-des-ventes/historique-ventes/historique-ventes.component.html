@@ -255,6 +255,13 @@
           Thermique 80mm
         </button>
 
+        <!-- Régulariser depuis le modal détail -->
+        @if (vente?.statut?.toLowerCase() === 'non_payer') {
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal" (click)="openRegularModal(vente)">
+            <i class="bi bi-cash-coin me-1"></i>Régulariser
+          </button>
+        }
+
         <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">
           <i class="bi bi-x me-1"></i>Fermer
         </button>
@@ -263,3 +270,124 @@
     </div>
   </div>
 </div>
+
+<!-- ── Modal régularisation ───────────────────────────────────────────────── -->
+@if (showRegularModal && regularVente) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);z-index:1060">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:500px">
+      <div class="modal-content">
+
+        <!-- En-tête -->
+        <div class="modal-header text-white" style="background:linear-gradient(135deg,#166534,#16a34a)">
+          <div>
+            <div class="fw-bold fs-6">
+              <i class="bi bi-cash-coin me-2"></i>Régularisation du paiement
+            </div>
+            <div class="small opacity-75 mt-1">
+              {{ regularVente.reference }} —
+              {{ regularVente.montant_total_apres_remise | number:'1.0-0' }} F CFA
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto"
+                  (click)="showRegularModal = false"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- Mode de paiement -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Mode de paiement <span class="text-danger">*</span></label>
+            <div class="d-flex flex-wrap gap-2">
+              @for (m of MODES_PAIEMENT; track m.value) {
+                <label class="reg-mode-btn" [class.selected]="regularForm.mode_paiement === m.value">
+                  <input type="radio" class="d-none"
+                         [(ngModel)]="regularForm.mode_paiement" [value]="m.value">
+                  <i class="bi {{ m.icon }} me-1"></i>{{ m.label }}
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Montant reçu (hors mode mixte) -->
+          @if (regularForm.mode_paiement !== 'mixte') {
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Montant reçu (F CFA) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="regularForm.montant_recu"
+                     [min]="regularVente.montant_total_apres_remise"
+                     placeholder="Montant reçu">
+              @if (regularForm.montant_recu >= regularVente.montant_total_apres_remise) {
+                <div class="text-success small mt-1">
+                  <i class="bi bi-arrow-return-left me-1"></i>
+                  Monnaie : {{ (regularForm.montant_recu - regularVente.montant_total_apres_remise) | number:'1.0-0' }} F CFA
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Détails mode mixte -->
+          @if (regularForm.mode_paiement === 'mixte') {
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Répartition des paiements</label>
+              <div class="border rounded-3 p-3 d-flex flex-column gap-2">
+                @for (m of MODES_PAIEMENT; track m.value) {
+                  @if (m.value !== 'mixte') {
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="small text-muted" style="min-width:110px">
+                        <i class="bi {{ m.icon }} me-1"></i>{{ m.label }}
+                      </span>
+                      <input type="number" class="form-control form-control-sm"
+                             [(ngModel)]="regularDetailsPaiement[m.value]"
+                             min="0" placeholder="0">
+                    </div>
+                  }
+                }
+              </div>
+              <div class="d-flex justify-content-between mt-2 small fw-semibold"
+                   [class.text-success]="regularMontantMixte >= regularVente.montant_total_apres_remise"
+                   [class.text-danger]="regularMontantMixte < regularVente.montant_total_apres_remise">
+                <span>Total saisi</span>
+                <span>{{ regularMontantMixte | number:'1.0-0' }} / {{ regularVente.montant_total_apres_remise | number:'1.0-0' }} F CFA</span>
+              </div>
+            </div>
+          }
+
+        </div>
+
+        <div class="modal-footer gap-2">
+          <button type="button" class="btn btn-secondary" (click)="showRegularModal = false">
+            Annuler
+          </button>
+          <button type="button" class="btn btn-success"
+                  [disabled]="regularSubmitting"
+                  (click)="submitRegularisation()">
+            @if (regularSubmitting) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            } @else {
+              <i class="bi bi-check2-circle me-1"></i>
+            }
+            Confirmer la régularisation
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+.reg-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: .3rem .75rem;
+  border: 1.5px solid #dee2e6;
+  border-radius: .375rem;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: all .15s;
+  background: #fff;
+  user-select: none;
+}
+.reg-mode-btn:hover      { border-color: #198754; color: #198754; }
+.reg-mode-btn.selected   { border-color: #198754; background: #f0fdf4; color: #166534; font-weight: 600; }
+</style>
