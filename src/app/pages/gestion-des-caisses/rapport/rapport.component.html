@@ -84,14 +84,14 @@
             </h4>
             <small class="text-muted d-block mb-2">FCFA</small>
             @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
-              @if ((rapport.fond_ouverture || rapport.recap?.fond_ouverture)?.[mode]) {
-                <div class="d-flex justify-content-between align-items-center px-1" style="font-size:.72rem;">
-                  <span class="text-muted">{{ labelMode(mode) }}</span>
-                  <span class="fw-semibold text-primary">
-                    {{ (rapport.fond_ouverture || rapport.recap?.fond_ouverture)[mode] | number:'1.0-0':'fr' }}
-                  </span>
-                </div>
-              }
+              @let val = (rapport.fond_ouverture || rapport.recap?.fond_ouverture)?.[mode] ?? 0;
+              <div class="d-flex justify-content-between align-items-center px-1" style="font-size:.72rem;"
+                   [class.text-muted]="val === 0">
+                <span>{{ labelMode(mode) }}</span>
+                <span [class.fw-semibold]="val > 0" [class.text-primary]="val > 0">
+                  {{ val | number:'1.0-0':'fr' }}
+                </span>
+              </div>
             }
           </div>
         </div>
@@ -232,16 +232,16 @@
               </h6>
               <div class="row g-2">
                 @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
-                  @if (rapport.recap.fond_fermeture[mode] != null) {
-                    <div class="col-6 col-md-3">
-                      <div class="p-2 rounded bg-light text-center">
-                        <div class="text-muted small">{{ labelMode(mode) }}</div>
-                        <div class="fw-bold">
-                          {{ rapport.recap.fond_fermeture[mode] | number:'1.0-0':'fr' }} FCFA
-                        </div>
+                  @let ff = rapport.recap.fond_fermeture[mode] ?? 0;
+                  <div class="col-6 col-md-3">
+                    <div class="p-2 rounded text-center" [class.bg-light]="ff > 0" [class.bg-white]="ff === 0"
+                         [style.opacity]="ff === 0 ? '0.5' : '1'">
+                      <div class="text-muted small">{{ labelMode(mode) }}</div>
+                      <div class="fw-bold" [class.text-muted]="ff === 0">
+                        {{ ff | number:'1.0-0':'fr' }} FCFA
                       </div>
                     </div>
-                  }
+                  </div>
                 }
               </div>
               <div class="mt-2 text-end small fw-semibold">

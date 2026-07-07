@@ -173,20 +173,18 @@
                     @let v   = theorique.ventes_par_mode?.[mode]         ?? 0;
                     @let ent = theorique.mouvements_par_mode?.[mode]?.entrees ?? 0;
                     @let sor = theorique.mouvements_par_mode?.[mode]?.sorties ?? 0;
-                    @let th  = theorique.montant_theorique?.[mode]       ?? null;
-                    @if (fo !== 0 || v !== 0 || ent !== 0 || sor !== 0 || th !== null) {
-                      <tr>
-                        <td class="fw-semibold small">{{ modesLabels[mode] }}</td>
-                        <td class="text-end small">{{ fo | number:'1.0-0':'fr' }}</td>
-                        <td class="text-end small text-success">+{{ v | number:'1.0-0':'fr' }}</td>
-                        <td class="text-end small" [ngClass]="(ent - sor) >= 0 ? 'text-success' : 'text-danger'">
-                          {{ (ent - sor) >= 0 ? '+' : '' }}{{ (ent - sor) | number:'1.0-0':'fr' }}
-                        </td>
-                        <td class="text-end fw-bold text-primary">
-                          {{ th != null ? (th | number:'1.0-0':'fr') : '—' }} FCFA
-                        </td>
-                      </tr>
-                    }
+                    @let th  = theorique.montant_theorique?.[mode]       ?? 0;
+                    <tr [class.text-muted]="fo === 0 && v === 0 && ent === 0 && sor === 0 && th === 0">
+                      <td class="fw-semibold small">{{ modesLabels[mode] }}</td>
+                      <td class="text-end small">{{ fo | number:'1.0-0':'fr' }}</td>
+                      <td class="text-end small" [class.text-success]="v > 0">+{{ v | number:'1.0-0':'fr' }}</td>
+                      <td class="text-end small" [ngClass]="(ent - sor) > 0 ? 'text-success' : (ent - sor) < 0 ? 'text-danger' : ''">
+                        {{ (ent - sor) >= 0 ? '+' : '' }}{{ (ent - sor) | number:'1.0-0':'fr' }}
+                      </td>
+                      <td class="text-end fw-bold" [class.text-primary]="th > 0">
+                        {{ th | number:'1.0-0':'fr' }} FCFA
+                      </td>
+                    </tr>
                   }
                 </tbody>
                 <tfoot class="table-light">
@@ -437,12 +435,11 @@
             <div class="mf-section">
               <div class="mf-section-label"><i class="bi bi-calculator"></i> Montant théorique attendu</div>
               @for (mode of ['espece','orange_money','wave','mtn_money','moov_money','dajmo','carte','credit']; track mode) {
-                @if (theorique.montant_theorique[mode]) {
-                  <div class="d-flex justify-content-between small py-1">
-                    <span class="text-muted">{{ modesLabels[mode] }}</span>
-                    <span class="fw-semibold">{{ theorique.montant_theorique[mode] | number:'1.0-0':'fr' }} FCFA</span>
-                  </div>
-                }
+                <div class="d-flex justify-content-between small py-1"
+                     [class.text-muted]="!(theorique.montant_theorique[mode])">
+                  <span>{{ modesLabels[mode] }}</span>
+                  <span class="fw-semibold">{{ (theorique.montant_theorique[mode] ?? 0) | number:'1.0-0':'fr' }} FCFA</span>
+                </div>
               }
               <div class="d-flex justify-content-between small border-top pt-2 mt-1">
                 <span class="fw-bold">Total</span>
