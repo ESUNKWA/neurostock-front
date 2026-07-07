@@ -28,6 +28,7 @@ export class TenantService {
   provision(dto: TenantProvisionDto){ return this.http.post(`${this.base}/provision`, dto); }
   reset(structureId: number)        { return this.http.delete(`${this.base}/${structureId}/reset`); }
 
+  getStorage()                      { return this.http.get(`${this.base}/storage`); }
   getTables(structureId: number)    { return this.http.get(`${this.base}/${structureId}/tables`); }
   getTableContent(structureId: number, tableName: string, page = 1, limit = 20) {
     return this.http.get(`${this.base}/${structureId}/tables/${tableName}?page=${page}&limit=${limit}`);

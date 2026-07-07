@@ -33,6 +33,11 @@ const routes: Routes = [
     title: 'Ekwatech | Provisionner',
   },
   {
+    path: 'storage',
+    loadComponent: () => import('./storage/ek-storage.component'),
+    title: 'Ekwatech | Stockage',
+  },
+  {
     path: 'inscriptions',
     loadComponent: () => import('./inscriptions/ek-inscriptions.component'),
     title: 'Ekwatech | Inscriptions',
