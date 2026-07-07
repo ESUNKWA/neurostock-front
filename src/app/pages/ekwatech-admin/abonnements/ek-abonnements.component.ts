@@ -46,6 +46,9 @@ export default class EkAbonnementsComponent implements OnInit {
   // Facture
   factureAbonnementId: number | null = null;
 
+  // Contrat
+  contratLoadingId: number | null = null;
+
   // Modal essai
   showTrialModal = false;
   trialStructureId: number | null = null;
@@ -321,6 +324,24 @@ export default class EkAbonnementsComponent implements OnInit {
           error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
         });
     });
+  }
+
+  // ── Contrat PDF ───────────────────────────────────────────────────────────
+  downloadContrat(abonnementId: number): void {
+    this.contratLoadingId = abonnementId;
+    this.abonnementSvc.getContratPdf(abonnementId)
+      .pipe(finalize(() => (this.contratLoadingId = null)))
+      .subscribe({
+        next: (blob: any) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `contrat-${abonnementId}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la génération du contrat'),
+      });
   }
 
   // ── Helpers ──────────────────────────���─────────────────────────────────────

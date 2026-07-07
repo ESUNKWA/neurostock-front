@@ -26,6 +26,7 @@ export default class MonAbonnementComponent implements OnInit {
   // Modal souscription
   showFacture = false;
   showModal = false;
+  contratLoading = false;
   form = { plan: '', montant: 0, notes: '' };
   devis: any = null;
   devisLoading = false;
@@ -131,6 +132,25 @@ export default class MonAbonnementComponent implements OnInit {
       },
       error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la souscription'),
     });
+  }
+
+  // ── Contrat PDF ────────────────────────────────────────────────────────────
+  downloadContrat(): void {
+    if (!this.abonnement?.id) return;
+    this.contratLoading = true;
+    this.abonnementSvc.getContratPdf(this.abonnement.id)
+      .pipe(finalize(() => (this.contratLoading = false)))
+      .subscribe({
+        next: (blob: any) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `contrat-${this.abonnement.id}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la génération du contrat'),
+      });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

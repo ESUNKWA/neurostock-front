@@ -46,6 +46,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   importBoutiqueId: number | string | null = null;
   currentUser: any;
 
+  cataloguePdfLoading = false;
+
   // Prix suggéré IA
   produitPrixSuggere: any | null = null;
   prixSuggereData: any | null = null;
@@ -344,6 +346,30 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     const selectElement = event.target as HTMLSelectElement;
     this.selectedBoutique = selectElement.value;
     this.loadProduits();
+  }
+
+  downloadCatalogueBarcodes(): void {
+    const boutiqueId = Number(this.selectedBoutique) || this.currentUser?.boutique_id;
+    if (!boutiqueId) {
+      this.toastr.warning('Sélectionnez une boutique d\'abord');
+      return;
+    }
+    this.cataloguePdfLoading = true;
+    this.produitService.getCatalogueBarcodesPdf(boutiqueId).subscribe({
+      next: (blob: any) => {
+        this.cataloguePdfLoading = false;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-codes-barres-boutique-${boutiqueId}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (e: any) => {
+        this.cataloguePdfLoading = false;
+        this.toastr.error(e?.error?.message || 'Erreur lors de la génération du catalogue');
+      },
+    });
   }
 
   loadProduits(): void {

@@ -43,10 +43,12 @@
           <span class="input-group-text bg-light border-end-0 border">
             <i class="bi bi-upc-scan text-muted"></i>
           </span>
-          <input type="text" class="form-control border-start-0 bg-light shadow-none"
+          <input #scannerInput
+                 type="text" class="form-control border-start-0 bg-light shadow-none"
                  placeholder="Scanner…"
                  [(ngModel)]="barcodeInput"
-                 (keydown)="onScanBarcode($event)">
+                 (keydown)="onScanBarcode($event)"
+                 (input)="onBarcodeInput()">
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -46,7 +46,8 @@ interface CartSession {
   styleUrl: './pos-vente.component.scss',
   providers: [ToastrService],
 })
-export default class PosVenteComponent implements OnInit {
+export default class PosVenteComponent implements OnInit, AfterViewInit {
+  @ViewChild('scannerInput') scannerInputRef!: ElementRef<HTMLInputElement>;
   currentUser: any;
   produits:  any[] = [];
   filtered:  any[] = [];
@@ -153,6 +154,14 @@ export default class PosVenteComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.focusScanner();
+  }
+
+  focusScanner(): void {
+    setTimeout(() => this.scannerInputRef?.nativeElement?.focus(), 150);
+  }
+
   // ── Session management ────────────────────────────────────────────────────
 
   private createSession(): CartSession {
@@ -198,7 +207,9 @@ export default class PosVenteComponent implements OnInit {
   }
 
   get boutiqueId(): number | null {
-    return this.currentUser.boutique_id ?? null;
+    return this.currentUser?.boutique_id
+      ?? this.currentUser?.boutique?.id
+      ?? null;
   }
 
   // ── Products ──────────────────────────────────────────────────────────────
@@ -252,17 +263,49 @@ export default class PosVenteComponent implements OnInit {
   // ── Barcode ───────────────────────────────────────────────────────────────
 
   onScanBarcode(event: KeyboardEvent): void {
-    if (event.key !== 'Enter') return;
-    const code = this.barcodeInput.trim();
-    if (!code || !this.boutiqueId) return;
+    if (event.key === 'Enter') {
+      const code = this.normalizeBarcode(this.barcodeInput.trim());
+      if (code) this.doScan(code);
+      return;
+    }
+  }
+
+  onBarcodeInput(): void {
+    const normalized = this.normalizeBarcode(this.barcodeInput.trim());
+    if (/^\d{13}$/.test(normalized)) {
+      this.barcodeInput = '';
+      this.doScan(normalized);
+    }
+  }
+
+  // Convertit les caractères AZERTY (français) en chiffres
+  // pour que le scanner fonctionne sans changer le layout clavier du PC
+  private normalizeBarcode(input: string): string {
+    const map: Record<string, string> = {
+      'à': '0', '&': '1', 'é': '2', '"': '3', "'": '4',
+      '(': '5', '-': '6', 'è': '7', '_': '8', 'ç': '9',
+    };
+    return input.split('').map(c => map[c] ?? c).join('');
+  }
+
+  private doScan(code: string): void {
+    if (!this.boutiqueId) return;
     this.barcodeInput = '';
     this.produitSvc.scanByCodeBarre(code, this.boutiqueId).subscribe({
       next: (res: any) => {
         const p = res?.data || res;
-        if (p?.id) this.addToCart(p);
-        else this.toastr.warning('Produit non trouvé');
+        if (p?.id) {
+          this.addToCart(p);
+          this.focusScanner();
+        } else {
+          this.toastr.warning('Produit non trouvé');
+          this.focusScanner();
+        }
       },
-      error: () => this.toastr.error('Erreur scan'),
+      error: () => {
+        this.toastr.error('Produit non trouvé pour ce code-barres');
+        this.focusScanner();
+      },
     });
   }
 

@@ -47,6 +47,13 @@ export class ProduitService {
     formData.append('file', file);
     return this.http.post(`${this.API_URL}/produit/import?boutique=${boutiqueId}`, formData, {});
   }
+
+  getCatalogueBarcodesPdf(boutiqueId: number) {
+    return this.http.get(`${this.API_URL}/produit/catalogue-barcodes`, {
+      params: { boutique: boutiqueId },
+      responseType: 'blob',
+    });
+  }
 }
 
 // Fonction utilitaire pour vérifier si l'objet est un FormData

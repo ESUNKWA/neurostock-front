@@ -23,6 +23,14 @@
                         </div>
                         <div class="col-md-7 text-end">
                             <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
+                            <button type="button" class="btn btn-outline-dark me-2" (click)="downloadCatalogueBarcodes()" [disabled]="cataloguePdfLoading" title="Catalogue codes-barres PDF">
+                              @if (cataloguePdfLoading) {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                              } @else {
+                                <i class="bi bi-upc-scan me-1"></i>
+                              }
+                              Codes-barres
+                            </button>
                             <button type="button" class="btn btn-outline-secondary me-2" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
                               <i class="bi bi-download"></i> Modèle Excel
                             </button>

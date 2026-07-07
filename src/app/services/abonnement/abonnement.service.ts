@@ -47,6 +47,11 @@ export class AbonnementService {
     return this.http.get(`${this.base}/${abonnementId}/facture/pdf`, { responseType: 'blob' });
   }
 
+  // Contrat
+  getContratPdf(abonnementId: number) {
+    return this.http.get(`${this.base}/${abonnementId}/contrat/pdf`, { responseType: 'blob' });
+  }
+
   // Tenant user
   getMySubscription()               { return this.http.get(`${this.base}/mon-abonnement`); }
 

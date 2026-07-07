@@ -93,6 +93,14 @@
                               title="Voir la facture">
                         <i class="bi bi-receipt"></i>
                       </button>
+                      <button class="btn btn-sm btn-outline-primary" (click)="downloadContrat(ab.id)"
+                              [disabled]="contratLoadingId === ab.id" title="Télécharger le contrat">
+                        @if (contratLoadingId === ab.id) {
+                          <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                          <i class="bi bi-file-earmark-text"></i>
+                        }
+                      </button>
                       @if (ab.statut === 'en_attente') {
                         <button class="btn btn-sm btn-success"
                                 [disabled]="actionLoading === ab.id"
