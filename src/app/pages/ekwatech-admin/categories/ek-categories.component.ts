@@ -24,6 +24,38 @@ export default class EkCategoriesComponent implements OnInit {
   planLabels = PLAN_LABELS;
   loading = false;
 
+  // Recherche + pagination
+  searchQuery = '';
+  currentPage = 1;
+  readonly pageSize = 5;
+
+  get filteredCategories(): any[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return this.categories;
+    return this.categories.filter(c =>
+      c.label?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
+    );
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredCategories.length / this.pageSize));
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  get paginatedCategories(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredCategories.slice(start, start + this.pageSize);
+  }
+
+  onSearch(): void { this.currentPage = 1; }
+
+  goToPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages) this.currentPage = p;
+  }
+
   // Formulaire catégorie
   showCatForm = false;
   editingCatId: number | null = null;
@@ -48,6 +80,7 @@ export default class EkCategoriesComponent implements OnInit {
       .subscribe({
         next: (r: any) => {
           this.categories = r?.data ?? r ?? [];
+          this.currentPage = 1;
           this.syncTarifForms();
         },
       });

@@ -312,14 +312,54 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   printThermique(venteId: number): void {
     const token = this.authService.getToken();
     const url = `/api/pdf/generate/facture/${venteId}/thermique/print?token=${token}`;
+
+    console.group(`[printThermique] venteId=${venteId}`);
+    console.log('URL:', url);
+    console.log('token présent:', !!token, '| longueur:', token?.length ?? 0);
+
+    // Fetch de diagnostic — vérifier ce que le serveur renvoie réellement
+    fetch(url)
+      .then(async res => {
+        const text = await res.text();
+        console.log('HTTP status:', res.status, res.statusText);
+        console.log('Content-Type:', res.headers.get('content-type'));
+        console.log('Taille réponse (chars):', text.length);
+        console.log('Aperçu réponse (300 premiers chars):', text.slice(0, 300));
+        if (text.length === 0) {
+          console.error('[printThermique] La réponse du serveur est VIDE — le reçu sera blanc');
+        }
+      })
+      .catch(err => console.error('[printThermique] Erreur fetch diagnostic:', err));
+
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;';
     document.body.appendChild(iframe);
+
+    iframe.onerror = (e) => {
+      console.error('[printThermique] iframe onerror:', e);
+    };
+
     iframe.onload = () => {
+      console.log('iframe chargé');
+      try {
+        const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
+        const bodyHtml = doc?.body?.innerHTML ?? '';
+        console.log('Taille HTML dans iframe (chars):', bodyHtml.length);
+        console.log('Aperçu HTML iframe (300 chars):', bodyHtml.slice(0, 300));
+        if (bodyHtml.length === 0) {
+          console.error('[printThermique] Le body de l\'iframe est VIDE');
+        }
+      } catch (e) {
+        console.warn('[printThermique] Impossible de lire le contenu iframe (cross-origin?):', e);
+      }
+      console.log('contentWindow disponible:', !!iframe.contentWindow);
+      console.groupEnd();
       iframe.contentWindow?.print();
       setTimeout(() => document.body.removeChild(iframe), 2000);
     };
+
     iframe.src = url;
+    console.log('iframe.src défini, en attente du chargement…');
   }
 
   // ── Cart ──────────────────────────────────────────────────────────────────
