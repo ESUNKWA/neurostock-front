@@ -1,15 +1,15 @@
 // ── Design tokens ────────────────────────────────────────────────────────────
 $sidebar-width:     260px;
 $sidebar-collapsed: 68px;
-$bg:                #1e293b;
-$bg-darker:         #162032;
-$text:              #94a3b8;
-$text-active:       #e2e8f0;
-$text-muted:        #475569;
-$accent:            #60a5fa;
-$active-bg:         rgba(96, 165, 250, 0.12);
+$bg:                #1e3a5f;
+$bg-darker:         #162d4a;
+$text:              #94c6f7;
+$text-active:       #e0f0ff;
+$text-muted:        #4d7aaa;
+$accent:            #38bdf8;
+$active-bg:         rgba(56, 189, 248, 0.13);
 $hover-bg:          rgba(255, 255, 255, 0.06);
-$border:            rgba(255, 255, 255, 0.07);
+$border:            rgba(255, 255, 255, 0.08);
 $transition:        0.25s ease;
 
 // ── Host ─────────────────────────────────────────────────────────────────────
@@ -30,12 +30,12 @@ $transition:        0.25s ease;
   flex-direction: column;
   transition: width $transition, transform $transition;
   overflow: hidden;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   will-change: width;
 
   &::-webkit-scrollbar       { width: 3px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 }
 
 // ── Brand header ──────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ $transition:        0.25s ease;
 .brand-name {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fff;
+  color: #e0f0ff;
   letter-spacing: -0.015em;
   font-family: 'Poppins', sans-serif;
   transition: opacity $transition;
@@ -80,7 +80,7 @@ $transition:        0.25s ease;
   padding: 0.625rem 0;
 
   &::-webkit-scrollbar       { width: 3px; }
-  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 }
 
 .nav-list {

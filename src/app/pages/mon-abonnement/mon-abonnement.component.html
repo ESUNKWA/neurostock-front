@@ -214,10 +214,31 @@
                   <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
                 </div>
               }
+
+              <!-- Frais de mise en place — 1er abonnement uniquement -->
+              @if (devis.est_premier_abonnement && devis.frais_setup?.length > 0) {
+                <div class="border-top mt-2 pt-2">
+                  <div class="small fw-semibold mb-1" style="color:#b45309">
+                    <i class="bi bi-tools me-1"></i>Frais de mise en place <span class="fw-normal text-muted">(1<sup>er</sup> abonnement)</span>
+                  </div>
+                  @for (f of devis.frais_setup; track f.label) {
+                    <div class="d-flex justify-content-between small py-1 text-muted fst-italic">
+                      <span>{{ f.label }}</span>
+                      <span>{{ f.montant | number:'1.0-0':'fr' }} {{ f.devise }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
               <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-1">
                 <span>Total à payer</span>
                 <span class="text-success">{{ devis.total | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
               </div>
+              @if (devis.est_premier_abonnement && devis.frais_setup?.length > 0) {
+                <div class="text-muted mt-1" style="font-size:.7rem">
+                  <i class="bi bi-info-circle me-1"></i>Les frais de mise en place ne sont facturés qu'une seule fois.
+                </div>
+              }
             </div>
           }
 

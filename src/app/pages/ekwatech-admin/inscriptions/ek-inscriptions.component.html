@@ -13,8 +13,13 @@
 
   <!-- Tableau -->
   <div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
+    @if (loading) {
+      <div class="text-center py-5 text-muted">
+        <span class="spinner-border spinner-border-sm me-2"></span>Chargement…
+      </div>
+    }
+    <div class="table-responsive" [class.d-none]="loading">
+      <table id="ek-inscriptions-dt" class="table table-hover align-middle w-100">
         <thead class="table-light">
           <tr>
             <th>#</th>
@@ -27,83 +32,7 @@
             <th class="text-end">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          @if (loading) {
-            <tr>
-              <td colspan="8" class="text-center py-5 text-muted">
-                <span class="spinner-border spinner-border-sm me-2"></span>Chargement…
-              </td>
-            </tr>
-          } @else if (inscriptions.length === 0) {
-            <tr>
-              <td colspan="8" class="text-center py-5 text-muted">
-                <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
-                Aucune demande d'inscription
-              </td>
-            </tr>
-          } @else {
-            @for (ins of inscriptions; track ins.id) {
-              <tr>
-                <td class="text-muted small">{{ ins.id }}</td>
-                <td>
-                  <div class="fw-semibold">{{ ins.structure_nom }}</div>
-                  @if (ins.structure_situation_geo) {
-                    <small class="text-muted">{{ ins.structure_situation_geo }}</small>
-                  }
-                </td>
-                <td>
-                  <div>{{ ins.boutique_nom }}</div>
-                  @if (ins.boutique_situation_geo) {
-                    <small class="text-muted">{{ ins.boutique_situation_geo }}</small>
-                  }
-                </td>
-                <td>
-                  <div>{{ ins.responsable_prenoms }} {{ ins.responsable_nom }}</div>
-                </td>
-                <td>
-                  @if (ins.responsable_telephone) {
-                    <div class="small"><i class="bi bi-telephone me-1 text-muted"></i>{{ ins.responsable_telephone }}</div>
-                  }
-                  @if (ins.responsable_email) {
-                    <div class="small text-muted">{{ ins.responsable_email }}</div>
-                  }
-                </td>
-                <td>
-                  <span class="badge rounded-pill px-2 py-1" [ngClass]="statutClass(ins.statut)">
-                    {{ statutLabel(ins.statut) }}
-                  </span>
-                </td>
-                <td class="small text-muted">
-                  {{ ins.created_at | date:'dd/MM/yyyy HH:mm' }}
-                </td>
-                <td class="text-end">
-                  @if (ins.statut === 'en_attente') {
-                    <button class="btn btn-sm btn-success me-1"
-                      (click)="openValider(ins)"
-                      [disabled]="actionLoading === ins.id"
-                      title="Valider">
-                      <i class="bi bi-check-lg"></i> Valider
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger"
-                      (click)="rejeter(ins)"
-                      [disabled]="actionLoading === ins.id"
-                      title="Rejeter">
-                      @if (actionLoading === ins.id) {
-                        <span class="spinner-border spinner-border-sm"></span>
-                      } @else {
-                        <i class="bi bi-x-lg"></i>
-                      }
-                      Rejeter
-                    </button>
-                  }
-                  @if (ins.statut !== 'en_attente') {
-                    <span class="text-muted small fst-italic">—</span>
-                  }
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
   </div>

@@ -19,125 +19,29 @@
   <!-- Table -->
   <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
-
       @if (loading) {
         <div class="text-center py-5">
           <div class="spinner-border text-primary"></div>
           <p class="text-muted small mt-2">Chargement…</p>
         </div>
       }
-
-      @if (!loading && abonnements.length === 0) {
-        <div class="text-center py-5 text-muted">
-          <i class="bi bi-calendar-x display-3 d-block mb-3 opacity-25"></i>
-          <p>Aucun abonnement enregistré</p>
-        </div>
-      }
-
-      @if (!loading && abonnements.length > 0) {
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="ps-4">Structure</th>
-                <th>Plan</th>
-                <th>Début</th>
-                <th>Fin</th>
-                <th>Jours restants</th>
-                <th>Boutiques sup.</th>
-                <th>Statut</th>
-                <th class="text-end pe-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (ab of abonnements; track ab.id) {
-                <tr>
-                  <td class="ps-4">
-                    <span class="fw-semibold small">{{ structureName(ab.structureId) }}</span>
-                    <span class="text-muted" style="font-size:.72rem;display:block">#{{ ab.structureId }}</span>
-                  </td>
-                  <td>
-                    <span class="badge bg-primary-subtle text-primary fw-semibold">
-                      {{ planLabel(ab.plan) }}
-                    </span>
-                  </td>
-                  <td class="text-muted small">{{ ab.date_debut | date:'dd/MM/yyyy' }}</td>
-                  <td class="text-muted small">{{ ab.date_fin | date:'dd/MM/yyyy' }}</td>
-                  <td>
-                    <span [class]="joursClass(ab.jours_restants, ab.statut)">
-                      {{ ab.jours_restants ?? '—' }}j
-                    </span>
-                  </td>
-                  <td class="text-center">
-                    @if (ab.boutiques_supplementaires > 0) {
-                      <button class="btn btn-sm btn-outline-secondary py-0 px-2"
-                              (click)="openBoutiquesModal(ab)" title="Voir les boutiques">
-                        <i class="bi bi-shop-window me-1"></i>{{ ab.boutiques_supplementaires }}
-                      </button>
-                    } @else {
-                      <span class="text-muted small">—</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="badge" [class]="statutClass(ab.statut)">
-                      @if (ab.statut === 'actif') { <i class="bi bi-check-circle-fill me-1"></i> }
-                      @else if (ab.statut === 'expire') { <i class="bi bi-x-circle-fill me-1"></i> }
-                      @else if (ab.statut === 'en_attente') { <i class="bi bi-hourglass-split me-1"></i> }
-                      @else { <i class="bi bi-pause-circle-fill me-1"></i> }
-                      @if (ab.statut === 'en_attente') { En attente } @else { {{ ab.statut | titlecase }} }
-                    </span>
-                  </td>
-                  <td class="text-end pe-4">
-                    <div class="d-flex justify-content-end gap-1">
-                      <button class="btn btn-sm btn-outline-secondary" (click)="factureAbonnementId = ab.id"
-                              title="Voir la facture">
-                        <i class="bi bi-receipt"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-primary" (click)="downloadContrat(ab.id)"
-                              [disabled]="contratLoadingId === ab.id" title="Télécharger le contrat">
-                        @if (contratLoadingId === ab.id) {
-                          <span class="spinner-border spinner-border-sm"></span>
-                        } @else {
-                          <i class="bi bi-file-earmark-text"></i>
-                        }
-                      </button>
-                      @if (ab.statut === 'en_attente') {
-                        <button class="btn btn-sm btn-success"
-                                [disabled]="actionLoading === ab.id"
-                                (click)="valider(ab)" title="Valider ce renouvellement">
-                          @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
-                          @else { <i class="bi bi-check2-circle me-1"></i> }
-                          Valider
-                        </button>
-                      } @else {
-                        <button class="btn btn-sm btn-outline-primary" (click)="openSubscribeModal(ab)"
-                                title="Souscrire / Renouveler">
-                          <i class="bi bi-arrow-repeat me-1"></i>Renouveler
-                        </button>
-                        @if (ab.statut === 'actif') {
-                          <button class="btn btn-sm btn-outline-warning"
-                                  [disabled]="actionLoading === ab.id"
-                                  (click)="suspend(ab)" title="Suspendre">
-                            @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
-                            @else { <i class="bi bi-pause-fill"></i> }
-                          </button>
-                        } @else if (ab.statut === 'suspendu') {
-                          <button class="btn btn-sm btn-outline-success"
-                                  [disabled]="actionLoading === ab.id"
-                                  (click)="reactivate(ab)" title="Réactiver">
-                            @if (actionLoading === ab.id) { <span class="spinner-border spinner-border-sm"></span> }
-                            @else { <i class="bi bi-play-fill"></i> }
-                          </button>
-                        }
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
+      <div class="table-responsive p-2" [class.d-none]="loading">
+        <table id="ek-abonnements-dt" class="table table-hover align-middle w-100">
+          <thead class="table-light">
+            <tr>
+              <th>Structure</th>
+              <th>Plan</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Jours restants</th>
+              <th class="text-center">Boutiques sup.</th>
+              <th>Statut</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -195,7 +99,21 @@
           }
           @if (devis && !devisLoading) {
             <div class="mf-section" style="background:#eff6ff">
-              <div class="mf-section-label"><i class="bi bi-calculator"></i> Devis estimatif</div>
+              <div class="mf-section-label d-flex align-items-center justify-content-between flex-wrap gap-1">
+                <span><i class="bi bi-calculator"></i> Devis estimatif</span>
+                <div class="d-flex gap-1 flex-wrap">
+                  @if (devis.categorie_label) {
+                    <span class="badge bg-info-subtle text-info fw-semibold" style="font-size:.68rem">
+                      <i class="bi bi-tag me-1"></i>{{ devis.categorie_label }}
+                    </span>
+                  }
+                  @if (!isRenewal && devis.est_premier_abonnement) {
+                    <span class="badge bg-warning-subtle text-warning fw-semibold" style="font-size:.68rem">
+                      <i class="bi bi-star-fill me-1"></i>1er abonnement
+                    </span>
+                  }
+                </div>
+              </div>
               <!-- Plan de base -->
               <div class="d-flex justify-content-between small py-1">
                 <span class="text-muted">
@@ -203,8 +121,11 @@
                   @if (devis.boutiques_incluses) {
                     <span class="opacity-75 ms-1">({{ devis.boutiques_incluses }} boutique{{ devis.boutiques_incluses > 1 ? 's' : '' }} incluse{{ devis.boutiques_incluses > 1 ? 's' : '' }})</span>
                   }
+                  @if (devis.categorie_label) {
+                    <span class="opacity-75 ms-1">· tarif {{ devis.categorie_label }}</span>
+                  }
                 </span>
-                <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
               </div>
               <!-- Boutiques supplémentaires -->
               @if (devis.boutiques_supplementaires > 0) {
@@ -213,20 +134,76 @@
                     {{ devis.boutiques_supplementaires }} boutique(s) sup.
                     @if (devis.config_boutique) {
                       <span class="opacity-75">
-                        × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise }}
+                        × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}
                         ({{ devis.config_boutique.valeur }}{{ devis.config_boutique.type === 'pourcentage' ? '%' : ' XOF' }} du plan)
                       </span>
                     } @else {
-                      <span class="opacity-75">× {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                      <span class="opacity-75">× {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
                     }
                   </span>
-                  <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                  <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
                 </div>
               }
+              <!-- Frais de mise en place (premier abonnement uniquement, jamais au renouvellement) -->
+              @if (!isRenewal && devis.frais_setup?.length > 0) {
+                <div class="border-top border-info-subtle mt-1 pt-1">
+                  <div class="text-muted small fw-semibold mb-1" style="font-size:.7rem;letter-spacing:.03em">
+                    <i class="bi bi-tools me-1"></i>FRAIS DE MISE EN PLACE
+                  </div>
+                  @for (f of devis.frais_setup; track $index) {
+                    <div class="d-flex justify-content-between small py-1">
+                      <span class="text-muted">{{ f.label }}</span>
+                      <span>{{ f.montant | number:'1.0-0':'fr' }} {{ f.devise ?? 'XOF' }}</span>
+                    </div>
+                  }
+                  <div class="d-flex justify-content-between small fw-semibold py-1 border-top border-info-subtle">
+                    <span class="text-muted">Sous-total mise en place</span>
+                    <span class="text-warning">{{ devis.montant_frais_setup | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
+                  </div>
+                </div>
+              }
+              <!-- Total -->
               <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-1">
                 <span>Total</span>
-                <span class="text-success">{{ devis.total | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
+                <span class="text-success">{{ devis.total | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
               </div>
+            </div>
+          }
+
+          <!-- Réduction -->
+          @if (devis && !devisLoading) {
+            <div class="mf-section">
+              <div class="mf-section-label">
+                <i class="bi bi-tag"></i> Réduction
+                <span class="text-muted fw-normal" style="font-size:.75rem"> (optionnel)</span>
+              </div>
+              <div class="row g-2">
+                <div class="col-5">
+                  <select class="form-select mf-input" [(ngModel)]="form.remise_type" (ngModelChange)="onRemiseChange()">
+                    <option value="">Aucune</option>
+                    <option value="pourcentage">Pourcentage (%)</option>
+                    <option value="montant">Montant fixe</option>
+                  </select>
+                </div>
+                <div class="col-7">
+                  <input type="number" class="form-control mf-input" [(ngModel)]="form.remise_valeur"
+                    (ngModelChange)="onRemiseChange()" min="0"
+                    [placeholder]="form.remise_type === 'pourcentage' ? 'Ex: 10' : 'Ex: 5000'"
+                    [disabled]="!form.remise_type">
+                </div>
+              </div>
+              @if (form.remise_type && montantRemise > 0) {
+                <div class="mt-2 p-2 rounded-2 small d-flex justify-content-between align-items-center"
+                     style="background:#fef9ec;border:1px solid #fbbf24">
+                  <span>
+                    <i class="bi bi-tag-fill me-1" style="color:#b45309"></i>
+                    Réduction&nbsp;:
+                    <strong style="color:#dc2626">− {{ montantRemise | number:'1.0-0':'fr' }} {{ devis?.devise ?? 'XOF' }}</strong>
+                    <span class="text-muted ms-1">({{ form.remise_type === 'pourcentage' ? form.remise_valeur + '%' : 'fixe' }})</span>
+                  </span>
+                  <span class="fw-bold text-success">→ {{ totalApresRemise | number:'1.0-0':'fr' }} {{ devis?.devise ?? 'XOF' }}</span>
+                </div>
+              }
             </div>
           }
 
@@ -235,12 +212,14 @@
             <div class="mf-section-label"><i class="bi bi-cash-coin"></i> Encaissement & Note</div>
             <div class="row g-3">
               <div class="col-12">
-                <label class="mf-label">Montant réel encaissé (XOF)</label>
+                <label class="mf-label">Montant réel encaissé ({{ devis?.devise ?? 'XOF' }})</label>
                 <div class="mf-input-wrap">
                   <i class="bi bi-currency-exchange mf-input-icon"></i>
                   <input type="number" class="form-control mf-input" [(ngModel)]="form.montant" min="0">
                 </div>
-                <div class="text-muted" style="font-size:.75rem;margin-top:4px">Pré-rempli par le devis. Modifiable si remise accordée.</div>
+                <div class="text-muted" style="font-size:.75rem;margin-top:4px">
+                  Pré-rempli par le devis (remise déduite si applicable). Modifiable manuellement.
+                </div>
               </div>
               <div class="col-12">
                 <label class="mf-label">Notes</label>

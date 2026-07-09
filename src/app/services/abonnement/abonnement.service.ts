@@ -12,16 +12,44 @@ export class AbonnementService {
   getAll()                          { return this.http.get(this.base); }
   getOne(structureId: number)       { return this.http.get(`${this.base}/${structureId}`); }
   startTrial(structureId: number)   { return this.http.post(`${this.base}/essai/${structureId}`, {}); }
-  subscribe(dto: { structureId: number; plan: string; montant?: number; notes?: string }) {
+  subscribe(dto: { structureId: number; plan: string; montant?: number; notes?: string; remise_type?: string; remise_valeur?: number }) {
     return this.http.post(`${this.base}/souscrire`, dto);
   }
   suspend(id: number)               { return this.http.patch(`${this.base}/${id}/suspendre`, {}); }
   reactivate(id: number)            { return this.http.patch(`${this.base}/${id}/reactiver`, {}); }
-  valider(id: number)               { return this.http.patch(`${this.base}/${id}/valider`, {}); }
+  valider(id: number, body?: { remise_type?: string; remise_valeur?: number }) {
+    return this.http.patch(`${this.base}/${id}/valider`, body ?? {});
+  }
   getPlans()                        { return this.http.get(`${this.base}/plans`); }
   savePlan(dto: { plan: string; montant: number; devise: string }) {
     return this.http.post(`${this.base}/plans`, dto);
   }
+
+  // Catégories de structures (super_admin)
+  getCategories()                          { return this.http.get(`${this.base}/config/categories`); }
+  createCategorie(dto: { label: string; description?: string; ordre?: number }) {
+    return this.http.post(`${this.base}/config/categories`, dto);
+  }
+  updateCategorie(id: number, dto: Partial<{ label: string; description: string; est_actif: boolean; ordre: number }>) {
+    return this.http.patch(`${this.base}/config/categories/${id}`, dto);
+  }
+  deleteCategorie(id: number)              { return this.http.delete(`${this.base}/config/categories/${id}`); }
+  upsertTarifCategorie(categorieId: number, dto: { plan: string; montant: number; devise?: string }) {
+    return this.http.post(`${this.base}/config/categories/${categorieId}/tarifs`, dto);
+  }
+  deleteTarifCategorie(categorieId: number, plan: string) {
+    return this.http.delete(`${this.base}/config/categories/${categorieId}/tarifs/${plan}`);
+  }
+
+  // Config frais de mise en place (super_admin)
+  getFraisSetup()                            { return this.http.get(`${this.base}/config/frais-setup`); }
+  createFraisSetup(dto: { label: string; montant: number; devise?: string; ordre?: number }) {
+    return this.http.post(`${this.base}/config/frais-setup`, dto);
+  }
+  updateFraisSetup(id: number, dto: Partial<{ label: string; montant: number; est_actif: boolean; ordre: number }>) {
+    return this.http.patch(`${this.base}/config/frais-setup/${id}`, dto);
+  }
+  deleteFraisSetup(id: number)               { return this.http.delete(`${this.base}/config/frais-setup/${id}`); }
 
   // Config prix boutique supplémentaire (super_admin)
   getPrixBoutique() { return this.http.get(`${this.base}/config/prix-boutique`); }

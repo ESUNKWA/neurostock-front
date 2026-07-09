@@ -40,7 +40,7 @@
                 <th class="ps-4">ID</th>
                 <th>Nom</th>
                 <th>Email</th>
-                <th>RCCM</th>
+                <th>Catégorie</th>
                 <th>Boutiques</th>
                 <th class="text-end pe-4">Actions</th>
               </tr>
@@ -58,7 +58,15 @@
                     }
                   </td>
                   <td class="text-muted small">{{ s.email || '—' }}</td>
-                  <td class="text-muted small">{{ s.rccm || '—' }}</td>
+                  <td>
+                    @if (s.categorieId) {
+                      <span class="badge bg-info-subtle text-info">
+                        {{ categoryLabel(s.categorieId) }}
+                      </span>
+                    } @else {
+                      <span class="text-muted small">—</span>
+                    }
+                  </td>
                   <td>
                     <a [routerLink]="['/ekwatech/boutiques']" [queryParams]="{structure: s.id}"
                        class="badge bg-primary-subtle text-primary text-decoration-none">
@@ -176,6 +184,18 @@
                 <div class="mf-input-wrap">
                   <i class="bi bi-geo-alt mf-input-icon"></i>
                   <input type="text" class="form-control mf-input" formControlName="situation_geo" placeholder="Ville, quartier…">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="mf-label">Catégorie <span class="text-muted fw-normal">(tarification)</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-tag mf-input-icon"></i>
+                  <select class="form-select mf-input ps-5" formControlName="categorieId">
+                    <option value="">— Aucune catégorie —</option>
+                    @for (c of categories; track c.id) {
+                      <option [value]="c.id">{{ c.label }}</option>
+                    }
+                  </select>
                 </div>
               </div>
             </div>

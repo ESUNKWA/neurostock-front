@@ -1,5 +1,8 @@
 // ── Variables ─────────────────────────────────────────────────────────────────
 $nav-h: 50px;
+$nav-bg:      linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+$nav-bg-solid: #1e3a8a;
+$nav-border:  rgba(255, 255, 255, .12);
 
 // ══════════════════════════════════════════════════════════════════════════════
 // DESKTOP layout (inchangé)
@@ -13,14 +16,33 @@ $nav-h: 50px;
 
 .pos-navbar {
   height: $nav-h;
-  background: #1a1d21;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: $nav-bg;
+  border-bottom: 1px solid $nav-border;
   flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, .35);
+}
 
-  .pos-brand {
-    .bi { font-size: 1.1rem; }
-    span { font-size: .9rem; letter-spacing: .02em; }
-  }
+.pos-brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, .9);
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.pos-brand-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .pos-nav {
@@ -47,8 +69,8 @@ $nav-h: 50px;
   }
 
   &.active {
-    background: rgba(var(--bs-primary-rgb), 0.25);
-    color: var(--bs-primary);
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
 }
 
@@ -76,14 +98,15 @@ $nav-h: 50px;
   // On utilise min-height pour que la barre s'agrandisse sur les iPhones avec encoche
   min-height: 52px;
   height: calc(52px + env(safe-area-inset-top, 0px));
-  background: #1a1d21;
+  background: $nav-bg;
   display: flex;
   align-items: flex-end; // contenu en bas pour laisser la safe-area en haut
   justify-content: space-between;
   padding: 0 14px calc(8px) 14px;
   padding-top: env(safe-area-inset-top, 0px);
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid $nav-border;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, .3);
 }
 
 .pos-mtb-brand {
@@ -220,14 +243,14 @@ $nav-h: 50px;
   left: 0;
   right: 0;
   height: 60px;
-  background: #1a1d21;
-  border-top: 1px solid rgba(255,255,255,.08);
+  background: $nav-bg-solid;
+  border-top: 1px solid $nav-border;
   display: flex;
   align-items: center;
   justify-content: space-around;
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -2px 12px rgba(0,0,0,.25);
+  box-shadow: 0 -2px 16px rgba(30, 58, 138, .4);
 }
 
 .pos-bnav-tab {
@@ -260,13 +283,13 @@ $nav-h: 50px;
   .pos-bnav-fab {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    background: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(13,110,253,.45);
+    color: #1e40af;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
     margin-top: -20px;
     transition: transform .15s;
 
@@ -297,7 +320,7 @@ $nav-h: 50px;
 
 .pos-drawer {
   width: 100%;
-  background: #1e2329;
+  background: #1e3a8a;
   border-radius: 20px 20px 0 0;
   max-height: 70vh;
   overflow-y: auto;
@@ -315,10 +338,10 @@ $nav-h: 50px;
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.12);
   position: sticky;
   top: 0;
-  background: #1e2329;
+  background: #1e3a8a;
 
   span {
     font-size: .95rem;

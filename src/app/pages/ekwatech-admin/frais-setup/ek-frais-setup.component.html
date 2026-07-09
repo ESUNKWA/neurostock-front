@@ -1,0 +1,186 @@
+<div class="p-4">
+  <div class="mb-4">
+    <h4 class="fw-bold mb-1">Frais de mise en place</h4>
+    <p class="text-muted small mb-0">Configurez les frais facturés lors de la création d'une nouvelle structure</p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Liste ──────────────────────────────────────────────────────── -->
+    <div class="col-md-7">
+
+      <!-- Récap total -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <span class="text-muted small">
+          {{ items.length }} frais configuré(s)
+        </span>
+        <span class="badge bg-success-subtle text-success fw-semibold" style="font-size:.8rem">
+          Total actif : {{ totalActif | number:'1.0-0':'fr' }} XOF
+        </span>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-header py-2 px-3">
+          <span class="fw-semibold small">
+            <i class="bi bi-receipt-cutoff me-2 text-primary"></i>Liste des frais
+          </span>
+        </div>
+        <div class="card-body p-0">
+
+          @if (loading) {
+            <div class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          }
+
+          @if (!loading) {
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3" style="width:40px">#</th>
+                  <th>Libellé</th>
+                  <th class="text-end">Montant</th>
+                  <th class="text-center">Statut</th>
+                  <th class="text-end pe-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of items; track item.id) {
+                  <tr [class.opacity-50]="item.est_actif === false">
+                    <td class="ps-3 text-muted small">{{ item.ordre ?? 0 }}</td>
+                    <td>
+                      <span class="fw-semibold" [class.text-muted]="item.est_actif === false">
+                        {{ item.label }}
+                      </span>
+                    </td>
+                    <td class="text-end fw-bold text-success">
+                      {{ item.montant | number:'1.0-0':'fr' }}
+                      <span class="text-muted fw-normal small ms-1">{{ item.devise ?? 'XOF' }}</span>
+                    </td>
+                    <td class="text-center">
+                      @if (item.est_actif !== false) {
+                        <span class="badge bg-success-subtle text-success">Actif</span>
+                      } @else {
+                        <span class="badge bg-secondary-subtle text-secondary">Inactif</span>
+                      }
+                    </td>
+                    <td class="text-end pe-3">
+                      <div class="d-flex justify-content-end gap-1">
+                        <!-- Activer / Désactiver -->
+                        <button class="btn btn-sm"
+                                [class.btn-outline-warning]="item.est_actif !== false"
+                                [class.btn-outline-success]="item.est_actif === false"
+                                [disabled]="isToggling === item.id"
+                                (click)="toggleActif(item)"
+                                [title]="item.est_actif !== false ? 'Désactiver' : 'Activer'">
+                          @if (isToggling === item.id) {
+                            <span class="spinner-border spinner-border-sm"></span>
+                          } @else {
+                            <i class="bi" [class.bi-toggle-on]="item.est_actif !== false"
+                                          [class.bi-toggle-off]="item.est_actif === false"></i>
+                          }
+                        </button>
+                        <!-- Modifier -->
+                        <button class="btn btn-sm btn-outline-primary" (click)="startEdit(item)" title="Modifier">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <!-- Supprimer -->
+                        <button class="btn btn-sm btn-outline-danger"
+                                [disabled]="isDeleting === item.id"
+                                (click)="delete(item)" title="Supprimer">
+                          @if (isDeleting === item.id) {
+                            <span class="spinner-border spinner-border-sm"></span>
+                          } @else {
+                            <i class="bi bi-trash"></i>
+                          }
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+                @if (items.length === 0 && !loading) {
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4 small">
+                      <i class="bi bi-inbox d-block fs-3 mb-1 opacity-30"></i>
+                      Aucun frais configuré
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              @if (items.length > 0) {
+                <tfoot class="table-light">
+                  <tr>
+                    <td colspan="2" class="ps-3 fw-semibold small">Total actif</td>
+                    <td class="text-end fw-bold text-success">
+                      {{ totalActif | number:'1.0-0':'fr' }} XOF
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tfoot>
+              }
+            </table>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Formulaire ─────────────────────────────────────────────────── -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header py-2 px-3 d-flex align-items-center justify-content-between">
+          <span class="fw-semibold small">
+            <i class="bi me-2 text-success" [class.bi-plus-circle]="!editingId" [class.bi-pencil-square]="editingId"></i>
+            {{ editingId ? 'Modifier le frais' : 'Nouveau frais' }}
+          </span>
+          @if (editingId) {
+            <button class="btn btn-sm btn-link text-muted p-0" (click)="resetForm()" title="Annuler">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          }
+        </div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Libellé <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.label"
+                   placeholder="Ex : Création de la base de données">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Montant <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="number" class="form-control" [(ngModel)]="form.montant" min="0" placeholder="0">
+              <select class="form-select" style="max-width:90px" [(ngModel)]="form.devise">
+                <option value="XOF">XOF</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">Ordre d'affichage</label>
+            <input type="number" class="form-control" [(ngModel)]="form.ordre" min="0" placeholder="0">
+            <div class="form-text">Les frais sont affichés par ordre croissant</div>
+          </div>
+
+          <button class="btn btn-primary w-100" [disabled]="isSubmitting" (click)="save()">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-floppy me-1"></i> }
+            {{ editingId ? 'Mettre à jour' : 'Créer le frais' }}
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Info désactivation -->
+      <div class="alert alert-info border-0 mt-3 small">
+        <i class="bi bi-info-circle me-1"></i>
+        Pour exclure temporairement un frais sans le supprimer, utilisez le bouton
+        <strong>Désactiver</strong> dans la liste. Les frais inactifs ne sont pas comptabilisés dans le total.
+      </div>
+    </div>
+
+  </div>
+</div>

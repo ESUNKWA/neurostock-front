@@ -17,8 +17,8 @@
           <i class="bi bi-graph-up-arrow pos-mtb-icon"></i>
         }
         <div class="pos-mtb-brand-text">
-          <span class="pos-mtb-title">{{ boutiqueName || 'NeuroStock' }}</span>
-          @if (boutiqueName) {
+          <span class="pos-mtb-title">{{ structureName || 'NeuroStock' }}</span>
+          @if (structureName) {
             <span class="pos-mtb-sub">Point de vente</span>
           }
         </div>
@@ -141,15 +141,21 @@
       <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden">
 
         <a class="pos-brand d-flex align-items-center gap-2 text-decoration-none me-2" routerLink="/pos/vente">
-          <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
-          <span class="fw-bold text-white d-none d-sm-inline">NeuroStock</span>
+          @if (currentUser?.boutique?.logo) {
+            <img [src]="currentUser.boutique.logo" [alt]="boutiqueName"
+                 class="pos-brand-logo" (error)="onLogoError($event)">
+          } @else {
+            <div class="pos-brand-placeholder">
+              <i class="bi bi-shop"></i>
+            </div>
+          }
+          <div class="d-none d-sm-flex flex-column lh-1">
+            <span class="fw-bold text-white" style="font-size:.85rem">{{ structureName || 'NeuroStock' }}</span>
+            @if (structureName) {
+              <span class="text-white-50" style="font-size:.62rem;letter-spacing:.02em">Point de vente</span>
+            }
+          </div>
         </a>
-
-        @if (boutiqueName) {
-          <span class="text-white-50 small border-start border-secondary ps-3 d-none d-md-inline">
-            <i class="bi bi-shop me-1"></i>{{ boutiqueName }}
-          </span>
-        }
 
         <ul class="pos-nav d-flex gap-1 list-unstyled mb-0 ms-2 overflow-auto">
           <li>
@@ -204,7 +210,7 @@
           <span class="text-white fw-semibold" style="font-size:.8rem; line-height:1.2">{{ userName }}</span>
           <span class="text-white-50" style="font-size:.7rem">{{ profilLabel }}</span>
         </div>
-        <button class="btn btn-sm btn-outline-danger" (click)="logout()">
+        <button class="btn btn-sm btn-outline-light" (click)="logout()">
           <i class="bi bi-box-arrow-right"></i>
           <span class="d-none d-sm-inline ms-1">Quitter</span>
         </button>

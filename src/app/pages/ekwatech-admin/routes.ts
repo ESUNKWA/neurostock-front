@@ -52,6 +52,16 @@ const routes: Routes = [
     loadComponent: () => import('./plans/ek-plans.component'),
     title: 'Ekwatech | Plans tarifaires',
   },
+  {
+    path: 'frais-setup',
+    loadComponent: () => import('./frais-setup/ek-frais-setup.component'),
+    title: 'Ekwatech | Frais de mise en place',
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./categories/ek-categories.component'),
+    title: 'Ekwatech | Catégories de structures',
+  },
 ];
 
 export default routes;

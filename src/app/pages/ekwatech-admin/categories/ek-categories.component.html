@@ -1,0 +1,169 @@
+<div class="p-4" style="max-width:860px">
+
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Catégories de structures</h4>
+      <p class="text-muted small mb-0">
+        Définissez des catégories (superette, supermarché…) et configurez un tarif d'abonnement spécifique par catégorie et par plan.
+        Si aucun tarif n'est défini pour une catégorie, le tarif par défaut s'applique.
+      </p>
+    </div>
+    @if (!showCatForm) {
+      <button class="btn btn-primary btn-sm" (click)="openCatForm()">
+        <i class="bi bi-plus-circle me-1"></i>Nouvelle catégorie
+      </button>
+    }
+  </div>
+
+  <!-- Formulaire catégorie -->
+  @if (showCatForm) {
+    <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid var(--bs-primary) !important">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-tag me-2 text-primary"></i>
+          {{ editingCatId ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}
+        </h6>
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label small fw-semibold">Nom <span class="text-danger">*</span></label>
+            <input class="form-control" [(ngModel)]="catForm.label" placeholder="Ex: Superette, Supermarché, Pharmacie…">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label small fw-semibold">Description <span class="text-muted fw-normal">(optionnel)</span></label>
+            <input class="form-control" [(ngModel)]="catForm.description" placeholder="Courte description">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-semibold">Ordre</label>
+            <input type="number" class="form-control" [(ngModel)]="catForm.ordre" min="0">
+          </div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn btn-primary btn-sm" [disabled]="isSavingCat" (click)="saveCat()">
+            @if (isSavingCat) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2 me-1"></i> }
+            Enregistrer
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="cancelCatForm()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Liste des catégories -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Chargement…</p>
+    </div>
+  }
+
+  @if (!loading && categories.length === 0) {
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-tags display-3 d-block mb-3 opacity-25"></i>
+      <p class="mb-3">Aucune catégorie configurée.<br>
+        <span class="small">Créez une catégorie pour définir des tarifs spécifiques.</span></p>
+    </div>
+  }
+
+  @for (cat of categories; track cat.id) {
+    <div class="card border-0 shadow-sm mb-3">
+      <!-- En-tête catégorie -->
+      <div class="card-body py-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="flex-grow-1">
+            <div class="fw-semibold">{{ cat.label }}</div>
+            @if (cat.description) {
+              <div class="text-muted small">{{ cat.description }}</div>
+            }
+            <div class="mt-1 d-flex gap-2 flex-wrap">
+              @for (plan of plans; track plan) {
+                @if (hasTarif(cat, plan)) {
+                  <span class="badge bg-success-subtle text-success small">
+                    {{ planLabel(plan) }} : {{ getTarifMontant(cat, plan) | number:'1.0-0':'fr' }} XOF
+                  </span>
+                } @else {
+                  <span class="badge bg-secondary-subtle text-secondary small" title="Tarif par défaut utilisé">
+                    {{ planLabel(plan) }} : défaut
+                  </span>
+                }
+              }
+            </div>
+          </div>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-secondary" (click)="openCatForm(cat)" title="Modifier">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm" [class.btn-outline-primary]="openedCatId !== cat.id"
+                    [class.btn-primary]="openedCatId === cat.id"
+                    (click)="toggleCat(cat.id)" title="Configurer les tarifs">
+              <i class="bi bi-currency-dollar"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" [disabled]="isDeletingCat === cat.id" (click)="deleteCat(cat)" title="Supprimer">
+              @if (isDeletingCat === cat.id) { <span class="spinner-border spinner-border-sm"></span> }
+              @else { <i class="bi bi-trash3"></i> }
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarifs par plan -->
+      @if (openedCatId === cat.id) {
+        <div class="card-footer bg-light border-top p-3">
+          <div class="small fw-semibold mb-3 text-muted text-uppercase" style="letter-spacing:.04em">
+            <i class="bi bi-table me-1"></i>Tarifs par plan — {{ cat.label }}
+          </div>
+          <div class="row g-3">
+            @for (plan of plans; track plan) {
+              <div class="col-sm-6 col-lg-3">
+                <div class="border rounded-3 p-3 h-100" [class.border-success]="hasTarif(cat, plan)"
+                     [class.bg-white]="hasTarif(cat, plan)">
+                  <div class="fw-semibold small mb-2 d-flex align-items-center justify-content-between">
+                    <span>{{ planLabel(plan) }}</span>
+                    @if (hasTarif(cat, plan)) {
+                      <span class="badge bg-success-subtle text-success" style="font-size:.65rem">Configuré</span>
+                    } @else {
+                      <span class="badge bg-secondary-subtle text-secondary" style="font-size:.65rem">Défaut</span>
+                    }
+                  </div>
+                  <div class="input-group input-group-sm mb-2">
+                    <input type="number" class="form-control" min="0"
+                      [(ngModel)]="tarifForm[tarifKey(cat.id, plan)].montant"
+                      placeholder="Montant">
+                    <span class="input-group-text">XOF</span>
+                  </div>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-success flex-grow-1"
+                      [disabled]="tarifForm[tarifKey(cat.id, plan)].saving"
+                      (click)="saveTarif(cat.id, plan)">
+                      @if (tarifForm[tarifKey(cat.id, plan)].saving) {
+                        <span class="spinner-border spinner-border-sm"></span>
+                      } @else {
+                        <i class="bi bi-check2"></i>
+                      }
+                    </button>
+                    @if (hasTarif(cat, plan)) {
+                      <button class="btn btn-sm btn-outline-danger"
+                        [disabled]="tarifForm[tarifKey(cat.id, plan)].deleting"
+                        (click)="deleteTarif(cat.id, plan)"
+                        title="Supprimer (retour au tarif par défaut)">
+                        @if (tarifForm[tarifKey(cat.id, plan)].deleting) {
+                          <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                          <i class="bi bi-x-lg"></i>
+                        }
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="text-muted mt-2" style="font-size:.73rem">
+            <i class="bi bi-info-circle me-1"></i>
+            Si aucun tarif n'est défini pour un plan, le tarif par défaut (configuré dans "Plans tarifaires") est utilisé.
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

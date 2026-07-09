@@ -66,6 +66,13 @@ export default class PosLayoutComponent implements OnInit, OnDestroy {
     return this.currentUser?.boutique?.nom || '';
   }
 
+  get structureName(): string {
+    return this.currentUser?.boutique?.structure?.nom
+      || this.currentUser?.structure?.nom
+      || this.currentUser?.structure?.[0]?.nom
+      || this.boutiqueName;
+  }
+
   get profilLabel(): string {
     return this.currentUser?.profil?.libelle || this.currentUser?.profil?.code || '';
   }

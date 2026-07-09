@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { StructureService } from '../../../services/structure/structure.service';
+import { AbonnementService } from '../../../services/abonnement/abonnement.service';
 
 @Component({
   selector: 'app-ek-structures',
@@ -16,6 +17,7 @@ import { StructureService } from '../../../services/structure/structure.service'
 })
 export default class EkStructuresComponent implements OnInit {
   structures: any[] = [];
+  categories: any[] = [];
   loading = false;
   showModal = false;
   isEditMode = false;
@@ -28,15 +30,17 @@ export default class EkStructuresComponent implements OnInit {
 
   constructor(
     private structureSvc: StructureService,
+    private abonnementSvc: AbonnementService,
     private toastr: ToastrService,
     private fb: FormBuilder,
   ) {
     this.form = this.fb.group({
       nom:          ['', Validators.required],
       telephone:    ['', [Validators.minLength(10), Validators.maxLength(10)]],
-      email:        ['', ],
+      email:        [''],
       rccm:         [''],
       situation_geo:[''],
+      categorieId:  [null],
     });
   }
 
@@ -49,7 +53,16 @@ export default class EkStructuresComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.abonnementSvc.getCategories().subscribe({
+      next: (r: any) => { this.categories = r?.data ?? r ?? []; },
+    });
+  }
 
   load(): void {
     this.loading = true;
@@ -78,6 +91,7 @@ export default class EkStructuresComponent implements OnInit {
       email: s.email,
       rccm: s.rccm,
       situation_geo: s.situation_geo,
+      categorieId: s.categorieId ?? null,
     });
     this.showModal = true;
   }
@@ -90,10 +104,12 @@ export default class EkStructuresComponent implements OnInit {
     const payload = new FormData();
     const v = this.form.value;
     payload.append('nom', v.nom);
-    payload.append('email', v.email);
-    if (v.telephone)    payload.append('telephone', v.telephone);
-    if (v.rccm)         payload.append('rccm', v.rccm);
+    payload.append('email', v.email ?? '');
+    if (v.telephone)     payload.append('telephone', v.telephone);
+    if (v.rccm)          payload.append('rccm', v.rccm);
     if (v.situation_geo) payload.append('situation_geo', v.situation_geo);
+    const catId = v.categorieId ? parseInt(v.categorieId, 10) : null;
+    if (catId) payload.append('categorieId', String(catId));
     if (this.selectedFile) payload.append('logo', this.selectedFile);
 
     this.isSubmitting = true;
@@ -127,6 +143,10 @@ export default class EkStructuresComponent implements OnInit {
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la suppression'),
       });
     });
+  }
+
+  categoryLabel(id: number): string {
+    return this.categories.find(c => c.id === id)?.label ?? `#${id}`;
   }
 
   get f() { return this.form.controls; }

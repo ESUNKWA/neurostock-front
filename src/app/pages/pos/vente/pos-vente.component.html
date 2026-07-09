@@ -24,16 +24,9 @@
     <!-- Search + Scan bar -->
     <div class="pos-search-bar border-bottom px-3 pt-2 pb-2 d-flex flex-column gap-2">
 
-      <!-- Ligne 1 : logo boutique (gauche) + total du jour (droite) -->
+      <!-- Ligne 1 : nom boutique (gauche) + total du jour (droite) -->
       <div class="d-flex align-items-center justify-content-between gap-2">
         <div class="pos-boutique-info d-flex align-items-center gap-2">
-          @if (currentUser?.boutique?.logo) {
-            <img [src]="currentUser.boutique.logo" [alt]="currentUser.boutique.nom" class="pos-boutique-logo">
-          } @else {
-            <div class="pos-boutique-logo-placeholder">
-              <i class="bi bi-shop"></i>
-            </div>
-          }
           <div class="lh-1">
             <div class="pos-boutique-nom fw-bold text-truncate" style="max-width:180px">
               {{ currentUser?.boutique?.nom }}
