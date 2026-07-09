@@ -520,8 +520,8 @@
 
         @if (importResult) {
           <hr>
-          <div class="alert" [ngClass]="importResult.errors.length ? 'alert-warning' : 'alert-success'">
-            <strong>Import terminé :</strong> {{ importResult.created }} créé(s), {{ importResult.skipped }} ignoré(s).
+          <div class="alert" [ngClass]="importResult.created === 0 ? 'alert-danger' : importResult.errors.length ? 'alert-warning' : 'alert-success'">
+            <strong>Import {{ importResult.created === 0 ? 'échoué' : 'terminé' }} :</strong> {{ importResult.created }} créé(s), {{ importResult.skipped }} ignoré(s).
             @if (importResult.errors.length) {
               <ul class="mb-0 mt-2">
                 @for (err of importResult.errors; track $index) {

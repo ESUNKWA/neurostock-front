@@ -375,7 +375,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   loadProduits(): void {
     this.isLoading = true;
 
-    if (this.currentUser.profil.code.toLowerCase() === 'admini' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
+    if (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
       if (!this.selectedBoutique) {
         this.produits = [];
         this.isLoading = false;
@@ -624,12 +624,20 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId).pipe(first()).subscribe({
       next: (response: any) => {
         this.isImporting = false;
+        const data = response?.data ?? response;
         this.importResult = {
-          created: response?.created ?? 0,
-          skipped: response?.skipped ?? 0,
-          errors: response?.errors ?? []
+          created: data?.created ?? 0,
+          skipped: data?.skipped ?? 0,
+          errors: data?.errors ?? []
         };
-        this.toastr.success(`Import terminé : ${this.importResult.created} créé(s), ${this.importResult.skipped} ignoré(s).`);
+        const { created, skipped, errors } = this.importResult;
+        if (created === 0) {
+          this.toastr.error(`Aucun produit importé. ${skipped} ignoré(s) — voir les erreurs ci-dessous.`);
+        } else if (errors.length > 0) {
+          this.toastr.warning(`Import partiel : ${created} créé(s), ${skipped} ignoré(s) avec erreurs.`);
+        } else {
+          this.toastr.success(`Import réussi : ${created} produit(s) créé(s).`);
+        }
         this.loadProduits();
       },
       error: (err: any) => {
