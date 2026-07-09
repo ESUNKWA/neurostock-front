@@ -12,6 +12,7 @@ import { CaisseService } from '../../../services/gestion-des-caisses/caisse.serv
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { DashService } from '../../../services/dash/dash.service';
 import { RetourVenteService } from '../../../services/gestion-des-retours/retour-vente.service';
+import { SmsService } from '../../../services/sms/sms.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface CartLine {
@@ -138,6 +139,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
     private boutiqueSvc:  BoutiqueService,
     private dashSvc:      DashService,
     private retourSvc:    RetourVenteService,
+    private smsSvc:       SmsService,
     private toastr:       ToastrService,
   ) {}
 
@@ -360,6 +362,45 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
     iframe.src = url;
     console.log('iframe.src défini, en attente du chargement…');
+  }
+
+  // ── Rapport journalier SMS ────────────────────────────────────────────────
+
+  async envoyerRapportJournalier(): Promise<void> {
+    const { value: destinataire, isConfirmed } = await Swal.fire({
+      title: 'Rapport journalier',
+      html: `
+        <p class="text-muted small mb-3">Entrez le numéro du destinataire pour recevoir le bilan du jour.</p>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-phone"></i></span>
+          <input id="swal-tel" type="tel" class="form-control"
+            placeholder="Ex: +2250700000000" autocomplete="tel">
+        </div>`,
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-send me-1"></i> Envoyer',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#0d6efd',
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = (document.getElementById('swal-tel') as HTMLInputElement)?.value?.trim();
+        if (!val) { Swal.showValidationMessage('Numéro requis'); return false; }
+        return val;
+      },
+    });
+
+    if (!isConfirmed || !destinataire) return;
+
+    this.smsSvc.envoyerRapportJournalier(destinataire).subscribe({
+      next: (res: any) => {
+        const statut = res?.data?.statut;
+        if (statut === 'envoye') {
+          this.toastr.success(`Rapport envoyé à ${destinataire}`);
+        } else {
+          this.toastr.warning(`SMS traité mais statut : ${statut ?? 'inconnu'}`);
+        }
+      },
+      error: () => this.toastr.error('Erreur lors de l\'envoi du rapport'),
+    });
   }
 
   // ── Cart ──────────────────────────────────────────────────────────────────
