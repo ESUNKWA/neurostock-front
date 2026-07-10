@@ -27,6 +27,7 @@ export class StructureComponent {
   structureData: any = {};
   structures: any[] = [];
   selectedstructure: any = '';
+  mobileDetailItem: any = null;
 
   isLoading: boolean = false;
   isEditMode: boolean = false;

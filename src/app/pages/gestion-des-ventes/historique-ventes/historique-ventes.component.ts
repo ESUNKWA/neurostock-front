@@ -179,6 +179,8 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.ventes = response.data;
+          this.venteDetails = {};
+          this.ventes.forEach(v => this.loadVenteDetailMobile(v.id));
           this.destroyDataTable();
 
           // Donner le temps au DOM de se mettre à jour
@@ -480,6 +482,36 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
       },
       error: () => { this.printingThermique = false; }
     });
+  }
+
+  // ── Vue mobile : détails inline ──────────────────────────────────────────
+  venteDetails: Record<number, any[]> = {};
+  venteDetailLoading: Record<number, boolean> = {};
+
+  get totalVentesMobile(): number {
+    return this.ventes.reduce((s, v) => s + (v.montant_total_apres_remise ?? v.montant_total ?? 0), 0);
+  }
+
+  loadVenteDetailMobile(id: number): void {
+    if (this.venteDetails[id]) return;
+    this.venteDetailLoading[id] = true;
+    this.ventesService.getDetailVente(id)
+      .pipe(finalize(() => (this.venteDetailLoading[id] = false)))
+      .subscribe({
+        next: (r: any) => {
+          const data = r?.data ?? r;
+          this.venteDetails[id] = data?.detail_vente ?? data?.lignes ?? [];
+        },
+      });
+  }
+
+  modeLabel(mode: string): string {
+    const map: Record<string, string> = {
+      espece: 'Espèces', carte: 'Carte', orange_money: 'Orange Money',
+      wave: 'Wave', mtn_money: 'MTN', moov_money: 'Moov', dajmo: 'Dajmo',
+      credit: 'Crédit', mixte: 'Mixte',
+    };
+    return map[mode] ?? mode ?? '—';
   }
 
   // ── Régularisation ────────────────────────────────────────────────────────

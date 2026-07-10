@@ -479,6 +479,130 @@ textarea.mf-input {
   i { margin-right: 5px; }
 }
 
+// ── Mobile card list (pattern commun à toutes les pages DataTable) ────────────
+
+.mc-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: .75rem;
+  margin-bottom: .65rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+.mc-title   { font-size: .88rem; font-weight: 600; color: #0f172a; }
+.mc-sub     { font-size: .73rem; color: #64748b; margin-top: 1px; }
+.mc-meta    { font-size: .73rem; color: #94a3b8; }
+.mc-amount  { font-size: .95rem; font-weight: 700; color: #16a34a; }
+
+// Bouton "+" pour ouvrir le détail
+.mc-plus-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: .8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+
+  &:hover { background: #eff6ff; border-color: #3b82f6; color: #2563eb; }
+}
+
+// Overlay popup
+.mc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 1080;
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+}
+
+// Popup (bottom sheet)
+.mc-popup {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .875rem 1rem .625rem;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+
+  &-title  { font-size: .9rem; font-weight: 700; color: #0f172a; }
+  &-close  {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: none; background: #f1f5f9; color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: .8rem;
+  }
+
+  &-body {
+    overflow-y: auto;
+    padding: .75rem 1rem 1.25rem;
+    flex: 1;
+  }
+}
+
+// Ligne de détail dans le popup
+.mc-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: .4rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  gap: .5rem;
+  font-size: .8rem;
+
+  &:last-child { border-bottom: none; }
+
+  .mc-row-label { color: #64748b; flex-shrink: 0; max-width: 45%; }
+  .mc-row-value { color: #0f172a; font-weight: 500; text-align: right; word-break: break-word; }
+}
+
+// Tableau produits dans le popup
+.mc-popup-table {
+  width: 100%;
+  font-size: .76rem;
+  border-collapse: collapse;
+  margin-top: .5rem;
+
+  th {
+    color: #94a3b8;
+    font-weight: 600;
+    padding: .35rem .25rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+
+    &.text-end { text-align: right; }
+    &.text-center { text-align: center; }
+  }
+
+  td {
+    padding: .35rem .25rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+
+    &.text-end { text-align: right; }
+    &.text-center { text-align: center; }
+  }
+}
+
 // ── mf-modal scroll fix ───────────────────────────────────────────────────────
 // Bootstrap's modal-dialog-scrollable only scrolls .modal-body by default.
 // mf-modal wraps content in <form> + .mf-body instead, so we wire flex manually.

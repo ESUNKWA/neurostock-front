@@ -40,7 +40,7 @@
                       }
                     <hr>
                     <!-- DataTable avec colonnes fixes -->
-                    <div class="table-responsive">
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
@@ -55,6 +55,56 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Vue mobile -->
+                    <div class="d-md-none mt-3">
+                      @if (!isLoading && profils.length === 0) {
+                        <p class="text-center text-muted small py-4">Aucun profil trouvé</p>
+                      }
+                      @for (profil of profils; track profil.id) {
+                        <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+                             (click)="mobileDetailItem = profil">
+                          <div class="flex-grow-1 min-w-0">
+                            <div class="mc-title">{{ profil.nom ?? profil.code }}</div>
+                            <div class="mc-sub">{{ profil.description ?? '' }}</div>
+                            <div class="mc-meta">{{ profil.created_at | date:'dd/MM/yyyy' }}</div>
+                          </div>
+                          <button class="mc-plus-btn" (click)="mobileDetailItem = profil; $event.stopPropagation()">
+                            <i class="bi bi-plus"></i>
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    @if (mobileDetailItem) {
+                      <div class="mc-overlay" (click)="mobileDetailItem = null">
+                        <div class="mc-popup" (click)="$event.stopPropagation()">
+                          <div class="mc-popup-header">
+                            <span class="mc-popup-title">{{ mobileDetailItem.nom ?? mobileDetailItem.code }}</span>
+                            <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+                          </div>
+                          <div class="mc-popup-body">
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Code</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.code ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Nom</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.nom ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Description</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.description ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Date création</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
                 </div>
             </div>
         </div>

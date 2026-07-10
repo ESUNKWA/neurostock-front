@@ -23,6 +23,7 @@ export default class MouvementsComponent implements OnInit, OnDestroy {
   currentUser: any;
   selectedBoutiqueId: number | null = null;
   isLoading = false;
+  mobileDetailItem: any = null;
 
   constructor(
     private stockService: StockMouvementService,

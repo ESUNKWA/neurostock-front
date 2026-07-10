@@ -35,6 +35,7 @@ export default class RecetteComponent implements OnInit, OnDestroy {
   recette: any   = null;
   ventes: any[]  = [];
   loading        = false;
+  mobileDetailItem: any = null;
 
   readonly modesLabels: Record<string, string> = {
     espece:       'Espèces',

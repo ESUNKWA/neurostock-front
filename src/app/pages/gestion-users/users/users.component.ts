@@ -31,6 +31,7 @@ export class UsersComponent {
 
   users: any [] = [];
   usersData: any = {};
+  mobileDetailItem: any = null;
   profils: any[] = [];
   boutiques: any[] = [];
   structures: any[] = [];

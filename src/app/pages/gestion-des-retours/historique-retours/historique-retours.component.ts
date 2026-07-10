@@ -32,6 +32,7 @@ export default class HistoriqueRetoursComponent implements OnInit, OnDestroy {
 
   // Modal détail
   selectedRetour: any = null;
+  mobileDetailItem: any = null;
 
   get nouveauRetourRoute(): string {
     return this.router.url.startsWith('/pos') ? '/pos/retours/nouveau' : '/retours/nouveau';

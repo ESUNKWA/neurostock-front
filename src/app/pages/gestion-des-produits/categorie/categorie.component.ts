@@ -30,6 +30,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedCategorie: any = null;
+  mobileDetailItem: any = null;
   titleModal: string = 'AJOUTER UNE CATEGORIE';
   buttonText: string = 'Enregistrer';
   icon: string = 'ri ri-save-3-line';

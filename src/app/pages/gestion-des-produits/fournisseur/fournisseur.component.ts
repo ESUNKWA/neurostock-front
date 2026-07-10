@@ -24,6 +24,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedFournisseur: any = null;
+  mobileDetailItem: any = null;
   titleModal: string = 'AJOUTER UN FOURNISSEUR';
   buttonText: string = 'Enregistrer';
   icon: string = 'ri ri-save-3-line';

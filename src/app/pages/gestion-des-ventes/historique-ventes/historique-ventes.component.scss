@@ -1,3 +1,23 @@
+// ── Vue mobile ventes ────────────────────────────────────────────────────────
+
+.hv-mobile-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: .75rem;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+.hv-mobile-detail {
+  margin-top: .5rem;
+  padding-top: .5rem;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: .5rem;
+}
+
 #modal-view-details {
     .card {
         margin-bottom: 5px;

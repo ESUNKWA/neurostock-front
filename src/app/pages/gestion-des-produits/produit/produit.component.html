@@ -124,7 +124,7 @@
                     }
                     <hr>
                     <!-- DataTable avec colonnes fixes -->
-                    <div class="table-responsive">
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
@@ -148,6 +148,60 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Vue mobile -->
+                    <div class="d-md-none mt-3">
+                      @if (!isLoading && produits.length === 0) {
+                        <p class="text-center text-muted small py-4">Aucun produit trouvé</p>
+                      }
+                      @for (produit of produits; track produit.id) {
+                        <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+                             (click)="mobileDetailItem = produit">
+                          <div class="flex-grow-1 min-w-0">
+                            <div class="mc-title">{{ produit.nom }}</div>
+                            <div class="mc-sub">{{ produit.categorie?.nom ?? '—' }}</div>
+                            <div class="mc-amount">{{ produit.prix_vente | number:'1.0-0':'fr' }} F</div>
+                          </div>
+                          <button class="mc-plus-btn" (click)="mobileDetailItem = produit; $event.stopPropagation()">
+                            <i class="bi bi-plus"></i>
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    @if (mobileDetailItem) {
+                      <div class="mc-overlay" (click)="mobileDetailItem = null">
+                        <div class="mc-popup" (click)="$event.stopPropagation()">
+                          <div class="mc-popup-header">
+                            <span class="mc-popup-title">{{ mobileDetailItem.nom }}</span>
+                            <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+                          </div>
+                          <div class="mc-popup-body">
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Nom</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.nom ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Catégorie</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.categorie?.nom ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Prix d'achat</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.prix_achat | number:'1.0-0':'fr' }} F</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Prix de vente</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.prix_vente | number:'1.0-0':'fr' }} F</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Stock disponible</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.stock_disponible ?? '—' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
                 </div>
             </div>
         </div>
@@ -324,7 +378,7 @@
                                     <option value="m">Mètre (m)</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 d-none d-md-block">
                                 <label class="prd-label" for="code_barre">
                                     Code-barres
                                     <span class="badge bg-secondary-subtle text-secondary ms-1" style="font-size:.65rem;font-weight:500">Auto</span>

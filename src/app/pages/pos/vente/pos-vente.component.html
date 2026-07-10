@@ -3,15 +3,19 @@
   <!-- ── Mobile tab bar ───────────────────────────────────────────────────── -->
   <div class="pos-mobile-tabbar">
     <button class="pos-mobile-tab" [class.active]="mobileTab === 'catalog'"
-            (click)="mobileTab = 'catalog'">
+            (click)="switchMobileTab('catalog')">
       <i class="bi bi-grid-3x3-gap me-1"></i>Produits
     </button>
     <button class="pos-mobile-tab position-relative" [class.active]="mobileTab === 'cart'"
-            (click)="mobileTab = 'cart'">
+            (click)="switchMobileTab('cart')">
       <i class="bi bi-cart3 me-1"></i>Panier
       @if (cart.length > 0) {
         <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem">{{ cart.length }}</span>
       }
+    </button>
+    <button class="pos-mobile-tab" [class.active]="mobileTab === 'ventes'"
+            (click)="switchMobileTab('ventes')">
+      <i class="bi bi-receipt me-1"></i>Ventes
     </button>
   </div>
 
@@ -19,7 +23,7 @@
        LEFT — Catalogue
        ════════════════════════════════════════════════════════════════════════ -->
   <div class="pos-catalog d-flex flex-column flex-grow-1 overflow-hidden"
-       [class.mobile-hidden]="mobileTab === 'cart'">
+       [class.mobile-hidden]="mobileTab === 'cart' || mobileTab === 'ventes'">
 
     <!-- Search + Scan bar -->
     <div class="pos-search-bar border-bottom px-3 pt-2 pb-2 d-flex flex-column gap-2">
@@ -65,7 +69,7 @@
             </button>
           }
         </div>
-        <div class="input-group input-group-lg pos-scanner-field flex-grow-1">
+        <div class="input-group input-group-lg pos-scanner-field flex-grow-1 d-none d-md-flex">
           <span class="input-group-text pos-scanner-icon-wrap border-end-0">
             <i class="bi bi-upc-scan pos-scanner-icon"></i>
           </span>
@@ -179,7 +183,7 @@
        RIGHT — Panier
        ════════════════════════════════════════════════════════════════════════ -->
   <div class="pos-cart d-flex flex-column border-start bg-white"
-       [class.mobile-hidden]="mobileTab === 'catalog'">
+       [class.mobile-hidden]="mobileTab === 'catalog' || mobileTab === 'ventes'">
 
     <!-- Cart header -->
     <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between">
@@ -297,6 +301,131 @@
       }
     </div>
   </div><!-- /cart -->
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       MOBILE — Liste des ventes du jour
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div class="pos-ventes-panel bg-white"
+       [class.mobile-hidden]="mobileTab !== 'ventes'">
+
+    <!-- Header -->
+    <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between flex-shrink-0">
+      <span class="fw-bold">
+        <i class="bi bi-receipt text-primary me-2"></i>Ventes du jour
+      </span>
+      <div class="d-flex align-items-center gap-3">
+        @if (!ventesLoading && ventesList.length > 0) {
+          <span class="fw-bold text-success" style="font-size:.9rem">
+            {{ totalListeJour | number:'1.0-0':'fr' }}
+            <small class="fw-normal text-muted" style="font-size:.72rem">F</small>
+          </span>
+        }
+        <button class="btn btn-link btn-sm p-0 text-muted" (click)="loadVentes()" title="Actualiser">
+          <i class="bi bi-arrow-clockwise" [class.spin]="ventesLoading"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="flex-grow-1 overflow-auto pt-2">
+
+      @if (ventesLoading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary spinner-border-sm"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      @if (!ventesLoading && ventesList.length === 0) {
+        <div class="text-center py-5 text-muted px-3">
+          <i class="bi bi-receipt display-4 d-block mb-2 opacity-25"></i>
+          <p class="small">Aucune vente aujourd'hui</p>
+        </div>
+      }
+
+      @for (v of ventesList; track v.id) {
+        @let statut = v.statut?.toLowerCase();
+        @let d = venteDetails[v.id];
+        <div class="pos-vente-item border-bottom">
+
+          <!-- En-tête -->
+          <div class="px-3 pt-2 pb-1 d-flex align-items-start justify-content-between gap-2">
+            <div class="min-w-0 flex-grow-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="fw-semibold" style="font-size:.85rem">{{ v.reference }}</span>
+                <span class="badge"
+                  [class.bg-success]="statut === 'payer'"
+                  [class.bg-warning]="statut === 'non_payer'"
+                  [class.text-dark]="statut === 'non_payer'"
+                  style="font-size:.65rem">
+                  {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : v.statut }}
+                </span>
+              </div>
+              <div class="text-muted" style="font-size:.72rem">
+                <i class="bi bi-clock me-1"></i>{{ v.created_at | date:'dd/MM/yyyy HH:mm' }}
+                @if (v.client) {
+                  <span class="ms-2"><i class="bi bi-person me-1"></i>{{ v.client.nom }}</span>
+                }
+                <span class="ms-2"><i class="bi bi-credit-card me-1"></i>{{ modeLabel(v.mode_paiement) }}</span>
+              </div>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm py-0 px-2 flex-shrink-0" style="font-size:.72rem"
+                    (click)="printThermique(v.id)">
+              <i class="bi bi-printer"></i>
+            </button>
+          </div>
+
+          <!-- Lignes produits -->
+          <div class="pos-vente-detail px-3 pb-2">
+
+            @if (venteDetailLoading[v.id]) {
+              <div class="text-muted small py-2">
+                <span class="spinner-border spinner-border-sm me-1"></span>Chargement…
+              </div>
+            }
+
+            @if (d?.length > 0) {
+              <table class="w-100" style="font-size:.76rem;border-collapse:collapse">
+                <thead>
+                  <tr style="color:#94a3b8;border-bottom:1px solid #e2e8f0">
+                    <th class="py-1 fw-semibold" style="text-align:left">Produit</th>
+                    <th class="py-1 fw-semibold text-center" style="width:32px">Qté</th>
+                    <th class="py-1 fw-semibold text-end" style="width:68px">P.U.</th>
+                    <th class="py-1 fw-semibold text-end" style="width:72px">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (l of d; track $index) {
+                    <tr style="border-bottom:1px solid #f1f5f9">
+                      <td class="py-1" style="max-width:110px">
+                        <div class="text-truncate">{{ l.produit?.nom ?? '—' }}</div>
+                      </td>
+                      <td class="py-1 text-center text-muted">{{ l.quantite }}</td>
+                      <td class="py-1 text-end text-muted">{{ l.prix_unitaire_vente | number:'1.0-0':'fr' }}</td>
+                      <td class="py-1 text-end fw-semibold">{{ (l.quantite * l.prix_unitaire_vente) | number:'1.0-0':'fr' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+
+              <!-- Remise + Total TTC (depuis la liste) -->
+              @if (v.remise > 0) {
+                <div class="d-flex justify-content-between small text-danger mt-1">
+                  <span>Remise</span><span>− {{ v.remise | number:'1.0-0':'fr' }} F</span>
+                </div>
+              }
+              <div class="d-flex justify-content-between fw-bold mt-1 pt-1" style="border-top:1px solid #e2e8f0;font-size:.82rem">
+                <span>Total TTC</span>
+                <span class="text-success">{{ (v.montant_total_apres_remise ?? v.montant_total) | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+
+          </div>
+        </div>
+      }
+
+    </div>
+  </div><!-- /ventes panel -->
 
 </div><!-- /pos-screen -->
 

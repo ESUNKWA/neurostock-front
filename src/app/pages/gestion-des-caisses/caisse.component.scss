@@ -1,3 +1,112 @@
 .border-4 {
   border-left-width: 4px !important;
 }
+
+// ── Etat vide (pas de session) ────────────────────────────────────────────────
+
+.caisse-empty-card {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.caisse-empty-icon {
+  font-size: 2.5rem;
+  color: #94a3b8;
+  margin-bottom: .75rem;
+}
+
+.caisse-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: .35rem;
+}
+
+.caisse-empty-sub {
+  font-size: .82rem;
+  color: #64748b;
+  margin-bottom: 1.25rem;
+}
+
+// ── Session active header gradient ────────────────────────────────────────────
+
+.caisse-session-hd {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #fff;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-radius: calc(.375rem - 1px) calc(.375rem - 1px) 0 0;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, .25);
+}
+
+.caisse-session-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+// ── Situation theorique KPIs ──────────────────────────────────────────────────
+
+.caisse-kpi-box {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: .75rem .5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.caisse-kpi-label {
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.caisse-kpi-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.caisse-kpi-unit {
+  font-size: .64rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+// ── Mode card (mobile theorique) ──────────────────────────────────────────────
+
+.caisse-mode-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  margin-bottom: .5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+}
+
+.caisse-th-badge {
+  font-size: .74rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 2px 9px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}

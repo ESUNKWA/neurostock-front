@@ -44,6 +44,7 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
   isLoading = false;
   detailDevis: any;
   selectedDevis: any = {};
+  mobileDetailItem: any = null;
   dateDebut: string = '';
   dateFin: string = '';
 

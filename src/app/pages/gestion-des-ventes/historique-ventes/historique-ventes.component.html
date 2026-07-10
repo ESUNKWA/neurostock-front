@@ -75,8 +75,8 @@
                   <hr>
 
                  
-                  <!-- DataTable avec colonnes fixes -->
-                  <div class="table-responsive mt-4">
+                  <!-- DataTable — masqué sur mobile -->
+                  <div class="table-responsive mt-4 d-none d-md-block">
                     <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                       <thead>
                         <tr>
@@ -91,6 +91,111 @@
                         <!-- Contenu généré par DataTables -->
                       </tbody>
                     </table>
+                  </div>
+
+                  <!-- Vue mobile — cards avec détails inline -->
+                  <div class="d-md-none mt-3">
+
+                    @if (isLoading) {
+                      <div class="text-center py-4">
+                        <div class="spinner-border text-primary spinner-border-sm"></div>
+                      </div>
+                    }
+
+                    @if (!isLoading && ventes.length === 0) {
+                      <div class="text-center py-5 text-muted">
+                        <i class="bi bi-receipt display-4 d-block mb-2 opacity-25"></i>
+                        <p class="small">Aucune vente sur cette période</p>
+                      </div>
+                    }
+
+                    @if (!isLoading && ventes.length > 0) {
+                      <!-- Total période -->
+                      <div class="d-flex justify-content-between align-items-center px-1 mb-3">
+                        <span class="small text-muted">{{ ventes.length }} vente{{ ventes.length > 1 ? 's' : '' }}</span>
+                        <span class="fw-bold text-success">
+                          {{ totalVentesMobile | number:'1.0-0':'fr' }}
+                          <small class="fw-normal text-muted">F</small>
+                        </span>
+                      </div>
+
+                      @for (v of ventes; track v.id) {
+                        @let statut = v.statut?.toLowerCase();
+                        @let lignes = venteDetails[v.id];
+                        <div class="hv-mobile-card mb-3">
+
+                          <!-- En-tête -->
+                          <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                            <div class="min-w-0 flex-grow-1">
+                              <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="fw-semibold" style="font-size:.85rem">{{ v.reference }}</span>
+                                <span class="badge"
+                                  [class.bg-success]="statut === 'payer'"
+                                  [class.bg-warning]="statut === 'non_payer'"
+                                  [class.text-dark]="statut === 'non_payer'"
+                                  style="font-size:.65rem">
+                                  {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : v.statut }}
+                                </span>
+                              </div>
+                              <div class="text-muted" style="font-size:.72rem">
+                                <i class="bi bi-clock me-1"></i>{{ v.created_at | date:'dd/MM/yyyy HH:mm' }}
+                                @if (v.client) {
+                                  <span class="ms-2"><i class="bi bi-person me-1"></i>{{ v.client.nom }}</span>
+                                }
+                                <span class="ms-2"><i class="bi bi-credit-card me-1"></i>{{ modeLabel(v.mode_paiement) }}</span>
+                              </div>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm py-0 px-2 flex-shrink-0" style="font-size:.72rem"
+                                    (click)="printVenteThermique(v)">
+                              <i class="bi bi-printer"></i>
+                            </button>
+                          </div>
+
+                          <!-- Lignes produits -->
+                          <div class="hv-mobile-detail">
+                            @if (venteDetailLoading[v.id]) {
+                              <div class="text-muted small py-1">
+                                <span class="spinner-border spinner-border-sm me-1"></span>Chargement…
+                              </div>
+                            }
+                            @if (lignes && lignes.length > 0) {
+                              <table class="w-100" style="font-size:.76rem;border-collapse:collapse">
+                                <thead>
+                                  <tr style="color:#94a3b8;border-bottom:1px solid #e2e8f0">
+                                    <th class="py-1 fw-semibold" style="text-align:left">Produit</th>
+                                    <th class="py-1 fw-semibold text-center" style="width:32px">Qté</th>
+                                    <th class="py-1 fw-semibold text-end" style="width:68px">P.U.</th>
+                                    <th class="py-1 fw-semibold text-end" style="width:72px">Total</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (l of lignes; track $index) {
+                                    <tr style="border-bottom:1px solid #f1f5f9">
+                                      <td class="py-1" style="max-width:110px">
+                                        <div class="text-truncate">{{ l.produit?.nom ?? '—' }}</div>
+                                      </td>
+                                      <td class="py-1 text-center text-muted">{{ l.quantite }}</td>
+                                      <td class="py-1 text-end text-muted">{{ l.prix_unitaire_vente | number:'1.0-0':'fr' }}</td>
+                                      <td class="py-1 text-end fw-semibold">{{ (l.quantite * l.prix_unitaire_vente) | number:'1.0-0':'fr' }}</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                              @if (v.remise > 0) {
+                                <div class="d-flex justify-content-between small text-danger mt-1">
+                                  <span>Remise</span><span>− {{ v.remise | number:'1.0-0':'fr' }} F</span>
+                                </div>
+                              }
+                              <div class="d-flex justify-content-between fw-bold mt-1 pt-1" style="border-top:1px solid #e2e8f0;font-size:.82rem">
+                                <span>Total TTC</span>
+                                <span class="text-success">{{ (v.montant_total_apres_remise ?? v.montant_total) | number:'1.0-0':'fr' }} F</span>
+                              </div>
+                            }
+                          </div>
+
+                        </div>
+                      }
+                    }
                   </div>
                 </div>
             </div>

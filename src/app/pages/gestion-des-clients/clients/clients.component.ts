@@ -23,6 +23,7 @@ export default class ClientsComponent implements OnInit, OnDestroy {
   isEditMode = false;
   isSubmitted = false;
   selectedClient: any = null;
+  mobileDetailItem: any = null;
   titleModal = 'AJOUTER UN CLIENT';
   buttonText = 'Enregistrer';
   icon = 'ri ri-save-3-line';

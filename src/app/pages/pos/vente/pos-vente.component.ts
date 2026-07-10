@@ -98,7 +98,13 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   nbVentesJour    = 0;
 
   // Mobile tab
-  mobileTab: 'catalog' | 'cart' = 'catalog';
+  mobileTab: 'catalog' | 'cart' | 'ventes' = 'catalog';
+
+  // Liste ventes (mobile tab)
+  ventesList: any[] = [];
+  ventesLoading = false;
+  venteDetails: Record<number, any> = {};
+  venteDetailLoading: Record<number, boolean> = {};
 
   loading      = false;
   isSubmitting = false;
@@ -162,6 +168,51 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   focusScanner(): void {
     setTimeout(() => this.scannerInputRef?.nativeElement?.focus(), 150);
+  }
+
+  switchMobileTab(tab: 'catalog' | 'cart' | 'ventes'): void {
+    this.mobileTab = tab;
+    if (tab === 'ventes') this.loadVentes();
+  }
+
+  loadVentes(): void {
+    if (!this.boutiqueId) return;
+    const today = new Date().toISOString().split('T')[0];
+    this.ventesLoading = true;
+    this.venteDetails = {};
+    this.ventesSvc.getAllVentes({ boutique: this.boutiqueId, date_debut: today, date_fin: today })
+      .pipe(finalize(() => (this.ventesLoading = false)))
+      .subscribe({
+        next: (r: any) => {
+          this.ventesList = r?.data ?? r ?? [];
+          this.ventesList.forEach(v => this.loadVenteDetail(v.id));
+        },
+      });
+  }
+
+  private loadVenteDetail(id: number): void {
+    this.venteDetailLoading[id] = true;
+    this.ventesSvc.getDetailVente(id)
+      .pipe(finalize(() => (this.venteDetailLoading[id] = false)))
+      .subscribe({
+        next: (r: any) => {
+          // La réponse est { status, data: { detail_vente: [...], ... } }
+          const data = r?.data ?? r;
+          this.venteDetails[id] = data?.detail_vente ?? data?.lignes ?? data ?? [];
+        },
+      });
+  }
+
+  get totalListeJour(): number {
+    return this.ventesList.reduce((sum, v) => sum + (v.montant_total_apres_remise ?? v.montant_total ?? 0), 0);
+  }
+
+  modeLabel(mode: string): string {
+    const map: Record<string, string> = {
+      espece: 'Espèces', carte: 'Carte', orange_money: 'Orange Money',
+      wave: 'Wave', mtn_money: 'MTN', moov_money: 'Moov', dajmo: 'Dajmo', credit: 'Crédit', mixte: 'Mixte',
+    };
+    return map[mode] ?? mode;
   }
 
   // ── Session management ────────────────────────────────────────────────────

@@ -13,7 +13,260 @@
   </div>
 </div>
 
-<section class="section dashboard">
+<!-- ══ MOBILE DASHBOARD ════════════════════════════════════════════════════════ -->
+<div class="d-md-none">
+
+  @if (isCaissierView) {
+
+    <!-- ── Mobile caissier ── -->
+    <div class="mob-dashboard">
+      <div class="mob-header">
+        <div class="mob-header-top">
+          <div>
+            <div class="mob-greeting-title">Bonjour, {{ currentUser?.prenoms || currentUser?.prenom || currentUser?.nom || 'Utilisateur' }} 👋</div>
+            <div class="mob-greeting-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
+          </div>
+          <button class="mob-refresh-btn" (click)="loadCaissierStats()" [disabled]="isLoadingCaissier">
+            <i class="bi" [class.bi-arrow-clockwise]="!isLoadingCaissier" [class.bi-hourglass-split]="isLoadingCaissier"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (caissierStats) {
+        <div class="mob-kpi-scroll">
+          <div class="mob-kpi-card mob-kpi--primary">
+            <div class="mob-kpi-label">Ventes du jour</div>
+            <div class="mob-kpi-value">{{ caissierStats.nb_ventes }}</div>
+            <div class="mob-kpi-sub">transactions</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--success">
+            <div class="mob-kpi-label">Chiffre d'affaires</div>
+            <div class="mob-kpi-value">{{ caissierStats.chiffre_affaires | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">FCFA</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--amber">
+            <div class="mob-kpi-label">Panier moyen</div>
+            <div class="mob-kpi-value">{{ caissierStats.nb_ventes ? (caissierStats.chiffre_affaires / caissierStats.nb_ventes | number:'1.0-0':'fr') : '0' }}</div>
+            <div class="mob-kpi-sub">FCFA / vente</div>
+          </div>
+        </div>
+
+        @let cModes = modeEntries(caissierStats.par_mode_paiement);
+        @if (cModes.length) {
+          <div class="mob-section-title">Paiements du jour</div>
+          <div class="mob-pay-card">
+            @let cTotal = caissierStats.chiffre_affaires || 1;
+            @for (m of cModes; track m.mode) {
+              <div class="mob-pay-row">
+                <span class="mob-pay-label">{{ m.label }}</span>
+                <div class="mob-pay-bar-wrap"><div class="mob-pay-bar" [style.width.%]="(m.val / cTotal) * 100"></div></div>
+                <span class="mob-pay-val">{{ m.val | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (caissierStats.produits?.length) {
+          <div class="mob-section-title">Produits vendus</div>
+          <div class="mob-pay-card">
+            @for (p of caissierStats.produits; track p.produit_id) {
+              <div class="mob-pay-row">
+                <span class="mob-pay-label">{{ p.nom }}</span>
+                <span class="badge bg-secondary-subtle text-secondary" style="font-size:.65rem;">{{ p.quantite_vendue }}</span>
+                <span class="mob-pay-val">{{ p.montant_total | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+  } @else {
+
+    <!-- ── Mobile admin / responsable ── -->
+    <div class="mob-dashboard">
+
+      <!-- En-tête gradient -->
+      <div class="mob-header">
+        <div class="mob-header-top">
+          <div>
+            <div class="mob-greeting-title">Bonjour, {{ currentUser?.prenoms || currentUser?.prenom || currentUser?.nom || 'Utilisateur' }} 👋</div>
+            <div class="mob-greeting-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
+          </div>
+          <button class="mob-refresh-btn" (click)="loadStats()" [disabled]="!idBoutique">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+        @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.is_admin === true) {
+          <select class="mob-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()">
+            <option [ngValue]="0">— Sélectionner une boutique —</option>
+            @for (b of boutiques; track b.id) {
+              <option [ngValue]="b.id">{{ b.nom }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      @if (!stats && idBoutique) {
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div>
+          <p class="text-muted small mt-2 mb-0">Chargement des données…</p>
+        </div>
+      }
+
+      @if (stats) {
+
+        <!-- KPI cards défilables -->
+        <div class="mob-kpi-scroll">
+          <div class="mob-kpi-card mob-kpi--primary">
+            <div class="mob-kpi-label">Ventes du jour</div>
+            <div class="mob-kpi-value">{{ stats.dash.vente?.nbre_vente_jr || 0 }}</div>
+            <div class="mob-kpi-sub">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} FCFA</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--success">
+            <div class="mob-kpi-label">CA du mois</div>
+            <div class="mob-kpi-value">{{ stats.dash.vente?.total_vente_mois | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">FCFA</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--emerald">
+            <div class="mob-kpi-label">Bénéfice estimé</div>
+            <div class="mob-kpi-value">{{ stats.dash.benefice_estime?.jr | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">FCFA aujourd'hui</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--amber">
+            <div class="mob-kpi-label">Valeur stock</div>
+            <div class="mob-kpi-value">{{ stats.dash.produit?.valeur_stock | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">{{ stats.dash.produit?.total_produits || 0 }} produits</div>
+          </div>
+        </div>
+
+        <!-- Bandeau IA -->
+        @if (resumeJournalier && !isLoadingResume) {
+          <div class="mob-ia-strip">
+            <span class="mob-ia-icon"><i class="bi bi-stars"></i></span>
+            <span class="mob-ia-text">
+              @if (resumeJournalier.top_produits?.length) {
+                <strong>{{ resumeJournalier.top_produits[0].nom }}</strong> · meilleure vente ({{ resumeJournalier.top_produits[0].quantite_vendue }} unités)
+              } @else {
+                Analyse IA disponible
+              }
+            </span>
+            @if (alertesCount > 0) {
+              <span class="mob-ia-alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ alertesCount }}</span>
+            }
+          </div>
+        }
+
+
+        <!-- Mini stats aujourd'hui -->
+        <div class="mob-section-title">Aujourd'hui en bref</div>
+        <div class="mob-mini-row">
+          <div class="mob-mini-item mob-mini--amber">
+            <div class="mob-mini-label">Achats</div>
+            <div class="mob-mini-value">{{ stats.dash.achat?.total_achat_jr | number:'1.0-0':'fr' }} F</div>
+            <div class="mob-mini-sub">{{ stats.dash.achat?.nbre_achat_jr || 0 }} achat(s)</div>
+          </div>
+          <div class="mob-mini-item mob-mini--purple">
+            <div class="mob-mini-label">Commandes</div>
+            <div class="mob-mini-value">{{ stats.dash.commandes_client?.prevues_aujourd_hui || 0 }}</div>
+            <div class="mob-mini-sub">prévue(s)</div>
+          </div>
+          <div class="mob-mini-item mob-mini--red">
+            <div class="mob-mini-label">Retours</div>
+            <div class="mob-mini-value">{{ stats.dash.retour?.nbre_retour_jr || 0 }}</div>
+            <div class="mob-mini-sub">{{ stats.dash.retour?.montant_retour_jr | number:'1.0-0':'fr' }} F</div>
+          </div>
+        </div>
+
+        <!-- Modes de paiement du jour -->
+        @let modes = modeEntries(stats.dash?.vente?.mode_paiement_jr);
+        @if (modes.length) {
+          <div class="mob-section-title">Paiements du jour</div>
+          <div class="mob-pay-card">
+            @let totalModes = stats.dash.vente?.total_vente_jr || 1;
+            @for (m of modes; track m.mode) {
+              <div class="mob-pay-row">
+                <span class="mob-pay-label">{{ m.label }}</span>
+                <div class="mob-pay-bar-wrap"><div class="mob-pay-bar" [style.width.%]="(m.val / totalModes) * 100"></div></div>
+                <span class="mob-pay-val">{{ m.val | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+          </div>
+        }
+        <!-- Graphique Chiffre d'affaires -->
+        <div class="mob-section-title"><i class="bi bi-bar-chart-line me-1"></i> Chiffre d'affaires &mdash; {{ today | date:'yyyy' }}</div>
+        <div class="mob-chart-card">
+          <canvas id="myChartMob" style="max-height:200px;"></canvas>
+        </div>
+
+        <!-- Alertes en temps réel -->
+        <div class="mob-section-title" [class.mob-section-title--alert]="alertesCount > 0">
+          <span class="bell-wrapper" [class.ringing]="alertesCount > 0">
+            <i class="bi bi-bell" [class.text-danger]="alertesCount > 0"></i>
+            @if (alertesCount > 0) { <span class="bell-dot"></span> }
+          </span>
+          Alertes en temps réel
+          @if (alertesCount > 0) {
+            <span class="badge bg-danger rounded-pill ms-auto" style="font-size:.6rem;">{{ alertesCount }}</span>
+            <button class="mob-sound-btn" (click)="replayAlert()"><i class="bi bi-volume-up-fill"></i></button>
+          }
+        </div>
+        <div class="mob-alerts-card">
+          @if (!(stats.dash.produit?.stock_rupture?.length) && !(stats.dash.produit?.stock_alert?.length) && !(stats.dash.vente?.jamais_vendu_un_mois_apres_saisie?.length)) {
+            <div class="text-center py-3 text-success small">
+              <i class="bi bi-check-circle fs-4 d-block mb-1"></i>Aucune alerte
+            </div>
+          }
+          @if (stats.dash.produit?.stock_rupture?.length) {
+            <p class="mob-alert-section-label text-danger"><i class="bi bi-x-octagon-fill me-1"></i>Ruptures de stock</p>
+            @for (item of stats.dash.produit.stock_rupture; track $index) {
+              <div class="mob-alert-row mob-alert-row--danger">
+                <img [src]="api_url + '/' + item.path" alt="{{ item.nom }}" width="36" height="36" class="mob-alert-img">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="mob-alert-name">{{ item.nom }}</div>
+                  <span class="badge bg-danger" style="font-size:.63rem;">Stock : {{ item.stock_disponible }}</span>
+                </div>
+              </div>
+            }
+          }
+          @if (stats.dash.produit?.stock_alert?.length) {
+            <p class="mob-alert-section-label text-warning mt-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>Seuils bas</p>
+            @for (item of stats.dash.produit.stock_alert; track $index) {
+              @if (item.stock_disponible <= item.seuil_alert && item.stock_disponible !== 0) {
+                <div class="mob-alert-row mob-alert-row--warning">
+                  <img [src]="api_url + '/' + item.path" alt="{{ item.nom }}" width="36" height="36" class="mob-alert-img">
+                  <div class="flex-grow-1 min-w-0">
+                    <div class="mob-alert-name">{{ item.nom }}</div>
+                    <span class="badge bg-warning text-dark" style="font-size:.63rem;">{{ item.stock_disponible }} / seuil {{ item.seuil_alert }}</span>
+                  </div>
+                </div>
+              }
+            }
+          }
+          @if (stats.dash.vente?.jamais_vendu_un_mois_apres_saisie?.length) {
+            <p class="mob-alert-section-label text-secondary mt-2"><i class="bi bi-moon-fill me-1"></i>Produits dormants</p>
+            @for (item of stats.dash.vente.jamais_vendu_un_mois_apres_saisie; track $index) {
+              <div class="mob-alert-row">
+                <img [src]="api_url + '/' + item.image" alt="{{ item.nom }}" width="36" height="36" class="mob-alert-img">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="mob-alert-name">{{ item.nom }}</div>
+                  <span class="badge bg-secondary" style="font-size:.63rem;">Stock : {{ item.stock_disponible }}</span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</div>
+
+<!-- ══ DESKTOP DASHBOARD ═══════════════════════════════════════════════════════ -->
+<section class="section dashboard d-none d-md-block">
 
 @if (isCaissierView) {
 

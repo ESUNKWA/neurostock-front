@@ -55,6 +55,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   boutiqueService = inject(BoutiqueService);
   authService = inject(AuthService);
   chart: Chart | null = null;
+  chartMob: Chart | null = null;
 
   api_url: string = environnement.API_URL;
   today = new Date();
@@ -139,6 +140,8 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.speechSynthesis?.cancel();
     this.stopSSE();
+    this.chart?.destroy();
+    this.chartMob?.destroy();
   }
 
   getCurrentUser() {
@@ -311,41 +314,39 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   }
 
   createChart(): void {
-    const ctx = document.getElementById('myChart') as HTMLCanvasElement;
-    if (!ctx) {
-      console.error("Canvas introuvable !");
-      return;
-    }
+    this._buildChart('myChart');
+    this._buildChart('myChartMob');
+  }
 
-    // ✅ Détruire le graphique précédent s’il existe
-    if (this.chart) {
-      this.chart.destroy();
-    }
+  private _buildChart(id: string): void {
+    const ctx = document.getElementById(id) as HTMLCanvasElement;
+    if (!ctx) return;
 
-    this.chart = new Chart(ctx, {
+    if (id === 'myChart') { this.chart?.destroy(); this.chart = null; }
+    else                  { this.chartMob?.destroy(); this.chartMob = null; }
+
+    const ch = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: this.ventesParMois?.map(v => v.mois), // noms des mois
+        labels: this.ventesParMois?.map(v => v.mois),
         datasets: [{
-          label: 'Chiffre d’affaires (F CFA)',
-          data: this.ventesParMois?.map(v => v.montant), // montants
+          label: "Chiffre d'affaires (F CFA)",
+          data: this.ventesParMois?.map(v => v.montant),
           fill: true,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          backgroundColor: 'rgba(54, 162, 235, 0.18)',
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 2,
-          tension: 0.3 // pour arrondir les courbes
+          tension: 0.35,
+          pointRadius: id === 'myChartMob' ? 2 : 3,
         }]
       },
       options: {
         responsive: true,
         plugins: {
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function(context) {
-                // Affiche le montant avec F CFA
-                 const value = context.raw as number; // caster en number
-                  return `${value.toLocaleString('fr-FR')} F CFA`;
-              }
+              label: (context) => `${(context.raw as number).toLocaleString('fr-FR')} F CFA`
             }
           }
         },
@@ -353,15 +354,21 @@ export default class DashboardComponent implements OnInit, OnDestroy {
           y: {
             beginAtZero: true,
             ticks: {
-              callback: function(value) {
-                return `${value.toLocaleString('fr-FR')}`;
-              }
+              maxTicksLimit: 5,
+              callback: (value) => `${Number(value).toLocaleString('fr-FR')}`
             }
+          },
+          x: {
+            ticks: { font: { size: id === 'myChartMob' ? 9 : 12 } }
           }
         }
       }
     });
+
+    if (id === 'myChart') this.chart = ch;
+    else                  this.chartMob = ch;
   }
+
 
   get alertesCount(): number {
     const r = this.stats?.dash?.produit?.stock_rupture?.length ?? 0;

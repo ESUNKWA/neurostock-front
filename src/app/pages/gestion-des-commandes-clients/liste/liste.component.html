@@ -65,7 +65,7 @@
       }
 
       <div [class.d-none]="isLoading">
-        <div class="table-responsive">
+        <div class="table-responsive d-none d-md-block">
           <table class="table table-hover table-bordered align-middle dt-commandes-clients">
             <thead class="table-light">
               <tr>
@@ -81,6 +81,69 @@
             <tbody></tbody>
           </table>
         </div>
+
+        <!-- Vue mobile -->
+        <div class="d-md-none mt-3">
+          @if (commandes.length === 0) {
+            <p class="text-center text-muted small py-4">Aucune commande trouvée</p>
+          }
+          @for (commande of commandes; track commande.id) {
+            <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+                 (click)="mobileDetailItem = commande">
+              <div class="flex-grow-1 min-w-0">
+                <div class="mc-title">{{ commande.reference }}</div>
+                <div class="mc-sub">{{ clientNom(commande) }}</div>
+                <div class="mc-meta">{{ commande.created_at | date:'dd/MM/yyyy' }}</div>
+              </div>
+              <div class="d-flex flex-column align-items-end gap-1">
+                <span class="mc-amount">{{ (commande.montant_total_apres_remise ?? commande.montant_total ?? 0) | number:'1.0-0':'fr' }} F</span>
+                <button class="mc-plus-btn" (click)="mobileDetailItem = commande; $event.stopPropagation()">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (mobileDetailItem) {
+          <div class="mc-overlay" (click)="mobileDetailItem = null">
+            <div class="mc-popup" (click)="$event.stopPropagation()">
+              <div class="mc-popup-header">
+                <span class="mc-popup-title">{{ mobileDetailItem.reference }}</span>
+                <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+              </div>
+              <div class="mc-popup-body">
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Référence</span>
+                  <span class="mc-row-value">{{ mobileDetailItem.reference ?? '—' }}</span>
+                </div>
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Client</span>
+                  <span class="mc-row-value">{{ clientNom(mobileDetailItem) }}</span>
+                </div>
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Date commande</span>
+                  <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Livraison prévue</span>
+                  <span class="mc-row-value">{{ mobileDetailItem.date_livraison_prevue | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Montant TTC</span>
+                  <span class="mc-row-value">{{ (mobileDetailItem.montant_total_apres_remise ?? mobileDetailItem.montant_total ?? 0) | number:'1.0-0':'fr' }} F</span>
+                </div>
+                <div class="mc-popup-row">
+                  <span class="mc-row-label">Statut</span>
+                  <span class="mc-row-value">
+                    <span [class]="'badge bg-' + statutCss(mobileDetailItem.statut)">{{ statutLabel(mobileDetailItem.statut) }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
       </div>
 
     </div>

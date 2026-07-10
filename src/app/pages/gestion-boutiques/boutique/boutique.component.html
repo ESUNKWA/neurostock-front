@@ -40,7 +40,7 @@
                       }
                     <hr>
                     <!-- DataTable avec colonnes fixes -->
-                    <div class="table-responsive">
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
@@ -58,6 +58,64 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Vue mobile -->
+                    <div class="d-md-none mt-3">
+                      @if (!isLoading && boutiques.length === 0) {
+                        <p class="text-center text-muted small py-4">Aucune boutique trouvée</p>
+                      }
+                      @for (boutique of boutiques; track boutique.id) {
+                        <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+                             (click)="mobileDetailItem = boutique">
+                          <div class="flex-grow-1 min-w-0">
+                            <div class="mc-title">{{ boutique.nom }}</div>
+                            <div class="mc-sub">{{ boutique.telephone }}</div>
+                            <div class="mc-meta">{{ boutique.email ?? boutique.situation_geo ?? '' }}</div>
+                          </div>
+                          <button class="mc-plus-btn" (click)="mobileDetailItem = boutique; $event.stopPropagation()">
+                            <i class="bi bi-plus"></i>
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    @if (mobileDetailItem) {
+                      <div class="mc-overlay" (click)="mobileDetailItem = null">
+                        <div class="mc-popup" (click)="$event.stopPropagation()">
+                          <div class="mc-popup-header">
+                            <span class="mc-popup-title">{{ mobileDetailItem.nom }}</span>
+                            <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+                          </div>
+                          <div class="mc-popup-body">
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Nom</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.nom ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Téléphone</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.telephone ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Email</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.email ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">RCCM</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.rccm ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Localisation</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.situation_geo ?? '—' }}</span>
+                            </div>
+                            <div class="mc-popup-row">
+                              <span class="mc-row-label">Date création</span>
+                              <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
                 </div>
             </div>
         </div>

@@ -38,6 +38,7 @@ export class BoutiqueComponent {
 
   previewImageUrl: string | null = null;
   selectedProduit: any = null;
+  mobileDetailItem: any = null;
   selectedFile: File | null = null;
 
   @ViewChild('dataTable', { static: false }) table!: ElementRef;

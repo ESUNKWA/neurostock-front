@@ -35,6 +35,7 @@ export default class CaisseComponent implements OnInit {
   users: any[] = [];
   caisseActivee: boolean | null = null;
   activating = false;
+  mobileDetailItem: any = null;
 
   readonly modesLabels: Record<string, string> = {
     espece:       'Espèces',

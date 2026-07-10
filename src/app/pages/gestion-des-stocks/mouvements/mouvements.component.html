@@ -49,7 +49,7 @@
           }
 
           <hr>
-          <div class="table-responsive">
+          <div class="table-responsive d-none d-md-block">
             <table class="table table-bordered table-striped js-dataTable-mouvements">
               <thead>
                 <tr>
@@ -67,6 +67,70 @@
               <tbody></tbody>
             </table>
           </div>
+
+          <!-- Vue mobile -->
+          <div class="d-md-none mt-3">
+            @if (!isLoading && mouvements.length === 0) {
+              <p class="text-center text-muted small py-4">Aucun mouvement trouvé</p>
+            }
+            @for (mouvement of mouvements; track mouvement.id) {
+              <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+                   (click)="mobileDetailItem = mouvement">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="mc-title">{{ mouvement.produit?.nom ?? '—' }}</div>
+                  <div class="mc-sub">{{ mouvement.mouvement ?? '' }}</div>
+                  <div class="mc-meta">{{ mouvement.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-1">
+                  <span class="mc-amount">{{ mouvement.quantite }}</span>
+                  <button class="mc-plus-btn" (click)="mobileDetailItem = mouvement; $event.stopPropagation()">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (mobileDetailItem) {
+            <div class="mc-overlay" (click)="mobileDetailItem = null">
+              <div class="mc-popup" (click)="$event.stopPropagation()">
+                <div class="mc-popup-header">
+                  <span class="mc-popup-title">{{ mobileDetailItem.produit?.nom ?? '—' }}</span>
+                  <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="mc-popup-body">
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Date</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Produit</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.produit?.nom ?? '—' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Type mouvement</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.mouvement ?? '—' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Source</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.source ?? '—' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Quantité</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.quantite ?? '—' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Stock avant</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.stock_avant ?? '—' }}</span>
+                  </div>
+                  <div class="mc-popup-row">
+                    <span class="mc-row-label">Stock après</span>
+                    <span class="mc-row-value">{{ mobileDetailItem.stock_apres ?? '—' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
 
         </div>
       </div>

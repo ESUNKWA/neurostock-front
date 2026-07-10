@@ -31,6 +31,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedProduit: any = null;
+  mobileDetailItem: any = null;
   titleModal: string = 'AJOUTER UN PRODUIT';
   buttonText: string = 'Enregistrer';
   icon: string = 'ri ri-save-3-line';

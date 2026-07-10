@@ -27,6 +27,7 @@ export default class CommandeFournisseurListeComponent implements OnInit, OnDest
   selectedBoutiqueId: number | null = null;
   isLoading = false;
   detailCommande: any = null;
+  mobileDetailItem: any = null;
 
   // Réception
   commandeARecevoir: any = null;

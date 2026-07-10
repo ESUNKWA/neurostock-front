@@ -75,7 +75,7 @@
           <div class="spinner-border text-primary"></div>
         </div>
       }
-      <div class="table-responsive mt-3">
+      <div class="table-responsive mt-3 d-none d-md-block">
         <table class="table table-bordered table-striped table-vcenter js-retours-dt">
           <thead>
             <tr>
@@ -91,6 +91,71 @@
           <tbody></tbody>
         </table>
       </div>
+
+      <!-- Vue mobile -->
+      <div class="d-md-none mt-3">
+        @if (!isLoading && retours.length === 0) {
+          <p class="text-center text-muted small py-4">Aucun retour trouvé</p>
+        }
+        @for (retour of retours; track retour.id) {
+          <div class="mc-card d-flex align-items-center justify-content-between gap-2"
+               (click)="mobileDetailItem = retour">
+            <div class="flex-grow-1 min-w-0">
+              <div class="mc-title">{{ retour.reference ?? retour.vente?.reference ?? '—' }}</div>
+              <div class="mc-sub">{{ retour.motif ?? '' }}</div>
+              <div class="mc-meta">{{ retour.created_at | date:'dd/MM/yyyy' }}</div>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-1">
+              <span class="mc-amount">{{ retour.montant_total_rembourse | number:'1.0-0':'fr' }} F</span>
+              <button class="mc-plus-btn" (click)="mobileDetailItem = retour; $event.stopPropagation()">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (mobileDetailItem) {
+        <div class="mc-overlay" (click)="mobileDetailItem = null">
+          <div class="mc-popup" (click)="$event.stopPropagation()">
+            <div class="mc-popup-header">
+              <span class="mc-popup-title">{{ mobileDetailItem.reference ?? '—' }}</span>
+              <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="mc-popup-body">
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Référence retour</span>
+                <span class="mc-row-value">{{ mobileDetailItem.reference ?? '—' }}</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Référence vente</span>
+                <span class="mc-row-value">{{ mobileDetailItem.vente?.reference ?? '—' }}</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Montant remboursé</span>
+                <span class="mc-row-value">{{ mobileDetailItem.montant_total_rembourse | number:'1.0-0':'fr' }} F</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Statut</span>
+                <span class="mc-row-value">{{ mobileDetailItem.statut ?? '—' }}</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Motif</span>
+                <span class="mc-row-value">{{ mobileDetailItem.motif ?? '—' }}</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Utilisateur</span>
+                <span class="mc-row-value">{{ mobileDetailItem.user?.nom ?? mobileDetailItem.user?.telephone ?? '—' }}</span>
+              </div>
+              <div class="mc-popup-row">
+                <span class="mc-row-label">Date</span>
+                <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
     </div>
   </div>
 </section>

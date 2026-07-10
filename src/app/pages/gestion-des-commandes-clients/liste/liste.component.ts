@@ -28,6 +28,7 @@ export default class ListeComponent implements OnInit, OnDestroy {
   isLoading   = false;
   actionId: number | null = null;
   detailCommande: any = null;
+  mobileDetailItem: any = null;
   dateDebut: string = '';
   dateFin: string = '';
 

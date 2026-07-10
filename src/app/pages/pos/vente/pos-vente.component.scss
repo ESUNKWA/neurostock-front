@@ -412,9 +412,39 @@
   box-shadow: 0 -3px 14px rgba(0,0,0,.18);
 }
 
+// ── Panneau ventes (caché par défaut, affiché uniquement sur mobile) ──────────
+
+.pos-ventes-panel {
+  display: none;
+}
+
+// ── Téléphone uniquement : tabbar + panneau ventes + layout plein écran ───────
+
 @media (max-width: 767.98px) {
-  // Colle le POS exactement entre la top bar et la bottom nav — quel que soit le téléphone
-  // top bar = 52px + safe-area-top (iPhone notch), bottom nav = 60px + safe-area-bottom
+  .pos-mobile-tabbar {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .pos-catalog {
+    &.mobile-hidden { display: none !important; }
+  }
+
+  .pos-cart {
+    &.mobile-hidden { display: none !important; }
+  }
+
+  .pos-ventes-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+
+    &.mobile-hidden { display: none !important; }
+  }
+  // Colle le POS exactement entre la top bar et la bottom nav
   .pos-screen {
     position: fixed;
     top: calc(52px + env(safe-area-inset-top, 0px));
@@ -428,16 +458,9 @@
     z-index: 10;
   }
 
-  .pos-mobile-tabbar {
-    display: flex;
-    flex-shrink: 0;
-  }
-
   .pos-catalog {
     flex: 1;
     min-height: 0;
-
-    &.mobile-hidden { display: none !important; }
   }
 
   .pos-cart {
@@ -446,12 +469,7 @@
     flex: 1;
     min-height: 0;
 
-    &.mobile-hidden { display: none !important; }
-
-    // Pas de padding supplémentaire — la bottom nav est hors du pos-screen
-    .pos-cart-footer {
-      padding-bottom: .5rem;
-    }
+    .pos-cart-footer { padding-bottom: .5rem; }
   }
 
   // Le FAB panier monte au-dessus de la bottom nav
@@ -459,12 +477,11 @@
     bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
-  // Sur très petits écrans : réduire la barre de recherche
+  // Réduire la barre de recherche sur petits écrans
   .pos-search-bar {
     padding: .5rem .75rem !important;
     gap: .4rem !important;
 
-    // Masquer le total ventes du jour sur les très petits écrans
     @media (max-height: 650px) {
       .d-flex:last-child { display: none !important; }
     }
@@ -476,6 +493,27 @@
     max-width: 33.333%;
   }
 }
+
+
+.pos-vente-item {
+  margin: 0 .75rem .5rem;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px;
+  overflow: hidden;
+
+  &:active { background: #f8fafc; }
+}
+
+.pos-vente-detail {
+  background: #f8fafc;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin { animation: spin .7s linear infinite; }
 
 // ── Payment modal ─────────────────────────────────────────────────────────────
 

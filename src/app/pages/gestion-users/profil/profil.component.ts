@@ -26,6 +26,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
 
   profils: any [] = [];
   profilData: any = {};
+  mobileDetailItem: any = null;
 
   isLoading: boolean = false;
   isEditMode: boolean = false;

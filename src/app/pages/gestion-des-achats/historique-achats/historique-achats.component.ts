@@ -25,6 +25,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   boutiques: any[] = [];
   isLoading: boolean = false;
   detailsAchat: any;
+  mobileDetailItem: any = null;
   dateDebut: string = '';
   dateFin: string = '';
   

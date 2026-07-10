@@ -430,10 +430,394 @@ nz-select {
   word-break: break-word;
 }
 
-// Sur mobile, masquer le chart (trop étroit) et certains éléments desktop
-@media (max-width: 768px) {
+// Sur desktop, masquer le chart uniquement si besoin
+@media (max-width: 767.98px) {
   .pagetitle { display: none; }
-  canvas#myChart { display: none; }
+}
+
+// ══ Mobile Dashboard ═════════════════════════════════════════════════════════
+
+.mob-dashboard {
+  padding-bottom: 28px;
+}
+
+// ── En-tête ──────────────────────────────────────────────────────────────────
+
+.mob-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #1a5fa0 70%, #1565c0 100%);
+  padding: 20px 16px 24px;
+  border-radius: 0 0 26px 26px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 24px rgba(30, 58, 95, .35);
+}
+
+.mob-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.mob-refresh-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  &:active { background: rgba(255, 255, 255, .28); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.mob-boutique-select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: .85rem;
+  backdrop-filter: blur(4px);
+
+  option { color: #1e293b; background: #fff; }
+  &:focus { outline: none; border-color: rgba(255, 255, 255, .5); }
+}
+
+// ── KPI défilables ────────────────────────────────────────────────────────────
+
+.mob-kpi-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 16px 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.mob-kpi-card {
+  flex: 0 0 148px;
+  scroll-snap-align: start;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+  border-left: 3px solid transparent;
+
+  &.mob-kpi--primary { background: #eff6ff; border-left-color: #3b82f6; }
+  &.mob-kpi--success { background: #f0fdf4; border-left-color: #22c55e; }
+  &.mob-kpi--emerald { background: #ecfdf5; border-left-color: #10b981; }
+  &.mob-kpi--amber   { background: #fffbeb; border-left-color: #f59e0b; }
+}
+
+.mob-kpi-label {
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.mob-kpi-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.mob-kpi-sub {
+  font-size: .68rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+// ── Bandeau IA ────────────────────────────────────────────────────────────────
+
+.mob-ia-strip {
+  margin: 0 16px 20px;
+  padding: 11px 14px;
+  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .8rem;
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(79, 70, 229, .3);
+}
+
+.mob-ia-icon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  color: #fde68a;
+}
+
+.mob-ia-text {
+  flex-grow: 1;
+  line-height: 1.4;
+}
+
+.mob-ia-alert {
+  background: rgba(255, 255, 255, .2);
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+// ── Titres de section ─────────────────────────────────────────────────────────
+
+.mob-section-title {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #94a3b8;
+  padding: 0 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ── Alertes stock défilables ──────────────────────────────────────────────────
+
+.mob-alerts-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 16px 4px;
+  scrollbar-width: none;
+  margin-bottom: 20px;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.mob-alert-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+
+  img {
+    border-radius: 6px;
+    object-fit: cover;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  &.mob-alert-chip--danger  { background: #fef2f2; border: 1px solid #fecaca; }
+  &.mob-alert-chip--warning { background: #fffbeb; border: 1px solid #fde68a; }
+}
+
+.mob-alert-name {
+  font-size: .76rem;
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mob-alert-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.mob-alert-chip--danger  .mob-alert-badge { color: #ef4444; }
+.mob-alert-chip--warning .mob-alert-badge { color: #d97706; }
+
+// ── Grille modules (surcharge padding) ───────────────────────────────────────
+
+.mob-modules-grid {
+  padding: 0 12px;
+  margin-bottom: 24px;
+}
+
+// ── Mini stats row ────────────────────────────────────────────────────────────
+
+.mob-mini-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.mob-mini-item {
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+
+  &.mob-mini--amber  { background: #fffbeb; border-top: 2px solid #f59e0b; }
+  &.mob-mini--purple { background: #faf5ff; border-top: 2px solid #7c3aed; }
+  &.mob-mini--red    { background: #fff5f5; border-top: 2px solid #ef4444; }
+}
+
+.mob-mini-label {
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.mob-mini-value {
+  font-size: .9rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mob-mini-sub {
+  font-size: .65rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+// ── Paiements du jour ─────────────────────────────────────────────────────────
+
+.mob-pay-card {
+  margin: 0 16px 24px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 14px 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+  border: 1px solid #e2e8f0;
+}
+
+.mob-pay-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.mob-pay-label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 88px;
+}
+
+.mob-pay-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mob-pay-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  border-radius: 4px;
+}
+
+.mob-pay-val {
+  font-size: .7rem;
+  color: #64748b;
+  min-width: 62px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Graphique CA mobile ───────────────────────────────────────────────────────
+
+.mob-chart-card {
+  margin: 0 16px 20px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 10px 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+  border: 1px solid #e2e8f0;
+}
+
+// ── Alertes en temps réel (card mobile) ──────────────────────────────────────
+
+.mob-section-title--alert {
+  border-left: 3px solid #ef4444;
+  padding-left: 12px;
+  margin-left: 13px;
+  animation: header-glow 2.5s ease-in-out infinite alternate;
+}
+
+.mob-sound-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: .95rem;
+  padding: 0 0 0 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.mob-alerts-card {
+  margin: 0 16px 20px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+  border: 1px solid #e2e8f0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.mob-alert-section-label {
+  font-size: .72rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  margin-top: 0;
+}
+
+.mob-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+
+  &.mob-alert-row--danger  { background: rgba(239, 68, 68, .07); }
+  &.mob-alert-row--warning { background: rgba(245, 158, 11, .08); }
+}
+
+.mob-alert-img {
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.mob-alert-name {
+  font-size: .78rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
 }
 
 
