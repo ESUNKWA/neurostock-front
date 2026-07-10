@@ -71,12 +71,14 @@
           </div>
         </li>
         <li><hr class="dropdown-divider"></li>
-        <li>
-          <a class="dropdown-item" routerLink="/utilisateurs/edit-user-info">
-            <i class="bi bi-person-gear"></i> Mon profil
-          </a>
-        </li>
-        <li><hr class="dropdown-divider"></li>
+        @if (currentUser?.profil?.code !== 'super_admin') {
+          <li>
+            <a class="dropdown-item" routerLink="/utilisateurs/edit-user-info">
+              <i class="bi bi-person-gear"></i> Mon profil
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+        }
         <li>
           <button type="button" class="dropdown-item text-danger" (click)="logout()">
             <i class="bi bi-box-arrow-right"></i> Déconnecter

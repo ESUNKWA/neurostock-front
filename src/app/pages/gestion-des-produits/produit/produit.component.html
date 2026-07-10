@@ -18,8 +18,18 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row align-items-center mb-3">
-                        <div class="col-md-5">
+                        <div class="col-md-5 d-flex align-items-center gap-3">
                             <h5 class="card-title mb-0 text-uppercase">Liste des produits</h5>
+                            @if (selectedIds.size > 0) {
+                              <button class="btn btn-danger btn-sm" (click)="deleteSelected()" [disabled]="isDeletingMany">
+                                @if (isDeletingMany) {
+                                  <span class="spinner-border spinner-border-sm me-1"></span>
+                                } @else {
+                                  <i class="bi bi-trash3 me-1"></i>
+                                }
+                                Supprimer ({{ selectedIds.size }})
+                              </button>
+                            }
                         </div>
                         <div class="col-md-7 text-end">
                             <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
@@ -50,19 +60,59 @@
                 
                 @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
                    @if (boutiques.length >= 1) {
-                        <div class="card-body">
-                            <div class="row">
+                        <div class="card-body pb-0">
+                            <div class="row g-2">
                                 <div class="col-md-4">
-                                    <select class="form-select" (change)="onBoutiqueChange($event)">
-                                        <option value="">Sélectionner une boutique</option>
+                                    <nz-select
+                                        style="width:100%"
+                                        nzShowSearch
+                                        nzAllowClear
+                                        nzPlaceHolder="Sélectionner une boutique"
+                                        [(ngModel)]="selectedBoutiqueFilter"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="onBoutiqueChange($event)">
                                         @for (boutique of boutiques; track boutique.id) {
-                                            <option [value]="boutique.id">{{ boutique.nom }}</option>
+                                            <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
                                         }
-                                    </select>
+                                    </nz-select>
+                                </div>
+                                <div class="col-md-4">
+                                    <nz-select
+                                        style="width:100%"
+                                        nzShowSearch
+                                        nzAllowClear
+                                        nzPlaceHolder="Toutes les catégories"
+                                        [(ngModel)]="selectedCategoryFilter"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="onCategoryFilterChange($event)">
+                                        @for (cat of categories; track cat.id) {
+                                            <nz-option [nzValue]="cat.id" [nzLabel]="cat.nom"></nz-option>
+                                        }
+                                    </nz-select>
                                 </div>
                             </div>
                         </div>
                    }
+                }
+                @if (currentUser.profil.code.toLowerCase() !== 'admin' && currentUser.profil.code.toLowerCase() !== 'responsable_structure') {
+                   <div class="card-body pb-0">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <nz-select
+                                    style="width:100%"
+                                    nzShowSearch
+                                    nzAllowClear
+                                    nzPlaceHolder="Toutes les catégories"
+                                    [(ngModel)]="selectedCategoryFilter"
+                                    [ngModelOptions]="{standalone: true}"
+                                    (ngModelChange)="onCategoryFilterChange($event)">
+                                    @for (cat of categories; track cat.id) {
+                                        <nz-option [nzValue]="cat.id" [nzLabel]="cat.nom"></nz-option>
+                                    }
+                                </nz-select>
+                            </div>
+                        </div>
+                    </div>
                 }
                 <div class="card-body">
                     @if (isLoading) {
@@ -78,6 +128,11 @@
                         <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
                             <thead>
                                 <tr>
+                                    <th class="text-center" style="width:2%">
+                                      <input type="checkbox" class="form-check-input"
+                                        [checked]="allSelected"
+                                        (change)="toggleAll($any($event.target).checked)">
+                                    </th>
                                     <th>Image</th>
                                     <th>Nom</th>
                                     <th>Prix d'achat</th>
@@ -473,23 +528,47 @@
       </div>
       <div class="modal-body" style="background:#f8fafc">
 
-        <!-- Sélection de la boutique cible -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold">
-            Boutique cible <span class="text-danger">*</span>
-          </label>
-          @if (boutiques.length > 1) {
-            <select class="form-select" [(ngModel)]="importBoutiqueId" [ngModelOptions]="{standalone: true}">
-              <option [ngValue]="null">— Sélectionnez une boutique —</option>
-              @for (b of boutiques; track b.id) {
-                <option [ngValue]="b.id">{{ b.nom }}</option>
+        <!-- Sélection de la boutique et catégorie -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Boutique cible <span class="text-danger">*</span>
+            </label>
+            @if (boutiques.length > 1) {
+              <nz-select
+                style="width:100%"
+                nzShowSearch
+                nzAllowClear
+                nzPlaceHolder="Sélectionnez une boutique"
+                [(ngModel)]="importBoutiqueId"
+                [ngModelOptions]="{standalone: true}">
+                @for (b of boutiques; track b.id) {
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                }
+              </nz-select>
+            } @else if (boutiques.length === 1) {
+              <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
+            } @else {
+              <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Catégorie par défaut <span class="text-muted fw-normal">(optionnel)</span>
+            </label>
+            <nz-select
+              style="width:100%"
+              nzShowSearch
+              nzAllowClear
+              nzPlaceHolder="Rechercher une catégorie..."
+              [(ngModel)]="importCategorieId"
+              [ngModelOptions]="{standalone: true}">
+              @for (cat of categories; track cat.id) {
+                <nz-option [nzValue]="cat.id" [nzLabel]="cat.nom"></nz-option>
               }
-            </select>
-          } @else if (boutiques.length === 1) {
-            <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
-          } @else {
-            <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
-          }
+            </nz-select>
+            <div class="form-text">Appliquée aux lignes sans catégorie dans le fichier.</div>
+          </div>
         </div>
 
         @if (importPreview && importPreview.rows.length) {

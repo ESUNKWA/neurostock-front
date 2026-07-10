@@ -78,6 +78,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
         .filter((s: any) => s.menu.length > 0);
     }
 
+    // Masquer "Profil" du menu Utilisateurs pour tous les rôles sauf super_admin
+    if (role !== 'super_admin') {
+      filteredMenu.forEach((section: any) => {
+        section.menu?.forEach((item: any) => {
+          if (item.sousMenu) {
+            item.sousMenu = item.sousMenu.filter((s: any) => s.libelle !== 'Profil');
+          }
+        });
+      });
+    }
+
     if (role === 'admin') return filteredMenu;
 
     if (role === 'responsable_structure') {

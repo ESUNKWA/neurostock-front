@@ -44,9 +44,34 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   pendingImportFile: File | null = null;
   importResult: { created: number; skipped: number; errors: string[] } | null = null;
   importBoutiqueId: number | string | null = null;
+  importCategorieId: number | null = null;
   currentUser: any;
 
   cataloguePdfLoading = false;
+
+  // Sélection multiple
+  selectedIds = new Set<number>();
+  isDeletingMany = false;
+
+  // Filtre par catégorie
+  selectedCategoryFilter: number | null = null;
+  selectedBoutiqueFilter: string | null = null;
+  allProduits: any[] = [];
+
+  get allSelected(): boolean {
+    return this.produits.length > 0 && this.produits.every(p => this.selectedIds.has(p.id));
+  }
+
+  toggleAll(checked: boolean): void {
+    if (checked) this.produits.forEach(p => this.selectedIds.add(p.id));
+    else this.selectedIds.clear();
+    // Synchronise visuellement toutes les cases du DataTable
+    $('.row-check').prop('checked', checked);
+  }
+
+  toggleOne(id: number, checked: boolean): void {
+    checked ? this.selectedIds.add(id) : this.selectedIds.delete(id);
+  }
 
   // Prix suggéré IA
   produitPrixSuggere: any | null = null;
@@ -149,7 +174,15 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         $('.js-dataTable-buttons').DataTable({
           data: this.produits,
           columns: [
-            { 
+            {
+              data: null,
+              orderable: false,
+              width: '2%',
+              className: 'text-center',
+              render: (_: any, __: any, row: any) =>
+                `<input type="checkbox" class="form-check-input row-check" data-id="${row.id}" ${this.selectedIds.has(row.id) ? 'checked' : ''}>`,
+            },
+            {
               data: 'imageUrl',
               render: (data: any) => data ? `<img src="${data}" alt="Image produit" class="img-thumbnail" style="max-width: 50px;">` : 'Aucune image' 
             },
@@ -258,14 +291,21 @@ export default class ProduitComponent implements OnInit, OnDestroy {
             $('[data-bs-toggle="tooltip"]').tooltip();
           },
           createdRow: (row: any, data: any, dataIndex: any) => {
+            // Checkbox sélection
+            $(row).find('.row-check').on('change', (e: any) => {
+              const id = +$(e.currentTarget).data('id');
+              this.toggleOne(id, e.currentTarget.checked);
+            });
+
+            // Boutons actions
             $(row).find('[data-action]').on('click', (e: any) => {
               const button = $(e.currentTarget);
               const action = button.data('action');
               const id = button.data('id');
               const produit = this.produits.find((p: any) => p.id === id);
-              
+
               if (!produit) return;
-              
+
               switch (action) {
                 case 'ia':
                   this.voirPrixSuggere(produit);
@@ -327,25 +367,50 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     
   }
 
-  loadCategories(): void {
-    
-    this.categorieService.getCategoriesByBoutik(this.currentUser.boutique_id).subscribe({
+  loadCategories(boutiqueId?: number | string): void {
+    const id = boutiqueId || this.currentUser.boutique_id;
+    if (!id) return;
+    this.categorieService.getCategoriesByBoutik(id).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.categories = response.data;
-          
         }
       },
-      error: (error: any) => {
+      error: () => {
         this.toastr.error('Erreur lors du chargement des catégories');
       }
     });
   }
 
-  onBoutiqueChange(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    this.selectedBoutique = selectElement.value;
+  onBoutiqueChange(value: string | null): void {
+    this.selectedBoutique = value ?? '';
+    this.selectedCategoryFilter = null;
+    this.loadCategories(value ?? undefined);
     this.loadProduits();
+  }
+
+  onCategoryFilterChange(value: number | null): void {
+    this.selectedCategoryFilter = value ?? null;
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    this.produits = this.selectedCategoryFilter != null
+      ? this.allProduits.filter(p => p.categorie?.id === this.selectedCategoryFilter)
+      : [...this.allProduits];
+
+    this.selectedIds.clear();
+    this.destroyDataTable();
+    setTimeout(() => {
+      if (isPlatformBrowser(this.platformId)) {
+        try {
+          this.initDataTable();
+        } catch (error) {
+          console.error('Erreur lors de la réinitialisation de DataTable:', error);
+        }
+        this.isLoading = false;
+      }
+    }, 50);
   }
 
   downloadCatalogueBarcodes(): void {
@@ -392,18 +457,8 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.produitService.getProduits(body).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
-          this.produits = response.data;
-          this.destroyDataTable();
-          setTimeout(() => {
-            if (isPlatformBrowser(this.platformId)) {
-              try {
-                this.initDataTable();
-              } catch (error) {
-                console.error('Erreur lors de la réinitialisation de DataTable:', error);
-              }
-              this.isLoading = false;
-            }
-          }, 50);
+          this.allProduits = response.data;
+          this.applyFilters();
         } else {
           this.isLoading = false;
         }
@@ -621,7 +676,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
 
     this.isImporting = true;
-    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId).pipe(first()).subscribe({
+    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId, this.importCategorieId ?? undefined).pipe(first()).subscribe({
       next: (response: any) => {
         this.isImporting = false;
         const data = response?.data ?? response;
@@ -663,6 +718,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.importPreview = null;
     this.importResult = null;
     this.importBoutiqueId = null;
+    this.importCategorieId = null;
     const modal = document.getElementById('modal-import-preview');
     if (modal) {
       const modalInstance = bootstrap.Modal.getInstance(modal);
@@ -796,6 +852,35 @@ export default class ProduitComponent implements OnInit, OnDestroy {
           }
         });
       }
+    });
+  }
+
+  deleteSelected(): void {
+    const ids = [...this.selectedIds];
+    if (!ids.length) return;
+
+    Swal.fire({
+      title: `Supprimer ${ids.length} produit${ids.length > 1 ? 's' : ''} ?`,
+      text: 'Cette action est irréversible.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#5C636A',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler',
+    }).then((result: SweetAlertResult) => {
+      if (!result.isConfirmed) return;
+      this.isDeletingMany = true;
+      this.produitService.deleteProduits(ids).pipe(first()).subscribe({
+        next: () => {
+          this.toastr.success(`${ids.length} produit${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''} avec succès.`);
+          this.selectedIds.clear();
+          this.loadProduits();
+        },
+        error: () => {
+          this.toastr.error('Erreur lors de la suppression.');
+        },
+      }).add(() => { this.isDeletingMany = false; });
     });
   }
 }

@@ -34,6 +34,10 @@ export class ProduitService {
     return this.http.delete(`${this.API_URL}/produit/${id}`);
   }
 
+  deleteProduits(ids: number[]) {
+    return this.http.delete(`${this.API_URL}/produit`, { body: { ids } } as any);
+  }
+
   scanByCodeBarre(code: string, boutique: number) {
     return this.http.get(`${this.API_URL}/produit/scan/${code}`, { params: { boutique } });
   }
@@ -42,10 +46,12 @@ export class ProduitService {
     return `${this.API_URL}/produit/${id}/etiquette?copies=${copies}`;
   }
 
-  importProduits(file: File, boutiqueId: number) {
+  importProduits(file: File, boutiqueId: number, categorieId?: number) {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${this.API_URL}/produit/import?boutique=${boutiqueId}`, formData, {});
+    let url = `${this.API_URL}/produit/import?boutique=${boutiqueId}`;
+    if (categorieId) url += `&categorie=${categorieId}`;
+    return this.http.post(url, formData, {});
   }
 
   getCatalogueBarcodesPdf(boutiqueId: number) {

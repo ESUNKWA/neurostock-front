@@ -526,9 +526,11 @@ export class UsersComponent {
   profilFind(){
     this.souscription.add(
       this.profilService.find().subscribe({
-        next: (response: any = {})=> { 
-          this.profils = response.data;
-          
+        next: (response: any = {})=> {
+          const isSuperAdmin = this.parsedUser?.profil?.code === 'super_admin';
+          this.profils = isSuperAdmin
+            ? response.data
+            : (response.data ?? []).filter((p: any) => p.code !== 'super_admin');
         },error: (error: any) => {
           console.error('Erreur lors du chargement des profils:', error);
         }
