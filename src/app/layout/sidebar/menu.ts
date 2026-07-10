@@ -83,6 +83,23 @@ export const Menu: any = [
                 ]
             },
             {
+                libelle: 'Commandes fournisseurs',
+                icon: 'bi bi-file-earmark-text',
+                target: 'commandes-fourn-nav',
+                sousMenu: [
+                    {
+                        libelle: 'Nouvelle commande',
+                        lien: '/gestion-des-approvisionnements/commandes-fournisseur/nouvelle',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Liste des commandes',
+                        lien: '/gestion-des-approvisionnements/commandes-fournisseur',
+                        icon: 'bi bi-circle'
+                    }
+                ]
+            },
+            {
                 libelle: 'Gestion ventes',
                 icon: 'bi bi-currency-dollar',
                 target: 'ventes-nav',

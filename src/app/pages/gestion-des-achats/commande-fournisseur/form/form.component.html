@@ -1,0 +1,185 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h1>{{ isEditMode ? 'Modifier la commande' : 'Nouvelle commande fournisseur' }}</h1>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/commandes-fournisseur">Commandes fournisseurs</a></li>
+      <li class="breadcrumb-item active">{{ isEditMode ? 'Modifier' : 'Nouvelle' }}</li>
+    </ol></nav>
+  </div>
+</div>
+
+<section class="section">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row g-3">
+
+      <!-- Colonne gauche : infos générales -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header py-3">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2"></i>Informations générales</h6>
+          </div>
+          <div class="card-body">
+
+            <!-- Boutique -->
+            @if (boutiques.length > 1) {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Boutique <span class="text-danger">*</span></label>
+                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner une boutique"
+                  formControlName="boutique"
+                  (ngModelChange)="onBoutiqueChange($event)"
+                  style="width:100%"
+                  [class.is-invalid]="form.get('boutique')?.invalid && form.get('boutique')?.touched">
+                  @for (b of boutiques; track b.id) {
+                    <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                  }
+                </nz-select>
+                @if (form.get('boutique')?.invalid && form.get('boutique')?.touched) {
+                  <div class="invalid-feedback d-block">La boutique est obligatoire</div>
+                }
+              </div>
+            }
+
+            <!-- Fournisseur -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Fournisseur <span class="text-muted fw-normal">(optionnel)</span></label>
+              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher un fournisseur..."
+                formControlName="fournisseur"
+                style="width:100%">
+                @for (f of fournisseurs; track f.id) {
+                  <nz-option [nzValue]="f.id" [nzLabel]="f.nom"></nz-option>
+                }
+              </nz-select>
+            </div>
+
+            <!-- Date livraison prévue -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Date de livraison prévue <span class="text-muted fw-normal">(optionnel)</span></label>
+              <input type="date" class="form-control" formControlName="date_livraison_prevue">
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Notes <span class="text-muted fw-normal">(optionnel)</span></label>
+              <textarea class="form-control" formControlName="notes" rows="3" placeholder="Remarques, instructions de livraison..."></textarea>
+            </div>
+
+            <!-- Total -->
+            <div class="p-3 rounded bg-light border mt-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-muted">Montant total</span>
+                <span class="fs-5 fw-bold text-primary">{{ montantTotal | number:'1.0-0' }} FCFA</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : lignes de commande -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0 fw-semibold"><i class="bi bi-list-ul me-2"></i>Lignes de commande</h6>
+              <button type="button" class="btn btn-primary btn-sm" (click)="ajouterLigne()" [disabled]="!form.get('boutique')?.value">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            @if (!form.get('boutique')?.value) {
+              <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour ajouter des produits.
+              </div>
+            } @else if (!lignes.length) {
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-cart-plus fs-1 d-block mb-2"></i>
+                Aucune ligne — cliquez sur « Ajouter un produit »
+              </div>
+            } @else {
+              <div formArrayName="detail_commande">
+                <div class="table-responsive">
+                  <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Produit</th>
+                        <th style="width:120px" class="text-center">Quantité</th>
+                        <th style="width:160px" class="text-end">Prix unitaire</th>
+                        <th style="width:150px" class="text-end">Total</th>
+                        <th style="width:50px"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (ligne of lignes.controls; track $index) {
+                        <tr [formGroupName]="$index">
+                          <td>
+                            <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Choisir un produit"
+                              formControlName="produit"
+                              (ngModelChange)="onProduitChange($index, $event)"
+                              style="width:100%"
+                              [class.is-invalid]="ligne.get('produit')?.invalid && ligne.get('produit')?.touched">
+                              @for (p of produits; track p.id) {
+                                <nz-option [nzValue]="p.id" [nzLabel]="p.nom"></nz-option>
+                              }
+                            </nz-select>
+                          </td>
+                          <td>
+                            <input type="number" class="form-control form-control-sm text-center"
+                              formControlName="quantite" min="1"
+                              [class.is-invalid]="ligne.get('quantite')?.invalid && ligne.get('quantite')?.touched">
+                          </td>
+                          <td>
+                            <div class="input-group input-group-sm">
+                              <input type="number" class="form-control text-end"
+                                formControlName="prix_unitaire" min="0"
+                                [class.is-invalid]="ligne.get('prix_unitaire')?.invalid && ligne.get('prix_unitaire')?.touched">
+                              <span class="input-group-text">FCFA</span>
+                            </div>
+                          </td>
+                          <td class="text-end fw-semibold">
+                            {{ ((ligne.get('quantite')?.value ?? 0) * (ligne.get('prix_unitaire')?.value ?? 0)) | number:'1.0-0' }} FCFA
+                          </td>
+                          <td class="text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm" (click)="supprimerLigne($index)" title="Supprimer">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                    <tfoot>
+                      <tr class="table-light">
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-end fw-bold text-primary">{{ montantTotal | number:'1.0-0' }} FCFA</td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <a routerLink="/gestion-des-approvisionnements/commandes-fournisseur" class="btn btn-secondary">
+            <i class="bi bi-x-lg me-1"></i> Annuler
+          </a>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || !lignes.length">
+            @if (isSubmitting) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            } @else {
+              <i class="bi bi-check2-circle me-1"></i>
+            }
+            {{ isEditMode ? 'Enregistrer les modifications' : 'Créer la commande' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</section>

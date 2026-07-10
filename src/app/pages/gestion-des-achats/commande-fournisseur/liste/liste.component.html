@@ -1,0 +1,227 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h1>Commandes fournisseurs</h1>
+    <nav><ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+      <li class="breadcrumb-item active">Commandes fournisseurs</li>
+    </ol></nav>
+  </div>
+</div>
+
+<section class="section">
+  <div class="card border-0 shadow-sm">
+
+    <div class="card-header py-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h6 class="mb-0 fw-semibold">Liste des commandes</h6>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+          @if (boutiques.length > 1) {
+            <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner une boutique"
+              [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
+              style="min-width:220px;">
+              @for (b of boutiques; track b.id) {
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              }
+            </nz-select>
+          }
+
+          <a routerLink="/gestion-des-approvisionnements/commandes-fournisseur/nouvelle" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      @if (!selectedBoutiqueId && boutiques.length > 1) {
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour afficher les commandes.
+        </div>
+      }
+
+      @if (isLoading) {
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted mt-2 small">Chargement…</p>
+        </div>
+      }
+
+      <div [class.d-none]="isLoading">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle dt-commandes-fournisseur">
+            <thead class="table-light">
+              <tr>
+                <th>Référence</th>
+                <th>Fournisseur</th>
+                <th>Date création</th>
+                <th>Livraison prévue</th>
+                <th class="text-end">Montant</th>
+                <th class="text-center">Statut</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal réception -->
+<div class="modal fade" id="modal-reception-cf" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-semibold">
+          <i class="bi bi-box-arrow-in-down me-2"></i>Réceptionner la commande
+          @if (commandeARecevoir?.reference) {
+            <span class="badge bg-light text-dark border font-monospace ms-2">{{ commandeARecevoir.reference }}</span>
+          }
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        @if (commandeARecevoir) {
+          <div class="alert alert-info py-2 mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Saisissez les quantités réellement reçues. Si une quantité est inférieure à la commande, le statut passera à <strong>Reçu partiellement</strong>.
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th class="text-center" style="width:130px">Qté commandée</th>
+                  <th class="text-center" style="width:150px">Qté reçue <span class="text-danger">*</span></th>
+                  <th class="text-end" style="width:140px">Prix unitaire</th>
+                  <th class="text-end" style="width:140px">Sous-total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of lignesReception; track ligne.detail_id) {
+                  <tr>
+                    <td class="fw-semibold">{{ ligne.nom }}</td>
+                    <td class="text-center text-muted">{{ ligne.quantite }}</td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-center"
+                        [(ngModel)]="ligne.quantite_recue"
+                        [max]="ligne.quantite"
+                        min="0"
+                        [class.is-invalid]="ligne.quantite_recue > ligne.quantite">
+                      @if (ligne.quantite_recue > ligne.quantite) {
+                        <div class="invalid-feedback">Max {{ ligne.quantite }}</div>
+                      }
+                    </td>
+                    <td class="text-end">{{ ligne.prix_unitaire | number:'1.0-0' }} FCFA</td>
+                    <td class="text-end fw-semibold">
+                      {{ ((ligne.quantite_recue || 0) * ligne.prix_unitaire) | number:'1.0-0' }} FCFA
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="table-light">
+                  <td colspan="4" class="text-end fw-bold">Montant réceptionné</td>
+                  <td class="text-end fw-bold text-success">{{ montantReception | number:'1.0-0' }} FCFA</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" [disabled]="isReceiving">Annuler</button>
+        <button type="button" class="btn btn-success" (click)="confirmerReception()" [disabled]="isReceiving">
+          @if (isReceiving) {
+            <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement...
+          } @else {
+            <i class="bi bi-check2-circle me-1"></i> Confirmer la réception
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détail -->
+<div class="modal fade" id="modal-detail-cf" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold">
+          <i class="bi bi-clipboard2-data me-2"></i>Détail commande
+          @if (detailCommande?.reference) {
+            <span class="badge bg-light text-dark border font-monospace ms-2">{{ detailCommande.reference }}</span>
+          }
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        @if (detailCommande) {
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <p class="mb-1 text-muted small">Fournisseur</p>
+              <p class="fw-semibold mb-0">{{ detailCommande.fournisseur?.nom ?? '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1 text-muted small">Statut</p>
+              <span class="badge bg-{{ statutCss(detailCommande.statut) }}">{{ statutLabel(detailCommande.statut) }}</span>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1 text-muted small">Date création</p>
+              <p class="mb-0">{{ detailCommande.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1 text-muted small">Livraison prévue</p>
+              <p class="mb-0">{{ detailCommande.date_livraison_prevue ? (detailCommande.date_livraison_prevue | date:'dd/MM/yyyy') : '—' }}</p>
+            </div>
+            @if (detailCommande.notes) {
+              <div class="col-12">
+                <p class="mb-1 text-muted small">Notes</p>
+                <p class="mb-0">{{ detailCommande.notes }}</p>
+              </div>
+            }
+          </div>
+          <hr>
+          <h6 class="fw-semibold mb-3">Lignes de commande</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>Produit</th>
+                  <th class="text-center">Qté commandée</th>
+                  <th class="text-center">Qté reçue</th>
+                  <th class="text-end">Prix unitaire</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of detailCommande.detail_commande; track ligne.id) {
+                  <tr>
+                    <td class="fw-semibold">{{ ligne.produit?.nom ?? '—' }}</td>
+                    <td class="text-center">{{ ligne.quantite }}</td>
+                    <td class="text-center">{{ ligne.quantite_recue ?? 0 }}</td>
+                    <td class="text-end">{{ (ligne.prix_unitaire ?? 0) | number:'1.0-0' }} FCFA</td>
+                    <td class="text-end fw-semibold">{{ ((ligne.quantite ?? 0) * (ligne.prix_unitaire ?? 0)) | number:'1.0-0' }} FCFA</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="table-light">
+                  <td colspan="4" class="text-end fw-bold">Total</td>
+                  <td class="text-end fw-bold">{{ (detailCommande.montant_total ?? 0) | number:'1.0-0' }} FCFA</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

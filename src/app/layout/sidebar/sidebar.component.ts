@@ -115,6 +115,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 s.libelle !== 'Utilisateurs'
               );
             }
+            if (item.libelle === 'Commandes fournisseurs') item._hidden = true;
             // Masquer "Retours produits" au gérant s'il n'a pas la permission
             if (item.libelle === 'Retours produits' && !peutFaireRetour) {
               item._hidden = true;
