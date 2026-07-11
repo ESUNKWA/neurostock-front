@@ -159,7 +159,10 @@ export default class DashboardComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
-              // Admin: attend la sélection manuelle (idBoutique reste 0)
+              if (this.boutiques.length > 0) {
+                this.idBoutique = this.boutiques[0].id;
+                this.loadStats();
+              }
             }
           },
           error: (error: any) => {
@@ -219,7 +222,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
       next: (response) => {
         if (!response?.dash) return;
         this.applyStats(response);
-        this.createChart();
+        setTimeout(() => this.createChart(), 0);
       },
       error: (err) => {
         console.error('❌ Erreur lors du chargement des stats :', err);
@@ -264,7 +267,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (!response?.dash) return;
           this.applyStats(response);
-          this.createChart();
+          setTimeout(() => this.createChart(), 0);
         }
       });
     }

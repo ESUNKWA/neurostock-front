@@ -33,7 +33,7 @@
                         </div>
                         <div class="col-md-7 text-end">
                             <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
-                            <button type="button" class="btn btn-outline-dark me-2" (click)="downloadCatalogueBarcodes()" [disabled]="cataloguePdfLoading" title="Catalogue codes-barres PDF">
+                            <button type="button" class="btn btn-outline-dark me-2 d-none d-md-inline-flex" (click)="downloadCatalogueBarcodes()" [disabled]="cataloguePdfLoading" title="Catalogue codes-barres PDF">
                               @if (cataloguePdfLoading) {
                                 <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                               } @else {
@@ -41,22 +41,27 @@
                               }
                               Codes-barres
                             </button>
-                            <button type="button" class="btn btn-outline-secondary me-2" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
+                            <button type="button" class="btn btn-outline-secondary me-2 d-none d-md-inline-flex" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
                               <i class="bi bi-download"></i> Modèle Excel
                             </button>
-                            <button type="button" class="btn btn-success me-2" (click)="importProduitInput.click()" [disabled]="isParsingFile">
+                            <button type="button" class="btn btn-success me-2 d-none d-md-inline-flex" (click)="importProduitInput.click()" [disabled]="isParsingFile">
                               @if (isParsingFile) {
                                 <span class="spinner-border spinner-border-sm me-1" role="status"></span> Lecture du fichier...
                               } @else {
                                 <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
                               }
                             </button>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                            <button type="button" class="btn btn-primary d-none d-md-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
                                 <i class="bi bi-plus-circle"></i> Nouveau Produit
                             </button>
                         </div>
                     </div>
                 </div>
+
+                <!-- FAB mobile -->
+                <button type="button" class="prd-fab d-md-none" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
                 
                 @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
                    @if (boutiques.length >= 1) {
@@ -160,7 +165,15 @@
                           <div class="flex-grow-1 min-w-0">
                             <div class="mc-title">{{ produit.nom }}</div>
                             <div class="mc-sub">{{ produit.categorie?.nom ?? '—' }}</div>
-                            <div class="mc-amount">{{ produit.prix_vente | number:'1.0-0':'fr' }} F</div>
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                              <div class="mc-amount">{{ produit.prix_vente | number:'1.0-0':'fr' }} F</div>
+                              <span class="prd-stock-badge"
+                                [class.prd-stock--ok]="(produit.stock_disponible ?? 0) > 5"
+                                [class.prd-stock--low]="(produit.stock_disponible ?? 0) > 0 && (produit.stock_disponible ?? 0) <= 5"
+                                [class.prd-stock--out]="(produit.stock_disponible ?? 0) === 0">
+                                <i class="bi bi-box-seam"></i> {{ produit.stock_disponible ?? 0 }}
+                              </span>
+                            </div>
                           </div>
                           <button class="mc-plus-btn" (click)="mobileDetailItem = produit; $event.stopPropagation()">
                             <i class="bi bi-plus"></i>
@@ -197,6 +210,11 @@
                               <span class="mc-row-label">Stock disponible</span>
                               <span class="mc-row-value">{{ mobileDetailItem.stock_disponible ?? '—' }}</span>
                             </div>
+                          </div>
+                          <div class="mc-popup-footer">
+                            <button class="prd-mob-edit-btn" (click)="openEditProduit(mobileDetailItem); mobileDetailItem = null">
+                              <i class="bi bi-pencil-square me-1"></i> Modifier
+                            </button>
                           </div>
                         </div>
                       </div>

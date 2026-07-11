@@ -1,212 +1,351 @@
-<div class="pagetitle">
-  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-    <div>
-      <h1 class="d-flex align-items-center gap-2">
-        <span class="ia-icon-badge"><i class="bi bi-stars"></i></span>
-        Résumé journalier IA
-      </h1>
-      <p class="text-muted mb-0 small">Synthèse de l'activité du jour générée par l'IA</p>
-    </div>
-    <nav><ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
-      <li class="breadcrumb-item">Analyse IA</li>
-      <li class="breadcrumb-item active">Résumé journalier</li>
-    </ol></nav>
-  </div>
-</div>
+<!-- ═══════════════════════════════════════════════════════════════
+     MOBILE  (d-md-none)
+══════════════════════════════════════════════════════════════ -->
+<div class="d-md-none">
 
-<hr>
-
-<section class="section">
-
-  <!-- Sélecteur boutique -->
-  @if (isAdmin) {
-    <div class="row mb-4">
-      <div class="col-md-4">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text"><i class="bi bi-shop"></i></span>
-          <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
-            <option [ngValue]="0">— Sélectionner une boutique —</option>
-            @for (b of boutiques; track b.id) {
-              <option [ngValue]="b.id">{{ b.nom }}</option>
-            }
-          </select>
-        </div>
+  <!-- Header -->
+  <div class="ia-mob-hd">
+    <div class="ia-mob-hd-top">
+      <div class="ia-mob-hd-icon"><i class="bi bi-stars"></i></div>
+      <div class="ia-mob-hd-info">
+        <div class="ia-mob-hd-title">Analyse IA</div>
+        <div class="ia-mob-hd-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
       </div>
-      <div class="col-auto">
-        <button class="btn btn-outline-secondary btn-sm" (click)="loadResume()" [disabled]="!boutiqueId || isLoading">
-          <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
-        </button>
-      </div>
-    </div>
-  } @else {
-    <div class="d-flex justify-content-end mb-4">
-      <button class="btn btn-outline-secondary btn-sm" (click)="loadResume()" [disabled]="isLoading">
-        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
+      <button class="ia-mob-refresh" (click)="loadResume()" [disabled]="isLoading || !boutiqueId">
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i>
       </button>
     </div>
-  }
+
+    @if (isAdmin) {
+      <select class="ia-mob-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
+        <option [ngValue]="0">— Sélectionner une boutique —</option>
+        @for (b of boutiques; track b.id) {
+          <option [ngValue]="b.id">{{ b.nom }}</option>
+        }
+      </select>
+    }
+  </div>
 
   <!-- Loading -->
   @if (isLoading) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="text-muted mt-2 small">Génération du résumé IA…</p>
+    <div class="ia-mob-loader">
+      <div class="ia-mob-spinner"></div>
+      <p>Génération du résumé IA…</p>
     </div>
   }
 
-  <!-- Pas de boutique sélectionnée (admin) -->
+  <!-- Pas de boutique -->
   @if (!isLoading && isAdmin && !boutiqueId) {
-    <div class="text-center py-5 text-muted">
-      <i class="bi bi-shop fs-1 d-block mb-2 opacity-25"></i>
-      Sélectionnez une boutique pour afficher le résumé du jour
+    <div class="ia-mob-empty">
+      <i class="bi bi-shop"></i>
+      <p>Sélectionnez une boutique pour afficher le résumé du jour</p>
     </div>
   }
 
-  <!-- Résultat -->
   @if (!isLoading && resume) {
 
-    <!-- Hero card -->
-    <div class="resume-hero mb-4">
-      <div class="resume-hero__date">
-        <i class="bi bi-calendar3 me-2"></i>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
+    <!-- KPI 2×2 -->
+    <div class="ia-kpi-grid">
+      <div class="ia-kpi-card">
+        <div class="ia-kpi-label">Ventes aujourd'hui</div>
+        <div class="ia-kpi-val">{{ resume.ventes?.aujourd_hui ?? 0 }}</div>
+        @if (resume.ventes?.evolution !== null && resume.ventes?.evolution !== undefined) {
+          <div class="ia-kpi-evo" [class.ia-kpi-evo--up]="resume.ventes.evolution >= 0" [class.ia-kpi-evo--down]="resume.ventes.evolution < 0">
+            <i class="bi {{ evolutionIcon(resume.ventes.evolution) }}"></i>
+            {{ resume.ventes.evolution >= 0 ? '+' : '' }}{{ resume.ventes.evolution }}%
+          </div>
+        } @else {
+          <div class="ia-kpi-evo ia-kpi-evo--neutral"><i class="bi bi-dash"></i> —</div>
+        }
       </div>
-      <div class="row g-4 mt-1">
-        <!-- Ventes -->
-        <div class="col-md-3 col-6">
-          <div class="resume-kpi">
-            <div class="resume-kpi__label">Ventes aujourd'hui</div>
-            <div class="resume-kpi__value">{{ resume.ventes?.aujourd_hui ?? 0 }}</div>
-            @if (resume.ventes?.evolution !== null && resume.ventes?.evolution !== undefined) {
-              <div class="resume-kpi__evo" [class.resume-kpi__evo--up]="resume.ventes.evolution >= 0"
-                                           [class.resume-kpi__evo--down]="resume.ventes.evolution < 0">
-                <i class="bi {{ evolutionIcon(resume.ventes.evolution) }} me-1"></i>
-                {{ resume.ventes.evolution >= 0 ? '+' : '' }}{{ resume.ventes.evolution }}% vs hier
-              </div>
-            } @else {
-              <div class="resume-kpi__evo text-white opacity-50">
-                <i class="bi bi-dash me-1"></i>Pas de données hier
-              </div>
-            }
+      <div class="ia-kpi-card">
+        <div class="ia-kpi-label">Ventes hier</div>
+        <div class="ia-kpi-val">{{ resume.ventes?.hier ?? 0 }}</div>
+        <div class="ia-kpi-evo ia-kpi-evo--neutral"><i class="bi bi-clock-history"></i> Réf.</div>
+      </div>
+      <div class="ia-kpi-card">
+        <div class="ia-kpi-label">CA aujourd'hui</div>
+        <div class="ia-kpi-val ia-kpi-val--sm">{{ resume.chiffre_affaires?.aujourd_hui | number:'1.0-0':'fr' }} F</div>
+        @if (resume.chiffre_affaires?.evolution !== null && resume.chiffre_affaires?.evolution !== undefined) {
+          <div class="ia-kpi-evo" [class.ia-kpi-evo--up]="resume.chiffre_affaires.evolution >= 0" [class.ia-kpi-evo--down]="resume.chiffre_affaires.evolution < 0">
+            <i class="bi {{ evolutionIcon(resume.chiffre_affaires.evolution) }}"></i>
+            {{ resume.chiffre_affaires.evolution >= 0 ? '+' : '' }}{{ resume.chiffre_affaires.evolution }}%
           </div>
-        </div>
-        <!-- Ventes hier -->
-        <div class="col-md-3 col-6">
-          <div class="resume-kpi">
-            <div class="resume-kpi__label">Ventes hier</div>
-            <div class="resume-kpi__value">{{ resume.ventes?.hier ?? 0 }}</div>
-            <div class="resume-kpi__evo text-white opacity-50">
-              <i class="bi bi-clock-history me-1"></i>Référence
-            </div>
-          </div>
-        </div>
-        <!-- CA -->
-        <div class="col-md-3 col-6">
-          <div class="resume-kpi">
-            <div class="resume-kpi__label">CA aujourd'hui</div>
-            <div class="resume-kpi__value">{{ resume.chiffre_affaires?.aujourd_hui | number:'1.0-0':'fr' }} F</div>
-            @if (resume.chiffre_affaires?.evolution !== null && resume.chiffre_affaires?.evolution !== undefined) {
-              <div class="resume-kpi__evo" [class.resume-kpi__evo--up]="resume.chiffre_affaires.evolution >= 0"
-                                           [class.resume-kpi__evo--down]="resume.chiffre_affaires.evolution < 0">
-                <i class="bi {{ evolutionIcon(resume.chiffre_affaires.evolution) }} me-1"></i>
-                {{ resume.chiffre_affaires.evolution >= 0 ? '+' : '' }}{{ resume.chiffre_affaires.evolution }}%
-              </div>
-            } @else {
-              <div class="resume-kpi__evo text-white opacity-50">
-                <i class="bi bi-dash me-1"></i>Pas de données hier
-              </div>
-            }
-          </div>
-        </div>
-        <!-- CA hier -->
-        <div class="col-md-3 col-6">
-          <div class="resume-kpi">
-            <div class="resume-kpi__label">CA hier</div>
-            <div class="resume-kpi__value">{{ resume.chiffre_affaires?.hier | number:'1.0-0':'fr' }} F</div>
-            <div class="resume-kpi__evo text-white opacity-50">
-              <i class="bi bi-clock-history me-1"></i>Référence
-            </div>
-          </div>
-        </div>
+        } @else {
+          <div class="ia-kpi-evo ia-kpi-evo--neutral"><i class="bi bi-dash"></i> —</div>
+        }
+      </div>
+      <div class="ia-kpi-card">
+        <div class="ia-kpi-label">CA hier</div>
+        <div class="ia-kpi-val ia-kpi-val--sm">{{ resume.chiffre_affaires?.hier | number:'1.0-0':'fr' }} F</div>
+        <div class="ia-kpi-evo ia-kpi-evo--neutral"><i class="bi bi-clock-history"></i> Réf.</div>
       </div>
     </div>
 
-    <!-- Résumé texte IA -->
+    <!-- Texte IA -->
     @if (resume.resume_texte) {
-      <div class="resume-texte-card mb-4">
-        <i class="bi bi-robot resume-texte-card__icon"></i>
-        <blockquote class="mb-0">{{ resume.resume_texte }}</blockquote>
+      <div class="ia-mob-texte">
+        <div class="ia-mob-texte-icon"><i class="bi bi-robot"></i></div>
+        <p>{{ resume.resume_texte }}</p>
       </div>
     }
 
-    <div class="row g-4">
-
-      <!-- Top produits -->
-      <div class="col-lg-7">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
-              <i class="bi bi-trophy text-warning me-1"></i> Top ventes du jour
-            </h6>
-            @if (resume.top_produits?.length) {
-              @for (p of resume.top_produits; track $index) {
-                <div class="d-flex align-items-center gap-3 mb-3">
-                  <div class="top-rank">{{ $index + 1 }}</div>
-                  <div class="flex-grow-1 overflow-hidden">
-                    <div class="fw-semibold small text-truncate">{{ p.nom }}</div>
-                    <div class="progress mt-1" style="height:5px;">
-                      <div class="progress-bar bg-warning"
-                           [style.width.%]="resume.top_produits[0].quantite_vendue > 0 ? (p.quantite_vendue / resume.top_produits[0].quantite_vendue) * 100 : 0">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-end" style="min-width:100px;">
-                    <div class="fw-bold small text-success">{{ p.chiffre_affaires | number:'1.0-0':'fr' }} F</div>
-                    <div class="text-muted" style="font-size:.7rem;">{{ p.quantite_vendue }} unité(s)</div>
-                  </div>
-                </div>
-              }
-            } @else {
-              <div class="text-center text-muted py-3 small">
-                <i class="bi bi-bag-x d-block fs-2 mb-2 opacity-25"></i>
-                Aucune vente aujourd'hui
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Alertes stock -->
-      <div class="col-lg-5">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
-              <i class="bi bi-bell text-danger me-1"></i> État du stock
-            </h6>
-            <div class="d-flex gap-3 mb-3">
-              <div class="stock-stat stock-stat--danger">
-                <div class="stock-stat__value">{{ resume.stock?.produits_en_rupture ?? 0 }}</div>
-                <div class="stock-stat__label">En rupture</div>
-              </div>
-              <div class="stock-stat stock-stat--warning">
-                <div class="stock-stat__value">{{ resume.stock?.produits_en_alerte ?? 0 }}</div>
-                <div class="stock-stat__label">Sous seuil</div>
+    <!-- Top produits -->
+    <div class="ia-mob-section-title"><i class="bi bi-trophy me-1 text-warning"></i>Top ventes du jour</div>
+    <div class="ia-mob-card">
+      @if (resume.top_produits?.length) {
+        @for (p of resume.top_produits; track $index) {
+          <div class="ia-top-row">
+            <div class="ia-top-rank" [class.ia-top-rank--gold]="$index === 0" [class.ia-top-rank--silver]="$index === 1" [class.ia-top-rank--bronze]="$index === 2">
+              {{ $index + 1 }}
+            </div>
+            <div class="ia-top-info">
+              <div class="ia-top-nom">{{ p.nom }}</div>
+              <div class="ia-top-bar-wrap">
+                <div class="ia-top-bar" [style.width.%]="resume.top_produits[0].quantite_vendue > 0 ? (p.quantite_vendue / resume.top_produits[0].quantite_vendue) * 100 : 0"></div>
               </div>
             </div>
-            @if (!resume.stock?.produits_en_rupture && !resume.stock?.produits_en_alerte) {
-              <div class="text-success small">
-                <i class="bi bi-check-circle-fill me-1"></i> Aucune alerte stock aujourd'hui
+            <div class="ia-top-stats">
+              <div class="ia-top-ca">{{ p.chiffre_affaires | number:'1.0-0':'fr' }} F</div>
+              <div class="ia-top-qte">{{ p.quantite_vendue }} u.</div>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="ia-mob-empty-inline">
+          <i class="bi bi-bag-x"></i> Aucune vente aujourd'hui
+        </div>
+      }
+    </div>
+
+    <!-- État du stock -->
+    <div class="ia-mob-section-title"><i class="bi bi-bell me-1 text-danger"></i>État du stock</div>
+    <div class="ia-stock-row">
+      <div class="ia-stock-box ia-stock-box--danger">
+        <div class="ia-stock-val">{{ resume.stock?.produits_en_rupture ?? 0 }}</div>
+        <div class="ia-stock-lbl">En rupture</div>
+      </div>
+      <div class="ia-stock-box ia-stock-box--warning">
+        <div class="ia-stock-val">{{ resume.stock?.produits_en_alerte ?? 0 }}</div>
+        <div class="ia-stock-lbl">Sous seuil</div>
+      </div>
+    </div>
+    @if (!resume.stock?.produits_en_rupture && !resume.stock?.produits_en_alerte) {
+      <div class="ia-stock-ok"><i class="bi bi-check-circle-fill me-1"></i>Aucune alerte stock aujourd'hui</div>
+    } @else {
+      <div class="px-4 mb-4">
+        <a routerLink="/analyse-ia/rupture-stock" class="ia-mob-link-btn">
+          <i class="bi bi-graph-up-arrow me-1"></i> Voir prévision de rupture
+        </a>
+      </div>
+    }
+
+    <div style="height:80px"></div>
+  }
+
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DESKTOP  (d-none d-md-block)
+══════════════════════════════════════════════════════════════ -->
+<div class="d-none d-md-block">
+
+  <div class="pagetitle">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div>
+        <h1 class="d-flex align-items-center gap-2">
+          <span class="ia-icon-badge"><i class="bi bi-stars"></i></span>
+          Résumé journalier IA
+        </h1>
+        <p class="text-muted mb-0 small">Synthèse de l'activité du jour générée par l'IA</p>
+      </div>
+      <nav><ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item">Analyse IA</li>
+        <li class="breadcrumb-item active">Résumé journalier</li>
+      </ol></nav>
+    </div>
+  </div>
+
+  <hr>
+
+  <section class="section">
+
+    @if (isAdmin) {
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-shop"></i></span>
+            <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
+              <option [ngValue]="0">— Sélectionner une boutique —</option>
+              @for (b of boutiques; track b.id) {
+                <option [ngValue]="b.id">{{ b.nom }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-secondary btn-sm" (click)="loadResume()" [disabled]="!boutiqueId || isLoading">
+            <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="d-flex justify-content-end mb-4">
+        <button class="btn btn-outline-secondary btn-sm" (click)="loadResume()" [disabled]="isLoading">
+          <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
+        </button>
+      </div>
+    }
+
+    @if (isLoading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2 small">Génération du résumé IA…</p>
+      </div>
+    }
+
+    @if (!isLoading && isAdmin && !boutiqueId) {
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-shop fs-1 d-block mb-2 opacity-25"></i>
+        Sélectionnez une boutique pour afficher le résumé du jour
+      </div>
+    }
+
+    @if (!isLoading && resume) {
+
+      <div class="resume-hero mb-4">
+        <div class="resume-hero__date">
+          <i class="bi bi-calendar3 me-2"></i>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
+        </div>
+        <div class="row g-4 mt-1">
+          <div class="col-md-3 col-6">
+            <div class="resume-kpi">
+              <div class="resume-kpi__label">Ventes aujourd'hui</div>
+              <div class="resume-kpi__value">{{ resume.ventes?.aujourd_hui ?? 0 }}</div>
+              @if (resume.ventes?.evolution !== null && resume.ventes?.evolution !== undefined) {
+                <div class="resume-kpi__evo" [class.resume-kpi__evo--up]="resume.ventes.evolution >= 0"
+                                             [class.resume-kpi__evo--down]="resume.ventes.evolution < 0">
+                  <i class="bi {{ evolutionIcon(resume.ventes.evolution) }} me-1"></i>
+                  {{ resume.ventes.evolution >= 0 ? '+' : '' }}{{ resume.ventes.evolution }}% vs hier
+                </div>
+              } @else {
+                <div class="resume-kpi__evo text-white opacity-50">
+                  <i class="bi bi-dash me-1"></i>Pas de données hier
+                </div>
+              }
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="resume-kpi">
+              <div class="resume-kpi__label">Ventes hier</div>
+              <div class="resume-kpi__value">{{ resume.ventes?.hier ?? 0 }}</div>
+              <div class="resume-kpi__evo text-white opacity-50">
+                <i class="bi bi-clock-history me-1"></i>Référence
               </div>
-            } @else {
-              <a routerLink="/analyse-ia/rupture-stock" class="btn btn-outline-danger btn-sm mt-2">
-                <i class="bi bi-graph-up-arrow me-1"></i> Voir prévision de rupture
-              </a>
-            }
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="resume-kpi">
+              <div class="resume-kpi__label">CA aujourd'hui</div>
+              <div class="resume-kpi__value">{{ resume.chiffre_affaires?.aujourd_hui | number:'1.0-0':'fr' }} F</div>
+              @if (resume.chiffre_affaires?.evolution !== null && resume.chiffre_affaires?.evolution !== undefined) {
+                <div class="resume-kpi__evo" [class.resume-kpi__evo--up]="resume.chiffre_affaires.evolution >= 0"
+                                             [class.resume-kpi__evo--down]="resume.chiffre_affaires.evolution < 0">
+                  <i class="bi {{ evolutionIcon(resume.chiffre_affaires.evolution) }} me-1"></i>
+                  {{ resume.chiffre_affaires.evolution >= 0 ? '+' : '' }}{{ resume.chiffre_affaires.evolution }}%
+                </div>
+              } @else {
+                <div class="resume-kpi__evo text-white opacity-50">
+                  <i class="bi bi-dash me-1"></i>Pas de données hier
+                </div>
+              }
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="resume-kpi">
+              <div class="resume-kpi__label">CA hier</div>
+              <div class="resume-kpi__value">{{ resume.chiffre_affaires?.hier | number:'1.0-0':'fr' }} F</div>
+              <div class="resume-kpi__evo text-white opacity-50">
+                <i class="bi bi-clock-history me-1"></i>Référence
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-    </div>
-  }
+      @if (resume.resume_texte) {
+        <div class="resume-texte-card mb-4">
+          <i class="bi bi-robot resume-texte-card__icon"></i>
+          <blockquote class="mb-0">{{ resume.resume_texte }}</blockquote>
+        </div>
+      }
 
-</section>
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+                <i class="bi bi-trophy text-warning me-1"></i> Top ventes du jour
+              </h6>
+              @if (resume.top_produits?.length) {
+                @for (p of resume.top_produits; track $index) {
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="top-rank">{{ $index + 1 }}</div>
+                    <div class="flex-grow-1 overflow-hidden">
+                      <div class="fw-semibold small text-truncate">{{ p.nom }}</div>
+                      <div class="progress mt-1" style="height:5px;">
+                        <div class="progress-bar bg-warning"
+                             [style.width.%]="resume.top_produits[0].quantite_vendue > 0 ? (p.quantite_vendue / resume.top_produits[0].quantite_vendue) * 100 : 0">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-end" style="min-width:100px;">
+                      <div class="fw-bold small text-success">{{ p.chiffre_affaires | number:'1.0-0':'fr' }} F</div>
+                      <div class="text-muted" style="font-size:.7rem;">{{ p.quantite_vendue }} unité(s)</div>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="text-center text-muted py-3 small">
+                  <i class="bi bi-bag-x d-block fs-2 mb-2 opacity-25"></i>
+                  Aucune vente aujourd'hui
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.75rem;letter-spacing:.05em;">
+                <i class="bi bi-bell text-danger me-1"></i> État du stock
+              </h6>
+              <div class="d-flex gap-3 mb-3">
+                <div class="stock-stat stock-stat--danger">
+                  <div class="stock-stat__value">{{ resume.stock?.produits_en_rupture ?? 0 }}</div>
+                  <div class="stock-stat__label">En rupture</div>
+                </div>
+                <div class="stock-stat stock-stat--warning">
+                  <div class="stock-stat__value">{{ resume.stock?.produits_en_alerte ?? 0 }}</div>
+                  <div class="stock-stat__label">Sous seuil</div>
+                </div>
+              </div>
+              @if (!resume.stock?.produits_en_rupture && !resume.stock?.produits_en_alerte) {
+                <div class="text-success small">
+                  <i class="bi bi-check-circle-fill me-1"></i> Aucune alerte stock aujourd'hui
+                </div>
+              } @else {
+                <a routerLink="/analyse-ia/rupture-stock" class="btn btn-outline-danger btn-sm mt-2">
+                  <i class="bi bi-graph-up-arrow me-1"></i> Voir prévision de rupture
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </section>
+</div>

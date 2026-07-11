@@ -138,6 +138,16 @@
             <div class="mob-kpi-value">{{ stats.dash.produit?.valeur_stock | number:'1.0-0':'fr' }}</div>
             <div class="mob-kpi-sub">{{ stats.dash.produit?.total_produits || 0 }} produits</div>
           </div>
+          <div class="mob-kpi-card mob-kpi--indigo">
+            <div class="mob-kpi-label">CA semaine</div>
+            <div class="mob-kpi-value">{{ stats.dash.vente?.total_vente_semaine | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">FCFA</div>
+          </div>
+          <div class="mob-kpi-card mob-kpi--teal">
+            <div class="mob-kpi-label">CA année</div>
+            <div class="mob-kpi-value">{{ stats.dash.vente?.total_vente_annee | number:'1.0-0':'fr' }}</div>
+            <div class="mob-kpi-sub">FCFA</div>
+          </div>
         </div>
 
         <!-- Bandeau IA -->

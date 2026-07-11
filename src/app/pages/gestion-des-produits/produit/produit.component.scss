@@ -1,3 +1,69 @@
+// ── Stock badge (mobile cards) ────────────────────────────────────────────────
+.prd-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-variant-numeric: tabular-nums;
+
+  &.prd-stock--ok  { background: #dcfce7; color: #15803d; }
+  &.prd-stock--low { background: #fef9c3; color: #a16207; }
+  &.prd-stock--out { background: #fee2e2; color: #dc2626; }
+}
+
+// ── Mobile popup footer ───────────────────────────────────────────────────────
+.mc-popup-footer {
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.prd-mob-edit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 0;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+  &:active { opacity: .88; }
+}
+
+// ── FAB mobile ────────────────────────────────────────────────────────────────
+.prd-fab {
+  position: fixed;
+  bottom: 76px;
+  right: 20px;
+  z-index: 1050;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.93);
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
+  }
+}
+
 // ── Modal shell ───────────────────────────────────────────────────────────────
 .prd-modal {
   border: none;

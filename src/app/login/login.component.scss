@@ -360,6 +360,10 @@ $transition:  0.25s ease;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
+.login-page {
+  overflow-x: hidden;
+}
+
 @media (max-width: 991.98px) {
   .login-right {
     min-height: 100vh;
@@ -368,5 +372,20 @@ $transition:  0.25s ease;
 
   .form-wrapper {
     box-shadow: 0 4px 20px rgba(30, 41, 59, 0.08);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .login-right {
+    padding: 1.25rem 0.75rem;
+  }
+
+  .form-wrapper {
+    padding: 1.75rem 1.25rem;
+    border-radius: 12px;
+  }
+
+  .form-header h2 {
+    font-size: 1.35rem;
   }
 }

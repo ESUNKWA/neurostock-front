@@ -493,23 +493,16 @@ nz-select {
 // ── KPI défilables ────────────────────────────────────────────────────────────
 
 .mob-kpi-scroll {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  overflow-x: auto;
-  padding: 0 16px 4px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
   margin-bottom: 20px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar { display: none; }
 }
 
 .mob-kpi-card {
-  flex: 0 0 148px;
-  scroll-snap-align: start;
-  border-radius: 16px;
-  padding: 14px 14px 12px;
+  border-radius: 14px;
+  padding: 12px 10px 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
   border-left: 3px solid transparent;
 
@@ -517,29 +510,35 @@ nz-select {
   &.mob-kpi--success { background: #f0fdf4; border-left-color: #22c55e; }
   &.mob-kpi--emerald { background: #ecfdf5; border-left-color: #10b981; }
   &.mob-kpi--amber   { background: #fffbeb; border-left-color: #f59e0b; }
+  &.mob-kpi--indigo  { background: #eef2ff; border-left-color: #6366f1; }
+  &.mob-kpi--teal    { background: #f0fdfa; border-left-color: #14b8a6; }
 }
 
 .mob-kpi-label {
-  font-size: .64rem;
+  font-size: .58rem;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .04em;
   color: #64748b;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mob-kpi-value {
-  font-size: 1.05rem;
+  font-size: .88rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  word-break: break-all;
 }
 
 .mob-kpi-sub {
-  font-size: .68rem;
+  font-size: .62rem;
   color: #94a3b8;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 // ── Bandeau IA ────────────────────────────────────────────────────────────────

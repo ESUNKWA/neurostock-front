@@ -343,18 +343,22 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
+            const defaultId = this.currentUser.boutique_id || this.boutiques[0]?.id;
+            if (defaultId) this.onBoutiqueChange(defaultId);
           }
         },
         error: (error: any) => {
           console.error('Erreur lors du chargement des boutiques:', error);
         }
       });
-    }else{
+    } else {
       if (this.currentUser.profil.code.toLowerCase() === 'responsable_structure') {
         this.boutiqueService.findByStructure(this.currentUser.structure[0].id).subscribe({
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
+              const defaultId = this.currentUser.boutique_id || this.boutiques[0]?.id;
+              if (defaultId) this.onBoutiqueChange(defaultId);
             }
           },
           error: (error: any) => {
@@ -383,8 +387,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     });
   }
 
-  onBoutiqueChange(value: string | null): void {
+  onBoutiqueChange(value: any): void {
     this.selectedBoutique = value ?? '';
+    this.selectedBoutiqueFilter = value ?? null;
     this.selectedCategoryFilter = null;
     this.loadCategories(value ?? undefined);
     this.loadProduits();

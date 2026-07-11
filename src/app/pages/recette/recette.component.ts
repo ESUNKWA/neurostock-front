@@ -15,6 +15,7 @@ type FilterType = 'today' | 'month' | 'all' | 'custom';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './recette.component.html',
+  styleUrl: './recette.component.scss',
 })
 export default class RecetteComponent implements OnInit, OnDestroy {
   private dashService     = inject(DashService);
@@ -36,6 +37,23 @@ export default class RecetteComponent implements OnInit, OnDestroy {
   ventes: any[]  = [];
   loading        = false;
   mobileDetailItem: any = null;
+
+  // Pagination mobile
+  mobilePage  = 1;
+  mobilePageSize = 5;
+
+  get mobileTotalPages(): number {
+    return Math.ceil(this.ventes.length / this.mobilePageSize) || 1;
+  }
+
+  get pagedVentes(): any[] {
+    const start = (this.mobilePage - 1) * this.mobilePageSize;
+    return this.ventes.slice(start, start + this.mobilePageSize);
+  }
+
+  mobilePages(): number[] {
+    return Array.from({ length: this.mobileTotalPages }, (_, i) => i + 1);
+  }
 
   readonly modesLabels: Record<string, string> = {
     espece:       'Espèces',
@@ -126,6 +144,7 @@ export default class RecetteComponent implements OnInit, OnDestroy {
           const data   = r?.data ?? r;
           this.recette = data;
           this.ventes  = data?.ventes ?? [];
+          this.mobilePage = 1;
           this.destroyDataTable();
           setTimeout(() => {
             if (isPlatformBrowser(this.platformId)) this.initDataTable();
