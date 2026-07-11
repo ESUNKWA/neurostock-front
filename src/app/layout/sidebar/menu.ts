@@ -180,6 +180,37 @@ export const Menu: any = [
         ]
     },
     {
+        titre: 'Restaurant / Maquis',
+        full: true,
+        menu: [
+            {
+                libelle: 'Plan de salle',
+                icon: 'bi bi-grid-3x3-gap',
+                lien: '/restaurant/tables'
+            },
+            {
+                libelle: 'Prise de commande',
+                icon: 'bi bi-clipboard-plus',
+                lien: '/restaurant/commande'
+            },
+            {
+                libelle: 'Liste des commandes',
+                icon: 'bi bi-receipt',
+                lien: '/restaurant/commandes'
+            },
+            {
+                libelle: 'Menu du jour',
+                icon: 'bi bi-calendar2-check',
+                lien: '/restaurant/menu-jour'
+            },
+            {
+                libelle: 'Menu & Recettes',
+                icon: 'bi bi-journal-text',
+                lien: '/restaurant/recettes'
+            }
+        ]
+    },
+    {
         titre: 'Rapports',
         full: true,
         menu: [

@@ -84,6 +84,11 @@ export const routes: Routes = [
             loadChildren: () => import('./pages/gestion-des-retours/routes'),
             title: 'neurostock | Retours produits'
         },
+        {
+            path: 'restaurant',
+            loadChildren: () => import('./pages/restaurant/routes'),
+            title: 'neurostock | Restaurant'
+        },
     ]
     },
     // POS layout — for vendeur / caissier roles
@@ -108,5 +113,6 @@ export const routes: Routes = [
     { path: 'no-access', loadComponent: () => import('./pages/no-access/no-access.component'), title: 'Accès non configuré' },
     { path: 'landing', loadComponent: () => import('./pages/landing/landing.component'), title: 'NeuroStock · Gérez vos boutiques intelligemment' },
     { path: 'inscription', loadComponent: () => import('./pages/inscription/inscription.component'), title: 'NeuroStock · Créer votre espace' },
+    { path: 'menu', loadComponent: () => import('./pages/menu-client/menu-client.component'), title: 'Menu du jour' },
     { path: '**', redirectTo: 'dashboard' }
 ];

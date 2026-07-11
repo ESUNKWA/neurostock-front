@@ -1,0 +1,346 @@
+<div class="page-content">
+  <div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h4 class="mb-0 fw-bold"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Prise de commande</h4>
+        @if (commandeEnCours) {
+          <small class="text-muted">
+            Commande <span class="fw-semibold font-monospace">{{ commandeEnCours.reference }}</span>
+            &nbsp;<span class="badge bg-{{ statutInfo(commandeEnCours.statut).css }}">{{ statutInfo(commandeEnCours.statut).label }}</span>
+          </small>
+        }
+      </div>
+      <a routerLink="/restaurant/tables" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Plan de salle
+      </a>
+    </div>
+
+    @if (isLoading) {
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    }
+
+    @if (!isLoading) {
+      <div class="row g-3">
+
+        <!-- ======= Colonne gauche : menu ======= -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm">
+
+            <!-- En-tête avec onglets Plats / Boissons -->
+            <div class="card-header bg-white p-0">
+              <div class="d-flex justify-content-between align-items-center px-3 pt-2 pb-0">
+                <!-- Onglets -->
+                <ul class="nav nav-tabs border-0" style="margin-bottom:-1px;">
+                  <li class="nav-item">
+                    <button class="nav-link fw-semibold"
+                            [class.active]="onglet === 'plats'"
+                            (click)="onglet = 'plats'">
+                      <i class="bi bi-egg-fried me-1"></i>Plats
+                      <span class="badge ms-1 rounded-pill"
+                            [class.bg-primary]="onglet === 'plats'"
+                            [class.bg-light]="onglet !== 'plats'"
+                            [class.text-dark]="onglet !== 'plats'">{{ nbPlats }}</span>
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link fw-semibold"
+                            [class.active]="onglet === 'boissons'"
+                            (click)="onglet = 'boissons'">
+                      <i class="bi bi-cup-straw me-1"></i>Boissons
+                      <span class="badge ms-1 rounded-pill"
+                            [class.bg-primary]="onglet === 'boissons'"
+                            [class.bg-light]="onglet !== 'boissons'"
+                            [class.text-dark]="onglet !== 'boissons'">{{ nbBoissons }}</span>
+                    </button>
+                  </li>
+                </ul>
+
+                <!-- Sélecteur boutique (admin) -->
+                @if (isAdmin) {
+                  <nz-select [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
+                             nzPlaceHolder="Boutique" nzShowSearch style="min-width:160px;">
+                    @for (b of boutiques; track b.id) {
+                      <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                    }
+                  </nz-select>
+                }
+              </div>
+            </div>
+
+            <!-- Grille de recettes -->
+            <div class="card-body p-2" style="max-height:65vh; overflow-y:auto;">
+
+              <!-- Bandeau menu du jour actif -->
+              @if (menuActif && onglet === 'plats') {
+                <div class="alert alert-primary alert-sm d-flex align-items-center gap-2 py-2 mb-2">
+                  <i class="bi bi-calendar2-check flex-shrink-0"></i>
+                  <span class="small">
+                    <strong>Menu du jour actif</strong> — {{ nbPlats }} plat(s) disponibles.
+                    <a routerLink="/restaurant/menu-jour" class="ms-1">Modifier</a>
+                  </span>
+                </div>
+              }
+              @if (!menuActif && onglet === 'plats') {
+                <div class="alert alert-warning alert-sm d-flex align-items-center gap-2 py-2 mb-2">
+                  <i class="bi bi-exclamation-triangle flex-shrink-0"></i>
+                  <span class="small">
+                    Pas de menu du jour — tous les plats sont affichés.
+                    <a routerLink="/restaurant/menu-jour" class="ms-1">Créer le menu</a>
+                  </span>
+                </div>
+              }
+
+              <!-- === ONGLET PLATS === -->
+              @if (onglet === 'plats') {
+                @if (recettesPlats.length === 0) {
+                  <div class="text-center py-4 text-muted">
+                    <i class="bi bi-egg-fried fs-2"></i>
+                    <p class="mt-2 small">Aucun plat actif — <a routerLink="/restaurant/recettes">créer des recettes</a></p>
+                  </div>
+                }
+                <div class="row g-2">
+                  @for (r of recettesPlats; track r.id) {
+                    <div class="col-6 col-md-4">
+                      <button class="btn btn-outline-secondary w-100 h-100 text-start p-2 recette-btn"
+                              (click)="ajouterAuPanier(r)">
+                        <div class="fw-semibold text-truncate small">{{ r.nom }}</div>
+                        <div class="text-primary fw-bold small">{{ r.prix_vente | number:'1.0-0' }} FCFA</div>
+                        @if (r.categorie) {
+                          <div class="badge bg-light text-muted mt-1 small">{{ r.categorie }}</div>
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- === ONGLET BOISSONS === -->
+              @if (onglet === 'boissons') {
+                @if (recettesBoissons.length === 0) {
+                  <div class="text-center py-4 text-muted">
+                    <i class="bi bi-cup-straw fs-2"></i>
+                    <p class="mt-2 small">Aucune boisson active — <a routerLink="/restaurant/recettes">ajouter des boissons</a></p>
+                  </div>
+                }
+
+                <!-- Légende rupture -->
+                @if (recettesBoissons.length > 0) {
+                  <div class="d-flex align-items-center gap-3 mb-2 px-1">
+                    <small class="text-muted fst-italic">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Stock en temps réel — les articles grisés sont épuisés.
+                    </small>
+                  </div>
+                }
+
+                <div class="row g-2">
+                  @for (r of recettesBoissons; track r.id) {
+                    @let rupture = enRupture(r);
+                    @let dispo = stockDispo(r);
+                    <div class="col-6 col-md-4">
+                      <button class="btn w-100 h-100 text-start p-2 recette-btn"
+                              [class.btn-outline-secondary]="!rupture"
+                              [class.btn-outline-danger]="rupture"
+                              [disabled]="rupture"
+                              (click)="ajouterAuPanier(r)">
+
+                        <!-- Nom + badge rupture -->
+                        <div class="d-flex justify-content-between align-items-start gap-1 mb-1">
+                          <span class="fw-semibold text-truncate small flex-grow-1">{{ r.nom }}</span>
+                          @if (rupture) {
+                            <span class="badge bg-danger flex-shrink-0 small">Rupture</span>
+                          }
+                        </div>
+
+                        <!-- Prix -->
+                        <div class="fw-bold small" [class.text-primary]="!rupture" [class.text-muted]="rupture">
+                          {{ r.prix_vente | number:'1.0-0' }} FCFA
+                        </div>
+
+                        <!-- Stock disponible (si géré via compositions) -->
+                        @if (stockGere(r)) {
+                          <div class="mt-1">
+                            <span class="badge small"
+                                  [class.bg-success]="dispo >= 5"
+                                  [class.bg-warning]="dispo >= 1 && dispo < 5"
+                                  [class.bg-danger]="dispo === 0"
+                                  [class.text-dark]="dispo >= 1 && dispo < 5">
+                              <i class="bi bi-box-seam me-1"></i>{{ dispo }} en stock
+                            </span>
+                          </div>
+                        }
+
+                        @if (r.categorie) {
+                          <div class="badge bg-light text-muted mt-1 small">{{ r.categorie }}</div>
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ======= Colonne droite : panier + commande ======= -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+              <span class="fw-semibold"><i class="bi bi-cart me-1"></i>Panier</span>
+              <nz-select [(ngModel)]="selectedTableId" nzPlaceHolder="Table (optionnel)" nzAllowClear nzShowSearch style="min-width:130px;">
+                @for (t of tables; track t.id) {
+                  <nz-option [nzValue]="t.id" [nzLabel]="'Table ' + t.numero + (t.nom ? ' — ' + t.nom : '')"></nz-option>
+                }
+              </nz-select>
+            </div>
+
+            <div class="card-body p-0" style="max-height:50vh; overflow-y:auto;">
+              @if (panierVide) {
+                <div class="text-center py-4 text-muted">
+                  <i class="bi bi-cart-x fs-2"></i>
+                  <p class="mt-1 small">Panier vide — cliquez sur les plats et boissons</p>
+                </div>
+              } @else {
+
+                <!-- Section Plats du panier -->
+                @if (panierPlats.length > 0) {
+                  <div class="px-3 pt-2 pb-1">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size:.7rem; letter-spacing:.05em;">
+                      <i class="bi bi-egg-fried me-1"></i>Plats
+                    </small>
+                  </div>
+                  <table class="table table-sm mb-0">
+                    <tbody>
+                      @for (ligne of panierPlats; track ligne.recette.id; let i = $index) {
+                        @let idx = indexPanier(ligne.recette);
+                        <tr>
+                          <td class="align-middle ps-3">
+                            <div class="fw-semibold small">{{ ligne.recette.nom }}</div>
+                            <input type="text" class="form-control form-control-sm mt-1"
+                                   [(ngModel)]="panier[idx].note" placeholder="Note (sans piment…)">
+                          </td>
+                          <td class="align-middle text-center" style="width:100px;">
+                            <div class="btn-group btn-group-sm">
+                              <button class="btn btn-outline-secondary" (click)="diminuerQuantite(idx)"><i class="bi bi-dash"></i></button>
+                              <span class="btn btn-outline-secondary disabled fw-bold">{{ ligne.quantite }}</span>
+                              <button class="btn btn-outline-secondary" (click)="augmenterQuantite(idx)"><i class="bi bi-plus"></i></button>
+                            </div>
+                          </td>
+                          <td class="align-middle text-end pe-2 small fw-semibold text-nowrap">
+                            {{ (ligne.quantite * ligne.recette.prix_vente) | number:'1.0-0' }}
+                          </td>
+                          <td class="align-middle pe-2">
+                            <button class="btn btn-sm btn-outline-danger" (click)="supprimerDuPanier(idx)"><i class="bi bi-x"></i></button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+
+                <!-- Séparateur + Section Boissons du panier -->
+                @if (panierBoissons.length > 0) {
+                  <div class="px-3 pt-2 pb-1" [class.border-top]="panierPlats.length > 0">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size:.7rem; letter-spacing:.05em;">
+                      <i class="bi bi-cup-straw me-1"></i>Boissons
+                    </small>
+                  </div>
+                  <table class="table table-sm mb-0">
+                    <tbody>
+                      @for (ligne of panierBoissons; track ligne.recette.id) {
+                        @let idx = indexPanier(ligne.recette);
+                        @let dispoEff = stockDispoEffectif(ligne.recette);
+                        <tr>
+                          <td class="align-middle ps-3">
+                            <div class="fw-semibold small">{{ ligne.recette.nom }}</div>
+                            @if (stockGere(ligne.recette)) {
+                              <small class="text-muted">stock : {{ stockDispo(ligne.recette) }}</small>
+                            }
+                          </td>
+                          <td class="align-middle text-center" style="width:100px;">
+                            <div class="btn-group btn-group-sm">
+                              <button class="btn btn-outline-secondary" (click)="diminuerQuantite(idx)"><i class="bi bi-dash"></i></button>
+                              <span class="btn btn-outline-secondary disabled fw-bold"
+                                    [class.text-danger]="stockGere(ligne.recette) && dispoEff < 0">{{ ligne.quantite }}</span>
+                              <button class="btn btn-outline-secondary"
+                                      [disabled]="stockGere(ligne.recette) && dispoEff <= 0"
+                                      (click)="augmenterQuantite(idx)"><i class="bi bi-plus"></i></button>
+                            </div>
+                          </td>
+                          <td class="align-middle text-end pe-2 small fw-semibold text-nowrap">
+                            {{ (ligne.quantite * ligne.recette.prix_vente) | number:'1.0-0' }}
+                          </td>
+                          <td class="align-middle pe-2">
+                            <button class="btn btn-sm btn-outline-danger" (click)="supprimerDuPanier(idx)"><i class="bi bi-x"></i></button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+
+              }
+            </div>
+
+            @if (!panierVide) {
+              <div class="card-footer bg-white d-flex justify-content-between align-items-center fw-bold">
+                <span>Total panier</span>
+                <span class="text-primary fs-5">{{ totalPanier | number:'1.0-0' }} FCFA</span>
+              </div>
+            }
+          </div>
+
+          <!-- Bouton envoyer -->
+          <button class="btn btn-warning w-100 mb-2 fw-bold" [disabled]="panierVide || isSaving" (click)="validerCommande()">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-send me-1"></i>
+            {{ commandeEnCours ? 'Ajouter au ticket' : 'Envoyer en cuisine' }}
+          </button>
+
+          <!-- Ticket en cours -->
+          @if (commandeEnCours) {
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-2">
+                <span class="fw-semibold"><i class="bi bi-receipt me-1"></i>Ticket — {{ tableNom(commandeEnCours.table?.id) }}</span>
+              </div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    @for (l of commandeEnCours.lignes; track l.id) {
+                      <tr>
+                        <td class="ps-3 small">
+                          {{ l.recette?.nom }}
+                          @if (CATS_BOISSONS.includes(l.recette?.categorie)) {
+                            <i class="bi bi-cup-straw ms-1 text-info small"></i>
+                          }
+                        </td>
+                        <td class="text-center small">× {{ l.quantite }}</td>
+                        <td class="text-end pe-3 small text-nowrap">{{ (l.quantite * l.prix_unitaire) | number:'1.0-0' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between fw-bold mb-2">
+                  <span>Total</span>
+                  <span class="text-success fs-5">{{ commandeEnCours.montant_total | number:'1.0-0' }} FCFA</span>
+                </div>
+                <button class="btn btn-success w-100 fw-bold"
+                        [disabled]="isEncaissing || commandeEnCours.statut === 'payee'"
+                        (click)="encaisser()">
+                  <span *ngIf="isEncaissing" class="spinner-border spinner-border-sm me-1"></span>
+                  <i class="bi bi-cash-coin me-1"></i> Encaisser
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

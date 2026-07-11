@@ -603,6 +603,15 @@ textarea.mf-input {
   }
 }
 
+// ── Kanban restaurant ─────────────────────────────────────────────────────────
+.kanban-card {
+  border-left-width: 4px !important;
+  border-left-style: solid !important;
+  transition: box-shadow 0.15s ease;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12) !important; }
+}
+
 // ── mf-modal scroll fix ───────────────────────────────────────────────────────
 // Bootstrap's modal-dialog-scrollable only scrolls .modal-body by default.
 // mf-modal wraps content in <form> + .mf-body instead, so we wire flex manually.
