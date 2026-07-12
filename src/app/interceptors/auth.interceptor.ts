@@ -13,9 +13,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
   }
 
+  const isPublic = req.url.includes('/public/');
+
   return next(req).pipe(
     catchError((error) => {
-      if (error.status === 401) {
+      if (error.status === 401 && !isPublic) {
         authService.logout();
       } else if (error.status === 403 && error.error?.message?.toLowerCase().includes('abonnement')) {
         router.navigate(['/abonnement-expire']);
