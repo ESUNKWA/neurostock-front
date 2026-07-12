@@ -85,16 +85,20 @@
                     <button class="btn btn-outline-secondary" (click)="changerStatut(table)" title="Changer statut">
                       <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn btn-outline-secondary" (click)="ouvrirModalEdit(table)" title="Modifier">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-outline-danger" (click)="supprimer(table)" title="Supprimer">
-                      <i class="bi bi-trash"></i>
-                    </button>
+                    @if (isAdmin) {
+                      <button class="btn btn-outline-secondary" (click)="ouvrirModalEdit(table)" title="Modifier">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-danger" (click)="supprimer(table)" title="Supprimer">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
                   </div>
-                  <button class="btn btn-outline-dark btn-sm w-100" (click)="afficherQr(table)" title="Afficher le QR code">
-                    <i class="bi bi-upc-scan me-1"></i> QR Code
-                  </button>
+                  @if (isAdmin) {
+                    <button class="btn btn-outline-dark btn-sm w-100" (click)="afficherQr(table)" title="Afficher le QR code">
+                      <i class="bi bi-upc-scan me-1"></i> QR Code
+                    </button>
+                  }
                 </div>
               </div>
             </div>
