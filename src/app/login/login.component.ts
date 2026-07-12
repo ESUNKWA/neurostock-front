@@ -56,9 +56,11 @@ export default class LoginComponent implements OnInit {
   private homeUrl(): string {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     const code = (user?.profil?.code ?? '').toLowerCase();
+    const isRestaurant = user?.boutique?.type === 'restaurant';
     if (!code) return '/no-access';
     if (code === 'super_admin') return '/ekwatech';
     if (code === 'vendeur' || code === 'caissier') return '/pos/vente';
+    if (isRestaurant) return '/restaurant/commandes';
     return '/dashboard';
   }
 

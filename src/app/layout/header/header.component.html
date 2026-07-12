@@ -39,6 +39,14 @@
       </a>
     }
 
+    <!-- Mode Restaurant -->
+    @if (hasRestaurantAccess) {
+      <a routerLink="/restaurant/commandes" class="header-restaurant-btn" title="Passer en mode Restaurant">
+        <i class="bi bi-cup-hot-fill"></i>
+        <span class="d-none d-md-inline">Restaurant</span>
+      </a>
+    }
+
     <!-- User dropdown -->
     <div class="dropdown">
       <button type="button" class="user-btn" data-bs-toggle="dropdown" aria-expanded="false">

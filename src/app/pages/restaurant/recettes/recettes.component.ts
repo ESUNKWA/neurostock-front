@@ -86,8 +86,8 @@ export default class RecettesComponent implements OnInit {
 
   ajouterComposition(): void {
     this.compositions.push(this.fb.group({
-      produit:  [null, Validators.required],
-      quantite: [1,    [Validators.required, Validators.min(0.01)]],
+      produit:  [null],
+      quantite: [1, [Validators.min(0.01)]],
     }));
   }
 
@@ -226,11 +226,10 @@ export default class RecettesComponent implements OnInit {
     });
     (recette.compositions ?? []).forEach((c: any) => {
       this.compositions.push(this.fb.group({
-        produit:  [c.produit?.id, Validators.required],
-        quantite: [c.quantite,    [Validators.required, Validators.min(0.01)]],
+        produit:  [c.produit?.id],
+        quantite: [c.quantite, [Validators.min(0.01)]],
       }));
     });
-    if (!this.compositions.length) this.ajouterComposition();
     if (isPlatformBrowser(this.platformId)) {
       const m = document.getElementById('modal-recette');
       if (m) new bootstrap.Modal(m).show();
@@ -240,7 +239,12 @@ export default class RecettesComponent implements OnInit {
   sauvegarder(): void {
     if (this.form.invalid) { this.toastr.warning('Veuillez remplir tous les champs requis'); return; }
     this.isSaving = true;
-    const payload = { ...this.form.value, boutique: this.selectedBoutiqueId };
+    const v = this.form.value;
+    const payload = {
+      ...v,
+      boutique: this.selectedBoutiqueId,
+      compositions: (v.compositions ?? []).filter((c: any) => c.produit && +c.quantite > 0),
+    };
     const obs = this.editingId
       ? this.recetteService.update(this.editingId, payload)
       : this.recetteService.create(payload);

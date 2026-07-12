@@ -28,8 +28,10 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
   currentUser: any;
   selectedBoutiqueId: number | null = null;
   selectedStatut: string | null = null;
+  selectedDate: string = new Date().toISOString().split('T')[0];
   isLoading = false;
   detailCommande: any = null;
+  detailCommandesSoeurs: any[] = [];
   vue: 'liste' | 'kanban' = 'kanban';
   socketStatus: SocketStatus = 'disconnected';
   private refreshInterval: any = null;
@@ -211,7 +213,7 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
     if (!this.selectedBoutiqueId) { this.commandes = []; return; }
     this.isLoading = true;
     if (this.vue === 'liste') this.destroyDataTable();
-    this.commandeService.getAll(this.selectedBoutiqueId, this.selectedStatut ?? undefined)
+    this.commandeService.getAll(this.selectedBoutiqueId, this.selectedStatut ?? undefined, this.selectedDate)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (r: any) => {
@@ -223,6 +225,40 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
         },
         error: () => { this.commandes = []; }
       });
+  }
+
+  get isToday(): boolean {
+    return this.selectedDate === new Date().toISOString().split('T')[0];
+  }
+
+  get labelJour(): string {
+    if (this.isToday) return "Aujourd'hui";
+    const d = new Date(this.selectedDate + 'T12:00:00');
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  get caJourLabel(): string {
+    return this.isToday ? "CA du jour" : "CA";
+  }
+
+  jourPrecedent(): void {
+    const d = new Date(this.selectedDate + 'T12:00:00');
+    d.setDate(d.getDate() - 1);
+    this.selectedDate = d.toISOString().split('T')[0];
+    this.loadCommandes();
+  }
+
+  jourSuivant(): void {
+    if (this.isToday) return;
+    const d = new Date(this.selectedDate + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    this.selectedDate = d.toISOString().split('T')[0];
+    this.loadCommandes();
+  }
+
+  allerAujourdhui(): void {
+    this.selectedDate = new Date().toISOString().split('T')[0];
+    this.loadCommandes();
   }
 
   private destroyDataTable(): void {
@@ -324,14 +360,28 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
   }
 
   ouvrirDetail(id: number): void {
+    this.detailCommandesSoeurs = [];
     this.commandeService.getById(id).subscribe({
       next: (r: any) => {
         this.detailCommande = r?.data ?? r;
+        if (this.detailCommande?.table?.id) {
+          this.commandeService.getByTable(this.detailCommande.table.id).subscribe({
+            next: (res: any) => {
+              this.detailCommandesSoeurs = (res?.data ?? []).filter((c: any) => c.id !== id);
+            },
+            error: () => { this.detailCommandesSoeurs = []; }
+          });
+        }
         const m = document.getElementById('modal-detail-commande');
         if (m) new bootstrap.Modal(m).show();
       },
       error: () => this.toastr.error('Impossible de charger le détail')
     });
+  }
+
+  get detailTotalCombine(): number {
+    return (this.detailCommande?.montant_total ?? 0)
+      + this.detailCommandesSoeurs.reduce((s, c) => s + (c.montant_total ?? 0), 0);
   }
 
   async changerStatut(id: number, currentStatut: string): Promise<void> {
@@ -362,42 +412,120 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
 
   async encaisser(id: number): Promise<void> {
     const commande = this.commandes.find(c => c.id === id) ?? this.detailCommande;
-    const aUneTable = !!commande?.table;
-
+    if (commande?.table?.id) {
+      await this.encaisserGroupeTable(commande.table.id);
+      return;
+    }
+    // Commande sans table : dialog simple
     const { value: swalResult, isConfirmed } = await Swal.fire({
       title: 'Encaisser la commande',
-      html: `
-        <div class="fs-3 fw-bold text-success mb-3">${Number(commande?.montant_total ?? 0).toLocaleString('fr-FR')} FCFA</div>
-        ${aUneTable ? `
-        <div class="form-check text-start d-inline-block">
-          <input class="form-check-input" type="checkbox" id="swal-liberer" checked>
-          <label class="form-check-label" for="swal-liberer">
-            Libérer la <strong>Table ${commande.table?.numero}</strong> après encaissement
-          </label>
-        </div>` : ''}
-      `,
+      html: `<div class="fs-3 fw-bold text-success mb-2">${Number(commande?.montant_total ?? 0).toLocaleString('fr-FR')} FCFA</div>`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: '<i class="bi bi-cash-coin me-1"></i> Encaisser',
       cancelButtonText: 'Annuler',
       confirmButtonColor: '#198754',
-      preConfirm: () => {
-        const cb = document.getElementById('swal-liberer') as HTMLInputElement | null;
-        return { liberer: cb ? cb.checked : false };
-      },
     });
     if (!isConfirmed) return;
-
-    const libererTable = swalResult?.liberer ?? false;
-    this.commandeService.encaisser(id, libererTable).subscribe({
+    this.commandeService.encaisser(id, false).subscribe({
       next: () => {
-        const msg = libererTable && aUneTable
-          ? `Encaissé et table ${commande.table?.numero} libérée.`
-          : 'Commande encaissée — la table reste occupée.';
+        Swal.fire({ icon: 'success', title: 'Encaissé !', timer: 1800, showConfirmButton: false });
+        this.loadCommandes();
+      },
+      error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
+    });
+  }
+
+  async encaisserGroupeTable(tableId: number): Promise<void> {
+    const commandes: any[] = await new Promise(resolve => {
+      this.commandeService.getByTable(tableId).subscribe({
+        next: (r: any) => resolve(r?.data ?? []),
+        error: () => resolve([]),
+      });
+    });
+
+    if (!commandes.length) {
+      this.toastr.info('Aucune commande non payée pour cette table');
+      return;
+    }
+
+    const tableNum = commandes[0].table?.numero;
+
+    const buildHtml = (): string => {
+      const rows = commandes.map(c => {
+        const statLabel = this.STATUTS.find(s => s.value === c.statut)?.label ?? c.statut;
+        const items = (c.lignes ?? []).slice(0, 3).map((l: any) => `${l.recette?.nom} ×${l.quantite}`).join(' · ')
+          + (c.lignes?.length > 3 ? ' · …' : '');
+        return `
+          <div class="form-check text-start mb-2 pb-2 border-bottom">
+            <input class="form-check-input cmd-check" type="checkbox" id="cmd-${c.id}" value="${c.id}"
+                   data-amount="${c.montant_total ?? 0}" checked>
+            <label class="form-check-label d-block" for="cmd-${c.id}">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge me-1" style="background:${this.couleurStatut(c.statut)};color:#fff;font-size:.7rem;">${statLabel}</span>
+                <strong style="font-size:.9rem;">${Number(c.montant_total ?? 0).toLocaleString('fr-FR')} FCFA</strong>
+              </div>
+              <div class="text-muted" style="font-size:.78rem;margin-top:2px;">${items}</div>
+            </label>
+          </div>`;
+      }).join('');
+
+      const total = commandes.reduce((s, c) => s + (c.montant_total ?? 0), 0);
+      return `
+        <div class="text-start">
+          ${rows}
+          <div class="d-flex justify-content-between fw-bold pt-1" style="font-size:.95rem;">
+            <span>Total sélectionné</span>
+            <span id="swal-grp-total" class="text-success">${Number(total).toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="form-check text-start mt-3">
+            <input class="form-check-input" type="checkbox" id="swal-grp-liberer" checked>
+            <label class="form-check-label" for="swal-grp-liberer">
+              Libérer la <strong>Table ${tableNum}</strong> après paiement
+            </label>
+          </div>
+        </div>`;
+    };
+
+    const updateTotal = () => {
+      let t = 0;
+      (document.querySelectorAll('.cmd-check') as NodeListOf<HTMLInputElement>)
+        .forEach(cb => { if (cb.checked) t += parseFloat(cb.dataset['amount'] ?? '0'); });
+      const el = document.getElementById('swal-grp-total');
+      if (el) el.textContent = `${Number(t).toLocaleString('fr-FR')} FCFA`;
+    };
+
+    const { value: result, isConfirmed } = await Swal.fire({
+      title: `Table ${tableNum} — Paiement`,
+      html: buildHtml(),
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-cash-coin me-1"></i> Encaisser',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#198754',
+      didOpen: () => {
+        document.querySelectorAll('.cmd-check').forEach(cb =>
+          cb.addEventListener('change', updateTotal)
+        );
+      },
+      preConfirm: () => {
+        const ids = Array.from(document.querySelectorAll('.cmd-check:checked') as NodeListOf<HTMLInputElement>)
+          .map(cb => +cb.value);
+        if (!ids.length) { Swal.showValidationMessage('Sélectionnez au moins une commande'); return false; }
+        const liberer = (document.getElementById('swal-grp-liberer') as HTMLInputElement)?.checked ?? false;
+        return { ids, liberer };
+      },
+    });
+
+    if (!isConfirmed || !result) return;
+
+    this.commandeService.encaisserBatch(result.ids, result.liberer).subscribe({
+      next: () => {
+        const msg = result.liberer ? `Table ${tableNum} libérée.` : `${result.ids.length} commande(s) payée(s).`;
         Swal.fire({ icon: 'success', title: 'Encaissé !', text: msg, timer: 2000, showConfirmButton: false });
         this.loadCommandes();
       },
-      error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur')
+      error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
     });
   }
 
@@ -422,6 +550,18 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
       next: () => { this.appelsServeur = this.appelsServeur.filter(t => t.id !== tableId); },
       error: () => {}
     });
+  }
+
+  swimlaneOpen: Record<string, boolean> = {
+    en_attente: true,
+    en_cours:   true,
+    prete:      true,
+    servie:     false,
+    payee:      false,
+  };
+
+  toggleSwimlane(statut: string): void {
+    this.swimlaneOpen[statut] = !this.swimlaneOpen[statut];
   }
 
   readonly COLONNES_KANBAN = [
@@ -471,5 +611,109 @@ export default class CommandesRestaurantComponent implements OnInit, OnDestroy {
   get isAdmin(): boolean {
     const c = this.currentUser?.profil?.code?.toLowerCase();
     return c === 'admin' || c === 'responsable_structure';
+  }
+
+  get isMobileView(): boolean {
+    const c = this.currentUser?.profil?.code?.toLowerCase();
+    return c === 'serveur' || c === 'cuisiner';
+  }
+
+  readonly STATUTS_MOBILE = [
+    { value: null,         label: 'Tout',     couleur: '#6c757d' },
+    { value: 'en_attente', label: 'Nouvelles', couleur: '#6c757d' },
+    { value: 'en_cours',   label: 'Cuisine',   couleur: '#e85d04' },
+    { value: 'prete',      label: 'Prêtes',    couleur: '#0ea5e9' },
+    { value: 'servie',     label: 'Déjà servies', couleur: '#7c3aed' },
+    { value: 'payee',      label: 'Payées',    couleur: '#22c55e' },
+  ];
+
+  couleurStatut(statut: string): string {
+    const map: Record<string, string> = {
+      en_attente: '#6c757d',
+      en_cours:   '#e85d04',
+      prete:      '#0ea5e9',
+      servie:     '#7c3aed',
+      payee:      '#22c55e',
+      annulee:    '#dc3545',
+    };
+    return map[statut] ?? '#6c757d';
+  }
+
+  labelBoutonAction(statut: string): string {
+    const labels: Record<string, string> = {
+      en_attente: 'Prendre en charge',
+      en_cours:   'Marquer Prête',
+      prete:      'Servir',
+      servie:     'Encaisser',
+    };
+    return labels[statut] ?? '';
+  }
+
+  iconeBoutonAction(statut: string): string {
+    const icons: Record<string, string> = {
+      en_attente: 'bi-fire',
+      en_cours:   'bi-bell',
+      prete:      'bi-person-check',
+      servie:     'bi-cash-coin',
+    };
+    return icons[statut] ?? 'bi-arrow-right';
+  }
+
+  countParStatut(statut: string | null): number {
+    if (!statut) return this.commandes.filter(c => c.statut !== 'annulee' && c.statut !== 'payee').length;
+    return this.commandes.filter(c => c.statut === statut).length;
+  }
+
+  get commandesFiltreesM(): any[] {
+    const ordre: Record<string, number> = { en_attente: 0, en_cours: 1, prete: 2, servie: 3, payee: 4, annulee: 5 };
+    const filtered = this.selectedStatut
+      ? this.commandes.filter(c => c.statut === this.selectedStatut)
+      : this.commandes.filter(c => c.statut !== 'annulee' && c.statut !== 'payee');
+    return [...filtered].sort((a, b) => {
+      const diff = (ordre[a.statut] ?? 9) - (ordre[b.statut] ?? 9);
+      if (diff !== 0) return diff;
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+  }
+
+  get commandesGroupeesParTable(): { key: string; tableId: number | null; label: string; commandes: any[]; total: number }[] {
+    const grouped = new Map<string, { key: string; tableId: number | null; label: string; commandes: any[] }>();
+    for (const cmd of this.commandesFiltreesM) {
+      const key = cmd.table ? `t_${cmd.table.id}` : `nt_${cmd.id}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          key,
+          tableId: cmd.table?.id ?? null,
+          label: cmd.table
+            ? `Table ${cmd.table.numero}${cmd.table.nom ? ' · ' + cmd.table.nom : ''}`
+            : 'Sans table',
+          commandes: [],
+        });
+      }
+      grouped.get(key)!.commandes.push(cmd);
+    }
+    return [...grouped.values()].map(g => ({
+      ...g,
+      total: g.commandes.reduce((s, c) => s + (c.montant_total ?? 0), 0),
+    }));
+  }
+
+  async actionPrimaire(cmd: any): Promise<void> {
+    if (cmd.statut === 'servie') {
+      await this.encaisser(cmd.id);
+    } else {
+      await this.avancerStatut(cmd);
+    }
+  }
+
+  readonly CATS_BOISSONS = ['Boissons', 'Alcools', 'Cocktails'];
+
+  typeCommande(cmd: any): 'bar' | 'cuisine' | 'mixte' {
+    const lignes = cmd.lignes ?? [];
+    if (!lignes.length) return 'cuisine';
+    const isB = (l: any) => this.CATS_BOISSONS.includes(l.recette?.categorie ?? '');
+    if (lignes.every(isB)) return 'bar';
+    if (lignes.every((l: any) => !isB(l))) return 'cuisine';
+    return 'mixte';
   }
 }

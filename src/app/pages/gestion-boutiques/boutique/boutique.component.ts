@@ -5,6 +5,7 @@ import { first, Subscription } from 'rxjs';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { StructureService } from '../../../services/structure/structure.service';
+import { AuthService } from '../../../services/auth/auth.service';
 declare var $: any;
 declare var bootstrap: any;
 
@@ -23,7 +24,13 @@ export class BoutiqueComponent {
   boutiqueService: any = inject(BoutiqueService);
   fb: any = inject(FormBuilder);
   structure: any = inject(StructureService);
-  toastr = inject(ToastrService)
+  toastr = inject(ToastrService);
+  private authService = inject(AuthService);
+
+  get canEditType(): boolean {
+    const code = this.authService.getUser()?.profil?.code?.toLowerCase() ?? '';
+    return code !== 'responsable_structure';
+  }
 
   boutiques: any [] = [];
   boutiqueData: any = {};
@@ -53,6 +60,7 @@ export class BoutiqueComponent {
       structure: [null],
       situation_geo: ['', []],
       logo: [null],
+      type: ['boutique'],
     })
   }
 
@@ -105,7 +113,7 @@ export class BoutiqueComponent {
   }
   openNewModal(): void {
     this.boutiqueForm.reset();
-    this.boutiqueForm.patchValue({ structure: this.boutiqueId }); // restaurer la structure après reset
+    this.boutiqueForm.patchValue({ structure: this.boutiqueId, type: 'boutique' });
     this.boutiqueForm.enable();
     this.isEditMode = false;
     this.boutiqueData = null;
@@ -307,12 +315,19 @@ export class BoutiqueComponent {
               className: 'd-none d-sm-table-cell',
               render: (data: any) => data || 'Non définie' 
             },
-            { 
+            {
               data: 'situation_geo',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data || 'Non définie' 
+              render: (data: any) => data || 'Non définie'
             },
-            // { 
+            {
+              data: 'type',
+              className: 'd-none d-sm-table-cell',
+              render: (data: any) => data === 'restaurant'
+                ? `<span class="badge bg-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>`
+                : `<span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>`
+            },
+            // {
             //   data: 'created_at',
             //   className: 'd-none d-sm-table-cell',
             //   render: (data: any) => {

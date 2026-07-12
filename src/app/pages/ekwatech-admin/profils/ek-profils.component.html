@@ -1,0 +1,144 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Profils utilisateurs</h4>
+      <p class="text-muted small mb-0">Rôles et permissions disponibles sur la plateforme</p>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openCreate()">
+      <i class="bi bi-plus-lg me-1"></i>Nouveau profil
+    </button>
+  </div>
+
+  <!-- Liste -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      @if (!loading && profils.length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-person-badge display-3 d-block mb-3 opacity-25"></i>
+          <p>Aucun profil défini</p>
+          <button class="btn btn-sm btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg me-1"></i>Créer le premier profil
+          </button>
+        </div>
+      }
+
+      @if (!loading && profils.length > 0) {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">ID</th>
+                <th>Nom</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th class="text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of profils; track p.id) {
+                <tr>
+                  <td class="ps-4">
+                    <span class="badge bg-secondary-subtle text-secondary fw-semibold">#{{ p.id }}</span>
+                  </td>
+                  <td class="fw-semibold">{{ p.nom }}</td>
+                  <td>
+                    @if (p.code) {
+                      <code class="bg-light px-2 py-1 rounded small">{{ p.code }}</code>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td class="text-muted small">{{ p.description || '—' }}</td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex gap-1 justify-content-end">
+                      <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(p)" title="Modifier">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(p)" title="Supprimer">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal profil -->
+@if (showModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content mf-modal mf-modal--orange">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-person-badge"></i></div>
+          <div>
+            <div class="mf-header-title">{{ isEditMode ? 'Modifier le profil' : 'Nouveau profil' }}</div>
+            <div class="mf-header-subtitle">Définissez le rôle et ses informations</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeModal()" [disabled]="isSubmitting"></button>
+        </div>
+
+        <div class="mf-body">
+          <div class="mf-section mf-section--last">
+            <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="mf-label">Nom <span class="text-danger">*</span></label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-person-badge mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.nom" name="nom"
+                         placeholder="Ex : Responsable de boutique">
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="mf-label">Code technique</label>
+                <div class="mf-input-wrap">
+                  <i class="bi bi-code-slash mf-input-icon"></i>
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.code" name="code"
+                         placeholder="Ex : responsable_structure"
+                         style="font-family: monospace;">
+                </div>
+                <small class="text-muted">Identifiant unique utilisé dans les guards. Évitez les espaces.</small>
+              </div>
+              <div class="col-12">
+                <label class="mf-label">Description</label>
+                <textarea class="form-control mf-input" [(ngModel)]="form.description" name="description"
+                          rows="3" placeholder="Décrivez les responsabilités de ce profil…"
+                          style="resize:none;"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" (click)="submit()" [disabled]="isSubmitting">
+            @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2 me-1"></i> }
+            {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+          </button>
+          <button class="btn mf-btn-cancel" (click)="closeModal()" [disabled]="isSubmitting">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

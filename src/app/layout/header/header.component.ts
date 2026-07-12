@@ -42,6 +42,11 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  get hasRestaurantAccess(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return code === 'admin' || code === 'responsable_structure' || code === 'gerant';
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigateByUrl('/login');

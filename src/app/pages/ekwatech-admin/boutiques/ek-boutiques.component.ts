@@ -16,6 +16,7 @@ interface BoutiqueForm {
   rccm: string;
   situation_geo: string;
   structure: number | null;
+  type: 'boutique' | 'restaurant';
 }
 
 @Component({
@@ -36,7 +37,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   editTarget: any = null;
 
-  form: BoutiqueForm = { nom: '', telephone: '', email: '', rccm: '', situation_geo: '', structure: null };
+  form: BoutiqueForm = { nom: '', telephone: '', email: '', rccm: '', situation_geo: '', structure: null, type: 'boutique' };
 
   constructor(
     private boutiqueSvc: BoutiqueService,
@@ -84,7 +85,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
   openCreate(): void {
     this.isEditMode = false;
     this.editTarget = null;
-    this.form = { nom: '', telephone: '', email: '', rccm: '', situation_geo: '', structure: this.selectedStructureId };
+    this.form = { nom: '', telephone: '', email: '', rccm: '', situation_geo: '', structure: this.selectedStructureId, type: 'boutique' };
     this.showModal = true;
   }
 
@@ -98,6 +99,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
       rccm: b.rccm ?? '',
       situation_geo: b.situation_geo ?? '',
       structure: b.structure?.id ?? this.selectedStructureId,
+      type: b.type ?? 'boutique',
     };
     this.showModal = true;
   }
@@ -115,6 +117,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
     const payload = new FormData();
     payload.append('nom', this.form.nom);
     payload.append('structure', String(this.form.structure));
+    payload.append('type', this.form.type);
     if (this.form.telephone)    payload.append('telephone', this.form.telephone);
     if (this.form.email)        payload.append('email', this.form.email);
     if (this.form.rccm)         payload.append('rccm', this.form.rccm);

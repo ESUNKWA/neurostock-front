@@ -65,10 +65,11 @@
               <tr>
                 <th class="ps-4">ID</th>
                 <th>Nom</th>
+                <th>Type</th>
                 <th>Téléphone</th>
                 <th>Email</th>
-                <th>RCCM</th>
-                <th>Localisation</th>
+                <th class="d-none d-lg-table-cell">RCCM</th>
+                <th class="d-none d-lg-table-cell">Localisation</th>
                 <th class="text-end pe-4">Actions</th>
               </tr>
             </thead>
@@ -79,10 +80,17 @@
                     <span class="badge bg-secondary-subtle text-secondary fw-semibold">#{{ b.id }}</span>
                   </td>
                   <td class="fw-semibold">{{ b.nom }}</td>
+                  <td>
+                    @if (b.type === 'restaurant') {
+                      <span class="badge bg-primary-subtle text-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
+                    } @else {
+                      <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>
+                    }
+                  </td>
                   <td class="text-muted small">{{ b.telephone || '—' }}</td>
                   <td class="text-muted small">{{ b.email || '—' }}</td>
-                  <td class="text-muted small">{{ b.rccm || '—' }}</td>
-                  <td class="text-muted small">{{ b.situation_geo || '—' }}</td>
+                  <td class="text-muted small d-none d-lg-table-cell">{{ b.rccm || '—' }}</td>
+                  <td class="text-muted small d-none d-lg-table-cell">{{ b.situation_geo || '—' }}</td>
                   <td class="text-end pe-4">
                     <div class="d-flex gap-1 justify-content-end">
                       <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(b)" title="Modifier">
@@ -120,6 +128,33 @@
         </div>
 
         <div class="mf-body">
+
+          <!-- Type d'établissement -->
+          <div class="mf-section">
+            <div class="mf-section-label"><i class="bi bi-tag"></i> Type d'établissement</div>
+            <div class="d-flex gap-3">
+              <label class="d-flex align-items-center gap-2"
+                     style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
+                     [style.border-color]="form.type === 'boutique' ? '#fd7e14' : '#dee2e6'"
+                     [style.background]="form.type === 'boutique' ? '#fff5eb' : '#fff'">
+                <input type="radio" [(ngModel)]="form.type" name="type" value="boutique" class="form-check-input mt-0">
+                <div>
+                  <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Boutique classique</div>
+                  <small class="text-muted">Commerce, épicerie, superette…</small>
+                </div>
+              </label>
+              <label class="d-flex align-items-center gap-2"
+                     style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
+                     [style.border-color]="form.type === 'restaurant' ? '#0d6efd' : '#dee2e6'"
+                     [style.background]="form.type === 'restaurant' ? '#eff6ff' : '#fff'">
+                <input type="radio" [(ngModel)]="form.type" name="type" value="restaurant" class="form-check-input mt-0">
+                <div>
+                  <div class="fw-semibold"><i class="bi bi-cup-hot me-1"></i>Restaurant / Maquis</div>
+                  <small class="text-muted">Service en salle, prise de commande…</small>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <!-- Affectation -->
           <div class="mf-section">

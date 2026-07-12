@@ -46,10 +46,11 @@
                                 <tr>
                                   <th>Logo</th>
                                   <th>Boutique</th>
-                                  <th>telephone</th>
-                                  <th class="d-none d-sm-table-cell">email</th>
-                                  <th class="d-none d-sm-table-cell">rccm</th>
+                                  <th>Téléphone</th>
+                                  <th class="d-none d-sm-table-cell">Email</th>
+                                  <th class="d-none d-sm-table-cell">RCCM</th>
                                   <th class="d-none d-sm-table-cell">Localisation</th>
+                                  <th class="d-none d-sm-table-cell">Type</th>
                                   <th class="text-center" style="width: 15%;">Actions</th>
                                 </tr>
                             </thead>
@@ -68,7 +69,12 @@
                         <div class="mc-card d-flex align-items-center justify-content-between gap-2"
                              (click)="mobileDetailItem = boutique">
                           <div class="flex-grow-1 min-w-0">
-                            <div class="mc-title">{{ boutique.nom }}</div>
+                            <div class="mc-title d-flex align-items-center gap-2">
+                              {{ boutique.nom }}
+                              @if (boutique.type === 'restaurant') {
+                                <span class="badge bg-primary" style="font-size:.65rem;"><i class="bi bi-cup-hot"></i></span>
+                              }
+                            </div>
                             <div class="mc-sub">{{ boutique.telephone }}</div>
                             <div class="mc-meta">{{ boutique.email ?? boutique.situation_geo ?? '' }}</div>
                           </div>
@@ -108,6 +114,16 @@
                               <span class="mc-row-value">{{ mobileDetailItem.situation_geo ?? '—' }}</span>
                             </div>
                             <div class="mc-popup-row">
+                              <span class="mc-row-label">Type</span>
+                              <span class="mc-row-value">
+                                @if (mobileDetailItem.type === 'restaurant') {
+                                  <span class="badge bg-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
+                                } @else {
+                                  <span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>
+                                }
+                              </span>
+                            </div>
+                            <div class="mc-popup-row">
                               <span class="mc-row-label">Date création</span>
                               <span class="mc-row-value">{{ mobileDetailItem.created_at | date:'dd/MM/yyyy' }}</span>
                             </div>
@@ -138,6 +154,35 @@
 
       <form [formGroup]="boutiqueForm" (ngSubmit)="saveOrUpdate()" enctype="multipart/form-data">
         <div class="mf-body">
+
+          <!-- Type de boutique (super_admin uniquement) -->
+          @if (canEditType) {
+            <div class="mf-section">
+              <div class="mf-section-label"><i class="bi bi-tag"></i> Type d'établissement</div>
+              <div class="d-flex gap-3">
+                <label class="d-flex align-items-center gap-2 cursor-pointer"
+                       style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
+                       [style.border-color]="f['type'].value === 'boutique' ? '#fd7e14' : '#dee2e6'"
+                       [style.background]="f['type'].value === 'boutique' ? '#fff5eb' : '#fff'">
+                  <input type="radio" formControlName="type" value="boutique" class="form-check-input mt-0">
+                  <div>
+                    <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Boutique classique</div>
+                    <small class="text-muted">Commerce, épicerie, superette…</small>
+                  </div>
+                </label>
+                <label class="d-flex align-items-center gap-2 cursor-pointer"
+                       style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
+                       [style.border-color]="f['type'].value === 'restaurant' ? '#0d6efd' : '#dee2e6'"
+                       [style.background]="f['type'].value === 'restaurant' ? '#eff6ff' : '#fff'">
+                  <input type="radio" formControlName="type" value="restaurant" class="form-check-input mt-0">
+                  <div>
+                    <div class="fw-semibold"><i class="bi bi-cup-hot me-1"></i>Restaurant / Maquis</div>
+                    <small class="text-muted">Service en salle, prise de commande…</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+          }
 
           <div class="mf-section">
             <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations générales</div>

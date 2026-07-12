@@ -1,11 +1,60 @@
+<style>
+  .mob-feed { padding: 0 12px 80px; }
+  .mob-ticket { background:#fff; border-radius:16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; position:relative; }
+  .mob-ticket-accent { position:absolute; top:0; left:0; bottom:0; width:5px; border-radius:16px 0 0 16px; }
+  .mob-ticket-body { padding:14px 14px 14px 20px; }
+  .mob-ticket-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .mob-ticket-table { font-size:1.05rem; font-weight:700; color:#1a1d23; }
+  .mob-ticket-time { font-size:.78rem; font-weight:600; display:flex; align-items:center; gap:4px; }
+  .mob-ticket-items { font-size:.85rem; color:#555; margin-bottom:10px; line-height:1.6; }
+  .mob-ticket-footer { display:flex; align-items:center; gap:8px; }
+  .mob-ticket-amount { font-size:.95rem; font-weight:700; color:#1a1d23; flex-shrink:0; }
+  .mob-cta { flex:1; height:44px; border:none; border-radius:10px; font-weight:700; font-size:.88rem; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:opacity .15s; }
+  .mob-cta:active { opacity:.8; }
+  .mob-cta-detail { width:44px; height:44px; flex-shrink:0; border-radius:10px; border:none; background:#f5f5f5; color:#555; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; }
+  .mob-tabs { display:flex; gap:8px; overflow-x:auto; padding:10px 12px; background:#fff; position:sticky; top:0; z-index:20; border-bottom:1px solid #f0f0f0; scrollbar-width:none; }
+  .mob-tabs::-webkit-scrollbar { display:none; }
+  .mob-tab { flex-shrink:0; height:34px; padding:0 14px; border-radius:17px; border:2px solid transparent; font-size:.8rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:all .15s; display:flex; align-items:center; gap:6px; background:#f5f5f5; color:#555; }
+  .mob-tab.active { color:#fff; border-color:transparent; }
+  .mob-tab-count { font-size:.72rem; background:rgba(255,255,255,.3); border-radius:10px; padding:0 5px; min-width:18px; text-align:center; }
+  .mob-tab-count-dark { font-size:.72rem; background:rgba(0,0,0,.12); border-radius:10px; padding:0 5px; min-width:18px; text-align:center; }
+  .mob-header { padding:12px 12px 0; background:#fff; }
+  .mob-appel { margin:10px 12px 0; border-radius:12px; }
+  .mob-kpi { display:flex; gap:8px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; }
+  .mob-kpi::-webkit-scrollbar { display:none; }
+  .mob-kpi-chip { flex-shrink:0; padding:6px 12px; border-radius:20px; font-size:.78rem; font-weight:600; white-space:nowrap; }
+  .mob-empty { text-align:center; padding:60px 24px; color:#aaa; }
+  .mob-urgent-ring { animation: urgent-ring 1.2s ease-in-out infinite; }
+  @keyframes urgent-ring { 0%,100%{box-shadow:0 0 0 0 rgba(220,53,69,.35)} 50%{box-shadow:0 0 0 6px rgba(220,53,69,0)} }
+  .mob-new-commande { position:fixed; bottom:80px; right:16px; z-index:50; width:56px; height:56px; border-radius:28px; background:#e85d04; color:#fff; border:none; box-shadow:0 4px 16px rgba(232,93,4,.5); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; }
+  /* Groupement par table */
+  .mob-group-hdr { background:linear-gradient(135deg,#fff8f0,#fff3e0); border-radius:14px 14px 0 0; padding:10px 14px; display:flex; align-items:center; gap:8px; border-left:4px solid #e85d04; margin-bottom:0; }
+  .mob-group-pay-btn { background:#198754; color:#fff; border:none; border-radius:8px; padding:4px 10px; font-size:.78rem; font-weight:700; flex-shrink:0; cursor:pointer; display:flex; align-items:center; gap:4px; }
+  .mob-group-pay-btn:active { opacity:.85; }
+  .mob-ticket-in-group { border-radius:0; margin-bottom:0; box-shadow:none; border-bottom:1px solid #f0f0f0; }
+  .mob-ticket-in-group:last-of-type { border-radius:0 0 14px 14px; border-bottom:none; box-shadow:0 2px 10px rgba(0,0,0,.07); margin-bottom:0; }
+  .mob-group-gap { height:14px; }
+  /* Swimlanes admin mobile */
+  .swl-wrap { padding:8px 12px 80px; }
+  .swl-section { background:#fff; border-radius:14px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,.06); overflow:hidden; }
+  .swl-header { display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; }
+  .swl-accent { width:4px; height:22px; border-radius:2px; flex-shrink:0; }
+  .swl-label { flex:1; font-size:.95rem; font-weight:700; color:#1a1d23; }
+  .swl-badge { font-size:.75rem; font-weight:700; padding:3px 10px; border-radius:12px; }
+  .swl-chevron { color:#ccc; font-size:.85rem; transition:transform .2s; }
+  .swl-chevron.open { transform:rotate(180deg); }
+  .swl-body { padding:0 12px 12px; display:flex; flex-direction:column; gap:10px; }
+</style>
+
 <div class="page-content">
   <div class="container-fluid">
 
-    <!-- En-tête -->
+    <!-- En-tête (desktop / admin only) -->
+    @if (!isMobileView) {
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h4 class="mb-0 fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Commandes</h4>
-        <small class="text-muted">Toutes les commandes de table</small>
+        <small class="text-muted">{{ labelJour }}</small>
       </div>
       <div class="d-flex gap-2 align-items-center flex-wrap">
         @if (isAdmin) {
@@ -61,6 +110,26 @@
       </div>
     </div>
 
+    <!-- Navigation journalière -->
+    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+      <button class="btn btn-outline-secondary btn-sm" (click)="jourPrecedent()" title="Jour précédent">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="fw-bold px-1" style="min-width:200px; text-align:center; text-transform:capitalize;">
+        <i class="bi bi-calendar3 me-1 text-primary"></i>{{ labelJour }}
+      </span>
+      <button class="btn btn-outline-secondary btn-sm" [disabled]="isToday" (click)="jourSuivant()" title="Jour suivant">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      @if (!isToday) {
+        <button class="btn btn-outline-primary btn-sm" (click)="allerAujourdhui()">
+          <i class="bi bi-arrow-return-left me-1"></i>Aujourd'hui
+        </button>
+      }
+      <input type="date" class="form-control form-control-sm ms-auto"
+             style="max-width:150px;" [(ngModel)]="selectedDate" (change)="loadCommandes()">
+    </div>
+
     <!-- Alertes appel serveur -->
     @if (appelsServeur.length > 0) {
       <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 py-2">
@@ -95,12 +164,12 @@
         </div>
         <div class="col-auto">
           <span class="badge bg-success fs-6 px-3 py-2">
-            <i class="bi bi-cash-coin me-1"></i>{{ caJour | number:'1.0-0' }} FCFA encaissés
+            <i class="bi bi-cash-coin me-1"></i>{{ caJour | number:'1.0-0' }} FCFA — {{ caJourLabel }}
           </span>
         </div>
         <div class="col-auto">
           <span class="badge bg-light text-dark border fs-6 px-3 py-2">
-            <i class="bi bi-check2 me-1"></i>{{ totalPayees }} payée(s)
+            <i class="bi bi-check2 me-1"></i>{{ totalPayees }} payée(s) · {{ commandes.length }} au total
           </span>
         </div>
         @if (vue === 'kanban') {
@@ -111,22 +180,367 @@
       </div>
     }
 
+    } <!-- /if !isMobileView -->
+
     <!-- Aucune boutique -->
-    @if (!selectedBoutiqueId && !isLoading) {
+    @if (!selectedBoutiqueId && !isLoading && !isMobileView) {
       <div class="text-center py-5 text-muted">
         <i class="bi bi-building display-4"></i>
         <p class="mt-2">Sélectionnez une boutique</p>
       </div>
     }
 
-    <!-- Loading -->
-    @if (isLoading) {
+    <!-- Loading (desktop) -->
+    @if (isLoading && !isMobileView) {
       <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
     }
 
+    <!-- ===== VUE MOBILE (serveur / cuisiner) ===== -->
+    @if (isMobileView) {
+      <!-- Appels serveur -->
+      @for (t of appelsServeur; track t.id) {
+        <div class="mob-appel alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0">
+          <i class="bi bi-bell-fill flex-shrink-0"></i>
+          <span class="flex-grow-1 fw-semibold">Appel — Table {{ t.numero }}{{ t.nom ? ' · ' + t.nom : '' }}</span>
+          <button class="btn-close btn-close-sm" (click)="acquitterAppel(t.id)"></button>
+        </div>
+      }
+
+      <!-- Navigation journalière mobile -->
+      <div style="display:flex;align-items:center;gap:6px;padding:8px 12px 0;background:#fff;">
+        <button style="border:1px solid #dee2e6;background:#fff;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;"
+                (click)="jourPrecedent()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div style="flex:1;text-align:center;">
+          <div style="font-weight:700;font-size:.88rem;color:#1a1d23;text-transform:capitalize;">
+            <i class="bi bi-calendar3 me-1" style="color:#e85d04;"></i>{{ labelJour }}
+          </div>
+          @if (!isToday) {
+            <div style="font-size:.72rem;color:#0369a1;">{{ selectedDate | date:'dd/MM/yyyy' }}</div>
+          }
+        </div>
+        <button style="border:1px solid #dee2e6;background:#fff;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;"
+                [style.opacity]="isToday ? '.35' : '1'"
+                [disabled]="isToday"
+                (click)="jourSuivant()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        @if (!isToday) {
+          <button style="border:none;background:#e0f2fe;color:#0369a1;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;flex-shrink:0;"
+                  (click)="allerAujourdhui()">
+            Auj.
+          </button>
+        }
+      </div>
+
+      <!-- KPI chips -->
+      <div class="mob-kpi">
+        <span class="mob-kpi-chip" style="background:#fff3e0;color:#b45309;">
+          <i class="bi bi-clock-history me-1"></i>{{ totalEnAttente }} nouvelles
+        </span>
+        <span class="mob-kpi-chip" style="background:#fef3c7;color:#92400e;">
+          <i class="bi bi-fire me-1"></i>{{ totalEnCours }} en cuisine
+        </span>
+        <span class="mob-kpi-chip" style="background:#f0fdf4;color:#166534;">
+          <i class="bi bi-cash-coin me-1"></i>{{ caJour | number:'1.0-0' }} F
+        </span>
+        @if (socketStatus === 'connected') {
+          <span class="mob-kpi-chip" style="background:#f0fdf4;color:#166534;">
+            <i class="bi bi-circle-fill me-1" style="font-size:.5rem;vertical-align:middle;"></i>Temps réel
+          </span>
+        }
+      </div>
+
+      <!-- Tabs statut -->
+      <div class="mob-tabs">
+        @for (tab of STATUTS_MOBILE; track tab.value) {
+          <button class="mob-tab"
+                  [class.active]="selectedStatut === tab.value"
+                  [style.background]="selectedStatut === tab.value ? tab.couleur : '#f5f5f5'"
+                  [style.color]="selectedStatut === tab.value ? '#fff' : '#555'"
+                  (click)="selectedStatut = tab.value; onStatutChange()">
+            {{ tab.label }}
+            @if (countParStatut(tab.value) > 0) {
+              <span [class]="selectedStatut === tab.value ? 'mob-tab-count' : 'mob-tab-count-dark'">
+                {{ countParStatut(tab.value) }}
+              </span>
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Loading spinner mobile -->
+      @if (isLoading) {
+        <div class="text-center py-5"><div class="spinner-border" style="color:#e85d04;"></div></div>
+      }
+
+      <!-- Ticket feed -->
+      @if (!isLoading) {
+        <div class="mob-feed pt-3">
+
+          @if (commandesFiltreesM.length === 0) {
+            <div class="mob-empty">
+              <i class="bi bi-check2-circle" style="font-size:3rem;display:block;margin-bottom:12px;color:#22c55e;"></i>
+              <div class="fw-semibold" style="font-size:1rem;color:#555;">Aucune commande active</div>
+              <div style="font-size:.85rem;margin-top:4px;">Tout est à jour 👌</div>
+            </div>
+          }
+
+          @for (groupe of commandesGroupeesParTable; track groupe.key) {
+
+            @if (groupe.commandes.length > 1) {
+              <div class="mob-group-hdr">
+                <i class="bi bi-table" style="color:#e85d04;font-size:.95rem;flex-shrink:0;"></i>
+                <span style="font-weight:700;font-size:.92rem;flex:1;">{{ groupe.label }}</span>
+                <span style="font-size:.78rem;color:#888;">{{ groupe.commandes.length }} cmd</span>
+                <span style="font-weight:700;font-size:.88rem;color:#1a1d23;">{{ groupe.total | number:'1.0-0' }} F</span>
+                @if (groupe.tableId) {
+                  <button class="mob-group-pay-btn" (click)="encaisserGroupeTable(groupe.tableId!)">
+                    <i class="bi bi-cash-coin"></i> Payer
+                  </button>
+                }
+              </div>
+            }
+
+            @for (cmd of groupe.commandes; track cmd.id; let i = $index) {
+              <div class="mob-ticket"
+                   [class.mob-ticket-in-group]="groupe.commandes.length > 1"
+                   [class.mob-urgent-ring]="cmd.statut === 'en_cours' && urgence(cmd.created_at)">
+                <div class="mob-ticket-accent" [style.background]="couleurStatut(cmd.statut)"></div>
+                <div class="mob-ticket-body">
+
+                  <!-- Header -->
+                  <div class="mob-ticket-header">
+                    <div class="d-flex align-items-center gap-2">
+                      <span style="font-size:.72rem;font-weight:700;color:#fff;background:#1a1d23;border-radius:8px;padding:2px 8px;">
+                        #{{ cmd.numero_ordre ?? (i + 1) }}
+                      </span>
+                      @if (groupe.commandes.length === 1) {
+                        <span class="mob-ticket-table">
+                          @if (cmd.table) {
+                            Table {{ cmd.table.numero }}{{ cmd.table.nom ? ' · ' + cmd.table.nom : '' }}
+                          } @else {
+                            <span style="color:#999;font-weight:400;font-size:.9rem;">Sans table</span>
+                          }
+                        </span>
+                      }
+                      <span class="badge" [style.background]="couleurStatut(cmd.statut)" style="color:#fff;font-size:.7rem;">
+                        {{ statutInfo(cmd.statut).label }}
+                      </span>
+                      @if (cmd.source === 'client') {
+                        <span style="font-size:.7rem;background:#e0f2fe;color:#0369a1;border-radius:6px;padding:2px 6px;font-weight:600;">
+                          <i class="bi bi-phone"></i> QR
+                        </span>
+                      }
+                      @let cmdType = typeCommande(cmd);
+                      @if (cmdType === 'bar') {
+                        <span style="font-size:.7rem;background:#e0f2fe;color:#0369a1;border-radius:6px;padding:2px 6px;font-weight:600;">
+                          <i class="bi bi-cup-straw"></i> Bar
+                        </span>
+                      } @else if (cmdType === 'cuisine') {
+                        <span style="font-size:.7rem;background:#fff3e0;color:#b45309;border-radius:6px;padding:2px 6px;font-weight:600;">
+                          <i class="bi bi-egg-fried"></i> Cuisine
+                        </span>
+                      }
+                    </div>
+                    <span class="mob-ticket-time"
+                          [style.color]="cmd.statut === 'en_cours' && urgence(cmd.created_at) ? '#dc3545' : '#888'">
+                      <i class="bi bi-clock"></i>{{ tempsEcoule(cmd.created_at) }}
+                    </span>
+                  </div>
+
+                  <!-- Items -->
+                  <div class="mob-ticket-items">
+                    @for (l of (cmd.lignes ?? []).slice(0, 4); track l.id) {
+                      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;">
+                        <span>
+                          <span style="color:#bbb;">·</span>
+                          <span style="margin-left:4px;">{{ l.recette?.nom }}</span>
+                          <span style="font-weight:700;color:#1a1d23;"> × {{ l.quantite }}</span>
+                          @if (l.note) {
+                            <span style="color:#aaa;font-size:.78rem;font-style:italic;"> — {{ l.note }}</span>
+                          }
+                        </span>
+                        <span style="font-size:.78rem;color:#888;white-space:nowrap;flex-shrink:0;">
+                          {{ l.prix_unitaire | number:'1.0-0' }} F
+                        </span>
+                      </div>
+                    }
+                    @if ((cmd.lignes ?? []).length > 4) {
+                      <div style="color:#aaa;font-size:.8rem;">+ {{ cmd.lignes.length - 4 }} autre(s)…</div>
+                    }
+                  </div>
+
+                  <!-- Footer : montant + action -->
+                  <div class="mob-ticket-footer">
+                    <span class="mob-ticket-amount">{{ cmd.montant_total | number:'1.0-0' }} <span style="font-size:.72rem;font-weight:400;color:#888;">FCFA</span></span>
+
+                    @if (cmd.statut !== 'payee' && cmd.statut !== 'annulee') {
+                      @if (cmd.statut !== 'servie') {
+                        <button class="mob-cta" (click)="actionPrimaire(cmd)"
+                                [style.background]="couleurStatut(cmd.statut)"
+                                style="color:#fff;">
+                          <i class="bi {{ iconeBoutonAction(cmd.statut) }}"></i>
+                          {{ labelBoutonAction(cmd.statut) }}
+                        </button>
+                      }
+                      @if (cmd.statut === 'servie') {
+                        <a class="mob-cta" style="background:#f0fdf4;color:#166534;border:1.5px solid #86efac;text-decoration:none;font-size:.82rem;"
+                           [routerLink]="['/restaurant/commande']"
+                           [queryParams]="cmd.table ? {table: cmd.table.id} : {}">
+                          <i class="bi bi-plus-circle"></i> Commander encore
+                        </a>
+                        <button class="mob-cta" (click)="actionPrimaire(cmd)"
+                                style="background:#198754;color:#fff;">
+                          <i class="bi bi-cash-coin"></i>
+                          {{ groupe.commandes.length > 1 ? 'Tout payer' : 'Encaisser' }}
+                        </button>
+                      }
+                    }
+
+                    <button class="mob-cta-detail" (click)="ouvrirDetail(cmd.id)" title="Détail">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            }
+
+            @if (groupe.commandes.length > 1) {
+              <div class="mob-group-gap"></div>
+            }
+
+          }
+        </div>
+      }
+
+      <!-- FAB nouvelle commande -->
+      <a routerLink="/restaurant/commande" class="mob-new-commande" title="Nouvelle commande">
+        <i class="bi bi-plus-lg"></i>
+      </a>
+    }
+
+    <!-- ===== SWIMLANE ADMIN MOBILE (< 768px) ===== -->
+    @if (!isMobileView && selectedBoutiqueId && !isLoading) {
+      <div class="d-md-none swl-wrap">
+        @for (col of COLONNES_KANBAN; track col.statut) {
+          @let cmds = commandesParStatut(col.statut);
+          <div class="swl-section">
+
+            <!-- En-tête de swimlane -->
+            <div class="swl-header" (click)="toggleSwimlane(col.statut)">
+              <span class="swl-accent" [style.background]="couleurStatut(col.statut)"></span>
+              <i class="bi {{ col.icon }}" [style.color]="couleurStatut(col.statut)" style="font-size:1rem;"></i>
+              <span class="swl-label">{{ col.label }}</span>
+              <span class="swl-badge"
+                [style.background]="cmds.length ? (couleurStatut(col.statut) + '22') : '#f5f5f5'"
+                [style.color]="cmds.length ? couleurStatut(col.statut) : '#bbb'">
+                {{ cmds.length }}
+              </span>
+              <i class="bi bi-chevron-down swl-chevron" [class.open]="swimlaneOpen[col.statut]"></i>
+            </div>
+
+            <!-- Corps (tickets) -->
+            @if (swimlaneOpen[col.statut]) {
+              <div class="swl-body">
+                @if (cmds.length === 0) {
+                  <p class="text-center text-muted mb-3" style="font-size:.82rem;">Aucune commande</p>
+                }
+                @for (cmd of cmds; track cmd.id; let i = $index) {
+                  <div class="mob-ticket" style="margin-bottom:0;"
+                       [class.mob-urgent-ring]="col.statut === 'en_cours' && urgence(cmd.created_at)">
+                    <div class="mob-ticket-accent" [style.background]="couleurStatut(col.statut)"></div>
+                    <div class="mob-ticket-body">
+
+                      <div class="mob-ticket-header">
+                        <div class="d-flex align-items-center gap-2">
+                          <span style="font-size:.72rem;font-weight:700;color:#fff;background:#1a1d23;border-radius:8px;padding:2px 8px;">
+                            #{{ cmd.numero_ordre ?? (i + 1) }}
+                          </span>
+                          <span class="mob-ticket-table">
+                            @if (cmd.table) {
+                              Table {{ cmd.table.numero }}{{ cmd.table.nom ? ' · ' + cmd.table.nom : '' }}
+                            } @else {
+                              <span style="color:#999;font-weight:400;font-size:.9rem;">Sans table</span>
+                            }
+                          </span>
+                          @if (cmd.source === 'client') {
+                            <span style="font-size:.7rem;background:#e0f2fe;color:#0369a1;border-radius:6px;padding:2px 6px;font-weight:600;">
+                              <i class="bi bi-phone"></i> QR
+                            </span>
+                          }
+                          @let swlType = typeCommande(cmd);
+                          @if (swlType === 'bar') {
+                            <span style="font-size:.7rem;background:#e0f2fe;color:#0369a1;border-radius:6px;padding:2px 6px;font-weight:600;">
+                              <i class="bi bi-cup-straw"></i> Bar
+                            </span>
+                          } @else if (swlType === 'cuisine') {
+                            <span style="font-size:.7rem;background:#fff3e0;color:#b45309;border-radius:6px;padding:2px 6px;font-weight:600;">
+                              <i class="bi bi-egg-fried"></i> Cuisine
+                            </span>
+                          }
+                        </div>
+                        <span class="mob-ticket-time"
+                              [style.color]="col.statut === 'en_cours' && urgence(cmd.created_at) ? '#dc3545' : '#888'">
+                          <i class="bi bi-clock"></i>{{ tempsEcoule(cmd.created_at) }}
+                        </span>
+                      </div>
+
+                      <div class="mob-ticket-items">
+                        @for (l of (cmd.lignes ?? []).slice(0, 3); track l.id) {
+                          <div>
+                            <span style="color:#bbb;">·</span>
+                            <span style="margin-left:4px;">{{ l.recette?.nom }}</span>
+                            <span style="font-weight:700;color:#1a1d23;"> × {{ l.quantite }}</span>
+                            @if (l.note) {
+                              <span style="color:#aaa;font-size:.78rem;font-style:italic;"> — {{ l.note }}</span>
+                            }
+                          </div>
+                        }
+                        @if ((cmd.lignes ?? []).length > 3) {
+                          <div style="color:#aaa;font-size:.8rem;">+ {{ cmd.lignes.length - 3 }} autre(s)…</div>
+                        }
+                      </div>
+
+                      <div class="mob-ticket-footer">
+                        <span class="mob-ticket-amount">
+                          {{ cmd.montant_total | number:'1.0-0' }}
+                          <span style="font-size:.72rem;font-weight:400;color:#888;">FCFA</span>
+                        </span>
+                        @if (cmd.statut !== 'payee' && cmd.statut !== 'annulee') {
+                          @if (labelProchainStatut(cmd.statut)) {
+                            <button class="mob-cta" (click)="avancerStatut(cmd)"
+                                    [style.background]="couleurStatut(col.statut)" style="color:#fff;">
+                              <i class="bi {{ iconeBoutonAction(cmd.statut) }}"></i>
+                              {{ labelBoutonAction(cmd.statut) }}
+                            </button>
+                          }
+                          <button class="mob-cta" (click)="encaisser(cmd.id)"
+                                  style="background:#22c55e;color:#fff;flex:0 0 44px;max-width:44px;">
+                            <i class="bi bi-cash-coin"></i>
+                          </button>
+                        }
+                        <button class="mob-cta-detail" (click)="ouvrirDetail(cmd.id)" title="Détail">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
     <!-- ===== VUE KANBAN ===== -->
-    @if (selectedBoutiqueId && !isLoading && vue === 'kanban') {
-      <div class="row g-3" style="overflow-x:auto; flex-wrap: nowrap; min-width: 0;">
+    @if (!isMobileView && selectedBoutiqueId && !isLoading && vue === 'kanban') {
+      <div class="d-none d-md-flex row g-3" style="overflow-x:auto; flex-wrap: nowrap; min-width: 0;">
         @for (col of COLONNES_KANBAN; track col.statut) {
           <div class="col-12 col-sm-6 col-lg-3">
             <!-- En-tête de colonne -->
@@ -169,7 +583,7 @@
                       </span>
                     </div>
 
-                    <!-- Table + source client -->
+                    <!-- Table + source client + type -->
                     <div class="fw-semibold mb-1 d-flex align-items-center gap-2 flex-wrap">
                       @if (cmd.table) {
                         <span><i class="bi bi-table me-1 text-muted"></i>Table {{ cmd.table.numero }}{{ cmd.table.nom ? ' — ' + cmd.table.nom : '' }}</span>
@@ -178,6 +592,12 @@
                       }
                       @if (cmd.source === 'client') {
                         <span class="badge bg-info text-dark"><i class="bi bi-phone me-1"></i>Client</span>
+                      }
+                      @let kanbanType = typeCommande(cmd);
+                      @if (kanbanType === 'bar') {
+                        <span class="badge" style="background:#e0f2fe;color:#0369a1;"><i class="bi bi-cup-straw me-1"></i>Bar</span>
+                      } @else if (kanbanType === 'cuisine') {
+                        <span class="badge" style="background:#fff3e0;color:#b45309;"><i class="bi bi-egg-fried me-1"></i>Cuisine</span>
                       }
                     </div>
                     @if (cmd.telephone) {
@@ -215,6 +635,15 @@
                         </a>
                       }
 
+                      <!-- Commander encore (commande servie) -->
+                      @if (cmd.statut === 'servie') {
+                        <a [routerLink]="['/restaurant/commande']"
+                           [queryParams]="cmd.table ? {table: cmd.table.id} : {}"
+                           class="btn btn-outline-success btn-sm flex-grow-1" title="Nouvelle commande pour cette table">
+                          <i class="bi bi-plus-circle me-1"></i>Commander encore
+                        </a>
+                      }
+
                       <!-- Avancer le statut (en_cours → prete, prete → servie) -->
                       @if (labelProchainStatut(cmd.statut) && cmd.statut !== 'servie' && cmd.statut !== 'payee' && cmd.statut !== 'annulee') {
                         <button class="btn btn-sm flex-grow-1 btn-outline-{{ col.css }}" (click)="avancerStatut(cmd)" title="Passer à {{ labelProchainStatut(cmd.statut) }}">
@@ -240,8 +669,8 @@
     }
 
     <!-- ===== VUE LISTE ===== -->
-    @if (selectedBoutiqueId && !isLoading && vue === 'liste') {
-      <div class="card border-0 shadow-sm">
+    @if (!isMobileView && selectedBoutiqueId && !isLoading && vue === 'liste') {
+      <div class="d-none d-md-block card border-0 shadow-sm">
         <div class="card-body p-0">
           <table class="table table-hover dt-commandes-table w-100">
             <thead class="table-light">
@@ -336,10 +765,59 @@
               </tr>
             </tfoot>
           </table>
+
+          <!-- Commandes liées à la même table -->
+          @if (detailCommandesSoeurs.length > 0) {
+            <hr class="my-3">
+            <h6 class="fw-bold mb-2">
+              <i class="bi bi-collection me-1 text-primary"></i>
+              Autres commandes — même table
+            </h6>
+            @for (s of detailCommandesSoeurs; track s.id) {
+              @let sType = typeCommande(s);
+              <div class="card border-0 mb-2" style="background:#f8f9fa;">
+                <div class="card-body py-2 px-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+                    <span class="fw-semibold small font-monospace">{{ s.reference }}</span>
+                    <div class="d-flex gap-1 align-items-center">
+                      @if (sType === 'bar') {
+                        <span class="badge" style="background:#e0f2fe;color:#0369a1;"><i class="bi bi-cup-straw me-1"></i>Bar</span>
+                      } @else if (sType === 'cuisine') {
+                        <span class="badge" style="background:#fff3e0;color:#b45309;"><i class="bi bi-egg-fried me-1"></i>Cuisine</span>
+                      }
+                      <span class="badge bg-{{ statutInfo(s.statut).css }}">{{ statutInfo(s.statut).label }}</span>
+                    </div>
+                  </div>
+                  @for (l of s.lignes; track l.id) {
+                    <div class="d-flex justify-content-between" style="font-size:.8rem;color:#555;">
+                      <span><i class="bi bi-dot text-muted"></i>{{ l.recette?.nom }} × {{ l.quantite }}</span>
+                      <span>{{ (l.quantite * l.prix_unitaire) | number:'1.0-0' }} F</span>
+                    </div>
+                  }
+                  <div class="d-flex justify-content-between fw-semibold mt-1 pt-1 border-top" style="font-size:.85rem;">
+                    <span class="text-muted">Sous-total</span>
+                    <span class="text-success">{{ s.montant_total | number:'1.0-0' }} FCFA</span>
+                  </div>
+                </div>
+              </div>
+            }
+            <div class="d-flex justify-content-between fw-bold py-2 px-1 border-top border-2">
+              <span>Total combiné ({{ detailCommandesSoeurs.length + 1 }} commandes)</span>
+              <span class="text-success fs-6">{{ detailTotalCombine | number:'1.0-0' }} FCFA</span>
+            </div>
+          }
+
         </div>
       }
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        @if (detailCommande?.statut === 'servie') {
+          <a class="btn btn-outline-success" data-bs-dismiss="modal"
+             [routerLink]="['/restaurant/commande']"
+             [queryParams]="detailCommande?.table ? {table: detailCommande.table.id} : {}">
+            <i class="bi bi-plus-circle me-1"></i> Commander encore
+          </a>
+        }
         @if (detailCommande?.statut !== 'payee' && detailCommande?.statut !== 'annulee') {
           <button type="button" class="btn btn-success" data-bs-dismiss="modal" (click)="encaisser(detailCommande.id)">
             <i class="bi bi-cash-coin me-1"></i> Encaisser

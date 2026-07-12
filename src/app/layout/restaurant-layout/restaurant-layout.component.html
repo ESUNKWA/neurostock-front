@@ -1,0 +1,193 @@
+<!-- ══════════════════════════════════════════════
+     MODE MOBILE — Serveur / Cuisiner
+══════════════════════════════════════════════ -->
+@if (isMobileMode) {
+
+  <div class="rst-shell">
+
+    <!-- Top bar -->
+    <header class="rst-topbar">
+      <div class="rst-topbar-brand">
+        @if (currentUser?.boutique?.logo) {
+          <img [src]="currentUser.boutique.logo" [alt]="boutiqueName" class="rst-logo" (error)="onLogoError($event)">
+        } @else {
+          <div class="rst-logo-placeholder"><i class="bi bi-cup-hot-fill"></i></div>
+        }
+        <div class="rst-brand-text">
+          <span class="rst-brand-name">{{ boutiqueName }}</span>
+          <span class="rst-brand-role">{{ profilLabel }}</span>
+        </div>
+      </div>
+      <div class="rst-topbar-actions">
+        @if (pendingCount > 0) {
+          <span class="rst-badge-pill">{{ pendingCount }}</span>
+        }
+        <button class="rst-avatar" (click)="userMenuOpen = !userMenuOpen">{{ userInitials }}</button>
+        @if (userMenuOpen) {
+          <div class="rst-backdrop" (click)="userMenuOpen = false"></div>
+          <div class="rst-user-menu">
+            <div class="rst-user-info">
+              <span class="rst-user-name">{{ userName }}</span>
+              <span class="rst-user-role">{{ profilLabel }}</span>
+            </div>
+            <button class="rst-logout-btn" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="rst-main-mobile">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="rst-bnav">
+      <a routerLink="/restaurant/commandes" routerLinkActive="rst-bnav-active" class="rst-bnav-tab">
+        <div class="rst-bnav-icon-wrap">
+          <i class="bi bi-receipt"></i>
+          @if (pendingCount > 0) {
+            <span class="rst-bnav-badge">{{ pendingCount }}</span>
+          }
+        </div>
+        <span>Commandes</span>
+      </a>
+      <a routerLink="/restaurant/commande" routerLinkActive="rst-bnav-active" class="rst-bnav-tab rst-bnav-fab-tab">
+        <div class="rst-bnav-fab">
+          <i class="bi bi-plus-lg"></i>
+        </div>
+        <span>Commande</span>
+      </a>
+      <a routerLink="/restaurant/tables" routerLinkActive="rst-bnav-active" class="rst-bnav-tab">
+        <i class="bi bi-grid-3x3-gap"></i>
+        <span>Tables</span>
+      </a>
+      <button class="rst-bnav-tab" (click)="userMenuOpen = !userMenuOpen">
+        <i class="bi bi-three-dots"></i>
+        <span>Plus</span>
+      </button>
+    </nav>
+
+  </div>
+
+} @else {
+
+<!-- ══════════════════════════════════════════════
+     MODE ADMIN — Sidebar + Header
+══════════════════════════════════════════════ -->
+  <div class="rst-admin-shell" [class.rst-sidebar-open]="sidebarOpen">
+
+    <!-- Sidebar -->
+    <aside class="rst-sidebar">
+      <div class="rst-sidebar-header">
+        <div class="rst-sidebar-brand">
+          @if (currentUser?.boutique?.logo) {
+            <img [src]="currentUser.boutique.logo" [alt]="boutiqueName" class="rst-sidebar-logo" (error)="onLogoError($event)">
+          } @else {
+            <div class="rst-sidebar-logo-ph"><i class="bi bi-cup-hot-fill"></i></div>
+          }
+          <div class="rst-sidebar-brand-text">
+            <span class="rst-sidebar-brand-name">{{ boutiqueName }}</span>
+            <span class="rst-sidebar-brand-sub">Restaurant</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="rst-sidenav">
+
+        <!-- Service en salle -->
+        <div class="rst-nav-group-label">Service</div>
+
+        <a routerLink="/restaurant/commandes" routerLinkActive="active" class="rst-nav-link">
+          <i class="bi bi-receipt me-2"></i>
+          Commandes
+          @if (pendingCount > 0) {
+            <span class="rst-nav-badge ms-auto">{{ pendingCount }}</span>
+          }
+        </a>
+
+        <a routerLink="/restaurant/commande" routerLinkActive="active" class="rst-nav-link">
+          <i class="bi bi-clipboard-plus me-2"></i>
+          Prise de commande
+        </a>
+
+        <a routerLink="/restaurant/tables" routerLinkActive="active" class="rst-nav-link">
+          <i class="bi bi-grid-3x3-gap me-2"></i>
+          Plan de salle
+        </a>
+
+        <!-- Menu & Carte -->
+        <div class="rst-nav-group-label mt-3">Carte</div>
+
+        <a routerLink="/restaurant/menu-jour" routerLinkActive="active" class="rst-nav-link">
+          <i class="bi bi-calendar2-check me-2"></i>
+          Menu du jour
+        </a>
+
+        <a routerLink="/restaurant/recettes" routerLinkActive="active" class="rst-nav-link">
+          <i class="bi bi-journal-text me-2"></i>
+          Recettes & Boissons
+        </a>
+
+        <!-- Switcher layout -->
+        <div class="rst-nav-switcher">
+          <button type="button" (click)="goToGestion()" class="rst-nav-switch-btn">
+            <i class="bi bi-box-seam me-2"></i>
+            Mode Gestion
+          </button>
+        </div>
+
+      </nav>
+
+      <!-- Footer sidebar -->
+      <div class="rst-sidebar-footer">
+        <div class="rst-sidebar-user">
+          <div class="rst-sidebar-avatar">{{ userInitials }}</div>
+          <div class="rst-sidebar-user-info">
+            <span class="rst-sidebar-user-name">{{ userName }}</span>
+            <span class="rst-sidebar-user-role">{{ profilLabel }}</span>
+          </div>
+          <button class="rst-sidebar-logout" (click)="logout()" title="Déconnexion">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay mobile sidebar -->
+    @if (sidebarOpen) {
+      <div class="rst-overlay" (click)="sidebarOpen = false"></div>
+    }
+
+    <!-- Zone principale -->
+    <div class="rst-admin-content">
+      <!-- Topbar -->
+      <header class="rst-admin-topbar">
+        <button class="rst-hamburger" (click)="sidebarOpen = !sidebarOpen">
+          <i class="bi bi-list"></i>
+        </button>
+        <span class="rst-admin-topbar-title d-none d-sm-inline">{{ boutiqueName }}</span>
+        <div class="rst-admin-topbar-right">
+          @if (pendingCount > 0) {
+            <a routerLink="/restaurant/commandes" class="rst-topbar-badge-link">
+              <i class="bi bi-clock-history"></i>
+              <span class="rst-topbar-count">{{ pendingCount }} en attente</span>
+            </a>
+          }
+          <button type="button" (click)="goToGestion()" class="rst-topbar-gestion-btn" title="Retour à la gestion des stocks">
+            <i class="bi bi-box-seam"></i>
+            <span class="d-none d-sm-inline">Mode Gestion</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="rst-admin-main">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+
+  </div>
+
+}

@@ -8,9 +8,10 @@ export class CommandeTableService {
 
   constructor(private http: HttpClientService) {}
 
-  getAll(boutiqueId: number, statut?: string) {
+  getAll(boutiqueId: number, statut?: string, date?: string) {
     const params: any = { boutique: boutiqueId };
     if (statut) params.statut = statut;
+    if (date) params.date = date;
     return this.http.get(this.BASE, { params });
   }
 
@@ -32,6 +33,14 @@ export class CommandeTableService {
 
   encaisser(id: number, libererTable: boolean) {
     return this.http.post(`${this.BASE}/${id}/encaisser`, { liberer_table: libererTable });
+  }
+
+  getByTable(tableId: number) {
+    return this.http.get(`${this.BASE}/table/${tableId}`);
+  }
+
+  encaisserBatch(ids: number[], libererTable: boolean) {
+    return this.http.post(`${this.BASE}/encaisser-batch`, { ids, liberer_table: libererTable });
   }
 
   remove(id: number) {

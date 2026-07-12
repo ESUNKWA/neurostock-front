@@ -5,13 +5,14 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { StructureService } from '../../../services/structure/structure.service';
 import { AbonnementService } from '../../../services/abonnement/abonnement.service';
 
 @Component({
   selector: 'app-ek-structures',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, NzSelectModule],
   templateUrl: './ek-structures.component.html',
   providers: [ToastrService],
 })
@@ -148,6 +149,9 @@ export default class EkStructuresComponent implements OnInit {
   categoryLabel(id: number): string {
     return this.categories.find(c => c.id === id)?.label ?? `#${id}`;
   }
+
+  categorieFilterFn = (search: string, option: any): boolean =>
+    (option.nzLabel ?? '').toLowerCase().includes(search.toLowerCase());
 
   get f() { return this.form.controls; }
 }

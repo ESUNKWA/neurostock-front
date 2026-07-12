@@ -188,15 +188,17 @@
               </div>
               <div class="col-md-4">
                 <label class="mf-label">Catégorie <span class="text-muted fw-normal">(tarification)</span></label>
-                <div class="mf-input-wrap">
-                  <i class="bi bi-tag mf-input-icon"></i>
-                  <select class="form-select mf-input ps-5" formControlName="categorieId">
-                    <option value="">— Aucune catégorie —</option>
-                    @for (c of categories; track c.id) {
-                      <option [value]="c.id">{{ c.label }}</option>
-                    }
-                  </select>
-                </div>
+                <nz-select
+                  formControlName="categorieId"
+                  nzShowSearch
+                  nzAllowClear
+                  nzPlaceHolder="Rechercher une catégorie…"
+                  style="width:100%"
+                  [nzFilterOption]="categorieFilterFn">
+                  @for (c of categories; track c.id) {
+                    <nz-option [nzValue]="c.id" [nzLabel]="c.label"></nz-option>
+                  }
+                </nz-select>
               </div>
             </div>
           </div>

@@ -18,6 +18,41 @@ import { AuthService } from '../../../services/auth/auth.service';
   imports: [CommonModule, FormsModule, RouterModule, NzSelectModule],
   templateUrl: './commande.component.html',
   providers: [ToastrService],
+  styles: [`
+    .mob-cmd { position:fixed; inset:0; background:#f3f4f6; display:flex; flex-direction:column; z-index:1200; }
+    .mob-cmd-header { background:#fff; border-bottom:1px solid #dee2e6; padding:0 .875rem; height:56px; display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+    .mob-cmd-new-btn { background:#e85d04; color:#fff; border:none; border-radius:8px; padding:.35rem .55rem; font-size:.9rem; display:flex; align-items:center; gap:.25rem; flex-shrink:0; cursor:pointer; font-weight:700; white-space:nowrap; }
+    .mob-tabs { display:flex; background:#fff; border-bottom:1px solid #dee2e6; flex-shrink:0; }
+    .mob-tab { flex:1; padding:.7rem .5rem; border:none; background:none; font-weight:600; font-size:.9rem; color:#6c757d; border-bottom:3px solid transparent; }
+    .mob-tab.active { color:#e85d04; border-bottom-color:#e85d04; }
+    .mob-menu-scroll { flex:1; overflow-y:auto; padding:.75rem; -webkit-overflow-scrolling:touch; }
+    .mob-menu-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .mob-item { background:#fff; border:2px solid #e9ecef; border-radius:12px; padding:.75rem .65rem; position:relative; display:flex; flex-direction:column; gap:.25rem; min-height:80px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:border-color .1s,background .1s; }
+    .mob-item:active { opacity:.8; }
+    .mob-item.in-cart { border-color:#e85d04; background:#fff4ed; }
+    .mob-item.rupture { opacity:.45; pointer-events:none; }
+    .mob-qty-badge { position:absolute; top:-9px; right:-9px; background:#e85d04; color:#fff; border-radius:99px; min-width:22px; height:22px; padding:0 4px; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:700; box-shadow:0 1px 4px rgba(232,93,4,.4); }
+    .mob-item-name { font-weight:600; font-size:.82rem; line-height:1.35; color:#212529; }
+    .mob-item-price { font-weight:700; font-size:.85rem; color:#e85d04; }
+    .mob-cart-bar { background:#fff; border-top:1px solid #dee2e6; padding:.6rem .875rem; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; box-shadow:0 -2px 8px rgba(0,0,0,.06); cursor:pointer; }
+    .mob-cart-cta { background:#e85d04; color:#fff; border:none; border-radius:10px; padding:.5rem 1.1rem; font-weight:600; font-size:.875rem; display:flex; align-items:center; gap:.4rem; flex-shrink:0; }
+    .mob-cart-cta:disabled { background:#adb5bd; }
+    .mob-overlay { position:fixed; inset:0; z-index:1300; display:flex; flex-direction:column; justify-content:flex-end; }
+    .mob-overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,.5); }
+    .mob-sheet { position:relative; background:#fff; border-radius:20px 20px 0 0; max-height:88vh; display:flex; flex-direction:column; }
+    .mob-sheet-handle { width:36px; height:4px; background:#e85d04; border-radius:2px; margin:10px auto 0; flex-shrink:0; }
+    .mob-sheet-head { padding:.875rem 1rem; border-bottom:1px solid #dee2e6; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .mob-sheet-body { overflow-y:auto; flex:1; }
+    .mob-cart-row { display:flex; align-items:flex-start; padding:.65rem 1rem; border-bottom:1px solid #f0f0f0; }
+    .mob-cart-info { flex:1; min-width:0; }
+    .mob-qty-ctrl { display:flex; align-items:center; gap:.375rem; margin-top:.375rem; }
+    .mob-qty-btn { width:30px; height:30px; border-radius:8px; border:1.5px solid #e85d04; background:#fff; display:flex; align-items:center; justify-content:center; font-size:1rem; line-height:1; color:#e85d04; font-weight:700; }
+    .mob-sheet-foot { padding:.875rem 1rem; border-top:1px solid #dee2e6; flex-shrink:0; }
+    .mob-send-btn { width:100%; padding:.75rem; background:#e85d04; border:none; border-radius:12px; color:#fff; font-weight:700; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:.5rem; box-shadow:0 4px 14px rgba(232,93,4,.35); }
+    .mob-send-btn:disabled { background:#adb5bd; box-shadow:none; }
+    .mob-encaisser-btn { width:100%; padding:.7rem; background:#198754; border:none; border-radius:12px; color:#fff; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; gap:.5rem; margin-top:.5rem; }
+    .mob-encaisser-btn:disabled { background:#adb5bd; }
+  `],
 })
 export default class CommandeTableComponent implements OnInit {
   boutiques: any[] = [];
@@ -32,6 +67,7 @@ export default class CommandeTableComponent implements OnInit {
   panier: { recette: any; quantite: number; note: string }[] = [];
 
   commandeEnCours: any = null;
+  commandeBoissonsEnCours: any = null;
   isLoading = false;
   isSaving = false;
   isEncaissing = false;
@@ -250,51 +286,122 @@ export default class CommandeTableComponent implements OnInit {
 
   get panierPlats(): typeof this.panier    { return this.panier.filter(p => !this.estBoisson(p.recette)); }
   get panierBoissons(): typeof this.panier { return this.panier.filter(p => this.estBoisson(p.recette)); }
+  get toutBoissons(): boolean { return this.panier.length > 0 && this.panier.every(p => this.estBoisson(p.recette)); }
 
   indexPanier(recette: any): number { return this.panier.findIndex(p => p.recette.id === recette.id); }
 
+  get commandesCourantes(): any[] {
+    return [this.commandeEnCours, this.commandeBoissonsEnCours].filter(Boolean);
+  }
+
+  get totalCommandesCourantes(): number {
+    return this.commandesCourantes.reduce((s, c) => s + (c.montant_total ?? 0), 0);
+  }
+
+  get totalLignesCommandesCourantes(): number {
+    return this.commandesCourantes.reduce((s, c) => s + (c.lignes?.length ?? 0), 0);
+  }
+
+  get tousPayes(): boolean {
+    return this.commandesCourantes.length > 0 && this.commandesCourantes.every(c => c.statut === 'payee');
+  }
+
+  get labelBoutonEnvoyer(): string {
+    const hasFood   = this.panierPlats.length > 0;
+    const hasDrinks = this.panierBoissons.length > 0;
+    const hasExisting = this.commandesCourantes.length > 0;
+    if (hasFood && hasDrinks) return hasExisting ? 'Ajouter (plats + boissons)' : 'Cuisine + Bar';
+    if (hasDrinks)            return hasExisting ? 'Ajouter boissons' : 'Servir les boissons';
+    return hasExisting ? 'Ajouter au ticket' : 'Envoyer en cuisine';
+  }
+
   // ---- Envoi commande ----
 
-  validerCommande(): void {
+  private creerCommandeAsync(dto: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.commandeService.create(dto).subscribe({
+        next: (r: any) => resolve(r?.data ?? r),
+        error: (e: any) => reject(e),
+      });
+    });
+  }
+
+  private ajouterLignesAsync(id: number, lignes: any[]): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.commandeService.ajouterLignes(id, lignes).subscribe({
+        next: (r: any) => resolve(r?.data ?? r),
+        error: (e: any) => reject(e),
+      });
+    });
+  }
+
+  async validerCommande(): Promise<void> {
     if (this.panierVide) { this.toastr.warning('Le panier est vide'); return; }
     if (!this.selectedBoutiqueId) { this.toastr.warning('Boutique requise'); return; }
+    if (!this.selectedTableId) { this.toastr.warning('Veuillez sélectionner une table'); return; }
 
     this.isSaving = true;
-    const lignes = this.panier.map(p => ({
+    const baseDto = {
+      boutique: this.selectedBoutiqueId,
+      table:    this.selectedTableId,
+      user:     this.currentUser?.telephone ?? null,
+    };
+    const toLigne = (p: any) => ({
       recette:       p.recette.id,
       quantite:      p.quantite,
       prix_unitaire: p.recette.prix_vente,
       note:          p.note || null,
-    }));
+    });
+    const lignesPlats    = this.panierPlats.map(toLigne);
+    const lignesBoissons = this.panierBoissons.map(toLigne);
+    const hasExisting    = this.commandesCourantes.length > 0;
 
-    if (this.commandeEnCours) {
-      this.commandeService.ajouterLignes(this.commandeEnCours.id, lignes).subscribe({
-        next: (r: any) => {
-          this.isSaving = false;
-          this.commandeEnCours = r?.data ?? r;
-          this.panier = [];
-          this.toastr.success('Lignes ajoutées à la commande');
-        },
-        error: (e: any) => { this.isSaving = false; this.toastr.error(e?.error?.message || 'Erreur'); }
-      });
-    } else {
-      const dto = {
-        boutique: this.selectedBoutiqueId,
-        table:    this.selectedTableId,
-        user:     this.currentUser?.telephone ?? null,
-        lignes,
-      };
-      this.commandeService.create(dto).subscribe({
-        next: (r: any) => {
-          this.isSaving = false;
-          this.commandeEnCours = r?.data ?? r;
-          this.panier = [];
-          this.toastr.success('Commande créée !');
-          // Recharger les recettes pour avoir le stock à jour
-          this.loadRecettes();
-        },
-        error: (e: any) => { this.isSaving = false; this.toastr.error(e?.error?.message || 'Erreur'); }
-      });
+    try {
+      // --- Plats → cuisine ---
+      if (lignesPlats.length > 0) {
+        if (this.commandeEnCours) {
+          this.commandeEnCours = await this.ajouterLignesAsync(this.commandeEnCours.id, lignesPlats);
+        } else {
+          this.commandeEnCours = await this.creerCommandeAsync({ ...baseDto, lignes: lignesPlats });
+        }
+      }
+
+      // --- Boissons → bar (commande séparée si des plats existent aussi) ---
+      if (lignesBoissons.length > 0) {
+        if (this.commandeBoissonsEnCours) {
+          this.commandeBoissonsEnCours = await this.ajouterLignesAsync(this.commandeBoissonsEnCours.id, lignesBoissons);
+        } else if (lignesPlats.length === 0 && !this.commandeEnCours) {
+          // Boissons seules sans commande nourriture → commande unique
+          this.commandeEnCours = await this.creerCommandeAsync({ ...baseDto, lignes: lignesBoissons });
+        } else {
+          // Commande boissons séparée, liée à la même table
+          this.commandeBoissonsEnCours = await this.creerCommandeAsync({ ...baseDto, lignes: lignesBoissons });
+        }
+      }
+
+      // Toast adapté
+      const hasBoth = lignesPlats.length > 0 && lignesBoissons.length > 0;
+      if (!hasExisting) {
+        this.toastr.success(
+          hasBoth ? 'Plats en cuisine · Boissons prêtes !'
+          : lignesBoissons.length > 0 ? 'Boissons prêtes à servir !'
+          : 'Commande envoyée en cuisine !'
+        );
+      } else {
+        this.toastr.success(
+          hasBoth ? 'Plats et boissons ajoutés'
+          : lignesBoissons.length > 0 ? 'Boissons ajoutées'
+          : 'Lignes ajoutées au ticket'
+        );
+      }
+
+      this.panier = [];
+      this.showCart = false;
+      this.loadRecettes();
+    } catch (e: any) {
+      this.toastr.error(e?.error?.message || 'Erreur');
+    } finally {
+      this.isSaving = false;
     }
   }
 
@@ -304,11 +411,13 @@ export default class CommandeTableComponent implements OnInit {
     if (!this.commandeEnCours) return;
     const aUneTable = !!this.commandeEnCours.table;
     const tableNum  = this.commandeEnCours.table?.numero;
+    const ids = this.commandesCourantes.filter(c => c.statut !== 'payee').map(c => c.id);
+    const total = this.totalCommandesCourantes;
 
     const { value: swalResult, isConfirmed } = await Swal.fire({
       title: 'Encaisser la commande',
       html: `
-        <div class="fs-3 fw-bold text-success mb-3">${Number(this.commandeEnCours.montant_total ?? 0).toLocaleString('fr-FR')} FCFA</div>
+        <div class="fs-3 fw-bold text-success mb-3">${Number(total).toLocaleString('fr-FR')} FCFA</div>
         <p class="text-muted small mb-3">Le stock sera mis à jour automatiquement.</p>
         ${aUneTable ? `
         <div class="form-check text-start d-inline-block">
@@ -332,12 +441,12 @@ export default class CommandeTableComponent implements OnInit {
 
     const libererTable = swalResult?.liberer ?? false;
     this.isEncaissing = true;
-    this.commandeService.encaisser(this.commandeEnCours.id, libererTable).subscribe({
+    this.commandeService.encaisserBatch(ids, libererTable).subscribe({
       next: () => {
         this.isEncaissing = false;
         const msg = libererTable && aUneTable
           ? `Encaissé et table ${tableNum} libérée.`
-          : 'Commande encaissée — la table reste occupée.';
+          : 'Commande(s) encaissée(s) — la table reste occupée.';
         Swal.fire({ icon: 'success', title: 'Encaissé !', text: msg, timer: 2000, showConfirmButton: false });
         this.router.navigate(['/restaurant/tables']);
       },
@@ -350,6 +459,29 @@ export default class CommandeTableComponent implements OnInit {
   get isAdmin(): boolean {
     const c = this.currentUser?.profil?.code?.toLowerCase();
     return c === 'admin' || c === 'responsable_structure';
+  }
+
+  get isMobileView(): boolean {
+    const c = this.currentUser?.profil?.code?.toLowerCase();
+    return c === 'serveur' || c === 'cuisiner';
+  }
+
+  showCart = false;
+
+  nouvelleCommande(): void {
+    this.commandeEnCours = null;
+    this.commandeBoissonsEnCours = null;
+    this.panier = [];
+    this.selectedTableId = null;
+    this.showCart = false;
+  }
+
+  get panierCount(): number {
+    return this.panier.reduce((s, p) => s + p.quantite, 0);
+  }
+
+  quantiteInPanier(recetteId: number): number {
+    return this.panier.find(p => p.recette.id === recetteId)?.quantite ?? 0;
   }
 
   tableNom(id: number | null): string {

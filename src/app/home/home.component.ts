@@ -2,14 +2,14 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { HeaderComponent } from '../layout/header/header.component';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 import { FooterComponent } from '../layout/footer/footer.component';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { AbonnementBannerComponent } from '../components/abonnement-banner/abonnement-banner.component';
 import { AuthService } from '../services/auth/auth.service';
 import { AlerteService } from '../services/alerte/alerte.service';
 import { DeviceService } from '../services/device/device.service';
 import { MobileNavComponent } from '../layout/mobile-nav/mobile-nav.component';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 
 const POS_ROLES = ['caissier', 'vendeur'];
 
@@ -54,6 +54,18 @@ export default class HomeComponent implements OnInit, OnDestroy {
         const code = user?.profil?.code?.toLowerCase() ?? '';
         if (POS_ROLES.includes(code)) {
           this.router.navigateByUrl('/pos/vente');
+          return;
+        }
+        // Restaurant users: redirect to restaurant layout unless admin explicitly chose gestion mode
+        if (user?.boutique?.type === 'restaurant') {
+          if (sessionStorage.getItem('force_gestion_mode')) {
+            sessionStorage.removeItem('force_gestion_mode');
+          } else {
+            const url = this.router.url;
+            if (url === '/dashboard' || url === '/') {
+              this.router.navigateByUrl('/restaurant/commandes');
+            }
+          }
         }
       })
     );
