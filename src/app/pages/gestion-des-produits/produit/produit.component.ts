@@ -499,14 +499,26 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.titleModal = 'AJOUTER UN PRODUIT';
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
-    this.produitForm.reset();
     this.selectedFile = null;
     this.previewImageUrl = null;
     this.isSubmitted = false;
 
-    // Activer les champs du formulaire
     Object.keys(this.produitForm.controls).forEach(key => {
       this.produitForm.get(key)?.enable();
+    });
+
+    const defaultBoutique = this.selectedBoutique || this.boutiques[0]?.id || '';
+    this.produitForm.reset({
+      nom: '',
+      prix_achat: null,
+      prix_vente: null,
+      stock_initial: 0,
+      seuil_alert: 2,
+      categorie: '',
+      boutique: defaultBoutique,
+      unite_mesure: 'pièce',
+      code_barre: null,
+      image: null
     });
   }
 
@@ -581,6 +593,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.isSubmitted = true;
 
     if (this.produitForm.invalid) {
+      this.toastr.warning('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
