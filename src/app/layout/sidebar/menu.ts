@@ -34,12 +34,14 @@ export const Menu: any = [
             {
                 libelle: 'Clients',
                 icon: 'bi bi-people',
-                lien: '/clients/list'
+                lien: '/clients/list',
+                module: 'clients'
             },
             {
                 libelle: 'Fournisseurs',
                 icon: 'bi bi-truck',
-                lien: '/gestion-des-produits/fournisseur'
+                lien: '/gestion-des-produits/fournisseur',
+                module: 'fournisseurs'
             },
             {
                 libelle: 'Gestion boutiques',
@@ -86,6 +88,7 @@ export const Menu: any = [
                 libelle: 'Commandes fournisseurs',
                 icon: 'bi bi-file-earmark-text',
                 target: 'commandes-fourn-nav',
+                module: 'commandes_fournisseurs',
                 sousMenu: [
                     {
                         libelle: 'Nouvelle commande',
@@ -120,6 +123,7 @@ export const Menu: any = [
                 libelle: 'Devis',
                 icon: 'bi bi-file-earmark-text',
                 target: 'devis-nav',
+                module: 'devis',
                 sousMenu: [
                     {
                         libelle: 'Nouveau devis',
@@ -137,6 +141,7 @@ export const Menu: any = [
                 libelle: 'Commandes clients',
                 icon: 'bi bi-bag-check',
                 target: 'commandes-clients-nav',
+                module: 'commandes_clients',
                 sousMenu: [
                     {
                         libelle: 'Nouvelle commande',
@@ -154,6 +159,7 @@ export const Menu: any = [
                 libelle: 'Retours produits',
                 icon: 'bi bi-arrow-return-left',
                 target: 'retours-nav',
+                module: 'retours_produits',
                 sousMenu: [
                     {
                         libelle: 'Historique',
@@ -173,9 +179,27 @@ export const Menu: any = [
                 lien: '/stocks/mouvements'
             },
             {
+                libelle: 'Transferts stock',
+                icon: 'bi bi-arrow-left-right',
+                target: 'transferts-nav',
+                sousMenu: [
+                    {
+                        libelle: 'Liste des transferts',
+                        lien: '/stocks/transferts',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Rapport ventes',
+                        lien: '/stocks/rapport-transferts',
+                        icon: 'bi bi-circle'
+                    }
+                ]
+            },
+            {
                 libelle: 'Gestion de caisse',
                 icon: 'bi bi-cash-coin',
-                lien: '/caisse'
+                lien: '/caisse',
+                module: 'caisse',
             }
         ]
     },
@@ -186,13 +210,14 @@ export const Menu: any = [
             {
                 libelle: 'Recette',
                 lien: '/recette',
-                icon: 'bi bi-cash-stack'
+                icon: 'bi bi-cash-stack',
             }
         ]
     },
     {
         titre: 'Analyse IA',
         full: true,
+        module: 'ia',
         menu: [
             {
                 libelle: 'Résumé du jour',

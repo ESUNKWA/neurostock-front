@@ -15,6 +15,7 @@ type Etape = 'menu' | 'panier' | 'infos' | 'confirmation' | 'appel_ok';
 })
 export default class MenuClientComponent implements OnInit {
   boutiqueId: number | null = null;
+  structureId: number | null = null;
   tableIdPreselect: number | null = null;
 
   boutique: any = null;
@@ -44,17 +45,18 @@ export default class MenuClientComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      this.boutiqueId = params.has('boutique') ? +params.get('boutique')! : null;
+      this.boutiqueId   = params.has('boutique')  ? +params.get('boutique')!  : null;
+      this.structureId  = params.has('structure') ? +params.get('structure')! : null;
       this.tableIdPreselect = params.has('table') ? +params.get('table')! : null;
       if (this.tableIdPreselect) this.tableSelectionnee = this.tableIdPreselect;
-      if (this.boutiqueId) this.chargerMenu();
-      else { this.isLoading = false; this.erreur = 'QR code invalide — aucune boutique spécifiée.'; }
+      if (this.boutiqueId && this.structureId) this.chargerMenu();
+      else { this.isLoading = false; this.erreur = 'QR code invalide — paramètres manquants.'; }
     });
   }
 
   chargerMenu(): void {
     this.isLoading = true;
-    this.publicMenuService.getMenu(this.boutiqueId!).subscribe({
+    this.publicMenuService.getMenu(this.boutiqueId!, this.structureId!).subscribe({
       next: (r: any) => {
         this.boutique  = r.boutique;
         this.tables    = r.tables ?? [];
@@ -124,6 +126,7 @@ export default class MenuClientComponent implements OnInit {
     this.isSending = true;
     const dto = {
       boutique:  this.boutiqueId!,
+      structure: this.structureId!,
       telephone: this.telephone.trim(),
       table:     this.tableSelectionnee ?? undefined,
       lignes: this.panier.map(p => ({
@@ -151,7 +154,7 @@ export default class MenuClientComponent implements OnInit {
 
   appelServeur(): void {
     this.isSending = true;
-    this.publicMenuService.appelServeur(this.boutiqueId!, this.tableSelectionnee ?? undefined).subscribe({
+    this.publicMenuService.appelServeur(this.boutiqueId!, this.structureId!, this.tableSelectionnee ?? undefined).subscribe({
       next: () => { this.isSending = false; this.etape = 'appel_ok'; },
       error: () => { this.isSending = false; this.etape = 'appel_ok'; } // succès côté UX même si erreur réseau
     });

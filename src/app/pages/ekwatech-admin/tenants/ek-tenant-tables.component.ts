@@ -111,7 +111,7 @@ export default class EkTenantTablesComponent implements OnInit, OnDestroy {
         data: rows,
         columns,
         destroy: true,
-        pageLength: 20,
+        pageLength: 10,
         lengthMenu: [10, 20, 50, 100],
         scrollX: true,
         language: {

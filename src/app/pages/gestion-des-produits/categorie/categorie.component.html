@@ -35,6 +35,12 @@
                   <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
                 }
               </button>
+              @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
+                <button type="button" class="btn btn-warning mt-3 me-2" (click)="openTransferModal()"
+                  title="Copier les catégories vers d'autres boutiques">
+                  <i class="bi bi-arrow-left-right"></i> Copier vers boutiques
+                </button>
+              }
               <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
                 <i class="bi bi-plus-circle"></i> Nouvelle Catégorie
               </button>
@@ -188,6 +194,109 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal transfert de catégories vers d'autres boutiques -->
+<div class="modal fade" id="modal-transfer" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:500px">
+    <div class="modal-content mf-modal mf-modal--teal">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-arrow-left-right"></i></div>
+        <div>
+          <div class="mf-header-title">COPIER LES CATÉGORIES</div>
+          <div class="mf-header-subtitle">Dupliquer vers d'autres boutiques</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="background:#f8fafc; padding:1.25rem">
+
+        @if (!transferResult) {
+          <p class="text-muted small mb-3">
+            Les catégories de la boutique sélectionnée seront copiées vers chaque boutique choisie ci-dessous.
+            Les doublons (même nom) seront ignorés automatiquement.
+          </p>
+
+          @if (transferBoutiquesDisponibles.length === 0) {
+            <div class="alert alert-warning py-2 small mb-0">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              Aucune autre boutique disponible. Sélectionnez d'abord une boutique source dans le filtre.
+            </div>
+          } @else {
+            <label class="form-label fw-semibold mb-2">Boutiques cibles <span class="text-danger">*</span></label>
+            <div class="border rounded p-2" style="background:#fff; max-height:260px; overflow-y:auto">
+              @for (b of transferBoutiquesDisponibles; track b.id) {
+                <div class="form-check py-1 border-bottom">
+                  <input class="form-check-input" type="checkbox"
+                    [id]="'tr-b-' + b.id"
+                    [checked]="transferTargetIds.includes(b.id)"
+                    (change)="toggleTransferTarget(b.id)">
+                  <label class="form-check-label w-100" [for]="'tr-b-' + b.id">
+                    <span class="fw-semibold">{{ b.nom }}</span>
+                    @if (b.type) {
+                      <span class="badge ms-2"
+                        [ngClass]="{
+                          'bg-warning text-dark': b.type === 'entrepot',
+                          'bg-info text-dark': b.type === 'restaurant',
+                          'bg-secondary': b.type === 'boutique'
+                        }">{{ b.type }}</span>
+                    }
+                  </label>
+                </div>
+              }
+            </div>
+            @if (transferBoutiquesDisponibles.length > 1) {
+              <div class="mt-2 text-end">
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                  (click)="selectAllTransferTargets()">
+                  Tout sélectionner
+                </button>
+                <span class="text-muted mx-1">·</span>
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                  (click)="transferTargetIds = []">
+                  Tout désélectionner
+                </button>
+              </div>
+            }
+          }
+        } @else {
+          <div class="text-center py-3">
+            <div class="mb-3" style="font-size:2.5rem">
+              @if (transferResult.created > 0) { ✅ } @else { ℹ️ }
+            </div>
+            <div class="fw-bold fs-5 mb-1">
+              {{ transferResult.created }} catégorie(s) copiée(s)
+            </div>
+            @if (transferResult.alreadyExists > 0) {
+              <div class="text-muted small">
+                {{ transferResult.alreadyExists }} déjà existante(s) — ignorée(s)
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+
+      <div class="mf-footer">
+        @if (!transferResult) {
+          <button type="button" class="btn mf-btn-save"
+            [disabled]="isTransferring || transferTargetIds.length === 0"
+            (click)="confirmTransfer()">
+            @if (isTransferring) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span> Copie en cours…
+            } @else {
+              <i class="bi bi-arrow-left-right me-1"></i> Confirmer la copie
+            }
+          </button>
+        }
+        <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-1"></i> {{ transferResult ? 'Fermer' : 'Annuler' }}
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

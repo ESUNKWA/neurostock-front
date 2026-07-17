@@ -1,0 +1,869 @@
+<div class="pagetitle">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>Transferts de stock</h1>
+    <nav>
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item active">Transferts</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="p-2 p-md-4">
+
+      @if (entrepots.length === 0) {
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Aucun entrepôt configuré. Créez d'abord une boutique de type <strong>Entrepôt</strong> dans la gestion des boutiques.
+        </div>
+      }
+
+      <!-- Barre d'actions -->
+      <div class="trx-topbar">
+        @if (boutiques.length > 1) {
+          <nz-select class="trx-topbar-select"
+            [(ngModel)]="filterBoutiqueId" (ngModelChange)="loadTransferts()"
+            nzPlaceHolder="Toutes les boutiques" nzShowSearch nzAllowClear>
+            @for (b of boutiques; track b.id) {
+              <nz-option [nzValue]="b.id"
+                [nzLabel]="b.nom + (b.type === 'entrepot' ? ' (Entrepôt)' : '')">
+              </nz-option>
+            }
+          </nz-select>
+        }
+        <button class="trx-new-btn" (click)="ouvrirFormulaire()"
+          [disabled]="entrepots.length === 0">
+          <i class="bi bi-plus-lg"></i>
+          <span>Nouveau</span>
+        </button>
+      </div>
+
+      <!-- Chargement -->
+      @if (isLoading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="text-muted small mt-2">Chargement…</p>
+        </div>
+      }
+
+      <!-- ═══ VUE DESKTOP : DataTable (masquée sur mobile/tablette) ═══ -->
+      @if (!isLoading) {
+        <div class="d-none d-lg-block">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped js-dt-transferts">
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>Source</th>
+                  <th>Destination</th>
+                  <th class="text-center">Articles</th>
+                  <th>Date envoi</th>
+                  <th>Date réception</th>
+                  <th class="text-center">Statut</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of transferts; track t.id) {
+                  <tr>
+                    <td><strong>{{ t.reference }}</strong></td>
+                    <td>{{ t.boutique_source?.nom }}</td>
+                    <td>{{ t.boutique_destination?.nom }}</td>
+                    <td class="text-center">
+                      <span class="badge bg-info">{{ totalLignes(t) }} unités</span>
+                    </td>
+                    <td>{{ t.date_envoi ? (t.date_envoi | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                    <td>{{ t.date_reception ? (t.date_reception | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                    <td class="text-center">
+                      <span class="badge bg-{{ statutBadge(t.statut) }}">{{ statutLabel(t.statut) }}</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="d-flex gap-1 justify-content-center flex-wrap">
+                        <button class="btn btn-sm btn-outline-secondary" title="Détails" (click)="voirDetail(t)">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        @if (t.statut === 'brouillon') {
+                          <button class="btn btn-sm btn-outline-primary" title="Modifier" (click)="ouvrirFormulaire(t)">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button class="btn btn-sm btn-warning" (click)="valider(t)">
+                            <i class="bi bi-send me-1"></i>Expédier
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger" (click)="supprimer(t)">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        }
+                        @if (t.statut === 'valide') {
+                          <button class="btn btn-sm btn-success" (click)="recevoir(t)">
+                            <i class="bi bi-box-arrow-in-down me-1"></i>Réceptionner
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Aucun transfert trouvé</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ VUE MOBILE/TABLETTE : Cartes (masquée sur desktop) ═══ -->
+      @if (!isLoading) {
+        <div class="d-lg-none">
+        @if (transferts.length === 0) {
+          <div class="trx-empty">
+            <i class="bi bi-arrow-left-right trx-empty-icon"></i>
+            <p class="trx-empty-text">Aucun transfert trouvé</p>
+            <button class="btn btn-outline-primary btn-sm" (click)="ouvrirFormulaire()"
+              [disabled]="entrepots.length === 0">
+              <i class="bi bi-plus-lg me-1"></i>Créer un transfert
+            </button>
+          </div>
+        }
+
+        <div class="trx-list">
+          @for (t of transferts; track t.id) {
+            <div class="trx-card">
+
+              <!-- En-tête de la carte -->
+              <div class="trx-card-head">
+                <div class="trx-ref">{{ t.reference }}</div>
+                <span class="badge trx-badge-{{ statutBadge(t.statut) }}">
+                  <i class="bi {{ statutIcon(t.statut) }} me-1"></i>{{ statutLabel(t.statut) }}
+                </span>
+              </div>
+
+              <!-- Flux source → destination -->
+              <div class="trx-route">
+                <div class="trx-route-point">
+                  <i class="bi bi-building trx-route-icon src"></i>
+                  <span>{{ t.boutique_source?.nom }}</span>
+                </div>
+                <div class="trx-route-arrow"><i class="bi bi-arrow-right"></i></div>
+                <div class="trx-route-point">
+                  <i class="bi bi-shop trx-route-icon dst"></i>
+                  <span>{{ t.boutique_destination?.nom }}</span>
+                </div>
+              </div>
+
+              <!-- Méta -->
+              <div class="trx-meta">
+                <span class="trx-meta-chip">
+                  <i class="bi bi-boxes me-1"></i>{{ totalLignes(t) }} unité{{ totalLignes(t) > 1 ? 's' : '' }}
+                </span>
+                @if (t.date_envoi) {
+                  <span class="trx-meta-chip">
+                    <i class="bi bi-send me-1"></i>{{ t.date_envoi | date:'dd/MM/yy' }}
+                  </span>
+                }
+                @if (t.date_reception) {
+                  <span class="trx-meta-chip text-success">
+                    <i class="bi bi-check2-circle me-1"></i>{{ t.date_reception | date:'dd/MM/yy' }}
+                  </span>
+                }
+                @if (t.notes) {
+                  <span class="trx-meta-chip text-muted">
+                    <i class="bi bi-sticky me-1"></i>{{ t.notes | slice:0:30 }}{{ t.notes.length > 30 ? '…' : '' }}
+                  </span>
+                }
+              </div>
+
+              <!-- Actions -->
+              <div class="trx-actions">
+                <button class="trx-btn trx-btn-ghost" (click)="voirDetail(t)" title="Voir le détail">
+                  <i class="bi bi-eye"></i> Détail
+                </button>
+
+                @if (t.statut === 'brouillon') {
+                  <button class="trx-btn trx-btn-ghost" (click)="ouvrirFormulaire(t)" title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="trx-btn trx-btn-warning" (click)="valider(t)" title="Expédier">
+                    <i class="bi bi-send me-1"></i>Expédier
+                  </button>
+                  <button class="trx-btn trx-btn-danger" (click)="supprimer(t)" title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                }
+
+                @if (t.statut === 'valide') {
+                  <button class="trx-btn trx-btn-success" (click)="recevoir(t)" title="Réceptionner">
+                    <i class="bi bi-box-arrow-in-down me-1"></i>Réceptionner
+                  </button>
+                }
+              </div>
+
+            </div>
+          }
+        </div>
+        </div><!-- /d-lg-none -->
+      }
+
+</div>
+
+<style>
+/* ── Barre d'actions ── */
+.trx-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  padding: 0 2px;
+}
+
+/* nz-select topbar */
+.trx-topbar-select { flex: 1; min-width: 160px; max-width: 300px; }
+
+/* Bouton Nouveau */
+.trx-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.trx-new-btn:hover { background: #1d4ed8; }
+.trx-new-btn:active { transform: scale(.97); }
+.trx-new-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+/* ── Empty ── */
+.trx-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: #9ca3af;
+}
+.trx-empty-icon { font-size: 3rem; display: block; margin-bottom: 12px; opacity: .3; }
+.trx-empty-text { margin-bottom: 16px; }
+
+/* ── Liste ── */
+.trx-list { display: flex; flex-direction: column; gap: 14px; padding: 0 2px 80px; }
+
+/* ── Carte ── */
+.trx-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.04);
+  overflow: hidden;
+  transition: box-shadow .15s, transform .12s;
+  margin: 0 2px;
+}
+.trx-card:active { transform: scale(.99); }
+.trx-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+
+/* En-tête */
+.trx-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+}
+.trx-ref {
+  font-weight: 700;
+  font-size: .82rem;
+  font-family: monospace;
+  color: #374151;
+  letter-spacing: .02em;
+}
+
+/* Badges */
+.trx-badge-secondary { background: #e5e7eb; color: #374151; font-size: .72rem; padding: .3em .6em; border-radius: 20px; }
+.trx-badge-warning   { background: #fef3c7; color: #92400e; font-size: .72rem; padding: .3em .6em; border-radius: 20px; }
+.trx-badge-success   { background: #d1fae5; color: #065f46; font-size: .72rem; padding: .3em .6em; border-radius: 20px; }
+
+/* Route */
+.trx-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px 12px;
+  flex-wrap: wrap;
+}
+.trx-route-point {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .88rem;
+  font-weight: 500;
+  color: #111827;
+  min-width: 0;
+}
+.trx-route-point span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.trx-route-icon { font-size: .95rem; flex-shrink: 0; }
+.trx-route-icon.src { color: #6b7280; }
+.trx-route-icon.dst { color: #2563eb; }
+.trx-route-arrow { color: #9ca3af; font-size: .8rem; flex-shrink: 0; }
+
+/* Méta */
+.trx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 18px 14px;
+}
+.trx-meta-chip {
+  font-size: .73rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 20px;
+  padding: .2em .65em;
+  display: inline-flex;
+  align-items: center;
+}
+.trx-meta-chip.text-success { background: #d1fae5; color: #059669; }
+
+/* Actions */
+.trx-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid #f3f4f6;
+  flex-wrap: wrap;
+}
+.trx-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 15px;
+  font-size: .82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.trx-btn:hover { opacity: .82; }
+.trx-btn-ghost   { background: #f3f4f6; color: #374151; }
+.trx-btn-warning { background: #fbbf24; color: #1c1917; }
+.trx-btn-success { background: #10b981; color: #fff; }
+.trx-btn-danger  { background: #fee2e2; color: #dc2626; }
+
+/* ────────────────────────────────────────────
+   MODAL BOTTOM-SHEET STYLE
+──────────────────────────────────────────── */
+.trx-modal-sheet .modal-backdrop { background: rgba(0,0,0,.45); }
+
+/* Positionnement bottom-sheet sur mobile */
+.trx-sheet-dialog {
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+@media (min-width: 576px) {
+  .trx-sheet-dialog {
+    position: relative;
+    margin: 1.75rem auto;
+    max-width: 520px;
+    bottom: auto;
+    left: auto;
+    right: auto;
+  }
+}
+
+.trx-sheet-content {
+  border-radius: 20px 20px 0 0;
+  border: none;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+@media (min-width: 576px) {
+  .trx-sheet-content { border-radius: 18px; max-height: 90vh; }
+}
+
+/* Handle */
+.trx-sheet-handle-bar {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+  flex-shrink: 0;
+}
+.trx-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #d1d5db;
+  border-radius: 2px;
+}
+@media (min-width: 576px) { .trx-sheet-handle-bar { display: none; } }
+
+/* Header */
+.trx-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+.trx-sheet-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.trx-sheet-title { font-weight: 700; font-size: 1rem; color: #111827; line-height: 1.2; }
+.trx-sheet-sub   { font-size: .75rem; color: #9ca3af; margin-top: 1px; }
+.trx-sheet-close {
+  margin-left: auto;
+  background: #f3f4f6;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #6b7280;
+  font-size: .85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.trx-sheet-close:hover { background: #e5e7eb; }
+
+/* Body */
+.trx-sheet-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Error */
+.trx-sheet-error {
+  margin: 12px 20px;
+  padding: 10px 14px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 10px;
+  font-size: .85rem;
+}
+
+/* Sections */
+.trx-sheet-section {
+  padding: 16px 20px;
+  border-bottom: 8px solid #f9fafb;
+}
+.trx-sheet-section--last { border-bottom: none; }
+.trx-sheet-section-label {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6b7280;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Champs */
+.trx-field { margin-bottom: 14px; }
+.trx-field:last-child { margin-bottom: 0; }
+.trx-field-label {
+  font-size: .78rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+}
+.trx-required { color: #ef4444; }
+
+/* nz-select overrides dans le modal */
+.trx-nz .ant-select-selector {
+  border-radius: 12px !important;
+  border: 1.5px solid #e5e7eb !important;
+  background: #f9fafb !important;
+  min-height: 44px !important;
+  padding: 6px 11px !important;
+  font-size: .88rem !important;
+}
+.trx-nz.ant-select-focused .ant-select-selector,
+.trx-nz .ant-select-selector:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15) !important;
+}
+.trx-nz .ant-select-selection-search-input { height: 30px !important; }
+
+/* Connecteur route */
+.trx-route-connector {
+  text-align: center;
+  color: #d1d5db;
+  font-size: .85rem;
+  margin: 4px 0;
+}
+
+/* Textarea */
+.trx-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  font-size: .88rem;
+  color: #111827;
+  resize: none;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.trx-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  background: #fff;
+}
+
+/* Bouton ajouter ligne */
+.trx-add-ligne {
+  background: #eff6ff;
+  color: #2563eb;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background .15s;
+}
+.trx-add-ligne:hover { background: #dbeafe; }
+
+/* Lignes produit */
+.trx-ligne {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid #f3f4f6;
+}
+.trx-ligne:first-of-type { border-top: none; padding-top: 4px; }
+.trx-ligne-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: .72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.trx-ligne-select { flex: 1; min-width: 0; }
+.trx-select-sm {
+  padding: 10px 34px 10px 12px;
+  font-size: .84rem;
+}
+.trx-qty-input {
+  width: 72px;
+  padding: 10px 8px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-size: .88rem;
+  text-align: center;
+  outline: none;
+  transition: border-color .15s;
+  flex-shrink: 0;
+}
+.trx-qty-input:focus { border-color: #3b82f6; background: #fff; }
+.trx-del-ligne {
+  background: #fee2e2;
+  border: none;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.trx-del-ligne:hover:not(:disabled) { background: #fca5a5; }
+.trx-del-ligne:disabled { opacity: .35; cursor: not-allowed; }
+
+/* Footer */
+.trx-sheet-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+  background: #fff;
+}
+.trx-sheet-cancel {
+  flex: 0 0 auto;
+  padding: 13px 18px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #6b7280;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.trx-sheet-cancel:hover { background: #f3f4f6; }
+.trx-sheet-save {
+  flex: 1;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s, transform .1s;
+}
+.trx-sheet-save:hover { background: #1d4ed8; }
+.trx-sheet-save:active { transform: scale(.98); }
+.trx-sheet-save:disabled { background: #93c5fd; cursor: not-allowed; }
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .trx-card { background: #1f2937; box-shadow: 0 1px 4px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.06); }
+  .trx-ref { color: #e5e7eb; }
+  .trx-route-point { color: #f9fafb; }
+  .trx-route-arrow { color: #6b7280; }
+  .trx-meta-chip { background: #374151; color: #9ca3af; }
+  .trx-actions { border-top-color: #374151; }
+  .trx-btn-ghost { background: #374151; color: #e5e7eb; }
+  .trx-sheet-content, .trx-sheet-footer { background: #1f2937; }
+  .trx-sheet-header { border-bottom-color: #374151; }
+  .trx-sheet-title { color: #f9fafb; }
+  .trx-sheet-close { background: #374151; color: #9ca3af; }
+  .trx-sheet-section { border-bottom-color: #111827; }
+  .trx-sheet-section-label { color: #6b7280; }
+  .trx-textarea, .trx-qty-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
+  .trx-textarea:focus, .trx-qty-input:focus { background: #4b5563; border-color: #3b82f6; }
+  .trx-field-label { color: #d1d5db; }
+  .trx-nz .ant-select-selector { background: #374151 !important; border-color: #4b5563 !important; color: #f9fafb !important; }
+  .trx-nz .ant-select-selection-placeholder { color: #6b7280 !important; }
+  .trx-ligne { border-top-color: #374151; }
+  .trx-ligne-num { background: #374151; color: #9ca3af; }
+  .trx-sheet-footer { border-top-color: #374151; }
+  .trx-sheet-cancel { background: #374151; border-color: #4b5563; color: #9ca3af; }
+  .trx-route-connector { color: #4b5563; }
+}
+</style>
+
+<!-- ======================== MODAL FORMULAIRE ======================== -->
+<div class="modal fade trx-modal-sheet" id="modalTransfert" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog trx-sheet-dialog">
+    <div class="modal-content trx-sheet-content">
+
+      <!-- Handle + Header -->
+      <div class="trx-sheet-handle-bar"><div class="trx-sheet-handle"></div></div>
+      <div class="trx-sheet-header">
+        <div class="trx-sheet-icon">
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
+        <div>
+          <div class="trx-sheet-title">{{ editId ? 'Modifier le transfert' : 'Nouveau transfert' }}</div>
+          <div class="trx-sheet-sub">{{ editId ? 'Modifiez les informations' : 'Remplissez les informations du transfert' }}</div>
+        </div>
+        <button type="button" class="trx-sheet-close" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Body scrollable -->
+      <div class="trx-sheet-body">
+
+        @if (erreur) {
+          <div class="trx-sheet-error">
+            <i class="bi bi-exclamation-circle me-2"></i>{{ erreur }}
+          </div>
+        }
+
+        <!-- Section : Itinéraire -->
+        <div class="trx-sheet-section">
+          <div class="trx-sheet-section-label">
+            <i class="bi bi-arrow-left-right"></i> Itinéraire
+          </div>
+
+          <div class="trx-field">
+            <label class="trx-field-label">
+              <i class="bi bi-building me-1"></i>Source (entrepôt) <span class="trx-required">*</span>
+            </label>
+            <nz-select class="w-100 trx-nz"
+              [(ngModel)]="form.boutique_source" (ngModelChange)="onSourceChange()"
+              nzPlaceHolder="— Sélectionner l'entrepôt —" nzShowSearch nzAllowClear>
+              @for (e of entrepots; track e.id) {
+                <nz-option [nzValue]="e.id" [nzLabel]="e.nom"></nz-option>
+              }
+            </nz-select>
+          </div>
+
+          <div class="trx-route-connector"><i class="bi bi-arrow-down"></i></div>
+
+          <div class="trx-field">
+            <label class="trx-field-label">
+              <i class="bi bi-shop me-1"></i>Destination <span class="trx-required">*</span>
+            </label>
+            <nz-select class="w-100 trx-nz"
+              [(ngModel)]="form.boutique_destination"
+              nzPlaceHolder="— Sélectionner la boutique —" nzShowSearch nzAllowClear>
+              @for (b of boutiquesDestination; track b.id) {
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              }
+            </nz-select>
+          </div>
+        </div>
+
+        <!-- Section : Notes -->
+        <div class="trx-sheet-section">
+          <div class="trx-sheet-section-label"><i class="bi bi-sticky"></i> Notes</div>
+          <textarea class="trx-textarea" rows="2" [(ngModel)]="form.notes"
+            placeholder="Motif, référence commande…"></textarea>
+        </div>
+
+        <!-- Section : Produits -->
+        <div class="trx-sheet-section trx-sheet-section--last">
+          <div class="trx-sheet-section-label d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-boxes"></i> Produits à transférer</span>
+            <button type="button" class="trx-add-ligne" (click)="ajouterLigne()">
+              <i class="bi bi-plus-lg me-1"></i>Ajouter
+            </button>
+          </div>
+
+          @for (ligne of form.lignes; track $index) {
+            <div class="trx-ligne">
+              <div class="trx-ligne-num">{{ $index + 1 }}</div>
+              <div class="trx-ligne-select">
+                <nz-select class="w-100 trx-nz"
+                  [(ngModel)]="ligne.produit" (ngModelChange)="onProduitChange(ligne)"
+                  nzPlaceHolder="— Choisir un produit —" nzShowSearch>
+                  @for (p of produitsSrc; track p.id) {
+                    <nz-option [nzValue]="p.id"
+                      [nzLabel]="p.nom + ' · dispo: ' + p.stock_disponible">
+                    </nz-option>
+                  }
+                </nz-select>
+              </div>
+              <input type="number" class="trx-qty-input" [(ngModel)]="ligne.quantite" min="1" placeholder="Qté">
+              <button type="button" class="trx-del-ligne"
+                (click)="supprimerLigne($index)"
+                [disabled]="form.lignes.length === 1">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Footer fixe -->
+      <div class="trx-sheet-footer">
+        <button type="button" class="trx-sheet-cancel" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="trx-sheet-save" (click)="sauvegarder()" [disabled]="isSaving">
+          @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          @else { <i class="bi bi-check2 me-1"></i> }
+          {{ editId ? 'Enregistrer' : 'Créer le transfert' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MODAL DETAIL ======================== -->
+<div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Détail — {{ detail?.reference }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      @if (detail) {
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col-sm-6">
+              <p class="mb-1"><strong>Source :</strong> {{ detail.boutique_source?.nom }}</p>
+              <p class="mb-1"><strong>Destination :</strong> {{ detail.boutique_destination?.nom }}</p>
+            </div>
+            <div class="col-sm-6">
+              <p class="mb-1"><strong>Statut :</strong>
+                <span class="badge bg-{{ statutBadge(detail.statut) }} ms-1">{{ statutLabel(detail.statut) }}</span>
+              </p>
+              <p class="mb-1"><strong>Créé le :</strong> {{ detail.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+              @if (detail.date_envoi) {
+                <p class="mb-1"><strong>Expédié le :</strong> {{ detail.date_envoi | date:'dd/MM/yyyy HH:mm' }}</p>
+              }
+              @if (detail.date_reception) {
+                <p class="mb-1"><strong>Reçu le :</strong> {{ detail.date_reception | date:'dd/MM/yyyy HH:mm' }}</p>
+              }
+            </div>
+          </div>
+          @if (detail.notes) {
+            <p class="text-muted"><i class="bi bi-sticky me-1"></i>{{ detail.notes }}</p>
+          }
+
+          <h6>Lignes du transfert</h6>
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th class="text-center">Quantité</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of detail.lignes; track l.id) {
+                <tr>
+                  <td>{{ l.produit?.nom }}</td>
+                  <td class="text-center"><strong>{{ l.quantite }}</strong></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="2" class="text-center text-muted">Aucune ligne</td></tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td><strong>Total unités</strong></td>
+                <td class="text-center"><strong>{{ totalLignes(detail) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      }
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -3,6 +3,7 @@ import { HttpClientService } from '../http-client/http-client.service';
 import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environnement } from '../../environnement/environnement';
+import { ModuleService } from '../modules/module.service';
 
 
 @Injectable({
@@ -20,7 +21,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClientService,
-    private router: Router
+    private router: Router,
+    private moduleService: ModuleService,
   ) {
     const user = localStorage.getItem('user');
     if (user) {
@@ -35,6 +37,9 @@ export class AuthService {
         if (response.abonnement) {
           localStorage.setItem('abonnement', JSON.stringify(response.abonnement));
           this.abonnementSubject.next(response.abonnement);
+        }
+        if (response.modules) {
+          this.moduleService.setModules(response.modules);
         }
       }),
       switchMap((response: any) => {
@@ -103,6 +108,7 @@ export class AuthService {
     localStorage.removeItem('abonnement');
     this.currentUserSubject.next(null);
     this.abonnementSubject.next(null);
+    this.moduleService.clear();
     this.router.navigateByUrl('/login');
   }
 

@@ -8,6 +8,7 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { ClientService } from '../../../services/gestion-des-clients/client.service';
 import { CaisseService } from '../../../services/gestion-des-caisses/caisse.service';
+import { UserService } from '../../../services/user/user.service';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
@@ -44,9 +45,14 @@ export default class VenteComponent implements OnInit {
   clients: any[] = [];
   selectedClientId: number | null = null;
   isSubmitting = false;
+  activeTab: 'produits' | 'paiement' | 'client' | 'vendeur' = 'produits';
   currentUser: any;
   boutiques: any[] = [];
+  boutiquesStructure: any[] = [];
+  vendeurs: any[] = [];
+  selectedVendeurBoutique: number | null = null;
   selectedBoutique: string = '';
+  selectedProduitsBoutique: number | null = null;
   loading = false;
   activeSessionId: number | null = null;
   caisseActivee = false;
@@ -60,12 +66,46 @@ export default class VenteComponent implements OnInit {
 
   currentProduitSelect: any = {};
 
+  payIcons: Record<string, string> = {
+    espece:       'bi-cash-coin',
+    carte:        'bi-credit-card',
+    orange_money: 'bi-phone',
+    wave:         'bi-wifi',
+    mtn_money:    'bi-phone-fill',
+    moov_money:   'bi-telephone-fill',
+    dajmo:        'bi-phone-landscape',
+    credit:       'bi-clock-history',
+    mixte:        'bi-layers-half',
+  };
+
   get isMixte(): boolean {
     return this.venteForm?.get('mode_paiement')?.value === 'mixte';
   }
 
   get isCredit(): boolean {
     return this.venteForm?.get('mode_paiement')?.value === 'credit';
+  }
+
+  setTab(tab: string): void { this.activeTab = tab as any; }
+
+  setModePaiement(mode: string): void {
+    this.venteForm.patchValue({ mode_paiement: mode });
+    this.onModeChange();
+  }
+
+  incrementQty(index: number): void {
+    const ctrl = this.detailVente.at(index);
+    const val = Number(ctrl.get('quantite')?.value) || 0;
+    const stock = ctrl.get('stock')?.value;
+    if (stock != null && val >= stock) return;
+    ctrl.patchValue({ quantite: val + 1 });
+    this.calculerMontantTotal();
+  }
+
+  decrementQty(index: number): void {
+    const ctrl = this.detailVente.at(index);
+    const val = Number(ctrl.get('quantite')?.value) || 0;
+    if (val > 1) { ctrl.patchValue({ quantite: val - 1 }); this.calculerMontantTotal(); }
   }
 
   get totalDetailsPaiement(): number {
@@ -77,6 +117,16 @@ export default class VenteComponent implements OnInit {
          + (Number(d.dajmo) || 0);
   }
 
+  get canSelectVendeur(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return ['admin', 'responsable_structure', 'gerant'].includes(code);
+  }
+
+  get canSelectBoutique(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return ['admin', 'responsable_structure'].includes(code);
+  }
+
   constructor(
     private fb: FormBuilder,
     private ventesService: VentesService,
@@ -85,7 +135,8 @@ export default class VenteComponent implements OnInit {
     private boutiqueService: BoutiqueService,
     private produitService: ProduitService,
     private toastr: ToastrService,
-    private caisseService: CaisseService
+    private caisseService: CaisseService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
@@ -95,6 +146,9 @@ export default class VenteComponent implements OnInit {
     this.loadBoutiques();
     this.loadProduits();
     this.loadClients();
+    if (this.canSelectVendeur) {
+      this.loadBoutiquesStructure();
+    }
     this.checkForEditData();
     this.loadActiveSession();
   }
@@ -149,6 +203,7 @@ export default class VenteComponent implements OnInit {
       date_vente: [new Date().toISOString().slice(0, 10), Validators.required],
       mode_paiement: ['espece', Validators.required],
       statut: ['payer', Validators.required],
+      vendeur_tel: [null],
       detail_vente: this.fb.array([]),
       details_paiement: this.fb.group({
         espece:       [null],
@@ -195,31 +250,39 @@ export default class VenteComponent implements OnInit {
   }
 
   selectProduit(ligne: FormGroup, idProduit: number) {
-  const produit = this.produits.find(p => p.id === idProduit);
-    
-    // Vérifier si le produit existe déjà
-      const existe = this.detail_vente.value.some((p: { produit: any; }) => p.produit == idProduit);
+    if (!idProduit) return;
 
-      if (!existe) {
-        //this.selectProduit(idProduit, index);
-      } else {
-       
-        Swal.fire({
-          icon: "warning",
-          title: "Oops...",
-          text: "⚠️ Ce produit existe déjà dans la liste !"
-        });
-        return
-      }
-  if (!produit) return;
+    // Vérifier le doublon en excluant la ligne courante
+    const ligneIndex = this.detailVente.controls.indexOf(ligne);
+    const doublon = this.detailVente.controls.some(
+      (ctrl, idx) => idx !== ligneIndex && ctrl.get('produit')?.value == idProduit
+    );
 
-  ligne.patchValue({
-    prix_unitaire_vente: produit.prix_vente,
-    image: produit.imageUrl,
-    stock: produit.stock_disponible,
-    nom: produit.nom
-  });
-}
+    if (doublon) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Produit déjà ajouté',
+        text: 'Ce produit est déjà dans la liste. Modifiez sa quantité directement.',
+        confirmButtonColor: '#047857',
+      });
+      // Réinitialiser la ligne pour éviter le doublon
+      ligne.patchValue({ produit: null, image: '', nom: '', stock: null, prix_unitaire_vente: null });
+      this.calculerMontantTotal();
+      return;
+    }
+
+    const produit = this.produits.find(p => p.id === idProduit);
+    if (!produit) return;
+
+    ligne.patchValue({
+      prix_unitaire_vente: produit.prix_vente,
+      image: produit.imageUrl,
+      stock: produit.stock_disponible,
+      nom: produit.nom,
+    });
+
+    setTimeout(() => this.calculerMontantTotal(), 0);
+  }
   
 
   populateFormWithEditData(): void {
@@ -311,7 +374,7 @@ export default class VenteComponent implements OnInit {
       image_produit: [],
       produit: [null, Validators.required],
       prix_unitaire_vente: [null, [Validators.required, Validators.min(0)]],
-      quantite: [null, [Validators.required, Validators.min(1)]]
+      quantite: [1, [Validators.required, Validators.min(1)]]
     });
 
     // 🔥 Écoute du produit sélectionné
@@ -325,25 +388,12 @@ export default class VenteComponent implements OnInit {
 
   addDetailVente(): void {
     this.detailVente.push(this.createDetailVente());
-    this.calculerMontantTotal();
-    
-    // Attendre que Angular rende la nouvelle ligne
-    setTimeout(() => {
-      const selects = $('.mySelect');          // tous les selects
-      const lastSelect = selects[selects.length - 1]; // dernier select ajouté
-      $(lastSelect).select2({
-        placeholder: 'Sélectionnez une boutique',
-        allowClear: true,
-        width: 'resolve',
-      });
-
-      
-    }, 0);
+    setTimeout(() => this.calculerMontantTotal(), 0);
   }
 
   removeDetailVente(index: number): void {
     this.detailVente.removeAt(index);
-    this.calculerMontantTotal();
+    setTimeout(() => this.calculerMontantTotal(), 0);
   }
 
   calculerMontantTotal(): void {
@@ -399,6 +449,50 @@ calculerMontantTotalApresRemise(): void {
   // Recalcul monnaie rendue si déjà saisie
   this.calculerMonnaieRendue();
 }
+
+  loadBoutiquesStructure(): void {
+    const structureId = this.currentUser?.structure_id ?? this.currentUser?.structure?.id;
+    if (!structureId) {
+      // Gérant sans structure explicite : utiliser sa propre boutique
+      const b = this.currentUser?.boutique;
+      if (b) {
+        this.boutiquesStructure = [b];
+        this.selectedVendeurBoutique = b.id;
+        this.loadVendeurs(b.id);
+      }
+      return;
+    }
+    this.boutiqueService.findByStructure(structureId).subscribe({
+      next: (r: any) => {
+        this.boutiquesStructure = r?.data ?? [];
+        // Pré-sélectionner la boutique du gérant si elle est dans la liste
+        const boutiqueId = this.currentUser?.boutique_id;
+        if (boutiqueId && this.boutiquesStructure.some((b: any) => b.id === boutiqueId)) {
+          this.selectedVendeurBoutique = boutiqueId;
+          this.loadVendeurs(boutiqueId);
+        }
+      }
+    });
+  }
+
+  loadVendeurs(boutiqueId?: number): void {
+    if (!this.canSelectVendeur) return;
+    const id = boutiqueId ?? this.currentUser?.boutique_id;
+    if (!id) return;
+    this.userService.find('', String(id)).subscribe({
+      next: (r: any) => {
+        const list = Array.isArray(r) ? r : (r?.data ?? []);
+        this.vendeurs = list;
+      }
+    });
+  }
+
+  onVendeurBoutiqueChange(boutiqueId: number | null): void {
+    this.selectedVendeurBoutique = boutiqueId;
+    this.vendeurs = [];
+    this.venteForm.patchValue({ vendeur_tel: null });
+    if (boutiqueId) this.loadVendeurs(boutiqueId);
+  }
 
   loadClients(): void {
     const boutiqueId = this.currentUser.boutique_id;
@@ -464,40 +558,42 @@ calculerMontantTotalApresRemise(): void {
   }
 
   loadProduits(): void {
-    if (!this.currentUser) {
-      return;
+    if (!this.currentUser) return;
+
+    // Initialiser avec la boutique de l'utilisateur si pas encore sélectionnée
+    if (!this.selectedProduitsBoutique) {
+      this.selectedProduitsBoutique = this.currentUser.boutique_id ?? null;
     }
-   
-    this.selectedBoutique = this.currentUser.boutique_id.toString();
-     
-    if (this.currentUser.profil && (this.currentUser.profil.code.toLowerCase() === 'admin' || this.currentUser.profil.code.toLowerCase() === 'responsable_structure')) {
-      if (!this.selectedBoutique) {
-        this.produits = [];
-        return;
-      }
-    } else if (this.currentUser.boutique) {
-      this.selectedBoutique = this.currentUser.boutique_id.toString();
-       
-    } else {
-      // Si aucune boutique n'est disponible
+
+    if (!this.selectedProduitsBoutique) {
       this.produits = [];
       return;
     }
-    
-    const body: any = {
-      boutique: this.selectedBoutique
-    }
 
-    this.produitService.getProduits(body).subscribe({
+    // Synchroniser le champ boutique du formulaire
+    this.venteForm?.patchValue({ boutique: this.selectedProduitsBoutique });
+
+    this.produitService.getProduits({ boutique: this.selectedProduitsBoutique }).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.produits = response.data;
         }
       },
-      error: (error: any) => {
-        console.log('error', error);
-      }
+      error: (error: any) => { console.log('error', error); }
     });
+  }
+
+  onProduitsBoutiqueChange(): void {
+    this.produits = [];
+    this.vendeurs = [];
+    this.venteForm.patchValue({ vendeur_tel: null });
+    // Réinitialiser les lignes de vente pour éviter des produits d'une autre boutique
+    for (const ctrl of this.detailVente.controls) {
+      ctrl.patchValue({ produit: null, image: '', nom: '', stock: null, prix_unitaire_vente: null });
+    }
+    setTimeout(() => this.calculerMontantTotal(), 0);
+    this.loadProduits();
+    if (this.selectedProduitsBoutique) this.loadVendeurs(this.selectedProduitsBoutique);
   }
 
   onSubmit(): void {
@@ -545,7 +641,7 @@ calculerMontantTotalApresRemise(): void {
       }
     }
 
-    this.venteForm.value.boutique = this.currentUser?.boutique;
+    this.venteForm.value.boutique = this.selectedProduitsBoutique ?? this.currentUser?.boutique_id;
     this.loading = true;
     
     

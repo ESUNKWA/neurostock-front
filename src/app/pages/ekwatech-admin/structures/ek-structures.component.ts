@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -9,6 +9,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { StructureService } from '../../../services/structure/structure.service';
 import { AbonnementService } from '../../../services/abonnement/abonnement.service';
 
+declare var $: any;
+
 @Component({
   selector: 'app-ek-structures',
   standalone: true,
@@ -16,7 +18,8 @@ import { AbonnementService } from '../../../services/abonnement/abonnement.servi
   templateUrl: './ek-structures.component.html',
   providers: [ToastrService],
 })
-export default class EkStructuresComponent implements OnInit {
+export default class EkStructuresComponent implements OnInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
   structures: any[] = [];
   categories: any[] = [];
   loading = false;
@@ -67,9 +70,37 @@ export default class EkStructuresComponent implements OnInit {
 
   load(): void {
     this.loading = true;
+    this.destroyDt();
     this.structureSvc.find()
       .pipe(finalize(() => (this.loading = false)))
-      .subscribe({ next: (r: any) => { this.structures = r?.data ?? (Array.isArray(r) ? r : []); } });
+      .subscribe({
+        next: (r: any) => {
+          this.structures = r?.data ?? (Array.isArray(r) ? r : []);
+          setTimeout(() => this.initDt(), 100);
+        },
+      });
+  }
+
+  ngOnDestroy(): void { this.destroyDt(); }
+
+  private destroyDt(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const t = $('.js-dt-structures');
+        if ($.fn?.DataTable?.isDataTable(t)) t.DataTable().destroy();
+      } catch {}
+    }
+  }
+
+  private initDt(): void {
+    if (isPlatformBrowser(this.platformId) && this.structures.length) {
+      try {
+        const t = $('.js-dt-structures');
+        if (!$.fn?.DataTable?.isDataTable(t)) {
+          t.DataTable({ pageLength: 10, order: [[0, 'desc']], language: { url: 'assets/i18n/fr-FR.json' } });
+        }
+      } catch {}
+    }
   }
 
   openCreate(): void {

@@ -24,7 +24,7 @@
     <div class="mcl-header">
       <div class="mcl-header-inner">
         @if (boutique.logo) {
-          <img [src]="'/' + boutique.logo.replace('api/', '')" class="mcl-logo" alt="logo">
+          <img [src]="boutique.logo" class="mcl-logo" alt="logo">
         } @else {
           <div class="mcl-logo-placeholder">🏪</div>
         }

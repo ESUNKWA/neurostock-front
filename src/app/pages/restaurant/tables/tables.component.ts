@@ -179,7 +179,7 @@ export default class TablesComponent implements OnInit {
   async afficherQr(table: any): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
     this.qrTable = table;
-    const url = `${window.location.origin}/menu?boutique=${this.selectedBoutiqueId}&table=${table.id}`;
+    const url = `${window.location.origin}/menu?boutique=${this.selectedBoutiqueId}&table=${table.id}&structure=${this.currentUser?.structure_id ?? ''}`;
     this.qrDataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2 });
     const m = document.getElementById('modal-qr');
     if (m) new bootstrap.Modal(m).show();
@@ -187,7 +187,7 @@ export default class TablesComponent implements OnInit {
 
   qrUrl(tableId: number): string {
     if (!isPlatformBrowser(this.platformId)) return '';
-    return `${window.location.origin}/menu?boutique=${this.selectedBoutiqueId}&table=${tableId}`;
+    return `${window.location.origin}/menu?boutique=${this.selectedBoutiqueId}&table=${tableId}&structure=${this.currentUser?.structure_id ?? ''}`;
   }
 
   imprimerQr(): void {

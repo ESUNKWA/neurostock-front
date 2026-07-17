@@ -229,7 +229,7 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
           lengthMenu: 'Afficher _MENU_ éléments',
           paginate: { first: '«', last: '»', next: '›', previous: '‹' },
         },
-        pageLength: 20,
+        pageLength: 10,
         order: [[0, 'asc']],
         createdRow: (row: any) => {
           $(row).find('[data-action]').on('click', (e: any) => {

@@ -238,30 +238,41 @@ export default class AchatsComponent implements OnInit {
 
   loadBoutiques(): void {
     const code = this.currentUser.profil.code.toLowerCase();
+    const onlyEntrepots = (list: any[]) => list.filter((b: any) => b.type === 'entrepot');
+
+    const afterLoad = (list: any[]) => {
+      this.boutiques = onlyEntrepots(list);
+      if (this.boutiques.length === 1) {
+        this.achatForm.patchValue({ boutique: this.boutiques[0].id });
+        this.selectedBoutique = String(this.boutiques[0].id);
+        this.loadProduits();
+      }
+    };
+
     if (code === 'admin') {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
-          }
+          if (response.status === 'success' && response.data) afterLoad(response.data);
         },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des boutiques:', error);
-        }
+        error: (error: any) => console.error('Erreur lors du chargement des boutiques:', error)
       });
     } else if (code === 'responsable_structure') {
       this.boutiqueService.findByStructure(this.currentUser.structure_id).subscribe({
         next: (response: any) => {
-          if (response.status === 'success' && response.data) {
-            this.boutiques = response.data;
-          }
+          if (response.status === 'success' && response.data) afterLoad(response.data);
         },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des boutiques:', error);
-        }
+        error: (error: any) => console.error('Erreur lors du chargement des boutiques:', error)
       });
     } else {
-      this.boutiques[0] = this.currentUser.boutique;
+      const b = this.currentUser.boutique;
+      if (b?.type === 'entrepot') {
+        this.boutiques = [b];
+        this.achatForm.patchValue({ boutique: b.id });
+        this.selectedBoutique = String(b.id);
+        this.loadProduits();
+      } else {
+        this.boutiques = [];
+      }
     }
   }
 

@@ -1,259 +1,275 @@
 <!-- ── Page header ─────────────────────────────────────────────────────────── -->
 <div class="vt-page-header">
-  <div class="vt-header-icon"><i class="bi bi-cart3"></i></div>
-  <div>
+  <div class="vt-header-icon"><i class="bi bi-receipt"></i></div>
+  <div class="flex-grow-1">
     <div class="vt-header-title">{{ isEditMode ? 'Modifier la vente' : 'Nouvelle vente' }}</div>
-    <div class="vt-header-subtitle">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0" style="font-size:.75rem;opacity:.85">
-          <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-white opacity-75">Accueil</a></li>
-          <li class="breadcrumb-item"><a routerLink="/gestion-des-ventes/historique-ventes" class="text-white opacity-75">Ventes</a></li>
-          <li class="breadcrumb-item active text-white">{{ isEditMode ? 'Modification' : 'Nouvelle' }}</li>
-        </ol>
-      </nav>
-    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block">
+      <ol class="breadcrumb mb-0" style="font-size:.73rem;opacity:.8">
+        <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-white opacity-75">Accueil</a></li>
+        <li class="breadcrumb-item"><a routerLink="/gestion-des-ventes/historique-ventes" class="text-white opacity-75">Ventes</a></li>
+        <li class="breadcrumb-item active text-white">{{ isEditMode ? 'Modification' : 'Nouvelle' }}</li>
+      </ol>
+    </nav>
   </div>
-  <div class="ms-auto d-flex gap-2 align-items-center">
-    <a routerLink="/gestion-des-ventes/historique-ventes" class="btn btn-sm"
-       style="background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:8px">
-      <i class="bi bi-arrow-left me-1"></i> Retour
-    </a>
-  </div>
+  <a routerLink="/gestion-des-ventes/historique-ventes" class="vt-header-back">
+    <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-md-inline">Retour</span>
+  </a>
 </div>
 
 <section class="section">
 
-  <!-- Blocage caisse non ouverte -->
+  <!-- Blocage caisse -->
   @if (caisseLoaded && caisseActivee && !activeSessionId) {
-    <div class="alert alert-warning d-flex align-items-center gap-3 mb-3" role="alert"
-         style="border-radius:12px;border-left:4px solid #f59e0b">
-      <i class="bi bi-lock-fill fs-4 flex-shrink-0"></i>
+    <div class="vt-caisse-alert">
+      <i class="bi bi-lock-fill fs-5"></i>
       <div>
         <strong>Caisse non ouverte</strong>
-        <div class="small mt-1">
-          La gestion de caisse est activée. Ouvrez une session de caisse avant d'enregistrer une vente.
-          <a routerLink="/caisse" class="ms-2 fw-semibold">Aller à la caisse →</a>
+        <div class="small mt-1 opacity-75">
+          Ouvrez une session de caisse avant d'enregistrer une vente.
+          <a routerLink="/caisse" class="fw-semibold ms-1">Aller à la caisse →</a>
         </div>
       </div>
     </div>
   }
 
   <form novalidate [formGroup]="venteForm" (ngSubmit)="onSubmit()">
-    <div class="row g-4">
 
-      <!-- ── Colonne principale ────────────────────────────────────────────── -->
-      <div class="col-md-8">
+    <!-- ── Barre d'onglets mobile ─────────────────────────────────── -->
+    <div class="mob-nav d-lg-none">
+      <button type="button" class="mob-tab" [class.active]="activeTab === 'produits'" (click)="setTab('produits')">
+        <i class="bi bi-bag-check"></i>
+        <span>Produits</span>
+        <span class="mob-tab-badge">{{ detailVente.length }}</span>
+      </button>
+      <button type="button" class="mob-tab" [class.active]="activeTab === 'paiement'" (click)="setTab('paiement')">
+        <i class="bi bi-wallet2"></i>
+        <span>Paiement</span>
+      </button>
+      <button type="button" class="mob-tab" [class.active]="activeTab === 'client'" (click)="setTab('client')">
+        <i class="bi bi-person"></i>
+        <span>Client</span>
+      </button>
+      @if (canSelectVendeur) {
+        <button type="button" class="mob-tab" [class.active]="activeTab === 'vendeur'" (click)="setTab('vendeur')">
+          <i class="bi bi-person-badge"></i>
+          <span>Vendeur</span>
+        </button>
+      }
+    </div>
 
-        <!-- Lignes de vente -->
+    <div class="row g-3">
+
+      <!-- ── Produits ───────────────────────────────────────────────── -->
+      <div class="col-lg-8 d-flex flex-column gap-3 mob-sec" [class.mob-sec-active]="activeTab === 'produits'">
+
         <div class="vt-card">
+          <!-- Card header -->
           <div class="vt-card-header">
-            <span class="vt-card-title"><i class="bi bi-cart3"></i> Lignes de vente</span>
-            <!-- Scanner code-barres -->
-            <div class="vt-scanner-wrap d-none d-md-flex">
-              <span class="vt-scanner-icon">
-                <i class="bi" [ngClass]="scanLoading ? 'bi-arrow-repeat vt-spin' : 'bi-upc-scan'"></i>
-              </span>
-              <input type="text" class="vt-scanner-input" placeholder="Scanner code-barres…"
+            <span class="vt-card-title">
+              <i class="bi bi-bag-check"></i>
+              Produits
+              <span class="vt-badge">{{ detailVente.length }}</span>
+            </span>
+            <!-- Sélecteur boutique (admin / responsable avec plusieurs boutiques) -->
+            @if (canSelectBoutique && boutiquesStructure.length > 1) {
+              <nz-select style="width:180px;flex-shrink:0"
+                [(ngModel)]="selectedProduitsBoutique"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onProduitsBoutiqueChange()"
+                nzShowSearch nzPlaceHolder="Boutique…">
+                @for (b of boutiquesStructure; track b.id) {
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                }
+              </nz-select>
+            }
+            <!-- Scanner -->
+            <div class="vt-scanner-wrap">
+              <i class="bi" [ngClass]="scanLoading ? 'bi-arrow-repeat vt-spin' : 'bi-upc-scan'"
+                style="color:#047857;padding:0 .5rem;font-size:.95rem"></i>
+              <input type="text" class="vt-scanner-input" placeholder="Code-barres…"
                      [(ngModel)]="barcodeInput" [ngModelOptions]="{standalone: true}"
                      (keydown)="onScanBarcode($event)" [disabled]="scanLoading"
                      autocomplete="off">
             </div>
           </div>
-          <div class="vt-card-body p-0">
-            <div formArrayName="detail_vente">
-              @for (detail of detailVente.controls; track $index) {
-                <div [formGroupName]="$index" class="vt-ligne px-4">
-                  <div class="row g-2 align-items-end">
 
-                    <div class="col-auto fw-bold text-muted align-self-center" style="min-width:24px;padding-bottom:.5rem">
-                      {{ $index + 1 }}
-                    </div>
+          <!-- Lignes -->
+          <div class="vt-lines-wrap" formArrayName="detail_vente">
 
-                    <!-- Produit (image inline + select) -->
-                    <div class="col-md-5">
-                      <label class="vt-label">Produit <span class="text-danger">*</span></label>
-                      <div class="vt-produit-field">
-                        @if (detail.get('image')?.value) {
-                          <div class="vt-thumb">
-                            <img [src]="detail.get('image')?.value" alt="produit">
-                            <span class="vt-stock-badge badge"
-                              [ngClass]="(detail.get('stock')?.value || 0) > 5 ? 'bg-success' : 'bg-danger'">
-                              {{ detail.get('stock')?.value }}
-                            </span>
-                          </div>
-                        }
-                        <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
-                          formControlName="produit"
-                          [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                          @for (p of produits; track p.id) {
-                            <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
-                          }
-                        </nz-select>
-                      </div>
-                      @if (isSubmitting && detail.get('produit')?.errors?.['required']) {
-                        <div class="text-danger small mt-1">Produit requis</div>
-                      }
-                    </div>
+            <!-- Header colonnes (desktop uniquement — géré par SCSS) -->
+            <div class="vt-lines-head">
+              <span></span>
+              <span></span>
+              <span>Produit</span>
+              <span class="text-center">Prix unit.</span>
+              <span class="text-center">Quantité</span>
+              <span class="text-end">Sous-total</span>
+              <span></span>
+            </div>
 
-                    <!-- Prix unitaire -->
-                    <div class="col-md-2">
-                      <label class="vt-label">Prix unitaire <span class="text-danger">*</span></label>
-                      <div class="input-group input-group-sm">
-                        <span class="input-group-text">F</span>
-                        <input type="text" class="form-control vt-input" formControlName="prix_unitaire_vente"
-                          thousandSeparator (input)="onPrixOuQuantiteChange()"
-                          [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
-                      </div>
-                    </div>
+            @for (detail of detailVente.controls; track $index) {
+              <div [formGroupName]="$index" class="vt-line"
+                [class.vt-line-error]="detail.get('quantite')?.errors?.['stockExceeded']">
 
-                    <!-- Quantité -->
-                    <div class="col-md-2">
-                      <label class="vt-label">Qté <span class="text-danger">*</span></label>
-                      <input type="number" class="form-control form-control-sm vt-input" formControlName="quantite" min="1"
-                        (input)="onPrixOuQuantiteChange()"
-                        [ngClass]="{'is-invalid': detail.get('quantite')?.errors?.['stockExceeded'] || (isSubmitting && detail.get('quantite')?.errors)}">
-                      @if (detail.get('quantite')?.errors?.['stockExceeded']) {
-                        <div class="text-danger small mt-1">Dispo : {{ detail.get('stock')?.value }}</div>
-                      }
-                    </div>
+                <!-- Num -->
+                <div class="vt-line-num">{{ $index + 1 }}</div>
 
-                    <!-- Supprimer -->
-                    <div class="col-auto">
-                      <button type="button" class="btn btn-outline-danger btn-sm"
-                        style="border-radius:8px;padding:.3rem .5rem"
-                        (click)="removeDetailVente($index)" [disabled]="detailVente.length === 1">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-
-                    <!-- Sous-total ligne -->
-                    <div class="col-12 text-end">
-                      <span class="vt-ligne-subtotal">
-                        Sous-total : {{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire_vente || 0)) | number:'1.0-0':'fr' }} FCFA
+                <!-- Miniature (cellule indépendante) -->
+                <div class="vt-thumb-cell">
+                  @if (detail.get('image')?.value) {
+                    <div class="vt-thumb">
+                      <img [src]="detail.get('image')?.value" alt="">
+                      <span class="vt-stock-dot"
+                        [class.vt-stock-ok]="(detail.get('stock')?.value || 0) > 5"
+                        [class.vt-stock-low]="(detail.get('stock')?.value || 0) <= 5 && (detail.get('stock')?.value || 0) > 0"
+                        [class.vt-stock-zero]="(detail.get('stock')?.value || 0) === 0">
+                        {{ detail.get('stock')?.value }}
                       </span>
                     </div>
+                  } @else {
+                    <div class="vt-thumb-placeholder"><i class="bi bi-box-seam"></i></div>
+                  }
+                </div>
 
+                <!-- Select produit -->
+                <div class="vt-line-produit">
+                  <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher un produit…"
+                    formControlName="produit"
+                    [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
+                    @for (p of produits; track p.id) {
+                      <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
+                    }
+                  </nz-select>
+                  @if (detail.get('produit')?.value && detail.get('stock')?.value != null) {
+                    <div class="vt-stock-info"
+                      [class.vt-stock-ok]="detail.get('stock')?.value > 5"
+                      [class.vt-stock-low]="detail.get('stock')?.value <= 5 && detail.get('stock')?.value > 0"
+                      [class.vt-stock-zero]="detail.get('stock')?.value === 0">
+                      <i class="bi bi-boxes"></i>
+                      Stock disponible : <strong>{{ detail.get('stock')?.value }}</strong>
+                      @if (detail.get('quantite')?.errors?.['stockExceeded']) {
+                        <span class="vt-stock-exceeded">— Quantité insuffisante</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Prix -->
+                <div class="vt-line-prix">
+                  <label class="vt-label d-lg-none">Prix unit.</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0">F</span>
+                    <input type="text" class="form-control vt-input text-end" formControlName="prix_unitaire_vente"
+                      thousandSeparator (input)="onPrixOuQuantiteChange()"
+                      [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
                   </div>
                 </div>
-              }
 
-              @if (detailVente.length === 0) {
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                  Aucun produit ajouté
+                <!-- Qty stepper -->
+                <div class="vt-line-qty">
+                  <label class="vt-label d-lg-none">Quantité</label>
+                  <div class="qty-stepper">
+                    <button type="button" class="qty-btn" (click)="decrementQty($index)">−</button>
+                    <input type="number" class="qty-input" formControlName="quantite" min="1"
+                      [max]="detail.get('stock')?.value ?? undefined"
+                      (input)="onPrixOuQuantiteChange()"
+                      [ngClass]="{'is-invalid': detail.get('quantite')?.errors?.['stockExceeded'] || (isSubmitting && detail.get('quantite')?.errors)}">
+                    <button type="button" class="qty-btn" (click)="incrementQty($index)"
+                      [disabled]="detail.get('stock')?.value != null && (detail.get('quantite')?.value || 0) >= detail.get('stock')?.value">+</button>
+                  </div>
                 </div>
-              }
-            </div>
 
-            <div class="px-4 py-3">
-              <button type="button" class="vt-btn-add" (click)="addDetailVente()">
-                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Résumé financier -->
-        <div class="vt-card">
-          <div class="vt-card-header">
-            <span class="vt-card-title"><i class="bi bi-calculator"></i> Résumé financier</span>
-          </div>
-          <div class="vt-card-body">
-            <div class="row g-3">
-
-              <div class="col-md-3">
-                <label class="vt-label">Remise (FCFA)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control vt-input" formControlName="remise"
-                    thousandSeparator (input)="calculerMontantTotalApresRemise()">
+                <!-- Sous-total -->
+                <div class="vt-line-sub">
+                  <span class="vt-sub-amount">{{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire_vente || 0)) | number:'1.0-0':'fr' }}</span>
+                  <span class="vt-sub-cur">F</span>
                 </div>
-              </div>
 
-              <div class="col-md-3">
-                <label class="vt-label">Total HT</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control vt-input fw-semibold"
-                    [value]="venteForm.get('montant_total')?.value | number:'1.0-0':'fr'" readonly>
-                </div>
-              </div>
+                <!-- Supprimer -->
+                <button type="button" class="vt-del-btn" (click)="removeDetailVente($index)"
+                  [disabled]="detailVente.length === 1">
+                  <i class="bi bi-x-lg"></i>
+                </button>
 
-              <div class="col-md-3">
-                <label class="vt-label">Total après remise</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">FCFA</span>
-                  <input type="text" class="form-control vt-input fw-bold vt-total-highlight"
-                    [value]="venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr'" readonly>
-                </div>
-              </div>
-
-              <div class="col-md-3">
-                <label class="vt-label fw-semibold">Montant reçu <span class="text-danger">*</span></label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text vt-accent-prefix">FCFA</span>
-                  <input type="text" class="form-control vt-input fw-bold"
-                    formControlName="montant_recu" thousandSeparator (input)="calculerMonnaieRendue()">
-                </div>
-              </div>
-
-            </div>
-
-            @if ((venteForm.get('montant_recu')?.value ?? 0) > 0) {
-              <div class="vt-monnaie-alert mt-3">
-                <i class="bi bi-cash-coin fs-5"></i>
-                <span>Monnaie à rendre :
-                  <strong>{{ venteForm.get('monnaie_rendu')?.value | number:'1.0-0':'fr' }} FCFA</strong>
-                </span>
               </div>
             }
+
+            @if (detailVente.length === 0) {
+              <div class="vt-empty">
+                <i class="bi bi-bag display-5 opacity-25 d-block mb-3"></i>
+                Aucun produit ajouté
+              </div>
+            }
+
+          </div>
+
+          <!-- Footer : ajouter + mini total -->
+          <div class="vt-card-footer">
+            <button type="button" class="vt-btn-add" (click)="addDetailVente()">
+              <i class="bi bi-plus-circle me-1"></i> Ajouter
+            </button>
+            <div class="vt-mini-total">
+              <div class="vt-mini-row">
+                <span>Sous-total</span>
+                <span>{{ venteForm.get('montant_total')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
+              </div>
+              @if ((venteForm.get('remise')?.value || 0) > 0) {
+                <div class="vt-mini-row vt-mini-remise">
+                  <span>Remise</span>
+                  <span>− {{ venteForm.get('remise')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
+                </div>
+              }
+              <div class="vt-mini-row vt-mini-main">
+                <span>Total à payer</span>
+                <span>{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
+              </div>
+            </div>
           </div>
         </div>
 
       </div>
 
-      <!-- ── Panneau latéral ───────────────────────────────────────────────── -->
-      <div class="col-md-4 d-flex flex-column">
+      <!-- ── Panneau latéral ────────────────────────────────────────── -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
 
         <!-- Paiement -->
-        <div class="vt-sidebar-section">
-          <div class="vt-sidebar-header"><i class="bi bi-credit-card"></i> Paiement</div>
-          <div class="vt-sidebar-body">
+        <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'paiement'">
+          <div class="vt-panel-header"><i class="bi bi-wallet2"></i> Paiement</div>
+          <div class="vt-panel-body">
 
             <div class="mb-3">
-              <label class="vt-label">Mode de paiement <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm vt-input" formControlName="mode_paiement"
-                (change)="onModeChange()"
-                [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+              <label class="vt-label">Mode de paiement</label>
+              <div class="pay-pills">
                 @for (mode of modesPaiement; track mode.value) {
-                  <option [value]="mode.value">{{ mode.label }}</option>
+                  <button type="button" class="pay-pill"
+                    [class.active]="venteForm.get('mode_paiement')?.value === mode.value"
+                    (click)="setModePaiement(mode.value)">
+                    <i class="bi {{ payIcons[mode.value] }}"></i>
+                    <span>{{ mode.label }}</span>
+                  </button>
                 }
-              </select>
+              </div>
             </div>
 
-            <!-- Détail paiement mixte -->
             @if (isMixte) {
               <div class="vt-mixte-panel mb-3" formGroupName="details_paiement">
                 <p class="vt-mixte-label">Répartition du paiement</p>
                 @for (mode of [
-                  {key:'espece',       label:'Espèces'},
-                  {key:'carte',        label:'Carte'},
-                  {key:'orange_money', label:'Orange Money'},
-                  {key:'wave',         label:'Wave'},
-                  {key:'mtn_money',    label:'MTN Money'},
-                  {key:'moov_money',   label:'Moov Money'},
-                  {key:'dajmo',        label:'Dajmo'},
-                  {key:'credit',       label:'Crédit'}
+                  {key:'espece',label:'Espèces'},{key:'carte',label:'Carte'},
+                  {key:'orange_money',label:'Orange Money'},{key:'wave',label:'Wave'},
+                  {key:'mtn_money',label:'MTN Money'},{key:'moov_money',label:'Moov Money'},
+                  {key:'dajmo',label:'Dajmo'},{key:'credit',label:'Crédit'}
                 ]; track mode.key) {
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" style="min-width:96px;font-size:.78rem;">{{ mode.label }}</span>
+                    <span class="input-group-text" style="min-width:96px;font-size:.78rem">{{ mode.label }}</span>
                     <input type="number" class="form-control vt-input" [formControlName]="mode.key"
-                           min="0" placeholder="0" (input)="calculerMonnaieRendue()">
+                      min="0" placeholder="0" (input)="calculerMonnaieRendue()">
                     <span class="input-group-text">F</span>
                   </div>
                 }
                 <div class="mt-2 small fw-semibold"
-                  [ngClass]="totalDetailsPaiement === (venteForm.get('montant_total_apres_remise')?.value || 0) ? 'text-success' : 'text-danger'">
+                  [class.text-success]="totalDetailsPaiement === (venteForm.get('montant_total_apres_remise')?.value || 0)"
+                  [class.text-danger]="totalDetailsPaiement !== (venteForm.get('montant_total_apres_remise')?.value || 0)">
                   Total : {{ totalDetailsPaiement | number:'1.0-0':'fr' }}
                   / {{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} FCFA
                 </div>
@@ -261,32 +277,74 @@
             }
 
             <div class="mb-3">
-              <label class="vt-label">Statut <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm vt-input" formControlName="statut"
-                [ngClass]="{'is-invalid': isSubmitting && f['statut'].errors}">
-                <option value="payer">Payé</option>
-                <option value="non_payer">Non payé</option>
-                <option value="partiel">Paiement partiel</option>
-              </select>
+              <label class="vt-label">Statut</label>
+              <div class="stat-pills">
+                <button type="button" class="stat-pill stat-paid"
+                  [class.active]="venteForm.get('statut')?.value === 'payer'"
+                  (click)="venteForm.patchValue({statut:'payer'})">
+                  <i class="bi bi-check-circle-fill"></i> Payé
+                </button>
+                <button type="button" class="stat-pill stat-unpaid"
+                  [class.active]="venteForm.get('statut')?.value === 'non_payer'"
+                  (click)="venteForm.patchValue({statut:'non_payer'})">
+                  <i class="bi bi-x-circle-fill"></i> Non payé
+                </button>
+                <button type="button" class="stat-pill stat-partial"
+                  [class.active]="venteForm.get('statut')?.value === 'partiel'"
+                  (click)="venteForm.patchValue({statut:'partiel'})">
+                  <i class="bi bi-dash-circle-fill"></i> Partiel
+                </button>
+              </div>
             </div>
 
+            <div class="row g-2 mb-3">
+              <div class="col-5">
+                <label class="vt-label">Remise (FCFA)</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">−</span>
+                  <input type="text" class="form-control vt-input" formControlName="remise"
+                    thousandSeparator (input)="calculerMontantTotalApresRemise()" placeholder="0">
+                </div>
+              </div>
+              <div class="col-7">
+                <label class="vt-label fw-semibold">Montant reçu <span class="text-danger">*</span></label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text vt-accent-prefix">FCFA</span>
+                  <input type="text" class="form-control vt-input fw-bold"
+                    formControlName="montant_recu" thousandSeparator (input)="calculerMonnaieRendue()"
+                    placeholder="0">
+                </div>
+              </div>
+            </div>
+
+            @if ((venteForm.get('montant_recu')?.value ?? 0) > 0) {
+              <div class="vt-monnaie"
+                [class.vt-monnaie-ok]="(venteForm.get('monnaie_rendu')?.value || 0) >= 0"
+                [class.vt-monnaie-err]="(venteForm.get('monnaie_rendu')?.value || 0) < 0">
+                <div class="vt-monnaie-label">Monnaie à rendre</div>
+                <div class="vt-monnaie-val">
+                  {{ venteForm.get('monnaie_rendu')?.value | number:'1.0-0':'fr' }}
+                  <span class="vt-monnaie-cur">FCFA</span>
+                </div>
+              </div>
+            }
+
             <div>
-              <label class="vt-label">Observation</label>
-              <textarea class="form-control form-control-sm vt-input" formControlName="description" rows="2"
-                style="height:auto;resize:vertical"
-                placeholder="Remarque, note…"></textarea>
+              <label class="vt-label">Note</label>
+              <textarea class="form-control form-control-sm vt-input" formControlName="description"
+                rows="2" style="resize:vertical" placeholder="Remarque…"></textarea>
             </div>
 
           </div>
         </div>
 
         <!-- Client -->
-        <div class="vt-sidebar-section">
-          <div class="vt-sidebar-header"><i class="bi bi-person"></i> Client</div>
-          <div class="vt-sidebar-body">
-            <div class="mb-3">
+        <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'client'">
+          <div class="vt-panel-header"><i class="bi bi-person"></i> Client</div>
+          <div class="vt-panel-body d-flex flex-column gap-2">
+            <div>
               <label class="vt-label">Client existant</label>
-              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher par nom..."
+              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher…"
                 [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onClientSelect($event)">
                 @for (c of clients; track c.id) {
@@ -296,44 +354,82 @@
                   </nz-option>
                 }
               </nz-select>
-              <small class="text-muted d-block mt-1" style="font-size:.74rem">Ou saisissez manuellement ci-dessous</small>
             </div>
-
-            <div formGroupName="clientdata" class="d-flex flex-column gap-2">
-              <div>
-                <label class="vt-label">Nom</label>
+            <div formGroupName="clientdata" class="row g-2">
+              <div class="col-12">
                 <input type="text" class="form-control form-control-sm vt-input" formControlName="nom"
                   placeholder="Nom du client">
               </div>
-              <div>
-                <label class="vt-label">Téléphone</label>
+              <div class="col-6">
                 <input type="tel" class="form-control form-control-sm vt-input" formControlName="telephone"
-                  placeholder="+225 XX XX XX XX">
+                  placeholder="Téléphone">
               </div>
-              <div>
-                <label class="vt-label">Email</label>
+              <div class="col-6">
                 <input type="email" class="form-control form-control-sm vt-input" formControlName="email"
-                  placeholder="email@exemple.com">
+                  placeholder="Email">
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Vendeur -->
+        @if (canSelectVendeur) {
+          <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'vendeur'">
+            <div class="vt-panel-header"><i class="bi bi-person-badge"></i> Vendeur</div>
+            <div class="vt-panel-body d-flex flex-column gap-2">
+              <div>
+                <label class="vt-label">Vendeur</label>
+                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Attribuer à…"
+                  formControlName="vendeur_tel">
+                  @for (v of vendeurs; track v.id) {
+                    <nz-option
+                      [nzLabel]="(v.nom || '') + (v.prenoms ? ' ' + v.prenoms : '') + ' — ' + (v.telephone || '')"
+                      [nzValue]="v.telephone">
+                    </nz-option>
+                  }
+                </nz-select>
+                @if (vendeurs.length === 0) {
+                  <small class="text-muted">Aucun utilisateur trouvé.</small>
+                } @else {
+                  <small class="text-muted" style="font-size:.72rem">Vide = attribué à votre compte</small>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
       </div>
     </div>
 
-    <!-- ── Actions ─────────────────────────────────────────────────────────── -->
-    <div class="vt-actions">
-      <a routerLink="/gestion-des-ventes/historique-ventes" class="btn vt-btn-back">
-        <i class="bi bi-arrow-left me-1"></i> Retour
+    <!-- ── Actions desktop ───────────────────────────────────────────── -->
+    <div class="vt-actions d-none d-lg-flex">
+      <a routerLink="/gestion-des-ventes/historique-ventes" class="vt-btn-back">
+        <i class="bi bi-arrow-left me-1"></i> Annuler
       </a>
-      <button type="submit" class="btn vt-btn-save" [disabled]="loading || (caisseActivee && !activeSessionId)">
+      <button type="submit" class="vt-btn-save" [disabled]="loading || (caisseActivee && !activeSessionId)">
         @if (loading) {
           <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement…
         } @else {
-          <i class="bi bi-save me-1"></i>
+          <i class="bi bi-check-lg me-1"></i>
           {{ isEditMode ? 'Modifier la vente' : 'Enregistrer la vente' }}
         }
+      </button>
+    </div>
+
+    <!-- ── Barre de bas de page mobile (sticky) ──────────────────────── -->
+    <div class="mob-bottom d-lg-none">
+      <div class="mob-total-info">
+        <div class="mob-total-label">Total à payer</div>
+        <div class="mob-total-val">{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <span>FCFA</span></div>
+      </div>
+      <button type="submit" class="vt-btn-save mob-save-btn"
+        [disabled]="loading || (caisseActivee && !activeSessionId)">
+        @if (loading) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else {
+          <i class="bi bi-check-lg"></i>
+        }
+        {{ isEditMode ? 'Modifier' : 'Enregistrer' }}
       </button>
     </div>
 

@@ -34,7 +34,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
 
     boutiques: any = [];
-    idBoutique: number = 0;
+    idBoutique: number | undefined = undefined;
   
     boutiqueService = inject(BoutiqueService);
   
@@ -57,8 +57,12 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.getCurrentUser();
-    //this.loadFournisseurs();
     this.loadBoutiques();
+    const defaultId = this.boutiques[0]?.id;
+    if (defaultId) {
+      this.idBoutique = defaultId;
+      this.loadFournisseurs(defaultId);
+    }
      
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
     if (isPlatformBrowser(this.platformId)) {
@@ -266,6 +270,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   }
 
   loadFournisseurs(id: number): void {
+    if (!id) return;
     this.isLoading = true;
     
     this.fournisseurService.getFournisseursByBoutik(id).subscribe({

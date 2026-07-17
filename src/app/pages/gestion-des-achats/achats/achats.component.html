@@ -61,11 +61,11 @@
 
               @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
                 <div class="col-md-4">
-                  <label class="ac-label">Boutique <span class="text-danger">*</span></label>
+                  <label class="ac-label">Stock central (entrepôt) <span class="text-danger">*</span></label>
                   <select class="form-select form-select-sm ac-input" formControlName="boutique"
                     (change)="onBoutiqueChange($event)"
                     [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
-                    <option value="">Sélectionner une boutique</option>
+                    <option value="">Sélectionner un entrepôt</option>
                     @for (b of boutiques; track b.id) {
                       <option [value]="b.id">{{ b.nom }}</option>
                     }

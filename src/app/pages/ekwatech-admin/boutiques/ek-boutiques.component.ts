@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -9,6 +9,8 @@ import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { StructureService } from '../../../services/structure/structure.service';
 import { SelectedTenantService } from '../../../services/tenant/selected-tenant.service';
 
+declare var $: any;
+
 interface BoutiqueForm {
   nom: string;
   telephone: string;
@@ -16,7 +18,7 @@ interface BoutiqueForm {
   rccm: string;
   situation_geo: string;
   structure: number | null;
-  type: 'boutique' | 'restaurant';
+  type: 'boutique' | 'restaurant' | 'entrepot';
 }
 
 @Component({
@@ -27,6 +29,8 @@ interface BoutiqueForm {
   providers: [ToastrService],
 })
 export default class EkBoutiquesComponent implements OnInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
+
   boutiques: any[] = [];
   structures: any[] = [];
   selectedStructureId: number | null = null;
@@ -61,6 +65,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.selectedTenant.clear();
+    this.destroyDt();
   }
 
   private setStructure(id: number | null): void {
@@ -72,9 +77,35 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
   load(): void {
     if (!this.selectedStructureId) return;
     this.loading = true;
+    this.destroyDt();
     this.boutiqueSvc.findByStructure(String(this.selectedStructureId))
       .pipe(finalize(() => (this.loading = false)))
-      .subscribe({ next: (r: any) => { this.boutiques = r?.data ?? (Array.isArray(r) ? r : []); } });
+      .subscribe({
+        next: (r: any) => {
+          this.boutiques = r?.data ?? (Array.isArray(r) ? r : []);
+          setTimeout(() => this.initDt(), 100);
+        },
+      });
+  }
+
+  private destroyDt(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const t = $('.js-dt-boutiques');
+        if ($.fn?.DataTable?.isDataTable(t)) t.DataTable().destroy();
+      } catch {}
+    }
+  }
+
+  private initDt(): void {
+    if (isPlatformBrowser(this.platformId) && this.boutiques.length) {
+      try {
+        const t = $('.js-dt-boutiques');
+        if (!$.fn?.DataTable?.isDataTable(t)) {
+          t.DataTable({ pageLength: 10, order: [[0, 'desc']], language: { url: 'assets/i18n/fr-FR.json' } });
+        }
+      } catch {}
+    }
   }
 
   onStructureChange(): void {

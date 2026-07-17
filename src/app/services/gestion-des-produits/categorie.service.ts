@@ -40,4 +40,8 @@ export class CategorieService {
     formData.append('file', file);
     return this.http.post(`${this.API_URL}/categorie/import?boutique=${boutiqueId}`, formData, {});
   }
+
+  copierCategories(sourceBoutiqueId: number, targetBoutiqueIds: number[]): Observable<any> {
+    return this.http.post(`${this.API_URL}/categorie/copier`, { sourceBoutiqueId, targetBoutiqueIds });
+  }
 }

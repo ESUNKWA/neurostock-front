@@ -67,6 +67,11 @@ const routes: Routes = [
     loadComponent: () => import('./profils/ek-profils.component'),
     title: 'Ekwatech | Profils utilisateurs',
   },
+  {
+    path: 'modules',
+    loadComponent: () => import('./modules/ek-modules.component'),
+    title: 'Ekwatech | Modules',
+  },
 ];
 
 export default routes;

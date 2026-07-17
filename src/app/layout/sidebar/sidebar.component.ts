@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { Menu } from './menu';
 import { AuthService } from '../../services/auth/auth.service';
+import { ModuleService, ModuleCode } from '../../services/modules/module.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,6 +21,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   @HostBinding('class.mobile-open') mobileOpen  = false;
 
   private authService = inject(AuthService);
+  private moduleService = inject(ModuleService);
   private bodyObserver?: MutationObserver;
 
   constructor(private router: Router) {
@@ -34,9 +36,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user?.profil) {
         this.currentUserProfile = user.profil.code?.toLowerCase() || '';
-        this.filteredMenu = this.filterMenuByRole(this.menu, this.currentUserProfile, user);
+        this.filteredMenu = this.buildMenu(user);
       } else {
         this.filteredMenu = this.menu;
+      }
+    });
+
+    // Reconstruire le menu quand les modules changent (ex. après login)
+    this.moduleService.modules$.subscribe(() => {
+      const user = this.authService.getUser();
+      if (user?.profil) {
+        this.filteredMenu = this.buildMenu(user);
       }
     });
 
@@ -59,6 +69,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   closeMobile(): void {
     document.body.classList.remove('sidebar-mobile-open');
+  }
+
+  private buildMenu(user: any): any[] {
+    const role = user.profil.code?.toLowerCase() || '';
+    const byRole = this.filterMenuByRole(this.menu, role, user);
+    // super_admin voit tout sans restriction de modules
+    if (role === 'super_admin') return byRole;
+    return this.filterMenuByModules(byRole);
+  }
+
+  private filterMenuByModules(menu: any[]): any[] {
+    return menu
+      .filter((section: any) => {
+        // Section avec module → vérifier
+        if (section.module) return this.moduleService.hasModule(section.module as ModuleCode);
+        return true;
+      })
+      .map((section: any) => ({
+        ...section,
+        menu: (section.menu ?? []).filter((item: any) => {
+          if (item.module) return this.moduleService.hasModule(item.module as ModuleCode);
+          return true;
+        }),
+      }))
+      .filter((section: any) => (section.menu?.length ?? 0) > 0 || !section.titre);
   }
 
   filterMenuByRole(menu: any[], role: string, user?: any): any[] {
@@ -104,7 +139,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     if (role === 'gerant' || role === 'user') {
       return filteredMenu
-        .filter((section: any) => section.titre !== 'Paramétrages' && section.titre !== 'Rapports')
+        .filter((section: any) => section.titre !== 'Paramétrages')
         .map((section: any) => {
           section.menu?.forEach((item: any) => {
             if (item.sousMenu) {

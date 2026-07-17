@@ -60,7 +60,7 @@
 
       @if (selectedStructureId && !loading && boutiques.length > 0) {
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
+          <table class="table table-hover align-middle mb-0 js-dt-boutiques">
             <thead class="table-light">
               <tr>
                 <th class="ps-4">ID</th>
@@ -83,6 +83,8 @@
                   <td>
                     @if (b.type === 'restaurant') {
                       <span class="badge bg-primary-subtle text-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
+                    } @else if (b.type === 'entrepot') {
+                      <span class="badge bg-success-subtle text-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                     } @else {
                       <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>
                     }
@@ -151,6 +153,16 @@
                 <div>
                   <div class="fw-semibold"><i class="bi bi-cup-hot me-1"></i>Restaurant / Maquis</div>
                   <small class="text-muted">Service en salle, prise de commande…</small>
+                </div>
+              </label>
+              <label class="d-flex align-items-center gap-2"
+                     style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
+                     [style.border-color]="form.type === 'entrepot' ? '#198754' : '#dee2e6'"
+                     [style.background]="form.type === 'entrepot' ? '#f0fdf4' : '#fff'">
+                <input type="radio" [(ngModel)]="form.type" name="type" value="entrepot" class="form-check-input mt-0">
+                <div>
+                  <div class="fw-semibold"><i class="bi bi-box-seam me-1"></i>Entrepôt</div>
+                  <small class="text-muted">Stock central, réapprovisionnement boutiques…</small>
                 </div>
               </label>
             </div>

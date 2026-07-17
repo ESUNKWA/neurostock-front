@@ -42,6 +42,12 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   pendingImportFile: File | null = null;
   importResult: { created: number; skipped: number; errors: string[] } | null = null;
 
+  // Transfer state
+  transferTargetIds: number[] = [];
+  isTransferring = false;
+  transferResult: { created: number; alreadyExists: number } | null = null;
+  transferBoutiquesDisponibles: any[] = [];
+
   currentUser: any;
   authService = inject(AuthService);
 
@@ -503,6 +509,42 @@ export default class CategorieComponent implements OnInit, OnDestroy {
         modalInstance.hide();
       }
     }
+  }
+
+  openTransferModal(): void {
+    const sourceId = +(this.selectedBoutiqueId ?? this.currentUser?.boutique_id ?? 0);
+    this.transferBoutiquesDisponibles = this.boutiques.filter(b => b.id !== sourceId);
+    this.transferTargetIds = [];
+    this.transferResult = null;
+    const modal = document.getElementById('modal-transfer');
+    if (modal) new bootstrap.Modal(modal).show();
+  }
+
+  toggleTransferTarget(id: number): void {
+    const idx = this.transferTargetIds.indexOf(id);
+    if (idx >= 0) this.transferTargetIds.splice(idx, 1);
+    else this.transferTargetIds.push(id);
+  }
+
+  selectAllTransferTargets(): void {
+    this.transferTargetIds = this.transferBoutiquesDisponibles.map(b => b.id);
+  }
+
+  confirmTransfer(): void {
+    const sourceId = +(this.selectedBoutiqueId ?? this.currentUser?.boutique_id ?? 0);
+    if (!sourceId || !this.transferTargetIds.length) return;
+    this.isTransferring = true;
+    this.categorieService.copierCategories(sourceId, this.transferTargetIds).pipe(first()).subscribe({
+      next: (r: any) => {
+        this.isTransferring = false;
+        this.transferResult = r.data;
+        this.toastr.success(`${r.data?.created ?? 0} catégorie(s) copiée(s) avec succès`);
+      },
+      error: (err: any) => {
+        this.isTransferring = false;
+        this.toastr.error(err?.error?.message || 'Erreur lors du transfert');
+      }
+    });
   }
 
   deleteCategorie(categorie: any): void {

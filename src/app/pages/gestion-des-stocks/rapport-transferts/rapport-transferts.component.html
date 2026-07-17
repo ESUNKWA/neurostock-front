@@ -1,0 +1,277 @@
+<div class="pagetitle d-none d-md-block">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>Rapport ventes par transferts</h1>
+    <nav>
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/dashboard"><i class="bi bi-house"></i> Accueil</a></li>
+        <li class="breadcrumb-item"><a routerLink="/stocks/transferts">Transferts</a></li>
+        <li class="breadcrumb-item active">Rapport</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="p-2 p-md-4">
+
+      <!-- Filtres -->
+      <div class="card mb-3">
+        <div class="card-body py-2 py-md-3">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-semibold mb-1 small">
+                Boutique destination <span class="text-danger">*</span>
+              </label>
+              <select class="form-select form-select-sm" [(ngModel)]="filtres.boutique_destination">
+                <option [ngValue]="null">— Choisir —</option>
+                @for (b of boutiquesDestination; track b.id) {
+                  <option [ngValue]="b.id">{{ b.nom }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-semibold mb-1 small">Entrepôt source</label>
+              <select class="form-select form-select-sm" [(ngModel)]="filtres.boutique_source">
+                <option [ngValue]="null">Tous les entrepôts</option>
+                @for (e of entrepots; track e.id) {
+                  <option [ngValue]="e.id">{{ e.nom }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1 small">Date début</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="filtres.date_debut">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1 small">Date fin</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="filtres.date_fin">
+            </div>
+            <div class="col-12 col-md-2">
+              <button class="btn btn-primary btn-sm w-100" (click)="charger()"
+                [disabled]="!filtres.boutique_destination || isLoading">
+                @if (isLoading) {
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                } @else {
+                  <i class="bi bi-bar-chart-line me-1"></i>
+                }
+                Générer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (isLoading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2 small">Chargement du rapport…</p>
+        </div>
+      }
+
+      @if (!isLoading && searched) {
+
+        <!-- KPI cards -->
+        @if (lignes.length > 0) {
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+              <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-4 fw-bold text-primary">{{ totaux.transferee }}</div>
+                <small class="text-muted">Unités transférées</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-4 fw-bold text-success">{{ totaux.vendue }}</div>
+                <small class="text-muted">Unités vendues</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-4 fw-bold text-warning">{{ totaux.stock }}</div>
+                <small class="text-muted">Stock restant</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-4 fw-bold text-info">{{ totaux.ca | number:'1.0-0' }} XOF</div>
+                <small class="text-muted">CA généré</small>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0 text-uppercase">
+              Ventes des produits transférés
+              @if (filtres.boutique_destination) {
+                <span class="text-muted fw-normal fs-6 ms-2">— {{ nomBoutique(filtres.boutique_destination) }}</span>
+              }
+            </h5>
+          </div>
+          <div class="card-body">
+            @if (lignes.length === 0) {
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+                <p>Aucun transfert réceptionné trouvé pour ces critères.</p>
+              </div>
+            } @else {
+              <!-- Vue desktop -->
+              <div class="table-responsive d-none d-md-block">
+                <table class="table table-bordered table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Produit</th>
+                      <th class="text-end">Prix vente (XOF)</th>
+                      <th class="text-center">Qté transférée</th>
+                      <th class="text-center">Qté vendue</th>
+                      <th class="text-center">Stock restant</th>
+                      <th class="text-end">CA généré (XOF)</th>
+                      <th class="text-center" style="min-width:160px">Taux d'écoulement</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of lignes; track l.produit_nom) {
+                      <tr>
+                        <td class="fw-semibold">{{ l.produit_nom }}</td>
+                        <td class="text-end text-muted">{{ l.prix_vente | number:'1.0-0' }}</td>
+                        <td class="text-center">
+                          <span class="badge bg-primary-subtle text-primary">{{ l.qte_transferee }}</span>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-success-subtle text-success">{{ l.qte_vendue }}</span>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge"
+                            [class.bg-warning]="l.stock_restant > 0"
+                            [class.text-dark]="l.stock_restant > 0"
+                            [class.bg-secondary-subtle]="l.stock_restant === 0"
+                            [class.text-muted]="l.stock_restant === 0">
+                            {{ l.stock_restant }}
+                          </span>
+                        </td>
+                        <td class="text-end fw-semibold">{{ l.ca_genere | number:'1.0-0' }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:8px">
+                              <div class="progress-bar bg-{{ tauxColor(l.taux_ecoulement) }}"
+                                [style.width.%]="l.taux_ecoulement"></div>
+                            </div>
+                            <span class="small fw-semibold text-{{ tauxColor(l.taux_ecoulement) }}"
+                              style="min-width:42px;text-align:right">
+                              {{ l.taux_ecoulement }}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot class="table-light fw-bold">
+                    <tr>
+                      <td>Total</td>
+                      <td></td>
+                      <td class="text-center">{{ totaux.transferee }}</td>
+                      <td class="text-center">{{ totaux.vendue }}</td>
+                      <td class="text-center">{{ totaux.stock }}</td>
+                      <td class="text-end">{{ totaux.ca | number:'1.0-0' }}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <!-- Vue mobile -->
+              <div class="d-md-none mt-2">
+                @for (l of lignes; track l.produit_nom) {
+                  <div class="mc-card" (click)="mobileDetailItem = l">
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="mc-title">{{ l.produit_nom }}</div>
+                      <div class="mc-sub">
+                        <span class="badge bg-primary-subtle text-primary me-1">{{ l.qte_transferee }} transf.</span>
+                        <span class="badge bg-success-subtle text-success me-1">{{ l.qte_vendue }} vendues</span>
+                        <span class="badge"
+                          [class.bg-warning]="l.stock_restant > 0"
+                          [class.text-dark]="l.stock_restant > 0"
+                          [class.bg-secondary-subtle]="l.stock_restant === 0"
+                          [class.text-muted]="l.stock_restant === 0">
+                          {{ l.stock_restant }} restant
+                        </span>
+                      </div>
+                      <div class="mt-1 d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height:6px">
+                          <div class="progress-bar bg-{{ tauxColor(l.taux_ecoulement) }}"
+                            [style.width.%]="l.taux_ecoulement"></div>
+                        </div>
+                        <span class="small text-{{ tauxColor(l.taux_ecoulement) }} fw-semibold">{{ l.taux_ecoulement }}%</span>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                      <div class="d-flex align-items-baseline gap-1">
+                        <span class="mc-amount">{{ l.ca_genere | number:'1.0-0' }}</span>
+                        <small class="text-muted">XOF</small>
+                      </div>
+                      <button class="mc-plus-btn" (click)="mobileDetailItem = l; $event.stopPropagation()">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (mobileDetailItem) {
+                <div class="mc-overlay" (click)="mobileDetailItem = null">
+                  <div class="mc-popup" (click)="$event.stopPropagation()">
+                    <div class="mc-popup-header">
+                      <span class="mc-popup-title">{{ mobileDetailItem.produit_nom }}</span>
+                      <button class="mc-popup-close" (click)="mobileDetailItem = null"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="mc-popup-body">
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">Prix de vente</span>
+                        <span class="mc-row-value fw-semibold">{{ mobileDetailItem.prix_vente | number:'1.0-0' }} XOF</span>
+                      </div>
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">Qté transférée</span>
+                        <span class="mc-row-value">
+                          <span class="badge bg-primary-subtle text-primary">{{ mobileDetailItem.qte_transferee }}</span>
+                        </span>
+                      </div>
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">Qté vendue</span>
+                        <span class="mc-row-value">
+                          <span class="badge bg-success-subtle text-success">{{ mobileDetailItem.qte_vendue }}</span>
+                        </span>
+                      </div>
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">Stock restant</span>
+                        <span class="mc-row-value">
+                          <span class="badge"
+                            [class.bg-warning]="mobileDetailItem.stock_restant > 0"
+                            [class.text-dark]="mobileDetailItem.stock_restant > 0"
+                            [class.bg-secondary-subtle]="mobileDetailItem.stock_restant === 0"
+                            [class.text-muted]="mobileDetailItem.stock_restant === 0">
+                            {{ mobileDetailItem.stock_restant }}
+                          </span>
+                        </span>
+                      </div>
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">CA généré</span>
+                        <span class="mc-row-value fw-semibold">{{ mobileDetailItem.ca_genere | number:'1.0-0' }} XOF</span>
+                      </div>
+                      <div class="mc-popup-row">
+                        <span class="mc-row-label">Taux d'écoulement</span>
+                        <span class="mc-row-value">
+                          <span class="fw-semibold text-{{ tauxColor(mobileDetailItem.taux_ecoulement) }}">
+                            {{ mobileDetailItem.taux_ecoulement }}%
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+
+</div>
