@@ -14,10 +14,10 @@
           <img src="assets/img/logo_neurostock_icone.png" alt="NeuroStock" class="mtb-logo">
         }
         <div class="mtb-brand-text">
-          <span class="mtb-title">{{ currentUser?.boutique?.nom || 'NeuroStock' }}</span>
-          @if (currentUser?.boutique?.nom) {
-            <span class="mtb-subtitle">Gestion de stock</span>
+          @if (structureNom) {
+            <span class="mtb-subtitle">{{ structureNom }}</span>
           }
+          <span class="mtb-title">{{ currentUser?.boutique?.nom || 'NeuroStock' }}</span>
         </div>
       </div>
       <div class="mtb-actions">

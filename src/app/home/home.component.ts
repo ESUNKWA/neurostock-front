@@ -85,6 +85,13 @@ export default class HomeComponent implements OnInit, OnDestroy {
     (event.target as HTMLImageElement).src = 'assets/img/logo_neurostock_icone.png';
   }
 
+  get structureNom(): string | null {
+    return this.currentUser?.boutique?.structure?.nom
+      || this.currentUser?.structure?.nom
+      || this.currentUser?.structure?.[0]?.nom
+      || null;
+  }
+
   getUserInitials(): string {
     const nom    = this.currentUser?.nom ?? '';
     const prenom = this.currentUser?.prenom ?? this.currentUser?.prenoms ?? '';

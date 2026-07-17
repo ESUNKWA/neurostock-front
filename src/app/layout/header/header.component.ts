@@ -44,6 +44,13 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  get structureNom(): string | null {
+    return this.currentUser?.boutique?.structure?.nom
+      || this.currentUser?.structure?.nom
+      || this.currentUser?.structure?.[0]?.nom
+      || null;
+  }
+
   get hasRestaurantAccess(): boolean {
     if (!this.moduleService.hasModule('restauration')) return false;
     const code = this.currentUser?.profil?.code?.toLowerCase();

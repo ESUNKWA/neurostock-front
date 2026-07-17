@@ -12,7 +12,12 @@
         } @else {
           <i class="bi bi-shop"></i>
         }
-        <span>{{ currentUser.boutique.nom }}</span>
+        <div class="header-boutique-info">
+          @if (structureNom) {
+            <span class="header-structure-name">{{ structureNom }}</span>
+          }
+          <span class="header-boutique-name">{{ currentUser.boutique.nom }}</span>
+        </div>
       </div>
     }
   </div>

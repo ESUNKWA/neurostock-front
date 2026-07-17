@@ -56,17 +56,40 @@ $transition: 0.25s ease;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
   border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #2563eb;
-  max-width: 220px;
+  max-width: 240px;
+  overflow: hidden;
+
+  i { font-size: 0.85rem; flex-shrink: 0; color: #2563eb; }
+
+  @media (max-width: 576px) {
+    max-width: 160px;
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+.header-boutique-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.header-structure-name {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
 
-  i { font-size: 0.85rem; flex-shrink: 0; }
-
-  @media (max-width: 576px) { display: none; }
+.header-boutique-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2563eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-boutique-logo {
