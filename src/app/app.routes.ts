@@ -6,9 +6,15 @@ import { RestaurantGuard } from './guards/restaurant.guard';
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full', title: 'neurostock | Connexion' },
     { path: 'login', loadComponent: () => import('./login/login.component'), title: 'neurostock | Connexion' },
+    {
+        path: 'change-password',
+        loadComponent: () => import('./pages/change-password/change-password.component'),
+        canActivate: [AuthGuard],
+        title: 'neurostock | Changer le mot de passe'
+    },
     { path: '', loadComponent: () => import('./home/home.component'), canActivate: [AuthGuard], children: [
-        { 
-            path: 'dashboard', 
+        {
+            path: 'dashboard',
             loadComponent: () => import('./layout/dashboard/dashboard.component'), 
             title: 'neurostock | Tableau de bord' 
         },

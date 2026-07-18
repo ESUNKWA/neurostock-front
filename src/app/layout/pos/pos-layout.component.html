@@ -3,7 +3,7 @@
   <!-- ══════════════════════════════════════════════════════════════
        Layout POS mobile
   ══════════════════════════════════════════════════════════════ -->
-  <div class="pos-mobile-shell">
+  <div class="pos-mobile-shell" [class.has-caisse-bar]="hasModule('caisse') && activeCaisses.length > 0">
 
     <!-- Top bar -->
     <header class="pos-mtb">
@@ -42,6 +42,22 @@
       </div>
     </header>
 
+    <!-- Barre caisses actives -->
+    @if (hasModule('caisse') && activeCaisses.length > 0) {
+      <div class="pos-caisse-bar">
+        @for (c of activeCaisses; track c.id) {
+          <a routerLink="/pos/caisse" class="pos-caisse-bar-item text-decoration-none">
+            <span class="pos-caisse-bar-dot"></span>
+            <i class="bi bi-cash-coin"></i>
+            <span>CAISSE #{{ c.id }}</span>
+            <span class="pos-caisse-bar-since">
+              — ouverte {{ c.date_ouverture ?? c.created_at | date:'HH:mm' }}
+            </span>
+          </a>
+        }
+      </div>
+    }
+
     <!-- Content -->
     <main class="pos-mobile-content">
       <router-outlet></router-outlet>
@@ -53,10 +69,12 @@
         <i class="bi bi-grid-fill"></i>
         <span>Accueil</span>
       </a>
-      <a routerLink="/pos/commandes" routerLinkActive="pos-bnav-active" class="pos-bnav-tab">
-        <i class="bi bi-bag-check"></i>
-        <span>Commandes</span>
-      </a>
+      @if (hasModule('commandes_clients')) {
+        <a routerLink="/pos/commandes" routerLinkActive="pos-bnav-active" class="pos-bnav-tab">
+          <i class="bi bi-bag-check"></i>
+          <span>Commandes</span>
+        </a>
+      }
       <!-- FAB central — action principale -->
       <a routerLink="/pos/vente" routerLinkActive="pos-bnav-active" class="pos-bnav-tab pos-bnav-fab-tab">
         <div class="pos-bnav-fab">
@@ -85,31 +103,37 @@
             </button>
           </div>
           <div class="pos-drawer-grid">
-            <a routerLink="/pos/caisse" class="pos-drawer-item" (click)="posMenuOpen = false">
-              <div class="pos-di-icon" style="background:#e0f2fe;color:#0369a1">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-              <span>Caisse</span>
-            </a>
-            <a routerLink="/pos/devis" class="pos-drawer-item" (click)="posMenuOpen = false">
-              <div class="pos-di-icon" style="background:#e0e7ff;color:#4f46e5">
-                <i class="bi bi-file-earmark-text"></i>
-              </div>
-              <span>Devis</span>
-            </a>
-            <a routerLink="/pos/devis/nouveau" class="pos-drawer-item" (click)="posMenuOpen = false">
-              <div class="pos-di-icon" style="background:#fef3c7;color:#d97706">
-                <i class="bi bi-file-earmark-plus"></i>
-              </div>
-              <span>Nouveau devis</span>
-            </a>
-            <a routerLink="/pos/commandes/nouvelle" class="pos-drawer-item" (click)="posMenuOpen = false">
-              <div class="pos-di-icon" style="background:#fce7f3;color:#db2777">
-                <i class="bi bi-bag-plus"></i>
-              </div>
-              <span>Nouvelle commande</span>
-            </a>
-            @if (peutFaireRetour) {
+            @if (hasModule('caisse')) {
+              <a routerLink="/pos/caisse" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#e0f2fe;color:#0369a1">
+                  <i class="bi bi-cash-coin"></i>
+                </div>
+                <span>Caisse</span>
+              </a>
+            }
+            @if (hasModule('devis')) {
+              <a routerLink="/pos/devis" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#e0e7ff;color:#4f46e5">
+                  <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <span>Devis</span>
+              </a>
+              <a routerLink="/pos/devis/nouveau" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#fef3c7;color:#d97706">
+                  <i class="bi bi-file-earmark-plus"></i>
+                </div>
+                <span>Nouveau devis</span>
+              </a>
+            }
+            @if (hasModule('commandes_clients')) {
+              <a routerLink="/pos/commandes/nouvelle" class="pos-drawer-item" (click)="posMenuOpen = false">
+                <div class="pos-di-icon" style="background:#fce7f3;color:#db2777">
+                  <i class="bi bi-bag-plus"></i>
+                </div>
+                <span>Nouvelle commande</span>
+              </a>
+            }
+            @if (peutFaireRetour && hasModule('retours_produits')) {
               <a routerLink="/pos/retours" class="pos-drawer-item" (click)="posMenuOpen = false">
                 <div class="pos-di-icon" style="background:#fee2e2;color:#dc2626">
                   <i class="bi bi-arrow-return-left"></i>
@@ -170,31 +194,37 @@
               <span>Vente</span>
             </a>
           </li>
-          <li>
-            <a routerLink="/pos/commandes" routerLinkActive="active" class="pos-nav-link">
-              <i class="bi bi-bag-check me-1"></i>
-              <span class="d-none d-sm-inline">Commandes</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/pos/devis" routerLinkActive="active" class="pos-nav-link">
-              <i class="bi bi-file-earmark-text me-1"></i>
-              <span class="d-none d-sm-inline">Devis</span>
-            </a>
-          </li>
+          @if (hasModule('commandes_clients')) {
+            <li>
+              <a routerLink="/pos/commandes" routerLinkActive="active" class="pos-nav-link">
+                <i class="bi bi-bag-check me-1"></i>
+                <span class="d-none d-sm-inline">Commandes</span>
+              </a>
+            </li>
+          }
+          @if (hasModule('devis')) {
+            <li>
+              <a routerLink="/pos/devis" routerLinkActive="active" class="pos-nav-link">
+                <i class="bi bi-file-earmark-text me-1"></i>
+                <span class="d-none d-sm-inline">Devis</span>
+              </a>
+            </li>
+          }
           <li>
             <a routerLink="/pos/historique" routerLinkActive="active" class="pos-nav-link">
               <i class="bi bi-clock-history me-1"></i>
               <span class="d-none d-sm-inline">Historique</span>
             </a>
           </li>
-          <li>
-            <a routerLink="/pos/caisse" routerLinkActive="active" class="pos-nav-link">
-              <i class="bi bi-cash-coin me-1"></i>
-              <span class="d-none d-sm-inline">Caisse</span>
-            </a>
-          </li>
-          @if (peutFaireRetour) {
+          @if (hasModule('caisse')) {
+            <li>
+              <a routerLink="/pos/caisse" routerLinkActive="active" class="pos-nav-link">
+                <i class="bi bi-cash-coin me-1"></i>
+                <span class="d-none d-sm-inline">Caisse</span>
+              </a>
+            </li>
+          }
+          @if (peutFaireRetour && hasModule('retours_produits')) {
             <li>
               <a routerLink="/pos/retours" routerLinkActive="active" class="pos-nav-link">
                 <i class="bi bi-arrow-return-left me-1"></i>
@@ -206,6 +236,21 @@
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-shrink-0">
+
+        <!-- Caisses actives -->
+        @if (hasModule('caisse') && activeCaisses.length > 0) {
+          <div class="d-none d-md-flex align-items-center gap-1">
+            @for (c of activeCaisses; track c.id; let n = $index) {
+              <a routerLink="/pos/caisse"
+                 class="pos-caisse-chip text-decoration-none"
+                 [title]="'Ouverte le ' + (c.date_ouverture ?? c.created_at | date:'dd/MM HH:mm')">
+                <i class="bi bi-cash-coin"></i>
+                <span>CAISSE #{{ c.id }}</span>
+              </a>
+            }
+          </div>
+        }
+
         <div class="d-none d-md-flex flex-column align-items-end me-1">
           <span class="text-white fw-semibold" style="font-size:.8rem; line-height:1.2">{{ userName }}</span>
           <span class="text-white-50" style="font-size:.7rem">{{ profilLabel }}</span>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Router, CanActivate } from '@angular/router';
+import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
 
 @Injectable({
@@ -11,12 +11,20 @@ export class AuthGuard implements CanActivate {
     private authService: AuthService
   ) {}
 
-  canActivate(): boolean {
-    if (this.authService.isAuthenticated()) {
-      return true;
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigateByUrl('/login');
+      return false;
     }
 
-    this.router.navigateByUrl('/login');
-    return false;
+    const user = this.authService.getUser();
+    const isChangePwdRoute = state.url.startsWith('/change-password');
+
+    if (user?.must_change_password && !isChangePwdRoute) {
+      this.router.navigateByUrl('/change-password');
+      return false;
+    }
+
+    return true;
   }
 } 

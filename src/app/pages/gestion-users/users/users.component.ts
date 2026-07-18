@@ -351,8 +351,8 @@ export class UsersComponent {
         }
       },
       error: (error: any) => {
-        console.error('Erreur lors de la sauvegarde:', error);
-        this.toastr.error('Une erreur est survenue lors de la sauvegarde');
+        const msg = error?.error?.message || error?.message || 'Une erreur est survenue lors de la sauvegarde';
+        this.toastr.error(msg);
         this.isLoading = false;
       }
     });

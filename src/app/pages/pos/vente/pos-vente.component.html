@@ -1,3 +1,17 @@
+<!-- ── Push notification panier ─────────────────────────────────────────────── -->
+@if (posNotif) {
+  <div class="pos-notif" [class.pos-notif--success]="posNotif.type === 'success'"
+       [class.pos-notif--error]="posNotif.type === 'error'"
+       [class.pos-notif--warning]="posNotif.type === 'warning'"
+       [class.pos-notif--out]="!posNotif.visible">
+    <i class="bi pos-notif-icon"
+       [class.bi-check-circle-fill]="posNotif.type === 'success'"
+       [class.bi-x-circle-fill]="posNotif.type === 'error'"
+       [class.bi-exclamation-triangle-fill]="posNotif.type === 'warning'"></i>
+    <span>{{ posNotif.msg }}</span>
+  </div>
+}
+
 <div class="pos-screen d-flex">
 
   <!-- ── Mobile tab bar ───────────────────────────────────────────────────── -->
@@ -25,60 +39,59 @@
   <div class="pos-catalog d-flex flex-column flex-grow-1 overflow-hidden"
        [class.mobile-hidden]="mobileTab === 'cart' || mobileTab === 'ventes'">
 
-    <!-- Search + Scan bar -->
-    <div class="pos-search-bar border-bottom px-3 pt-2 pb-2 d-flex flex-column gap-2">
+    <!-- Top bar : boutique + recherche + scanner + total — tout sur une ligne -->
+    <div class="pos-topbar border-bottom">
 
-      <!-- Ligne 1 : nom boutique (gauche) + total du jour (droite) -->
-      <div class="d-flex align-items-center justify-content-between gap-2">
-        <div class="pos-boutique-info d-flex align-items-center gap-2">
-          <div class="lh-1">
-            <div class="pos-boutique-nom fw-bold text-truncate" style="max-width:180px">
-              {{ currentUser?.boutique?.nom }}
-            </div>
-            <div class="text-muted" style="font-size:.68rem;letter-spacing:.03em">Point de vente</div>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2 pos-today-pill">
-          <i class="bi bi-graph-up-arrow text-white fs-5"></i>
-          <div class="lh-1">
-            <div class="text-white-50" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.06em">Total du jour</div>
-            <div class="text-white fw-bold" style="font-size:1.05rem">
-              {{ totalVentesJour | number:'1.0-0':'fr' }}
-              <span class="fw-normal" style="font-size:.68rem;opacity:.8">FCFA</span>
-            </div>
-            <div class="text-white-50" style="font-size:.6rem">
-              <i class="bi bi-receipt me-1"></i>{{ nbVentesJour }} vente{{ nbVentesJour !== 1 ? 's' : '' }}
-            </div>
-          </div>
-        </div>
+      <!-- Boutique -->
+      <div class="pos-topbar-boutique d-none d-md-flex align-items-center gap-2">
+        <i class="bi bi-shop text-primary" style="font-size:.95rem"></i>
+        <span class="fw-semibold text-truncate" style="font-size:.82rem;max-width:140px">
+          {{ currentUser?.boutique?.nom }}
+        </span>
       </div>
 
-      <!-- Ligne 2 : recherche + scanner, même largeur sur PC -->
-      <div class="d-flex flex-column flex-sm-row align-items-stretch gap-2">
-        <div class="pos-search-field input-group input-group-lg flex-grow-1">
-          <span class="input-group-text border-end-0">
-            <i class="bi bi-search text-primary"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 shadow-none"
-                 placeholder="Rechercher un produit…"
-                 [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
-          @if (searchQuery) {
-            <button class="btn btn-outline-secondary border-start-0" (click)="searchQuery=''; applyFilter()">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          }
-        </div>
-        <div class="input-group input-group-lg pos-scanner-field flex-grow-1 d-none d-md-flex">
-          <span class="input-group-text pos-scanner-icon-wrap border-end-0">
-            <i class="bi bi-upc-scan pos-scanner-icon"></i>
-          </span>
-          <input #scannerInput
-                 type="text" class="form-control border-start-0 shadow-none"
-                 placeholder="Scanner un code-barres…"
-                 [(ngModel)]="barcodeInput"
-                 (keydown)="onScanBarcode($event)"
-                 (input)="onBarcodeInput()">
+      <!-- Recherche produit -->
+      <div class="pos-search-field input-group flex-grow-1">
+        <span class="input-group-text border-end-0 bg-white">
+          <i class="bi bi-search text-primary" style="font-size:.8rem"></i>
+        </span>
+        <input type="text" class="form-control border-start-0 shadow-none"
+               style="font-size:.82rem"
+               placeholder="Rechercher un produit…"
+               [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()">
+        @if (searchQuery) {
+          <button class="btn btn-outline-secondary border-start-0 py-1 px-2"
+                  (click)="searchQuery=''; applyFilter()">
+            <i class="bi bi-x-lg" style="font-size:.75rem"></i>
+          </button>
+        }
+      </div>
+
+      <!-- Scanner code-barres -->
+      <div class="input-group pos-scanner-field d-none d-lg-flex" style="max-width:220px">
+        <span class="input-group-text pos-scanner-icon-wrap border-end-0 bg-white">
+          <i class="bi bi-upc-scan pos-scanner-icon" style="font-size:.85rem"></i>
+        </span>
+        <input #scannerInput
+               type="text" class="form-control border-start-0 shadow-none"
+               style="font-size:.82rem"
+               placeholder="Code-barres…"
+               [(ngModel)]="barcodeInput"
+               (keydown)="onScanBarcode($event)"
+               (input)="onBarcodeInput()">
+      </div>
+
+      <!-- Total du jour -->
+      <div class="pos-topbar-total d-none d-md-flex align-items-center gap-2 rounded-2 px-3 py-1 pos-today-pill">
+        <i class="bi bi-graph-up-arrow text-white" style="font-size:.9rem"></i>
+        <div class="lh-1">
+          <div class="text-white fw-bold" style="font-size:.95rem">
+            {{ totalVentesJour | number:'1.0-0':'fr' }}
+            <span class="fw-normal" style="font-size:.65rem;opacity:.8"> FCFA</span>
+          </div>
+          <div class="text-white-50" style="font-size:.6rem">
+            <i class="bi bi-receipt me-1"></i>{{ nbVentesJour }} vente{{ nbVentesJour !== 1 ? 's' : '' }}
+          </div>
         </div>
       </div>
 
@@ -109,9 +122,10 @@
       }
     </div>
 
-    <!-- Category chips -->
-    @if (categories.length > 0) {
-      <div class="pos-categories px-3 py-2 bg-white border-bottom">
+    <!-- Catégories + toggle de vue -->
+    <div class="pos-categories-bar bg-white border-bottom px-3 py-2 d-flex align-items-center gap-2">
+      <!-- Chips catégories (scrollables) -->
+      <div class="pos-categories flex-grow-1">
         <button class="btn btn-sm rounded-pill me-1"
                 [class.btn-primary]="selectedCategoryId === null"
                 [class.btn-outline-secondary]="selectedCategoryId !== null"
@@ -123,10 +137,21 @@
                   (click)="selectCategory(c.id)">{{ c.nom }}</button>
         }
       </div>
-    }
+      <!-- Toggle grille / liste -->
+      <div class="pos-view-toggle d-flex flex-shrink-0">
+        <button class="pos-view-btn" [class.active]="viewMode === 'grid'"
+                title="Vue grille" (click)="viewMode = 'grid'">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+        </button>
+        <button class="pos-view-btn" [class.active]="viewMode === 'list'"
+                title="Vue liste" (click)="viewMode = 'list'">
+          <i class="bi bi-list-ul"></i>
+        </button>
+      </div>
+    </div>
 
-    <!-- Product grid -->
-    <div class="pos-products flex-grow-1 overflow-auto p-3">
+    <!-- Zone produits -->
+    <div class="pos-products flex-grow-1 overflow-auto" [class.p-3]="viewMode === 'grid'">
 
       @if (loading) {
         <div class="text-center py-5">
@@ -142,38 +167,104 @@
         </div>
       }
 
-      @if (!loading) {
-        <div class="row g-2 g-md-3">
-          @for (p of filtered; track p.id) {
-            <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
-              <div class="pos-product-card card border-0 shadow-sm h-100"
-                   [class.out-of-stock]="(p.stock_disponible ?? 0) <= 0"
-                   (click)="addToCart(p)">
+      @if (!loading && filtered.length > 0) {
 
-                <!-- Image / Placeholder -->
+        <!-- ── Mode grille ── -->
+        @if (viewMode === 'grid') {
+          <div class="pos-product-grid">
+            @for (p of filtered; track p.id) {
+              <div class="pos-product-card card border-0 shadow-sm"
+                   [class.out-of-stock]="(p.stock_disponible ?? 0) <= 0"
+                   [class.in-cart]="isInCart(p.id)"
+                   (click)="addToCart(p)">
                 <div class="pos-product-img">
                   @if (productImage(p)) {
                     <img [src]="productImage(p)" [alt]="p.nom">
                   } @else {
                     <i class="bi bi-box-seam pos-product-icon"></i>
                   }
-                  <!-- Stock badge overlay -->
                   <span class="pos-stock-badge badge bg-{{ stockBadge(p) }}">
                     {{ p.stock_disponible ?? 0 }}
                   </span>
+                  @if (isInCart(p.id)) {
+                    <span class="pos-incart-badge"><i class="bi bi-check-lg"></i></span>
+                  }
                 </div>
-
-                <div class="card-body p-2 text-center">
-                  <p class="pos-product-name mb-1">{{ p.nom }}</p>
-                  <p class="pos-product-price mb-0">
-                    {{ p.prix_vente | number:'1.0-0':'fr' }}
-                    <small class="fw-normal text-muted">FCFA</small>
+                <div class="pos-product-body text-center">
+                  <p class="pos-product-name">{{ p.nom }}</p>
+                  <p class="pos-product-price">
+                    {{ p.prix_vente | number:'1.0-0':'fr' }}<small>F</small>
                   </p>
                 </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
+
+        <!-- ── Mode liste ── -->
+        @if (viewMode === 'list') {
+          <table class="pos-list-table w-100">
+            <thead>
+              <tr>
+                <th class="pos-lt-img"></th>
+                <th>Produit</th>
+                <th class="pos-lt-price text-end">Prix unitaire</th>
+                <th class="pos-lt-stock text-center">Stock</th>
+                <th class="pos-lt-qty text-center">Panier</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of filtered; track p.id) {
+                <tr class="pos-list-row"
+                    [class.pos-list-row--oos]="(p.stock_disponible ?? 0) <= 0"
+                    [class.pos-list-row--incart]="isInCart(p.id)"
+                    (click)="addToCart(p)">
+                  <!-- Miniature -->
+                  <td class="pos-lt-img">
+                    <div class="pos-lt-thumb">
+                      @if (productImage(p)) {
+                        <img [src]="productImage(p)" [alt]="p.nom">
+                      } @else {
+                        <i class="bi bi-box-seam"></i>
+                      }
+                    </div>
+                  </td>
+                  <!-- Nom -->
+                  <td class="pos-lt-name">
+                    <span class="fw-semibold">{{ p.nom }}</span>
+                    @if (p.reference) {
+                      <span class="d-block text-muted" style="font-size:.68rem">{{ p.reference }}</span>
+                    }
+                  </td>
+                  <!-- Prix -->
+                  <td class="pos-lt-price text-end fw-bold" style="white-space:nowrap">
+                    {{ p.prix_vente | number:'1.0-0':'fr' }}
+                    <span class="pos-lt-currency">FCFA</span>
+                  </td>
+                  <!-- Stock -->
+                  <td class="pos-lt-stock text-center">
+                    <span class="badge bg-{{ stockBadge(p) }}" style="font-size:.65rem;min-width:28px">
+                      {{ p.stock_disponible ?? 0 }}
+                    </span>
+                  </td>
+                  <!-- Quantité panier -->
+                  <td class="pos-lt-qty text-center" (click)="$event.stopPropagation()">
+                    @if (isInCart(p.id)) {
+                      <span class="pos-lt-qty-badge">
+                        <i class="bi bi-check-circle-fill me-1"></i>{{ cartQty(p.id) }}
+                      </span>
+                    } @else {
+                      <span class="pos-lt-add-hint text-muted">
+                        <i class="bi bi-plus-circle"></i>
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
       }
     </div>
   </div><!-- /catalog -->
@@ -198,7 +289,7 @@
                 (click)="envoyerRapportJournalier()" title="Envoyer le rapport journalier par SMS">
           <i class="bi bi-envelope me-1"></i>Rapport SMS
         </button>
-        @if (peutFaireRetour) {
+        @if (peutFaireRetour && hasModule('retours_produits')) {
           <button class="btn btn-link btn-sm text-warning p-0 text-decoration-none" (click)="openRetourModal()" title="Retour produit">
             <i class="bi bi-arrow-return-left me-1"></i>Retour
           </button>
@@ -224,6 +315,14 @@
       @for (line of cart; track $index; let i = $index) {
         <div class="pos-cart-line px-3 py-2 border-bottom">
           <div class="d-flex align-items-start gap-2">
+            <!-- Miniature produit -->
+            <div class="pos-cart-thumb flex-shrink-0">
+              @if (productImage(line.produit)) {
+                <img [src]="productImage(line.produit)" [alt]="line.produit.nom">
+              } @else {
+                <i class="bi bi-box-seam"></i>
+              }
+            </div>
             <div class="flex-grow-1 min-w-0">
               <div class="fw-semibold text-truncate" style="font-size:.85rem">{{ line.produit.nom }}</div>
               <div class="text-muted" style="font-size:.75rem">
@@ -294,10 +393,12 @@
 
       <!-- Caisse warning -->
       @if (caisseActivee && !activeSessionId) {
-        <p class="text-danger text-center small mt-2 mb-0">
-          <i class="bi bi-exclamation-triangle me-1"></i>
-          Session caisse non ouverte
-        </p>
+        <a routerLink="/pos/caisse" class="d-flex align-items-center gap-2 justify-content-center
+           mt-2 px-3 py-2 rounded-2 text-decoration-none pos-caisse-warning">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>Session caisse non ouverte — Ouvrir</span>
+          <i class="bi bi-arrow-right-short"></i>
+        </a>
       }
     </div>
   </div><!-- /cart -->
@@ -444,7 +545,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════════
      MODAL — Retour produit
      ════════════════════════════════════════════════════════════════════════════ -->
-@if (showRetourModal) {
+@if (showRetourModal && hasModule('retours_produits')) {
   <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.65);z-index:1060">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
       <div class="modal-content mf-modal mf-modal--orange">
@@ -729,34 +830,36 @@
             </div>
           }
 
-          <!-- Client (optionnel) -->
-          <div class="border-top pt-3 mt-1">
-            <p class="small fw-semibold text-muted mb-2">
-              <i class="bi bi-person me-1"></i>Client
-              <span class="fw-normal">(optionnel)</span>
-            </p>
-            <nz-select class="w-100 mb-2" nzShowSearch nzAllowClear
-                       nzPlaceHolder="Sélectionner un client existant…"
-                       [(ngModel)]="selectedClientId"
-                       (ngModelChange)="onClientSelect($event)">
-              @for (c of clients; track c.id) {
-                <nz-option
-                  [nzLabel]="(c.prenoms ? c.prenoms + ' ' : '') + c.nom + (c.telephone ? ' — ' + c.telephone : '')"
-                  [nzValue]="c.id">
-                </nz-option>
-              }
-            </nz-select>
-            <div class="row g-2">
-              <div class="col">
-                <input type="text" class="form-control form-control-sm"
-                       placeholder="Nom du client" [(ngModel)]="clientNom">
-              </div>
-              <div class="col">
-                <input type="tel" class="form-control form-control-sm"
-                       placeholder="Téléphone" [(ngModel)]="clientTel">
+          <!-- Client (optionnel) — module clients requis -->
+          @if (hasModule('clients')) {
+            <div class="border-top pt-3 mt-1">
+              <p class="small fw-semibold text-muted mb-2">
+                <i class="bi bi-person me-1"></i>Client
+                <span class="fw-normal">(optionnel)</span>
+              </p>
+              <nz-select class="w-100 mb-2" nzShowSearch nzAllowClear
+                         nzPlaceHolder="Sélectionner un client existant…"
+                         [(ngModel)]="selectedClientId"
+                         (ngModelChange)="onClientSelect($event)">
+                @for (c of clients; track c.id) {
+                  <nz-option
+                    [nzLabel]="(c.prenoms ? c.prenoms + ' ' : '') + c.nom + (c.telephone ? ' — ' + c.telephone : '')"
+                    [nzValue]="c.id">
+                  </nz-option>
+                }
+              </nz-select>
+              <div class="row g-2">
+                <div class="col">
+                  <input type="text" class="form-control form-control-sm"
+                         placeholder="Nom du client" [(ngModel)]="clientNom">
+                </div>
+                <div class="col">
+                  <input type="tel" class="form-control form-control-sm"
+                         placeholder="Téléphone" [(ngModel)]="clientTel">
+                </div>
               </div>
             </div>
-          </div>
+          }
 
         </div><!-- /modal-body -->
 

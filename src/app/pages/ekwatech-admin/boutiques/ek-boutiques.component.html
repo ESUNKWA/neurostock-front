@@ -81,9 +81,9 @@
                   </td>
                   <td class="fw-semibold">{{ b.nom }}</td>
                   <td>
-                    @if (b.type === 'restaurant') {
+                    @if (boutiqueType(b) === 'restaurant') {
                       <span class="badge bg-primary-subtle text-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
-                    } @else if (b.type === 'entrepot') {
+                    } @else if (boutiqueType(b) === 'entrepot') {
                       <span class="badge bg-success-subtle text-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                     } @else {
                       <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>

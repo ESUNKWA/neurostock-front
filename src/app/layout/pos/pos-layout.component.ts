@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { DeviceService } from '../../services/device/device.service';
+import { ModuleService, ModuleCode } from '../../services/modules/module.service';
+import { CaisseService } from '../../services/gestion-des-caisses/caisse.service';
 import { filter, Subscription } from 'rxjs';
 
 @Component({
@@ -17,18 +19,30 @@ export default class PosLayoutComponent implements OnInit, OnDestroy {
   isMobile = false;
   userMenuOpen = false;
   posMenuOpen = false;
+  activeCaisses: any[] = [];
 
   private subs: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private deviceSvc: DeviceService
+    private deviceSvc: DeviceService,
+    private moduleSvc: ModuleService,
+    private caisseSvc: CaisseService,
   ) {}
+
+  hasModule(code: ModuleCode): boolean {
+    return this.moduleSvc.hasModule(code);
+  }
 
   ngOnInit(): void {
     this.subs.push(
-      this.authService.currentUser$.subscribe(u => (this.currentUser = u))
+      this.authService.currentUser$.subscribe(u => {
+        this.currentUser = u;
+        if (u && this.moduleSvc.hasModule('caisse')) {
+          this.loadActiveCaisses();
+        }
+      })
     );
     this.subs.push(
       this.deviceSvc.isMobile$.subscribe(m => this.isMobile = m)
@@ -36,8 +50,31 @@ export default class PosLayoutComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
         this.posMenuOpen = false;
+        if (this.currentUser && this.moduleSvc.hasModule('caisse')) {
+          this.loadActiveCaisses();
+        }
       })
     );
+  }
+
+  loadActiveCaisses(): void {
+    const boutiqueId = this.currentUser?.boutique_id ?? this.currentUser?.boutique?.id;
+    if (!boutiqueId) return;
+    this.caisseSvc.getSessions(boutiqueId, 1, 50).subscribe({
+      next: (r: any) => {
+        const all: any[] = Array.isArray(r?.data) ? r.data
+                         : Array.isArray(r?.data?.items) ? r.data.items
+                         : Array.isArray(r) ? r : [];
+        this.activeCaisses = all
+          .filter(s => (s.statut ?? '').toLowerCase() === 'ouverte')
+          .sort((a, b) => {
+            const da = new Date(a.date_ouverture ?? a.created_at).getTime();
+            const db = new Date(b.date_ouverture ?? b.created_at).getTime();
+            return da - db;
+          });
+      },
+      error: () => { this.activeCaisses = []; },
+    });
   }
 
   ngOnDestroy(): void {

@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { finalize, firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
@@ -14,6 +15,7 @@ import { DashService } from '../../../services/dash/dash.service';
 import { RetourVenteService } from '../../../services/gestion-des-retours/retour-vente.service';
 import { SmsService } from '../../../services/sms/sms.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { ModuleService, ModuleCode } from '../../../services/modules/module.service';
 
 interface CartLine {
   produit: any;
@@ -42,7 +44,7 @@ interface CartSession {
 @Component({
   selector: 'app-pos-vente',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule],
+  imports: [CommonModule, FormsModule, NzSelectModule, RouterLink],
   templateUrl: './pos-vente.component.html',
   styleUrl: './pos-vente.component.scss',
   providers: [ToastrService],
@@ -57,6 +59,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   searchQuery        = '';
   selectedCategoryId: number | null = null;
+  viewMode: 'grid' | 'list' = 'grid';
 
   // ── Multi-session cart ────────────────────────────────────────────────────
   sessions: CartSession[] = [];
@@ -67,6 +70,14 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   get cart(): CartLine[]            { return this.activeSession.cart; }
   set cart(v: CartLine[])           { this.activeSession.cart = v; }
+
+  isInCart(productId: number): boolean {
+    return this.cart.some(l => l.produit.id === productId);
+  }
+
+  cartQty(productId: number): number {
+    return this.cart.find(l => l.produit.id === productId)?.quantite ?? 0;
+  }
 
   get remise(): number              { return this.activeSession.remise; }
   set remise(v: number)             { this.activeSession.remise = v; }
@@ -109,6 +120,10 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   loading      = false;
   isSubmitting = false;
 
+  // ── Push notification panier ───────────────────────────────────────────────
+  posNotif: { msg: string; type: 'success' | 'error' | 'warning'; visible: boolean } | null = null;
+  private notifTimer: any = null;
+
   // ── Retour modal ──────────────────────────────────────────────────────────
   showRetourModal    = false;
   retourSearchRef    = '';
@@ -147,7 +162,13 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
     private retourSvc:    RetourVenteService,
     private smsSvc:       SmsService,
     private toastr:       ToastrService,
+    private moduleSvc:    ModuleService,
+    private router:       Router,
   ) {}
+
+  hasModule(code: ModuleCode): boolean {
+    return this.moduleSvc.hasModule(code);
+  }
 
   ngOnInit(): void {
     this.sessions = [this.createSession()];
@@ -456,20 +477,73 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   // ── Cart ──────────────────────────────────────────────────────────────────
 
+  private notify(msg: string, type: 'success' | 'error' | 'warning'): void {
+    if (this.notifTimer) clearTimeout(this.notifTimer);
+    this.posNotif = { msg, type, visible: true };
+    this.notifTimer = setTimeout(() => {
+      if (this.posNotif) this.posNotif.visible = false;
+      setTimeout(() => { this.posNotif = null; }, 300);
+    }, 2000);
+  }
+
+  private beep(type: 'success' | 'error'): void {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      if (type === 'success') {
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.18);
+      } else {
+        osc.frequency.setValueAtTime(300, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.25);
+      }
+    } catch {}
+  }
+
   addToCart(product: any): void {
+    if (this.caisseActivee && !this.activeSessionId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Caisse non ouverte',
+        html: 'Vous devez ouvrir une session de caisse<br>avant de commencer à vendre.',
+        confirmButtonText: '<i class="bi bi-cash-coin me-1"></i> Ouvrir la caisse',
+        showCancelButton: true,
+        cancelButtonText: 'Annuler',
+        confirmButtonColor: '#0d6efd',
+      }).then(r => {
+        if (r.isConfirmed) this.router.navigateByUrl('/pos/caisse');
+      });
+      return;
+    }
     if ((product.stock_disponible ?? 0) <= 0) {
-      this.toastr.warning(`${product.nom} est en rupture de stock`);
+      this.beep('error');
+      this.notify(`${product.nom} — rupture de stock`, 'error');
       return;
     }
     const idx = this.cart.findIndex(l => l.produit.id === product.id);
     if (idx >= 0) {
       if (this.cart[idx].quantite < product.stock_disponible) {
         this.cart[idx].quantite++;
+        this.beep('success');
+        this.notify(`${product.nom} ajouté`, 'success');
       } else {
-        this.toastr.warning(`Stock max atteint (${product.stock_disponible})`);
+        this.beep('error');
+        this.notify(`Stock max atteint (${product.stock_disponible})`, 'warning');
       }
     } else {
       this.cart.push({ produit: product, quantite: 1, prix: product.prix_vente });
+      this.beep('success');
+      this.notify(`${product.nom} ajouté au panier`, 'success');
     }
   }
 
@@ -525,7 +599,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   // ── Clients ───────────────────────────────────────────────────────────────
 
   loadClients(): void {
-    if (!this.boutiqueId) return;
+    if (!this.boutiqueId || !this.moduleSvc.hasModule('clients')) return;
     this.clientSvc.getClientsByBoutique(this.boutiqueId).subscribe({
       next: (r: any) => {
         this.clients = r?.data?.items ?? r?.data ?? (Array.isArray(r) ? r : []);
@@ -559,7 +633,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   // ── Caisse ────────────────────────────────────────────────────────────────
 
   loadCaisse(): void {
-    if (!this.boutiqueId) return;
+    if (!this.boutiqueId || !this.moduleSvc.hasModule('caisse')) return;
     this.boutiqueSvc.findOne(this.boutiqueId).subscribe({
       next: (r: any) => {
         const b = r?.data || r;

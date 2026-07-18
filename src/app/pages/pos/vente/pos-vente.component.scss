@@ -1,3 +1,36 @@
+// ── Push notification panier ──────────────────────────────────────────────────
+
+.pos-notif {
+  position: fixed;
+  top: 1rem;
+  right: 1.25rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 200px;
+  max-width: 320px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.18);
+  animation: posNotifIn .22s cubic-bezier(.22,.68,0,1.2) both;
+  transition: opacity .28s ease, transform .28s ease;
+
+  &--success { background: #16a34a; color: #fff; }
+  &--error   { background: #dc2626; color: #fff; }
+  &--warning { background: #d97706; color: #fff; }
+  &--out     { opacity: 0; transform: translateX(20px); }
+}
+
+.pos-notif-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+@keyframes posNotifIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 // ── Layout ────────────────────────────────────────────────────────────────────
 
 .pos-screen {
@@ -14,9 +47,26 @@
   background: #f0f2f5;
 }
 
-.pos-search-bar {
+.pos-topbar {
   flex-shrink: 0;
   background: #fff;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .75rem;
+  min-height: 48px;
+}
+
+.pos-topbar-boutique {
+  flex-shrink: 0;
+  min-width: 0;
+  color: #1e293b;
+}
+
+.pos-topbar-total {
+  flex-shrink: 0;
+  min-width: 160px;
+  justify-content: center;
 }
 
 .pos-search-field {
@@ -24,13 +74,14 @@
     background: #fff;
     border-color: var(--bs-primary);
     border-right: none;
+    padding: .3rem .5rem;
   }
 
   .form-control {
     border-color: var(--bs-primary);
     border-left: none;
-    font-size: 1rem;
     font-weight: 500;
+    padding: .3rem .5rem;
 
     &::placeholder { color: #adb5bd; font-weight: 400; }
 
@@ -40,7 +91,6 @@
     }
   }
 
-  // keep the sibling span highlighted when input is focused
   &:focus-within .input-group-text {
     border-color: var(--bs-primary);
     box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), .15);
@@ -108,10 +158,11 @@
     background: rgba(var(--bs-warning-rgb), .12);
     border-color: #e6a817;
     border-right: none;
+    padding: .3rem .5rem;
   }
 
   .pos-scanner-icon {
-    font-size: 1.15rem;
+    font-size: 1rem;
     color: #c88800;
     animation: scanner-pulse 2s ease-in-out infinite;
   }
@@ -120,8 +171,8 @@
     border-color: #e6a817;
     border-left: none;
     background: rgba(var(--bs-warning-rgb), .06);
-    font-size: 1rem;
     font-weight: 500;
+    padding: .3rem .5rem;
 
     &::placeholder { color: #b89040; font-weight: 400; }
 
@@ -227,48 +278,225 @@
   }
 }
 
-.pos-categories {
+// ── Categories bar ────────────────────────────────────────────────────────────
+
+.pos-categories-bar {
   flex-shrink: 0;
+}
+
+.pos-categories {
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
-  .btn { font-size: .78rem; }
+  .btn { font-size: .72rem; }
+}
+
+// ── View toggle ───────────────────────────────────────────────────────────────
+
+.pos-view-toggle {
+  border: 1px solid #dee2e6;
+  border-radius: .375rem;
+  overflow: hidden;
+}
+
+.pos-view-btn {
+  border: none;
+  background: #fff;
+  color: #6c757d;
+  padding: .28rem .5rem;
+  font-size: .8rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+
+  & + & { border-left: 1px solid #dee2e6; }
+
+  &:hover { background: #f8f9fa; color: #343a40; }
+
+  &.active {
+    background: var(--bs-primary);
+    color: #fff;
+  }
+}
+
+// ── List view ─────────────────────────────────────────────────────────────────
+
+.pos-list-table {
+  border-collapse: collapse;
+  font-size: .82rem;
+
+  thead tr {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+  }
+
+  th {
+    padding: .45rem .6rem;
+    font-size: .68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #6c757d;
+    white-space: nowrap;
+  }
+}
+
+.pos-list-row {
+  background: #fff;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: background .1s;
+
+  &:hover:not(.pos-list-row--oos) { background: #f0f7ff; }
+
+  &.pos-list-row--oos {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+
+  td { padding: .3rem .6rem; vertical-align: middle; }
+}
+
+.pos-lt-img { width: 38px; padding-right: 0 !important; }
+
+.pos-lt-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: .25rem;
+  overflow: hidden;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+  font-size: .9rem;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: contain; }
+}
+
+.pos-lt-name {
+  max-width: 200px;
+  span:first-child {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.pos-lt-price { width: 110px; }
+.pos-lt-stock { width: 64px; }
+.pos-lt-action { width: 44px; padding-left: 0 !important; }
+
+.pos-lt-qty  { width: 60px; }
+
+.pos-lt-currency {
+  font-size: .62rem;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+
+
+.pos-lt-qty-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #dcfce7;
+  color: #16a34a;
+  border-radius: .25rem;
+  padding: .15em .45em;
+  font-size: .7rem;
+  font-weight: 600;
+}
+
+.pos-lt-add-hint {
+  font-size: .9rem;
+  opacity: .35;
+}
+
+// Ligne déjà au panier
+.pos-list-row--incart {
+  background: #f0fdf4 !important;
+
+  &:hover { background: #dcfce7 !important; }
+
+  .pos-lt-name span:first-child { color: #15803d; font-weight: 700; }
+
+  td:first-child .pos-lt-thumb {
+    border: 1.5px solid #16a34a;
+  }
 }
 
 .pos-products {
   // scrollable area handled by flex
 }
 
+// ── Product grid ──────────────────────────────────────────────────────────────
+
+.pos-product-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.3rem;
+
+  @media (max-width: 1400px) { grid-template-columns: repeat(7, 1fr); }
+  @media (max-width: 1100px) { grid-template-columns: repeat(6, 1fr); }
+  @media (max-width: 768px)  { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: repeat(3, 1fr); }
+}
+
 // ── Product cards ─────────────────────────────────────────────────────────────
 
 .pos-product-card {
   cursor: pointer;
-  border-radius: .5rem !important;
-  overflow: hidden;           // clip image inside card corners
-  transition: transform .12s ease, box-shadow .12s ease;
+  border-radius: .375rem !important;
+  overflow: hidden;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
   user-select: none;
 
   &:hover:not(.out-of-stock) {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,.12) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.12) !important;
   }
 
-  &:active:not(.out-of-stock) {
-    transform: scale(.97);
-  }
+  &:active:not(.out-of-stock) { transform: scale(.97); }
 
   &.out-of-stock {
     opacity: .5;
     cursor: not-allowed;
     filter: grayscale(.7);
   }
+
+  &.in-cart {
+    border: 1.5px solid #16a34a !important;
+    background: #f0fdf4 !important;
+
+    .pos-product-name { color: #15803d; }
+    .pos-product-price { color: #16a34a; }
+  }
+}
+
+.pos-incart-badge {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .55rem;
+  line-height: 1;
 }
 
 .pos-product-img {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;       // carré — laisse de la place à l'image quelle que soit sa forme
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background: #f8f9fa;
   display: flex;
@@ -280,41 +508,53 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;      // image entière visible, sans rognage
+    object-fit: contain;
     object-position: center;
-    padding: 4px;             // léger espace intérieur pour les images sans fond
+    padding: 3px;
   }
 }
 
 .pos-product-icon {
-  font-size: 2rem;
+  font-size: 1.1rem;
   color: #ced4da;
 }
 
 .pos-stock-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  font-size: .65rem;
-  border-radius: 4px;
-  padding: 2px 5px;
+  top: 2px;
+  right: 2px;
+  font-size: .52rem;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+.pos-product-body {
+  padding: 0.2rem 0.2rem 0.25rem;
 }
 
 .pos-product-name {
-  font-size: .75rem;
+  font-size: .62rem;
   font-weight: 600;
-  line-height: 1.3;
+  color: #1e293b;
+  margin: 0 0 0.05rem;
+  line-height: 1.15;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  min-height: 2.2em;
 }
 
 .pos-product-price {
-  font-size: .85rem;
+  font-size: .65rem;
   font-weight: 700;
-  color: var(--bs-primary);
+  color: #0f766e;
+  margin: 0;
+
+  small {
+    font-size: .55rem;
+    font-weight: 400;
+    color: #94a3b8;
+  }
 }
 
 // ── Right: cart ───────────────────────────────────────────────────────────────
@@ -327,6 +567,26 @@
 
 .pos-cart-lines {
   // flex-grow + overflow-auto = scroll only the lines
+}
+
+.pos-cart-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: .25rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #adb5bd;
+  font-size: .85rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 }
 
 .pos-cart-line {
@@ -365,6 +625,17 @@
 .pos-cart-footer {
   flex-shrink: 0;
   background: #fff;
+}
+
+.pos-caisse-warning {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #c2410c;
+  font-size: .78rem;
+  font-weight: 600;
+  transition: background .12s;
+
+  &:hover { background: #ffedd5; color: #9a3412; }
 }
 
 // ── Mobile responsive ─────────────────────────────────────────────────────────
@@ -444,10 +715,10 @@
 
     &.mobile-hidden { display: none !important; }
   }
-  // Colle le POS exactement entre la top bar et la bottom nav
+  // Colle le POS exactement entre la top bar (+ caisse bar) et la bottom nav
   .pos-screen {
     position: fixed;
-    top: calc(52px + env(safe-area-inset-top, 0px));
+    top: calc(52px + var(--caisse-bar-h, 0px) + env(safe-area-inset-top, 0px));
     left: 0;
     right: 0;
     bottom: calc(60px + env(safe-area-inset-bottom, 0px));
@@ -477,14 +748,11 @@
     bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
-  // Réduire la barre de recherche sur petits écrans
-  .pos-search-bar {
-    padding: .5rem .75rem !important;
-    gap: .4rem !important;
-
-    @media (max-height: 650px) {
-      .d-flex:last-child { display: none !important; }
-    }
+  // Topbar compacte sur mobile
+  .pos-topbar {
+    padding: .3rem .6rem !important;
+    gap: .35rem !important;
+    min-height: 42px;
   }
 
   // Produits : 3 colonnes au lieu de 2 pour maximiser l'espace

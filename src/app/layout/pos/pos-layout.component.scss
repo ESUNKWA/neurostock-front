@@ -90,6 +90,9 @@ $nav-border:  rgba(255, 255, 255, .12);
   height: 100vh;
   height: 100dvh;
   background: #f0f2f5;
+  --caisse-bar-h: 0px;
+
+  &.has-caisse-bar { --caisse-bar-h: 34px; }
 }
 
 // ── Mobile top bar ────────────────────────────────────────────────────────────
@@ -231,9 +234,21 @@ $nav-border:  rgba(255, 255, 255, .12);
 // ── Content area ──────────────────────────────────────────────────────────────
 .pos-mobile-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  padding: .75rem .75rem calc(80px + env(safe-area-inset-bottom, 0px));
+
+  // Tables DataTables : scroll horizontal interne au lieu de déborder
+  .dataTables_wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // Titres de page : réduire pour mobile
+  .pagetitle h1 { font-size: 1.1rem; }
+  .pagetitle .breadcrumb { display: none; }
 }
 
 // ── Bottom navigation ─────────────────────────────────────────────────────────
@@ -403,4 +418,87 @@ $nav-border:  rgba(255, 255, 255, .12);
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
+}
+
+// ── Caisse bar (mobile) ───────────────────────────────────────────────────────
+
+.pos-caisse-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  background: #fff7ed;
+  border-bottom: 1.5px solid #fed7aa;
+  padding: .3rem .75rem;
+  flex-shrink: 0;
+}
+
+.pos-caisse-bar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  color: #c2410c;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+
+  i { font-size: .78rem; color: #ea580c; }
+}
+
+.pos-caisse-bar-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ea580c;
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, .25);
+  animation: caisse-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.pos-caisse-bar-since {
+  font-weight: 400;
+  font-size: .65rem;
+  color: #9a3412;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@keyframes caisse-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(234, 88, 12, .25); }
+  50%       { box-shadow: 0 0 0 4px rgba(234, 88, 12, .1); }
+}
+
+// ── Caisse active chips ───────────────────────────────────────────────────────
+
+.pos-caisse-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: #ea580c;
+  border: 1.5px solid #fb923c;
+  color: #fff;
+  border-radius: 999px;
+  padding: .28rem .75rem;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px rgba(251, 146, 60, .25);
+  transition: background .12s, box-shadow .12s;
+
+  &:hover {
+    background: #c2410c;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(251, 146, 60, .35);
+  }
+
+  i { font-size: .78rem; }
+
+  &--sm {
+    padding: .2rem .55rem;
+    font-size: .62rem;
+  }
 }

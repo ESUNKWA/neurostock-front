@@ -190,4 +190,11 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
   structureName(id: number | null): string {
     return this.structures.find(s => s.id === id)?.nom ?? '—';
   }
+
+  boutiqueType(b: any): 'boutique' | 'restaurant' | 'entrepot' {
+    const t = (b.type ?? '').toString().toLowerCase().trim();
+    if (t === 'restaurant') return 'restaurant';
+    if (t === 'entrepot' || t === 'entrepôt' || t === 'warehouse') return 'entrepot';
+    return 'boutique';
+  }
 }

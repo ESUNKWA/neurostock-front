@@ -333,17 +333,24 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Retourne l'ID du premier entrepôt dans la liste, ou null. */
+  private entrepotId(): number | null {
+    const e = this.boutiques.find(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    return e?.id ?? null;
+  }
+
+  /** ID par défaut pour l'ajout de produits : entrepôt en priorité, sinon boutique du user. */
+  private defaultBoutiqueId(): number | null {
+    return this.entrepotId() ?? this.currentUser?.boutique_id ?? this.boutiques[0]?.id ?? null;
+  }
+
   loadBoutiques(): void {
-
-    console.log(this.currentUser);
-    
-
     if (this.currentUser.is_admin === true) {
       this.boutiqueService.find().subscribe({
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
-            const defaultId = this.currentUser.boutique_id || this.boutiques[0]?.id;
+            const defaultId = this.defaultBoutiqueId();
             if (defaultId) this.onBoutiqueChange(defaultId);
           }
         },
@@ -357,7 +364,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
-              const defaultId = this.currentUser.boutique_id || this.boutiques[0]?.id;
+              const defaultId = this.defaultBoutiqueId();
               if (defaultId) this.onBoutiqueChange(defaultId);
             }
           },
@@ -369,7 +376,6 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         this.boutiques[0] = this.currentUser.boutique;
       }
     }
-    
   }
 
   loadCategories(boutiqueId?: number | string): void {
@@ -665,7 +671,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
     this.importResult = null;
     this.pendingImportFile = file;
-    this.importBoutiqueId = this.currentUser?.boutique_id || this.selectedBoutique || null;
+    this.importBoutiqueId = this.entrepotId() ?? this.currentUser?.boutique_id ?? this.selectedBoutique ?? null;
     this.isParsingFile = true;
 
     try {
