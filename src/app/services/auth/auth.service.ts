@@ -30,10 +30,15 @@ export class AuthService {
     }
   }
 
+  getEcranCible(): string {
+    return localStorage.getItem('ecran_cible') ?? '';
+  }
+
   login(credentials: { telephone: string; mot_de_passe: string }) {
     return this.http.post(`${this.API_URL}/authentication`, credentials).pipe(
       tap((response: any) => {
         localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('ecran_cible', response.ecran_cible ?? '');
         if (response.abonnement) {
           localStorage.setItem('abonnement', JSON.stringify(response.abonnement));
           this.abonnementSubject.next(response.abonnement);
@@ -106,6 +111,7 @@ export class AuthService {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
     localStorage.removeItem('abonnement');
+    localStorage.removeItem('ecran_cible');
     this.currentUserSubject.next(null);
     this.abonnementSubject.next(null);
     this.moduleService.clear();

@@ -82,8 +82,8 @@ export default class RestaurantLayoutComponent implements OnInit, OnDestroy {
   }
 
   get isMobileMode(): boolean {
-    const code = this.currentUser?.profil?.code?.toLowerCase();
-    return code === 'serveur' || code === 'cuisiner';
+    const ecran = this.authService.getEcranCible();
+    return ecran === 'restaurant-serveur' || ecran === 'restaurant-cuisine';
   }
 
   get userName(): string {

@@ -1,0 +1,152 @@
+<div class="container-fluid py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">Configuration des écrans</h4>
+      <p class="text-muted small mb-0">Définit l'interface affichée selon le type de boutique et le profil utilisateur</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Formulaire ajout / modification ───────────────────────────────── -->
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm h-100" [class.border-warning]="isEditMode" [class.border]="isEditMode">
+        <div class="card-header bg-white border-bottom d-flex align-items-center gap-2">
+          @if (isEditMode) {
+            <i class="bi bi-pencil-square text-warning"></i>
+            <h6 class="mb-0 fw-semibold">Modifier la configuration</h6>
+          } @else {
+            <i class="bi bi-plus-circle text-primary"></i>
+            <h6 class="mb-0 fw-semibold">Ajouter une configuration</h6>
+          }
+        </div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Type de boutique</label>
+            <select class="form-select" [(ngModel)]="form.boutique_type">
+              @for (t of BOUTIQUE_TYPES; track t.value) {
+                <option [ngValue]="t.value">{{ t.label }}</option>
+              }
+            </select>
+            <div class="form-text">« * (toutes) » = wildcard, s'applique en dernier recours</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Profil utilisateur <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.profil_code">
+              <option value="">— Choisir —</option>
+              @for (p of PROFILS; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Écran cible <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.ecran_cible">
+              <option value="">— Choisir —</option>
+              @for (e of ECRANS; track e.value) {
+                <option [value]="e.value">{{ e.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button class="btn" [class.btn-warning]="isEditMode" [class.btn-primary]="!isEditMode"
+                    (click)="save()" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              @if (isEditMode) {
+                <i class="bi bi-pencil-square me-1"></i>Enregistrer la modification
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Ajouter
+              }
+            </button>
+            @if (isEditMode) {
+              <button class="btn btn-outline-secondary" (click)="cancel()">
+                <i class="bi bi-x-lg me-1"></i>Annuler
+              </button>
+            }
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Table des configurations ──────────────────────────────────────── -->
+    <div class="col-12 col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-table me-2 text-primary"></i>Configurations actives</h6>
+          <span class="badge bg-primary rounded-pill">{{ configs.length }}</span>
+        </div>
+
+        @if (loading) {
+          <div class="card-body text-center py-5 text-muted">
+            <span class="spinner-border spinner-border-sm me-2"></span>Chargement…
+          </div>
+        } @else if (!configs.length) {
+          <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>Aucune configuration
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="small text-uppercase text-muted fw-semibold">Type boutique</th>
+                  <th class="small text-uppercase text-muted fw-semibold">Profil</th>
+                  <th class="small text-uppercase text-muted fw-semibold">Écran cible</th>
+                  <th class="small text-uppercase text-muted fw-semibold text-center" style="width:90px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cfg of configs; track cfg.id) {
+                  <tr [class.table-warning]="editingConfig?.id === cfg.id">
+                    <td>
+                      @if (cfg.boutique_type) {
+                        <span class="badge bg-light text-dark border">{{ labelType(cfg.boutique_type) }}</span>
+                      } @else {
+                        <span class="badge bg-secondary">* toutes</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+                        {{ cfg.profil_code }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="fw-medium">{{ labelEcran(cfg.ecran_cible) }}</span>
+                      <span class="text-muted small ms-2">({{ cfg.ecran_cible }})</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-warning" (click)="edit(cfg)" title="Modifier"
+                                [disabled]="editingConfig?.id === cfg.id">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="remove(cfg.id)" title="Supprimer">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      <!-- Légende -->
+      <div class="mt-3 p-3 bg-light rounded small text-muted">
+        <i class="bi bi-info-circle me-1"></i>
+        <strong>Priorité :</strong> correspondance exacte <code>type de boutique + profil</code> en premier,
+        puis le wildcard <code>* (toutes)</code> en fallback.
+        Si aucune règle ne correspond, l'utilisateur voit un message lui demandant de contacter son responsable.
+      </div>
+    </div>
+
+  </div>
+</div>

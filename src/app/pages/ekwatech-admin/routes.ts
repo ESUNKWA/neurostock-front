@@ -72,6 +72,11 @@ const routes: Routes = [
     loadComponent: () => import('./modules/ek-modules.component'),
     title: 'Ekwatech | Modules',
   },
+  {
+    path: 'configurations-ecran',
+    loadComponent: () => import('./configurations-ecran/ek-configurations-ecran.component'),
+    title: 'Ekwatech | Config. écrans',
+  },
 ];
 
 export default routes;

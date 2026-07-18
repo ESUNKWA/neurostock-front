@@ -53,15 +53,22 @@ export default class LoginComponent implements OnInit {
   // getter pour un accès facile aux champs du formulaire
   get f() { return this.loginForm.controls; }
 
+  private static readonly ECRAN_ROUTES: Record<string, string> = {
+    'dashboard':            '/dashboard',
+    'pos':                  '/pos/vente',
+    'ekwatech':             '/ekwatech',
+    'restaurant-admin':     '/restaurant/commandes',
+    'restaurant-serveur':   '/restaurant/commandes',
+    'restaurant-caissier':  '/restaurant/commandes',
+    'restaurant-cuisine':   '/restaurant/commandes',
+  };
+
   private homeUrl(): string {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    const code = (user?.profil?.code ?? '').toLowerCase();
-    const isRestaurant = user?.boutique?.type === 'restaurant';
-    if (!code) return '/no-access';
-    if (code === 'super_admin') return '/ekwatech';
-    if (code === 'vendeur' || code === 'caissier') return '/pos/vente';
-    if (isRestaurant) return '/restaurant/commandes';
-    return '/dashboard';
+    const user = this.authService.getUser();
+    if (user?.must_change_password) return '/change-password';
+    const ecran = this.authService.getEcranCible();
+    if (!ecran) return '/no-access';
+    return LoginComponent.ECRAN_ROUTES[ecran] ?? '/dashboard';
   }
 
   togglePasswordVisibility(): void {

@@ -25,6 +25,12 @@ export class AuthGuard implements CanActivate {
       return false;
     }
 
+    const ecran = this.authService.getEcranCible();
+    if (!ecran && !isChangePwdRoute) {
+      this.router.navigateByUrl('/no-access');
+      return false;
+    }
+
     return true;
   }
 } 
