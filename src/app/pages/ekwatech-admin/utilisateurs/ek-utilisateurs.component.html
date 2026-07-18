@@ -1,0 +1,202 @@
+<div class="container-fluid py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">Gestion des utilisateurs</h4>
+      <p class="text-muted small mb-0">Créez et gérez les comptes utilisateurs sur la plateforme</p>
+    </div>
+    <span class="badge bg-primary rounded-pill fs-6">{{ users.length }} utilisateur(s)</span>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Formulaire ───────────────────────────────────────────────────────── -->
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm" [class.border]="isEditMode" [class.border-warning]="isEditMode">
+        <div class="card-header bg-white border-bottom d-flex align-items-center gap-2">
+          @if (isEditMode) {
+            <i class="bi bi-pencil-square text-warning"></i>
+            <h6 class="mb-0 fw-semibold">Modifier l'utilisateur</h6>
+          } @else {
+            <i class="bi bi-person-plus-fill text-primary"></i>
+            <h6 class="mb-0 fw-semibold">Nouvel utilisateur</h6>
+          }
+        </div>
+        <div class="card-body">
+
+          <!-- Nom -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nom <span class="text-danger">*</span></label>
+            <input class="form-control" [(ngModel)]="form.nom" placeholder="Ex : KONÉ" />
+          </div>
+
+          <!-- Prénoms -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Prénoms <span class="text-danger">*</span></label>
+            <input class="form-control" [(ngModel)]="form.prenoms" placeholder="Ex : Amara" />
+          </div>
+
+          <!-- Téléphone -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Téléphone <span class="text-danger">*</span></label>
+            <input class="form-control" [(ngModel)]="form.telephone" placeholder="0XXXXXXXXX" maxlength="10" />
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Email</label>
+            <input class="form-control" type="email" [(ngModel)]="form.email" placeholder="utilisateur@exemple.com" />
+          </div>
+
+          <!-- Mot de passe (création seulement) -->
+          @if (!isEditMode) {
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Mot de passe</label>
+              <input class="form-control" type="password" [(ngModel)]="form.mot_de_passe" placeholder="Laisser vide = mot de passe par défaut" />
+              <div class="form-text">Si vide, le mot de passe par défaut de la plateforme sera utilisé.</div>
+            </div>
+          }
+
+          <!-- Profil -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Profil <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.profil_id">
+              <option [ngValue]="null">— Choisir un profil —</option>
+              @for (p of profils; track p.id) {
+                <option [ngValue]="p.id">{{ p.nom ?? p.code }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Structure -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Structure</label>
+            <select class="form-select" [(ngModel)]="form.structure_id" (ngModelChange)="onStructureChange()">
+              <option [ngValue]="null">— Aucune (super admin) —</option>
+              @for (s of structures; track s.id) {
+                <option [ngValue]="s.id">{{ s.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Boutique -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Boutique</label>
+            @if (loadingBoutiques) {
+              <div class="form-control d-flex align-items-center gap-2 text-muted">
+                <span class="spinner-border spinner-border-sm"></span> Chargement…
+              </div>
+            } @else {
+              <select class="form-select" [(ngModel)]="form.boutique_id" [disabled]="!form.structure_id">
+                <option [ngValue]="null">— Aucune boutique —</option>
+                @for (b of boutiques; track b.id) {
+                  <option [ngValue]="b.id">{{ b.nom }}</option>
+                }
+              </select>
+            }
+            @if (!form.structure_id) {
+              <div class="form-text">Sélectionnez d'abord une structure.</div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="d-grid gap-2">
+            <button class="btn" [class.btn-primary]="!isEditMode" [class.btn-warning]="isEditMode"
+                    (click)="save()" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              @if (isEditMode) {
+                <i class="bi bi-check-lg me-1"></i>Enregistrer les modifications
+              } @else {
+                <i class="bi bi-person-plus me-1"></i>Créer l'utilisateur
+              }
+            </button>
+            @if (isEditMode) {
+              <button class="btn btn-outline-secondary" (click)="cancel()">
+                <i class="bi bi-x-lg me-1"></i>Annuler
+              </button>
+            }
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Table des utilisateurs ───────────────────────────────────────────── -->
+    <div class="col-12 col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-people-fill me-2 text-primary"></i>Tous les utilisateurs</h6>
+          <button class="btn btn-sm btn-outline-primary" (click)="loadUsers()" [disabled]="loading">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+
+        @if (loading) {
+          <div class="card-body text-center py-5 text-muted">
+            <span class="spinner-border spinner-border-sm me-2"></span>Chargement…
+          </div>
+        } @else if (!users.length) {
+          <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-people fs-2 d-block mb-2"></i>Aucun utilisateur
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="small text-uppercase text-muted fw-semibold">Utilisateur</th>
+                  <th class="small text-uppercase text-muted fw-semibold">Téléphone</th>
+                  <th class="small text-uppercase text-muted fw-semibold">Profil</th>
+                  <th class="small text-uppercase text-muted fw-semibold">Structure</th>
+                  <th class="small text-uppercase text-muted fw-semibold text-center" style="width:110px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of users; track u.id) {
+                  <tr [class.table-warning]="editingUser?.id === u.id">
+                    <td>
+                      <div class="fw-semibold">{{ u.nom }} {{ u.prenoms }}</div>
+                      @if (u.email) {
+                        <div class="text-muted small">{{ u.email }}</div>
+                      }
+                    </td>
+                    <td>
+                      <span class="font-monospace small">{{ u.telephone ?? '—' }}</span>
+                    </td>
+                    <td>
+                      <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+                        {{ u.profil?.nom ?? u.profil?.code ?? '—' }}
+                      </span>
+                      @if (u.is_admin) {
+                        <span class="badge bg-danger ms-1">Super admin</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="small text-muted">{{ structureName(u.structure_id) }}</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" (click)="edit(u)" title="Modifier"
+                                [disabled]="editingUser?.id === u.id">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-warning" (click)="resetPassword(u)" title="Réinitialiser le mot de passe">
+                          <i class="bi bi-key"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="remove(u)" title="Supprimer"
+                                [disabled]="u.is_admin">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>
