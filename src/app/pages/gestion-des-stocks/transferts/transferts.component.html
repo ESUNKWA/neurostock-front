@@ -373,7 +373,8 @@
   .trx-sheet-dialog {
     position: relative;
     margin: 1.75rem auto;
-    max-width: 520px;
+    max-width: 900px;
+    width: calc(100% - 2rem);
     bottom: auto;
     left: auto;
     right: auto;
@@ -539,49 +540,7 @@
   background: #fff;
 }
 
-/* Bouton ajouter ligne */
-.trx-add-ligne {
-  background: #eff6ff;
-  color: #2563eb;
-  border: none;
-  border-radius: 8px;
-  padding: 5px 11px;
-  font-size: .78rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  transition: background .15s;
-}
-.trx-add-ligne:hover { background: #dbeafe; }
-
-/* Lignes produit */
-.trx-ligne {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 0;
-  border-top: 1px solid #f3f4f6;
-}
-.trx-ligne:first-of-type { border-top: none; padding-top: 4px; }
-.trx-ligne-num {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #e5e7eb;
-  color: #6b7280;
-  font-size: .72rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.trx-ligne-select { flex: 1; min-width: 0; }
-.trx-select-sm {
-  padding: 10px 34px 10px 12px;
-  font-size: .84rem;
-}
+/* Qty input */
 .trx-qty-input {
   width: 72px;
   padding: 10px 8px;
@@ -595,22 +554,119 @@
   flex-shrink: 0;
 }
 .trx-qty-input:focus { border-color: #3b82f6; background: #fff; }
-.trx-del-ligne {
-  background: #fee2e2;
-  border: none;
-  border-radius: 10px;
-  width: 36px;
-  height: 36px;
-  color: #ef4444;
-  cursor: pointer;
+.trx-qty-sm { width: 64px; padding: 5px 6px; font-size: .82rem; border-radius: 8px; }
+
+/* ── Sélection produits (table) ── */
+.trx-prod-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background .15s;
+  gap: 6px;
+  padding: 28px 16px;
+  color: #9ca3af;
+  font-size: .85rem;
+  i { font-size: 1.8rem; opacity: .35; }
 }
-.trx-del-ligne:hover:not(:disabled) { background: #fca5a5; }
-.trx-del-ligne:disabled { opacity: .35; cursor: not-allowed; }
+
+.trx-prod-search {
+  position: relative;
+  margin-bottom: 10px;
+}
+.trx-prod-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: .85rem;
+  pointer-events: none;
+}
+.trx-prod-search-input {
+  width: 100%;
+  padding: 9px 36px 9px 34px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-size: .85rem;
+  color: #111827;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.trx-prod-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+  background: #fff;
+}
+.trx-prod-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: .78rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.trx-prod-search-clear:hover { color: #374151; }
+
+.trx-prod-table-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.trx-prod-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .83rem;
+}
+.trx-prod-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f3f4f6;
+}
+.trx-prod-table thead th {
+  padding: 9px 12px;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+.trx-prod-th-check { width: 40px; text-align: center; }
+
+.trx-prod-row {
+  cursor: pointer;
+  transition: background .1s;
+  border-bottom: 1px solid #f3f4f6;
+}
+.trx-prod-row:last-child { border-bottom: none; }
+.trx-prod-row:hover { background: #f0f9ff; }
+.trx-prod-row--selected { background: #eff6ff !important; }
+.trx-prod-row--selected:hover { background: #dbeafe !important; }
+.trx-prod-row--selected .trx-prod-td-nom { font-weight: 600; color: #1d4ed8; }
+
+.trx-prod-table td { padding: 9px 12px; vertical-align: middle; }
+.trx-prod-td-check { text-align: center; width: 40px; }
+.trx-prod-td-nom { color: #111827; }
+.trx-prod-td-qty { text-align: center; width: 80px; padding: 6px 8px; }
+
+.trx-prod-stock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #059669;
+  font-size: .8rem;
+}
+.trx-prod-stock--low { color: #d97706; }
+.trx-prod-stock--zero { color: #dc2626; }
 
 /* Footer */
 .trx-sheet-footer {
@@ -674,11 +730,21 @@
   .trx-field-label { color: #d1d5db; }
   .trx-nz .ant-select-selector { background: #374151 !important; border-color: #4b5563 !important; color: #f9fafb !important; }
   .trx-nz .ant-select-selection-placeholder { color: #6b7280 !important; }
-  .trx-ligne { border-top-color: #374151; }
-  .trx-ligne-num { background: #374151; color: #9ca3af; }
   .trx-sheet-footer { border-top-color: #374151; }
   .trx-sheet-cancel { background: #374151; border-color: #4b5563; color: #9ca3af; }
   .trx-route-connector { color: #4b5563; }
+  .trx-prod-search-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
+  .trx-prod-search-input:focus { background: #4b5563; }
+  .trx-prod-table-wrap { border-color: #374151; }
+  .trx-prod-table thead { background: #111827; }
+  .trx-prod-table thead th { color: #6b7280; border-bottom-color: #374151; }
+  .trx-prod-row { border-bottom-color: #374151; }
+  .trx-prod-row:hover { background: #1f2937; }
+  .trx-prod-row--selected { background: #1e3a5f !important; }
+  .trx-prod-row--selected:hover { background: #1e40af !important; }
+  .trx-prod-td-nom { color: #f9fafb; }
+  .trx-qty-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
+  .trx-qty-input:focus { background: #4b5563; border-color: #3b82f6; }
 }
 </style>
 
@@ -757,31 +823,86 @@
         <div class="trx-sheet-section trx-sheet-section--last">
           <div class="trx-sheet-section-label d-flex justify-content-between align-items-center">
             <span><i class="bi bi-boxes"></i> Produits à transférer</span>
-            <button type="button" class="trx-add-ligne" (click)="ajouterLigne()">
-              <i class="bi bi-plus-lg me-1"></i>Ajouter
-            </button>
+            @if (selectedCount > 0) {
+              <span class="badge bg-primary rounded-pill">{{ selectedCount }} sélectionné{{ selectedCount > 1 ? 's' : '' }}</span>
+            }
           </div>
 
-          @for (ligne of form.lignes; track $index) {
-            <div class="trx-ligne">
-              <div class="trx-ligne-num">{{ $index + 1 }}</div>
-              <div class="trx-ligne-select">
-                <nz-select class="w-100 trx-nz"
-                  [(ngModel)]="ligne.produit" (ngModelChange)="onProduitChange(ligne)"
-                  nzPlaceHolder="— Choisir un produit —" nzShowSearch>
-                  @for (p of produitsSrc; track p.id) {
-                    <nz-option [nzValue]="p.id"
-                      [nzLabel]="p.nom + ' · dispo: ' + p.stock_disponible">
-                    </nz-option>
+          @if (!form.boutique_source) {
+            <div class="trx-prod-empty">
+              <i class="bi bi-arrow-up-circle"></i>
+              <span>Sélectionnez d'abord une source (entrepôt)</span>
+            </div>
+          } @else if (produitsSrc.length === 0) {
+            <div class="trx-prod-empty">
+              <i class="bi bi-inbox"></i>
+              <span>Aucun produit disponible dans cet entrepôt</span>
+            </div>
+          } @else {
+            <!-- Barre de recherche -->
+            <div class="trx-prod-search">
+              <i class="bi bi-search trx-prod-search-icon"></i>
+              <input type="text" class="trx-prod-search-input"
+                     [(ngModel)]="produitSearch"
+                     placeholder="Rechercher un produit…">
+              @if (produitSearch) {
+                <button class="trx-prod-search-clear" (click)="produitSearch = ''">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              }
+            </div>
+
+            <!-- Table produits -->
+            <div class="trx-prod-table-wrap">
+              <table class="trx-prod-table">
+                <thead>
+                  <tr>
+                    <th class="trx-prod-th-check">
+                      <input type="checkbox"
+                             [checked]="allFilteredSelected"
+                             (change)="toggleAll($event)">
+                    </th>
+                    <th>Produit</th>
+                    <th class="text-end" style="width:90px">Stock dispo</th>
+                    <th class="text-center" style="width:80px">Quantité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of filteredProduits; track p.id) {
+                    <tr class="trx-prod-row"
+                        [class.trx-prod-row--selected]="isSelected(p.id)"
+                        (click)="toggleProduit(p)">
+                      <td class="trx-prod-td-check" (click)="$event.stopPropagation()">
+                        <input type="checkbox"
+                               [checked]="isSelected(p.id)"
+                               (change)="toggleProduit(p)">
+                      </td>
+                      <td class="trx-prod-td-nom">{{ p.nom }}</td>
+                      <td class="text-end">
+                        <span class="trx-prod-stock"
+                              [class.trx-prod-stock--low]="p.stock_disponible > 0 && p.stock_disponible <= 5"
+                              [class.trx-prod-stock--zero]="p.stock_disponible <= 0">
+                          {{ p.stock_disponible }}
+                        </span>
+                      </td>
+                      <td class="trx-prod-td-qty" (click)="$event.stopPropagation()">
+                        @if (isSelected(p.id)) {
+                          <input type="number" class="trx-qty-input trx-qty-sm"
+                                 [value]="getQty(p.id)"
+                                 (input)="setQty(p.id, $event)"
+                                 min="1" [max]="p.stock_disponible">
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="text-center text-muted py-3 small">
+                        Aucun produit ne correspond à la recherche
+                      </td>
+                    </tr>
                   }
-                </nz-select>
-              </div>
-              <input type="number" class="trx-qty-input" [(ngModel)]="ligne.quantite" min="1" placeholder="Qté">
-              <button type="button" class="trx-del-ligne"
-                (click)="supprimerLigne($index)"
-                [disabled]="form.lignes.length === 1">
-                <i class="bi bi-trash3"></i>
-              </button>
+                </tbody>
+              </table>
             </div>
           }
         </div>

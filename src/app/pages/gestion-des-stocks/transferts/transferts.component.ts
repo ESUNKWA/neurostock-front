@@ -26,6 +26,10 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   produitsSrc: any[] = [];
   currentUser: any;
 
+  // Sélection produits (nouvelle UX)
+  selectedMap: { [id: number]: number } = {}; // produit_id → quantite
+  produitSearch = '';
+
   private transfertService = inject(TransfertStockService);
   private boutiqueService  = inject(BoutiqueService);
   private produitService   = inject(ProduitService);
@@ -114,25 +118,28 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
 
   ouvrirFormulaire(transfert?: any): void {
     this.erreur = null;
+    this.produitSearch = '';
+    this.produitsSrc = [];
+
     if (transfert) {
       this.editId = transfert.id;
       this.form = {
         boutique_source: transfert.boutique_source?.id ?? null,
         boutique_destination: transfert.boutique_destination?.id ?? null,
         notes: transfert.notes ?? '',
-        lignes: (transfert.lignes ?? []).map((l: any) => ({
-          produit: l.produit?.id,
-          produit_nom: l.produit?.nom,
-          quantite: l.quantite,
-        })),
       };
+      // Reconstituer selectedMap depuis les lignes existantes
+      this.selectedMap = {};
+      for (const l of (transfert.lignes ?? [])) {
+        if (l.produit?.id) this.selectedMap[l.produit.id] = l.quantite;
+      }
     } else {
       this.editId = null;
+      this.selectedMap = {};
       this.form = {
         boutique_source: this.entrepots[0]?.id ?? null,
         boutique_destination: null,
         notes: '',
-        lignes: [{ produit: null, produit_nom: '', quantite: 1 }],
       };
     }
     if (this.form.boutique_source) {
@@ -143,7 +150,9 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   }
 
   onSourceChange(): void {
-    this.form.lignes = [{ produit: null, produit_nom: '', quantite: 1 }];
+    this.selectedMap = {};
+    this.produitSearch = '';
+    this.produitsSrc = [];
     if (this.form.boutique_source) {
       this.loadProduitsSrc(this.form.boutique_source);
     }
@@ -155,29 +164,65 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onProduitChange(ligne: any): void {
-    const p = this.produitsSrc.find((p: any) => p.id === +ligne.produit);
-    ligne.produit_nom = p?.nom ?? '';
-    ligne.stock_dispo = p?.stock_disponible ?? 0;
+  // ---- Sélection produits (table avec cases à cocher) ----
+
+  get filteredProduits(): any[] {
+    const q = this.produitSearch.trim().toLowerCase();
+    if (!q) return this.produitsSrc;
+    return this.produitsSrc.filter((p: any) =>
+      (p.nom ?? '').toLowerCase().includes(q) ||
+      (p.reference ?? '').toLowerCase().includes(q)
+    );
   }
 
-  ajouterLigne(): void {
-    this.form.lignes.push({ produit: null, produit_nom: '', quantite: 1 });
+  get selectedCount(): number {
+    return Object.keys(this.selectedMap).length;
   }
 
-  supprimerLigne(i: number): void {
-    this.form.lignes.splice(i, 1);
+  get allFilteredSelected(): boolean {
+    return this.filteredProduits.length > 0 &&
+           this.filteredProduits.every(p => !!this.selectedMap[p.id]);
+  }
+
+  isSelected(id: number): boolean {
+    return !!this.selectedMap[id];
+  }
+
+  toggleProduit(p: any): void {
+    if (this.selectedMap[p.id]) {
+      delete this.selectedMap[p.id];
+    } else {
+      this.selectedMap[p.id] = 1;
+    }
+  }
+
+  getQty(id: number): number {
+    return this.selectedMap[id] ?? 1;
+  }
+
+  setQty(id: number, event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10);
+    if (!isNaN(val) && val > 0) {
+      this.selectedMap[id] = val;
+    }
+  }
+
+  toggleAll(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    for (const p of this.filteredProduits) {
+      if (checked) {
+        if (!this.selectedMap[p.id]) this.selectedMap[p.id] = 1;
+      } else {
+        delete this.selectedMap[p.id];
+      }
+    }
   }
 
   sauvegarder(): void {
     if (!this.form.boutique_source) { this.erreur = 'Sélectionnez la source (entrepôt)'; return; }
     if (!this.form.boutique_destination) { this.erreur = 'Sélectionnez la boutique de destination'; return; }
-    if (!this.form.lignes.length) { this.erreur = 'Ajoutez au moins une ligne'; return; }
-    for (const l of this.form.lignes) {
-      if (!l.produit || !l.quantite || l.quantite <= 0) {
-        this.erreur = 'Toutes les lignes doivent avoir un produit et une quantité valide'; return;
-      }
-    }
+    const selectedEntries = Object.entries(this.selectedMap).filter(([, qty]) => +qty > 0);
+    if (selectedEntries.length === 0) { this.erreur = 'Cochez au moins un produit dans la liste'; return; }
 
     this.isSaving = true;
     this.erreur = null;
@@ -185,7 +230,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
       boutique_source: this.form.boutique_source,
       boutique_destination: this.form.boutique_destination,
       notes: this.form.notes || undefined,
-      lignes: this.form.lignes.map((l: any) => ({ produit: +l.produit, quantite: +l.quantite })),
+      lignes: selectedEntries.map(([id, qty]) => ({ produit: +id, quantite: +qty })),
     };
 
     const obs = this.editId
