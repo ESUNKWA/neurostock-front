@@ -668,6 +668,48 @@
 .trx-prod-stock--low { color: #d97706; }
 .trx-prod-stock--zero { color: #dc2626; }
 
+/* ── Pagination produits ── */
+.trx-prod-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 2px 2px;
+}
+.trx-prod-pag-info {
+  font-size: .75rem;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.trx-prod-pag-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.trx-pag-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, border-color .12s, color .12s;
+  line-height: 1;
+}
+.trx-pag-btn:hover:not(:disabled) { background: #eff6ff; border-color: #3b82f6; color: #2563eb; }
+.trx-pag-btn:disabled { opacity: .35; cursor: not-allowed; }
+.trx-pag-btn--active { background: #2563eb !important; border-color: #2563eb !important; color: #fff !important; }
+.trx-pag-ellipsis { color: #9ca3af; font-size: .78rem; padding: 0 2px; line-height: 30px; }
+
 /* Footer */
 .trx-sheet-footer {
   display: flex;
@@ -844,6 +886,7 @@
               <i class="bi bi-search trx-prod-search-icon"></i>
               <input type="text" class="trx-prod-search-input"
                      [(ngModel)]="produitSearch"
+                     (ngModelChange)="onProduitSearchChange()"
                      placeholder="Rechercher un produit…">
               @if (produitSearch) {
                 <button class="trx-prod-search-clear" (click)="produitSearch = ''">
@@ -868,7 +911,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (p of filteredProduits; track p.id) {
+                  @for (p of pagedProduits; track p.id) {
                     <tr class="trx-prod-row"
                         [class.trx-prod-row--selected]="isSelected(p.id)"
                         (click)="toggleProduit(p)">
@@ -904,6 +947,37 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Pagination + compteur -->
+            @if (filteredProduits.length > produitPageSize || totalProduitPages > 1) {
+              <div class="trx-prod-pagination">
+                <span class="trx-prod-pag-info">
+                  {{ (produitPage - 1) * produitPageSize + 1 }}–{{ produitPage * produitPageSize > filteredProduits.length ? filteredProduits.length : produitPage * produitPageSize }} / {{ filteredProduits.length }}
+                </span>
+                <div class="trx-prod-pag-controls">
+                  <button class="trx-pag-btn" (click)="produitPage = 1" [disabled]="produitPage === 1" title="Première page">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </button>
+                  <button class="trx-pag-btn" (click)="produitPage = produitPage - 1" [disabled]="produitPage === 1" title="Page précédente">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                  @for (p of produitPages; track p) {
+                    @if (p === 1 || p === totalProduitPages || (p >= produitPage - 1 && p <= produitPage + 1)) {
+                      <button class="trx-pag-btn" [class.trx-pag-btn--active]="p === produitPage"
+                              (click)="produitPage = p">{{ p }}</button>
+                    } @else if (p === produitPage - 2 || p === produitPage + 2) {
+                      <span class="trx-pag-ellipsis">…</span>
+                    }
+                  }
+                  <button class="trx-pag-btn" (click)="produitPage = produitPage + 1" [disabled]="produitPage === totalProduitPages" title="Page suivante">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                  <button class="trx-pag-btn" (click)="produitPage = totalProduitPages" [disabled]="produitPage === totalProduitPages" title="Dernière page">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </button>
+                </div>
+              </div>
+            }
           }
         </div>
 

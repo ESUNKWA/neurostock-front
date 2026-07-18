@@ -29,6 +29,8 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   // Sélection produits (nouvelle UX)
   selectedMap: { [id: number]: number } = {}; // produit_id → quantite
   produitSearch = '';
+  produitPage = 1;
+  readonly produitPageSize = 30;
 
   private transfertService = inject(TransfertStockService);
   private boutiqueService  = inject(BoutiqueService);
@@ -119,6 +121,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   ouvrirFormulaire(transfert?: any): void {
     this.erreur = null;
     this.produitSearch = '';
+    this.produitPage = 1;
     this.produitsSrc = [];
 
     if (transfert) {
@@ -152,6 +155,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   onSourceChange(): void {
     this.selectedMap = {};
     this.produitSearch = '';
+    this.produitPage = 1;
     this.produitsSrc = [];
     if (this.form.boutique_source) {
       this.loadProduitsSrc(this.form.boutique_source);
@@ -173,6 +177,23 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
       (p.nom ?? '').toLowerCase().includes(q) ||
       (p.reference ?? '').toLowerCase().includes(q)
     );
+  }
+
+  get totalProduitPages(): number {
+    return Math.max(1, Math.ceil(this.filteredProduits.length / this.produitPageSize));
+  }
+
+  get pagedProduits(): any[] {
+    const start = (this.produitPage - 1) * this.produitPageSize;
+    return this.filteredProduits.slice(start, start + this.produitPageSize);
+  }
+
+  get produitPages(): number[] {
+    return Array.from({ length: this.totalProduitPages }, (_, i) => i + 1);
+  }
+
+  onProduitSearchChange(): void {
+    this.produitPage = 1;
   }
 
   get selectedCount(): number {
