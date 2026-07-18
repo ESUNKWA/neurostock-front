@@ -126,15 +126,19 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
 
     if (transfert) {
       this.editId = transfert.id;
+      const lignes: any[] = transfert.lignes ?? [];
       this.form = {
         boutique_source: transfert.boutique_source?.id ?? null,
         boutique_destination: transfert.boutique_destination?.id ?? null,
         notes: transfert.notes ?? '',
       };
-      // Reconstituer selectedMap depuis les lignes existantes
+      // Pré-cocher les produits des lignes existantes
       this.selectedMap = {};
-      for (const l of (transfert.lignes ?? [])) {
+      for (const l of lignes) {
         if (l.produit?.id) this.selectedMap[l.produit.id] = l.quantite;
+      }
+      if (this.form.boutique_source) {
+        this.loadProduitsSrc(this.form.boutique_source, lignes);
       }
     } else {
       this.editId = null;
@@ -144,9 +148,9 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
         boutique_destination: null,
         notes: '',
       };
-    }
-    if (this.form.boutique_source) {
-      this.loadProduitsSrc(this.form.boutique_source);
+      if (this.form.boutique_source) {
+        this.loadProduitsSrc(this.form.boutique_source);
+      }
     }
     const modal = document.getElementById('modalTransfert');
     if (modal) (window as any).bootstrap?.Modal?.getOrCreateInstance(modal).show();
@@ -162,9 +166,26 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadProduitsSrc(boutiqueId: number): void {
+  loadProduitsSrc(boutiqueId: number, existingLignes?: any[]): void {
     this.produitService.getProduits({ boutique: boutiqueId }).subscribe({
-      next: (r: any) => { this.produitsSrc = r?.data?.items ?? r?.data ?? []; },
+      next: (r: any) => {
+        this.produitsSrc = r?.data?.items ?? r?.data ?? [];
+        // En mode édition, garantir la présence des produits déjà sélectionnés
+        // (certains peuvent avoir stock=0 et être filtrés par le backend)
+        if (existingLignes?.length) {
+          for (const l of existingLignes) {
+            const pid = l.produit?.id;
+            if (pid && !this.produitsSrc.find((p: any) => p.id === pid)) {
+              this.produitsSrc.push({
+                id: pid,
+                nom: l.produit?.nom ?? `Produit #${pid}`,
+                reference: l.produit?.reference ?? '',
+                stock_disponible: 0,
+              });
+            }
+          }
+        }
+      },
     });
   }
 
