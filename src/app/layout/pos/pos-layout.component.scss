@@ -1,7 +1,7 @@
 // ── Variables ─────────────────────────────────────────────────────────────────
-$nav-h: 50px;
-$nav-bg:      linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-$nav-bg-solid: #1e3a8a;
+$nav-h:       50px;
+$nav-bg:      var(--pos-nav-bg, linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%));
+$nav-bg-solid: var(--pos-nav-bg-solid, #1e3a5f);
 $nav-border:  rgba(255, 255, 255, .12);
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ $nav-border:  rgba(255, 255, 255, .12);
   background: $nav-bg;
   border-bottom: 1px solid $nav-border;
   flex-shrink: 0;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, .35);
+  box-shadow: 0 2px 12px rgba(var(--bs-primary-rgb, 37, 99, 235), .35);
 }
 
 .pos-brand-logo {
@@ -109,7 +109,7 @@ $nav-border:  rgba(255, 255, 255, .12);
   padding-top: env(safe-area-inset-top, 0px);
   flex-shrink: 0;
   border-bottom: 1px solid $nav-border;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, .3);
+  box-shadow: 0 2px 12px rgba(var(--bs-primary-rgb, 37, 99, 235), .3);
 }
 
 .pos-mtb-brand {
@@ -265,7 +265,7 @@ $nav-border:  rgba(255, 255, 255, .12);
   justify-content: space-around;
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -2px 16px rgba(30, 58, 138, .4);
+  box-shadow: 0 -2px 16px rgba(var(--bs-primary-rgb, 30, 58, 138), .4);
 }
 
 .pos-bnav-tab {
@@ -303,7 +303,7 @@ $nav-border:  rgba(255, 255, 255, .12);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #1e40af;
+    color: var(--bs-primary, #1e40af);
     box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
     margin-top: -20px;
     transition: transform .15s;
@@ -335,7 +335,7 @@ $nav-border:  rgba(255, 255, 255, .12);
 
 .pos-drawer {
   width: 100%;
-  background: #1e3a8a;
+  background: var(--pos-nav-bg-solid, #1e3a5f);
   border-radius: 20px 20px 0 0;
   max-height: 70vh;
   overflow-y: auto;
@@ -356,7 +356,7 @@ $nav-border:  rgba(255, 255, 255, .12);
   border-bottom: 1px solid rgba(255,255,255,.12);
   position: sticky;
   top: 0;
-  background: #1e3a8a;
+  background: var(--pos-nav-bg-solid, #1e3a5f);
 
   span {
     font-size: .95rem;

@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { first, Subscription } from 'rxjs';
 import { StructureService } from '../../../services/structure/structure.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ThemeService } from '../../../services/theme/theme.service';
 declare var $: any;
 declare var bootstrap: any;
 
@@ -45,13 +46,17 @@ export class StructureComponent {
   @ViewChild('dataTable', { static: false }) table!: ElementRef;
   boutiques: any;
   
-  constructor(@Inject(PLATFORM_ID) private platformId: any){
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: any,
+    private themeService: ThemeService,
+  ) {
     this.structureForm = this.fb.group({
       nom: ['', [Validators.required]],
       rccm: ['', ],
       email: ['', [Validators.required]],
       situation_geo: ['', []],
       logo: [null],
+      couleur_primaire: ['#1e3a5f'],
       responsable: this.fb.group({
         nom: ['', [Validators.required]],
         prenoms: ['', [Validators.required]],
@@ -231,17 +236,21 @@ get r() {
     request.pipe(first()).subscribe({
       next: (response: any) => {
         if (response.status === 'success') {
+          // Appliquer la couleur immédiatement si modifiée
+          const couleur = this.structureForm.get('couleur_primaire')?.value;
+          if (couleur) { this.themeService.apply(couleur); }
+
           // Fermer le modal
           const modal = document.getElementById('modal-fadein');
           if (modal) {
             const modalInstance = bootstrap.Modal.getInstance(modal);
             if (modalInstance) {
               modalInstance.hide();
-            } 
+            }
           }
 
-          this.toastr.success(this.isEditMode ? 
-            'user modifiée avec succès' : 
+          this.toastr.success(this.isEditMode ?
+            'user modifiée avec succès' :
             'user ajoutée avec succès');
 
           // Recharger les données sans détruire complètement le tableau

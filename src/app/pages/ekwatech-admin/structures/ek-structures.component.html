@@ -52,7 +52,15 @@
                     <span class="badge bg-secondary-subtle text-secondary fw-semibold">#{{ s.id }}</span>
                   </td>
                   <td>
-                    <div class="fw-semibold">{{ s.nom }}</div>
+                    <div class="d-flex align-items-center gap-2">
+                      @if (s.couleur_primaire) {
+                        <span class="rounded-circle flex-shrink-0"
+                              style="width:10px;height:10px;display:inline-block"
+                              [style.background]="s.couleur_primaire"
+                              [title]="s.couleur_primaire"></span>
+                      }
+                      <div class="fw-semibold">{{ s.nom }}</div>
+                    </div>
                     @if (s.situation_geo) {
                       <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ s.situation_geo }}</div>
                     }
@@ -199,6 +207,30 @@
                     <nz-option [nzValue]="c.id" [nzLabel]="c.label"></nz-option>
                   }
                 </nz-select>
+              </div>
+              <div class="col-12">
+                <label class="mf-label"><i class="bi bi-palette me-1"></i>Couleur principale de l'application</label>
+                <div class="d-flex align-items-center gap-3">
+                  <input type="color" class="form-control form-control-color" style="width:60px;height:42px"
+                    formControlName="couleur_primaire">
+                  <div class="d-flex flex-column gap-1">
+                    <span class="small fw-semibold" [style.color]="f['couleur_primaire'].value">
+                      {{ f['couleur_primaire'].value }}
+                    </span>
+                    <span class="text-muted" style="font-size:.75rem">
+                      Couleur de la sidebar et des boutons pour les utilisateurs de cette structure.
+                    </span>
+                  </div>
+                  <!-- Aperçu miniature sidebar -->
+                  <div class="ms-auto rounded-3 d-flex flex-column overflow-hidden flex-shrink-0"
+                       style="width:56px;height:72px;box-shadow:0 2px 8px rgba(0,0,0,.2)"
+                       [style.background]="f['couleur_primaire'].value">
+                    <div class="flex-shrink-0" style="height:8px;opacity:.4;background:rgba(0,0,0,.25)"></div>
+                    @for (i of [1,2,3,4]; track i) {
+                      <div class="mx-2 my-1 rounded" style="height:5px;background:rgba(255,255,255,.25)"></div>
+                    }
+                  </div>
+                </div>
               </div>
             </div>
           </div>

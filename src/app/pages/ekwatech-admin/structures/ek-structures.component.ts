@@ -39,12 +39,13 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
   ) {
     this.form = this.fb.group({
-      nom:          ['', Validators.required],
-      telephone:    ['', [Validators.minLength(10), Validators.maxLength(10)]],
-      email:        [''],
-      rccm:         [''],
-      situation_geo:[''],
-      categorieId:  [null],
+      nom:              ['', Validators.required],
+      telephone:        ['', [Validators.minLength(10), Validators.maxLength(10)]],
+      email:            [''],
+      rccm:             [''],
+      situation_geo:    [''],
+      categorieId:      [null],
+      couleur_primaire: ['#1e3a5f'],
     });
   }
 
@@ -118,12 +119,13 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
     this.selectedFile = null;
     this.previewUrl = null;
     this.form.patchValue({
-      nom: s.nom,
-      telephone: s.telephone,
-      email: s.email,
-      rccm: s.rccm,
-      situation_geo: s.situation_geo,
-      categorieId: s.categorieId ?? null,
+      nom:              s.nom,
+      telephone:        s.telephone,
+      email:            s.email,
+      rccm:             s.rccm,
+      situation_geo:    s.situation_geo,
+      categorieId:      s.categorieId ?? null,
+      couleur_primaire: s.couleur_primaire ?? '#1e3a5f',
     });
     this.showModal = true;
   }
@@ -143,6 +145,7 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
     const catId = v.categorieId ? parseInt(v.categorieId, 10) : null;
     if (catId) payload.append('categorieId', String(catId));
     if (this.selectedFile) payload.append('logo', this.selectedFile);
+    if (v.couleur_primaire) payload.append('couleur_primaire', v.couleur_primaire);
 
     this.isSubmitting = true;
     const req = this.isEditMode

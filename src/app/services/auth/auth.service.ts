@@ -4,6 +4,7 @@ import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environnement } from '../../environnement/environnement';
 import { ModuleService } from '../modules/module.service';
+import { ThemeService } from '../theme/theme.service';
 
 
 @Injectable({
@@ -23,6 +24,7 @@ export class AuthService {
     private http: HttpClientService,
     private router: Router,
     private moduleService: ModuleService,
+    private themeService: ThemeService,
   ) {
     const user = localStorage.getItem('user');
     if (user) {
@@ -46,6 +48,7 @@ export class AuthService {
         if (response.modules) {
           this.moduleService.setModules(response.modules);
         }
+        this.themeService.apply(response.theme?.couleur_primaire ?? null);
       }),
       switchMap((response: any) => {
         const baseUser = response.utilisateur;
@@ -115,6 +118,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.abonnementSubject.next(null);
     this.moduleService.clear();
+    this.themeService.clear();
     this.router.navigateByUrl('/login');
   }
 
