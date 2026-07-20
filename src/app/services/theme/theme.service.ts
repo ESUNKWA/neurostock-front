@@ -1,87 +1,102 @@
 import { Injectable } from '@angular/core';
 
-const DEFAULT_COLOR = '#1e3a5f';
-const STORAGE_KEY = 'app_theme_color';
+const DEFAULT_PRIMARY   = '#1e3a5f';
+const DEFAULT_SECONDARY = '#94c6f7';
+const KEY_PRIMARY   = 'app_theme_primary';
+const KEY_SECONDARY = 'app_theme_secondary';
+
+export interface AppTheme {
+  couleur_primaire?:   string | null;
+  couleur_secondaire?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
 
   init(): void {
-    const color = localStorage.getItem(STORAGE_KEY) ?? DEFAULT_COLOR;
-    this.apply(color);
+    const primary   = localStorage.getItem(KEY_PRIMARY)   ?? DEFAULT_PRIMARY;
+    const secondary = localStorage.getItem(KEY_SECONDARY) ?? DEFAULT_SECONDARY;
+    this.apply({ couleur_primaire: primary, couleur_secondaire: secondary });
   }
 
-  apply(hex: string | null | undefined): void {
-    if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) {
-      hex = DEFAULT_COLOR;
-    }
-    localStorage.setItem(STORAGE_KEY, hex);
+  apply(theme: AppTheme): void {
+    const primary   = this.validHex(theme.couleur_primaire)   ?? DEFAULT_PRIMARY;
+    const secondary = this.validHex(theme.couleur_secondaire) ?? DEFAULT_SECONDARY;
 
-    // hex = couleur de fond directe de la sidebar / navbar
-    const [h, s, l] = this.hexToHsl(hex);
-    const [r, g, b] = this.hexToRgb(hex);
+    localStorage.setItem(KEY_PRIMARY,   primary);
+    localStorage.setItem(KEY_SECONDARY, secondary);
 
-    const sidebarBg      = hex;                                                          // fond sidebar = couleur choisie
-    const sidebarDarker  = this.hslToHex(h, s, Math.max(2, l - 8));                    // légèrement plus sombre
-    const accent         = this.hslToHex(h, Math.min(100, s + 8), Math.min(88, l + 40)); // teinte claire pour les icônes actifs
-    const text           = this.hslToHex(h, Math.max(0, s - 20), Math.min(85, l + 42)); // texte lisible sur fond sombre
-    const textActive     = this.hslToHex(h, Math.max(0, s - 30), Math.min(95, l + 60)); // texte actif très clair
-    const textMuted      = this.hslToHex(h, Math.max(0, s - 10), Math.min(75, l + 22)); // texte atténué
-    const [ar, ag, ab]   = this.hexToRgb(accent);
+    // Dérivation à partir du fond (primary) ─────────────────────────────────
+    const [ph, ps, pl] = this.hexToHsl(primary);
+    const [pr, pg, pb] = this.hexToRgb(primary);
+    const bgDarker     = this.hslToHex(ph, ps, Math.max(2, pl - 8));
+
+    // Dérivation à partir de la couleur de texte (secondary) ─────────────────
+    const [sh, ss, sl] = this.hexToHsl(secondary);
+    const [sr, sg, sb] = this.hexToRgb(secondary);
+    const textActive   = this.hslToHex(sh, Math.max(0, ss - 15), Math.min(97, sl + 18));
+    const textMuted    = this.hslToHex(sh, Math.max(0, ss - 10), Math.max(20, sl - 20));
+    const activeBg     = `rgba(${sr}, ${sg}, ${sb}, 0.14)`;
 
     const el = this.getOrCreateStyleTag();
     el.textContent = `
 :root {
-  /* Sidebar tenant */
-  --sidebar-bg: ${sidebarBg};
-  --sidebar-bg-darker: ${sidebarDarker};
-  --sidebar-accent: ${accent};
-  --sidebar-text: ${text};
+  /* ── Sidebar tenant ── */
+  --sidebar-bg:          ${primary};
+  --sidebar-bg-darker:   ${bgDarker};
+  --sidebar-accent:      ${secondary};
+  --sidebar-text:        ${secondary};
   --sidebar-text-active: ${textActive};
-  --sidebar-text-muted: ${textMuted};
-  --sidebar-active-bg: rgba(${ar}, ${ag}, ${ab}, 0.15);
-  /* POS navbar */
-  --pos-nav-bg: linear-gradient(135deg, ${sidebarDarker} 0%, ${hex} 100%);
-  --pos-nav-bg-solid: ${sidebarDarker};
-  /* Bootstrap */
-  --bs-primary: ${hex};
-  --bs-primary-rgb: ${r}, ${g}, ${b};
-  --bs-link-color: ${hex};
-  --bs-link-hover-color: ${sidebarDarker};
+  --sidebar-text-muted:  ${textMuted};
+  --sidebar-active-bg:   ${activeBg};
+  /* ── POS navbar ── */
+  --pos-nav-bg:          linear-gradient(135deg, ${bgDarker} 0%, ${primary} 100%);
+  --pos-nav-bg-solid:    ${bgDarker};
+  /* ── Bootstrap ── */
+  --bs-primary:          ${primary};
+  --bs-primary-rgb:      ${pr}, ${pg}, ${pb};
+  --bs-link-color:       ${primary};
+  --bs-link-hover-color: ${bgDarker};
 }
 .btn-primary {
-  --bs-btn-bg: ${hex};
-  --bs-btn-border-color: ${hex};
-  --bs-btn-hover-bg: ${sidebarDarker};
-  --bs-btn-hover-border-color: ${sidebarDarker};
-  --bs-btn-active-bg: ${sidebarDarker};
-  --bs-btn-active-border-color: ${sidebarDarker};
-  --bs-btn-focus-shadow-rgb: ${r}, ${g}, ${b};
-  --bs-btn-disabled-bg: ${hex};
-  --bs-btn-disabled-border-color: ${hex};
+  --bs-btn-bg:                ${primary};
+  --bs-btn-border-color:      ${primary};
+  --bs-btn-hover-bg:          ${bgDarker};
+  --bs-btn-hover-border-color:${bgDarker};
+  --bs-btn-active-bg:         ${bgDarker};
+  --bs-btn-active-border-color:${bgDarker};
+  --bs-btn-focus-shadow-rgb:  ${pr}, ${pg}, ${pb};
+  --bs-btn-disabled-bg:       ${primary};
+  --bs-btn-disabled-border-color:${primary};
 }
 .btn-outline-primary {
-  --bs-btn-color: ${hex};
-  --bs-btn-border-color: ${hex};
-  --bs-btn-hover-bg: ${hex};
-  --bs-btn-hover-border-color: ${hex};
-  --bs-btn-active-bg: ${hex};
-  --bs-btn-focus-shadow-rgb: ${r}, ${g}, ${b};
+  --bs-btn-color:             ${primary};
+  --bs-btn-border-color:      ${primary};
+  --bs-btn-hover-bg:          ${primary};
+  --bs-btn-hover-border-color:${primary};
+  --bs-btn-active-bg:         ${primary};
+  --bs-btn-focus-shadow-rgb:  ${pr}, ${pg}, ${pb};
 }
-.text-primary { color: ${hex} !important; }
-.bg-primary { background-color: ${hex} !important; }
-.border-primary { border-color: ${hex} !important; }
-.badge.bg-primary, span.bg-primary { background-color: ${hex} !important; }
-.badge.bg-primary-subtle { background-color: rgba(${r}, ${g}, ${b}, 0.12) !important; color: ${hex} !important; }
+.text-primary  { color: ${primary} !important; }
+.bg-primary    { background-color: ${primary} !important; }
+.border-primary{ border-color: ${primary} !important; }
+.badge.bg-primary, span.bg-primary { background-color: ${primary} !important; }
+.badge.bg-primary-subtle { background-color: rgba(${pr}, ${pg}, ${pb}, 0.12) !important; color: ${primary} !important; }
 `;
   }
 
   clear(): void {
-    localStorage.removeItem(STORAGE_KEY);
-    this.apply(DEFAULT_COLOR);
+    localStorage.removeItem(KEY_PRIMARY);
+    localStorage.removeItem(KEY_SECONDARY);
+    this.apply({ couleur_primaire: DEFAULT_PRIMARY, couleur_secondaire: DEFAULT_SECONDARY });
   }
 
-  // ── Color utilities ────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private validHex(hex: string | null | undefined): string | null {
+    if (hex && /^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+    return null;
+  }
 
   private getOrCreateStyleTag(): HTMLStyleElement {
     let el = document.getElementById('app-theme') as HTMLStyleElement | null;

@@ -171,14 +171,26 @@ export default class DashboardComponent implements OnInit, OnDestroy {
         });
         break;
 
-      case 'responsable_structure':
-        this.boutiques = this.currentUser.boutiques ?? [];
-        // Auto-sélectionner la première boutique et charger les stats
-        if (this.boutiques.length > 0) {
-          this.idBoutique = this.boutiques[0].id;
-          this.loadStats();
-        }
+      case 'responsable_structure': {
+        const structureId = this.currentUser.structure_id ?? this.currentUser.structure?.[0]?.id;
+        this.boutiqueService.findByStructure(structureId).subscribe({
+          next: (r: any) => {
+            this.boutiques = r?.data ?? [];
+            if (this.boutiques.length > 0) {
+              this.idBoutique = this.currentUser.boutique_id ?? this.boutiques[0].id;
+              this.loadStats();
+            }
+          },
+          error: () => {
+            this.boutiques = this.currentUser.boutiques ?? [];
+            if (this.boutiques.length > 0) {
+              this.idBoutique = this.boutiques[0].id;
+              this.loadStats();
+            }
+          }
+        });
         break;
+      }
 
       default:
         // gérant et autres rôles non-caissier avec boutique assignée

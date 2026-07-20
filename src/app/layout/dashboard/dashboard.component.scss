@@ -1,7 +1,7 @@
 // ── Hero header desktop ───────────────────────────────────────────────────────
 
 .db-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+  background: var(--pos-nav-bg, linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%));
   border-radius: 1rem;
   padding: 1.4rem 1.75rem;
   display: flex;
@@ -9,7 +9,7 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  box-shadow: 0 6px 28px rgba(37, 99, 235, .28);
+  box-shadow: 0 6px 28px rgba(var(--bs-primary-rgb, 37, 99, 235), .28);
 }
 
 .db-hero-greeting {
@@ -541,11 +541,11 @@ nz-select {
 // ── En-tête ──────────────────────────────────────────────────────────────────
 
 .mob-header {
-  background: linear-gradient(135deg, #1e3a5f 0%, #1a5fa0 70%, #1565c0 100%);
+  background: var(--pos-nav-bg, linear-gradient(135deg, #1e3a5f 0%, #1a5fa0 70%, #1565c0 100%));
   padding: 20px 16px 24px;
   border-radius: 0 0 26px 26px;
   margin-bottom: 20px;
-  box-shadow: 0 6px 24px rgba(30, 58, 95, .35);
+  box-shadow: 0 6px 24px rgba(var(--bs-primary-rgb, 30, 58, 95), .35);
 }
 
 .mob-header-top {

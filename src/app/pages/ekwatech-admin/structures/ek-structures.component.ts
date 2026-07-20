@@ -39,13 +39,14 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
   ) {
     this.form = this.fb.group({
-      nom:              ['', Validators.required],
-      telephone:        ['', [Validators.minLength(10), Validators.maxLength(10)]],
-      email:            [''],
-      rccm:             [''],
-      situation_geo:    [''],
-      categorieId:      [null],
-      couleur_primaire: ['#1e3a5f'],
+      nom:                ['', Validators.required],
+      telephone:          ['', [Validators.minLength(10), Validators.maxLength(10)]],
+      email:              [''],
+      rccm:               [''],
+      situation_geo:      [''],
+      categorieId:        [null],
+      couleur_primaire:   ['#1e3a5f'],
+      couleur_secondaire: ['#94c6f7'],
     });
   }
 
@@ -125,7 +126,8 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
       rccm:             s.rccm,
       situation_geo:    s.situation_geo,
       categorieId:      s.categorieId ?? null,
-      couleur_primaire: s.couleur_primaire ?? '#1e3a5f',
+      couleur_primaire:   s.couleur_primaire   ?? '#1e3a5f',
+      couleur_secondaire: s.couleur_secondaire ?? '#94c6f7',
     });
     this.showModal = true;
   }
@@ -145,7 +147,8 @@ export default class EkStructuresComponent implements OnInit, OnDestroy {
     const catId = v.categorieId ? parseInt(v.categorieId, 10) : null;
     if (catId) payload.append('categorieId', String(catId));
     if (this.selectedFile) payload.append('logo', this.selectedFile);
-    if (v.couleur_primaire) payload.append('couleur_primaire', v.couleur_primaire);
+    if (v.couleur_primaire)   payload.append('couleur_primaire',   v.couleur_primaire);
+    if (v.couleur_secondaire) payload.append('couleur_secondaire', v.couleur_secondaire);
 
     this.isSubmitting = true;
     const req = this.isEditMode

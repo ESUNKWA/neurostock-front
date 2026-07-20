@@ -56,7 +56,8 @@ export class StructureComponent {
       email: ['', [Validators.required]],
       situation_geo: ['', []],
       logo: [null],
-      couleur_primaire: ['#1e3a5f'],
+      couleur_primaire:   ['#1e3a5f'],
+      couleur_secondaire: ['#94c6f7'],
       responsable: this.fb.group({
         nom: ['', [Validators.required]],
         prenoms: ['', [Validators.required]],
@@ -136,7 +137,11 @@ export class StructureComponent {
 
   openEdit(structure: any): void {
     this.structureData = structure;
-    this.structureForm.patchValue(structure);
+    this.structureForm.patchValue({
+      ...structure,
+      couleur_primaire:   structure.couleur_primaire   ?? '#1e3a5f',
+      couleur_secondaire: structure.couleur_secondaire ?? '#94c6f7',
+    });
     this.structureForm.enable();
     this.isEditMode = !!structure;
     this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
@@ -236,9 +241,11 @@ get r() {
     request.pipe(first()).subscribe({
       next: (response: any) => {
         if (response.status === 'success') {
-          // Appliquer la couleur immédiatement si modifiée
-          const couleur = this.structureForm.get('couleur_primaire')?.value;
-          if (couleur) { this.themeService.apply(couleur); }
+          // Appliquer les couleurs immédiatement
+          this.themeService.apply({
+            couleur_primaire:   this.structureForm.get('couleur_primaire')?.value   ?? null,
+            couleur_secondaire: this.structureForm.get('couleur_secondaire')?.value ?? null,
+          });
 
           // Fermer le modal
           const modal = document.getElementById('modal-fadein');

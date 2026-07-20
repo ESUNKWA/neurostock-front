@@ -48,7 +48,10 @@ export class AuthService {
         if (response.modules) {
           this.moduleService.setModules(response.modules);
         }
-        this.themeService.apply(response.theme?.couleur_primaire ?? null);
+        this.themeService.apply({
+          couleur_primaire:   response.theme?.couleur_primaire   ?? null,
+          couleur_secondaire: response.theme?.couleur_secondaire ?? null,
+        });
       }),
       switchMap((response: any) => {
         const baseUser = response.utilisateur;

@@ -183,12 +183,43 @@
                 </div>
               </div>
               <div class="col-12">
-                <label class="mf-label"><i class="bi bi-palette me-1"></i>Couleur principale de l'application</label>
-                <div class="d-flex align-items-center gap-3">
-                  <input type="color" class="form-control form-control-color" style="width:60px;height:42px"
-                    formControlName="couleur_primaire">
-                  <div class="small text-muted">
-                    Personnalise la sidebar et les boutons pour tous les utilisateurs de cette structure.
+                <label class="mf-label"><i class="bi bi-palette me-1"></i>Couleurs de l'interface</label>
+                <div class="rounded-3 p-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+                  <div class="row g-3 align-items-center">
+                    <div class="col-sm-5">
+                      <div class="small fw-semibold text-muted mb-1">Fond sidebar / navbar</div>
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color flex-shrink-0"
+                               style="width:50px;height:38px"
+                               formControlName="couleur_primaire">
+                        <span class="small fw-semibold" [style.color]="structureForm.get('couleur_primaire')?.value">
+                          {{ structureForm.get('couleur_primaire')?.value }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-sm-5">
+                      <div class="small fw-semibold text-muted mb-1">Texte / libellés du menu</div>
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color flex-shrink-0"
+                               style="width:50px;height:38px"
+                               formControlName="couleur_secondaire">
+                        <span class="small fw-semibold" [style.color]="structureForm.get('couleur_secondaire')?.value">
+                          {{ structureForm.get('couleur_secondaire')?.value }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-sm-2 d-flex justify-content-center">
+                      <div class="rounded-3 d-flex flex-column overflow-hidden flex-shrink-0"
+                           style="width:52px;height:78px;box-shadow:0 2px 10px rgba(0,0,0,.25)"
+                           [style.background]="structureForm.get('couleur_primaire')?.value">
+                        <div style="height:10px;background:rgba(0,0,0,.2);flex-shrink:0"></div>
+                        @for (i of [1,2,3,4]; track i) {
+                          <div class="mx-2 my-1 rounded" style="height:5px"
+                               [style.background]="structureForm.get('couleur_secondaire')?.value"
+                               [style.opacity]="i === 2 ? '1' : '0.45'"></div>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
