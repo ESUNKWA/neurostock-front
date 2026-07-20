@@ -53,17 +53,12 @@
             <div class="card-body border-bottom pb-3">
               <div class="row">
                 <div class="col-md-4">
-                  <div class="d-flex align-items-center gap-2">
-                    <nz-select class="flex-grow-1" [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange($event)"
-                      nzPlaceHolder="— Entrepôt —" [nzDisabled]="true">
-                      @for (boutique of entrepots; track boutique.id) {
-                        <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
-                      }
-                    </nz-select>
-                    <span class="badge text-bg-warning" style="font-size:.68rem;white-space:nowrap;">
-                      <i class="bi bi-lock-fill me-1"></i>Entrepôt
-                    </span>
-                  </div>
+                  <nz-select class="w-100" [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange($event)"
+                    nzShowSearch nzPlaceHolder="— Sélectionner une boutique —">
+                    @for (boutique of boutiques; track boutique.id) {
+                      <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
+                    }
+                  </nz-select>
                 </div>
               </div>
             </div>
@@ -323,18 +318,16 @@
         <!-- Sélection de la boutique cible -->
         <div class="mb-3">
           <label class="form-label fw-semibold">
-            Boutique cible <span class="text-danger">*</span>
+            Entrepôt cible <span class="text-danger">*</span>
           </label>
-          @if (boutiques.length > 1) {
-            <nz-select class="w-100" [(ngModel)]="importBoutiqueId" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionnez une boutique —">
-              @for (b of boutiques; track b.id) {
+          @if (entrepots.length > 0) {
+            <nz-select class="w-100" [(ngModel)]="importBoutiqueId" nzPlaceHolder="— Entrepôt —" [nzDisabled]="true">
+              @for (b of entrepots; track b.id) {
                 <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
               }
             </nz-select>
-          } @else if (boutiques.length === 1) {
-            <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
           } @else {
-            <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
+            <div class="alert alert-warning py-2 mb-0 small">Aucun entrepôt disponible.</div>
           }
         </div>
 

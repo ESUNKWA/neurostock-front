@@ -603,24 +603,21 @@
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold">
-              Boutique cible <span class="text-danger">*</span>
+              Entrepôt cible <span class="text-danger">*</span>
             </label>
-            @if (boutiques.length > 1) {
+            @if (entrepots.length > 0) {
               <nz-select
                 style="width:100%"
-                nzShowSearch
-                nzAllowClear
-                nzPlaceHolder="Sélectionnez une boutique"
+                nzPlaceHolder="— Entrepôt —"
                 [(ngModel)]="importBoutiqueId"
-                [ngModelOptions]="{standalone: true}">
-                @for (b of boutiques; track b.id) {
+                [ngModelOptions]="{standalone: true}"
+                [nzDisabled]="true">
+                @for (b of entrepots; track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                 }
               </nz-select>
-            } @else if (boutiques.length === 1) {
-              <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
             } @else {
-              <div class="alert alert-warning py-2 mb-0 small">Aucune boutique disponible.</div>
+              <div class="alert alert-warning py-2 mb-0 small">Aucun entrepôt disponible.</div>
             }
           </div>
           <div class="col-md-6">

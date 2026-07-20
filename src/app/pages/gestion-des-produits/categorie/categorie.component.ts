@@ -28,6 +28,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   boutiques: any[] = [];
   selectedBoutiqueId: string | null = null;
   importBoutiqueId: number | null = null;
+  private dtTimer: any = null;
   isLoading: boolean = false;
   isEditMode: boolean = false;
   selectedCategorie: any = null;
@@ -68,9 +69,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadBoutiques();
-    // Initialiser les données
-    this.loadCategories();
-    
+
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -286,21 +285,18 @@ export default class CategorieComponent implements OnInit, OnDestroy {
           // Mise à jour des données
           this.categories = response.data;
           
-          // D'abord, détruisons l'instance DataTable sans vider la table
           this.destroyDataTable();
-          
-          // Donner le temps au DOM de se mettre à jour
-          setTimeout(() => {
+          clearTimeout(this.dtTimer);
+          this.dtTimer = setTimeout(() => {
             if (isPlatformBrowser(this.platformId)) {
               try {
-                // Réinitialiser le tableau avec les nouvelles données
                 this.initDataTable();
               } catch (error) {
                 console.error('Erreur lors de la réinitialisation de DataTable:', error);
               }
               this.isLoading = false;
             }
-          }, 50); // Temps d'attente réduit pour une mise à jour plus rapide
+          }, 50);
         } else {
           this.isLoading = false;
         }
@@ -461,7 +457,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
 
     this.importResult = null;
     this.pendingImportFile = file;
-    this.importBoutiqueId = this.currentUser?.boutique_id ?? null;
+    this.importBoutiqueId = this.selectedBoutiqueId ? Number(this.selectedBoutiqueId) : (this.currentUser?.boutique_id ?? null);
     this.isParsingFile = true;
 
     try {
