@@ -46,7 +46,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
 
 
   boutiques: any = [];
-  idBoutique: number = 0;
+  idBoutique: number | null = null;
   currentUser: any = {};
 
   private sseSource: EventSource | null = null;
@@ -182,7 +182,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
 
       default:
         // gérant et autres rôles non-caissier avec boutique assignée
-        this.idBoutique = this.currentUser.boutique_id ?? 0;
+        this.idBoutique = this.currentUser.boutique_id ?? null;
         this.boutiques = this.currentUser.boutiques ?? (this.currentUser.boutique ? [this.currentUser.boutique] : []);
         if (this.idBoutique) this.loadStats();
     }
@@ -288,6 +288,14 @@ export default class DashboardComponent implements OnInit, OnDestroy {
     this.ventesParMois = this.stats.dash.vente_par_mois;
 
     this.alerteService.setCommandesCount(response.dash?.commandes_client?.prevues_aujourd_hui ?? 0);
+
+    const ruptureProduits = (response.dash?.produit?.stock_rupture ?? []).map((p: any) => ({
+      nom: p.nom, type: 'rupture', stock: p.stock_disponible,
+    }));
+    const alerteProduits = (response.dash?.produit?.stock_alert ?? [])
+      .filter((p: any) => p.stock_disponible <= p.seuil_alert && p.stock_disponible !== 0)
+      .map((p: any) => ({ nom: p.nom, type: 'alerte', stock: p.stock_disponible, seuil: p.seuil_alert }));
+    this.alerteService.setAlertProduits([...ruptureProduits, ...alerteProduits]);
 
     const jr   = this.stats?.dash?.vente?.total_vente_jr   ?? 0;
     const hier = this.stats?.dash?.vente?.total_vente_hier  ?? 0;

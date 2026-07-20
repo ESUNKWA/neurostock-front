@@ -14,14 +14,13 @@
         <label class="form-label mb-0 fw-semibold small text-nowrap">
           <i class="bi bi-building me-1"></i>Structure
         </label>
-        <select class="form-select form-select-sm flex-grow-1"
+        <nz-select class="w-100 flex-grow-1"
                 style="max-width:320px"
-                [(ngModel)]="selectedStructureId" (ngModelChange)="onStructureChange()">
-          <option [ngValue]="null" disabled>Choisir une structure…</option>
+                [(ngModel)]="selectedStructureId" (ngModelChange)="onStructureChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Choisir une structure…">
           @for (s of structures; track s.id) {
-            <option [ngValue]="s.id">{{ s.nom }} (ID: {{ s.id }})</option>
+            <nz-option [nzValue]="s.id" [nzLabel]="s.nom + ' (ID: ' + s.id + ')'"></nz-option>
           }
-        </select>
+        </nz-select>
       </div>
     </div>
   </div>

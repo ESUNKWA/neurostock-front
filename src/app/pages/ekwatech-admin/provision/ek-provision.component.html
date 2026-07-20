@@ -22,12 +22,11 @@
             @if (loadingStructures) {
               <div class="form-select text-muted">Chargement…</div>
             } @else {
-              <select class="form-select" [(ngModel)]="form.structureId" (ngModelChange)="onStructureChange()" name="structureId">
-                <option [ngValue]="0" disabled>Sélectionner une structure…</option>
+              <nz-select class="w-100" [(ngModel)]="form.structureId" (ngModelChange)="onStructureChange()" name="structureId" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une structure…">
                 @for (s of structures; track s.id) {
-                  <option [ngValue]="s.id">{{ s.nom }} (ID: {{ s.id }})</option>
+                  <nz-option [nzValue]="s.id" [nzLabel]="s.nom + ' (ID: ' + s.id + ')'"></nz-option>
                 }
-              </select>
+              </nz-select>
             }
             <div class="form-text">La structure doit exister en master DB avant de provisionner.</div>
           </div>

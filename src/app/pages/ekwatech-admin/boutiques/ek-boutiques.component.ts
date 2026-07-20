@@ -9,6 +9,8 @@ import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { StructureService } from '../../../services/structure/structure.service';
 import { SelectedTenantService } from '../../../services/tenant/selected-tenant.service';
 
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
 declare var $: any;
 
 interface BoutiqueForm {
@@ -24,7 +26,7 @@ interface BoutiqueForm {
 @Component({
   selector: 'app-ek-boutiques',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-boutiques.component.html',
   providers: [ToastrService],
 })

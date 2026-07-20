@@ -1,11 +1,12 @@
 import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, NzSelectModule],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
   encapsulation: ViewEncapsulation.None,

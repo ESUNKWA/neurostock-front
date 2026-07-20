@@ -66,12 +66,11 @@
           <!-- Structure -->
           <div class="mf-section">
             <div class="mf-section-label"><i class="bi bi-building"></i> Structure</div>
-            <select class="form-select mf-boutique-select mf-input" [(ngModel)]="form.structureId" (ngModelChange)="onFormChange()">
-              <option [ngValue]="null">— Sélectionner la structure —</option>
+            <nz-select class="w-100" [(ngModel)]="form.structureId" (ngModelChange)="onFormChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner la structure —">
               @for (s of structures; track s.id) {
-                <option [ngValue]="s.id">{{ s.nom }}</option>
+                <nz-option [nzValue]="s.id" [nzLabel]="s.nom"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
 
           <!-- Plan -->
@@ -179,11 +178,11 @@
               </div>
               <div class="row g-2">
                 <div class="col-5">
-                  <select class="form-select mf-input" [(ngModel)]="form.remise_type" (ngModelChange)="onRemiseChange()">
-                    <option value="">Aucune</option>
-                    <option value="pourcentage">Pourcentage (%)</option>
-                    <option value="montant">Montant fixe</option>
-                  </select>
+                  <nz-select class="w-100" [(ngModel)]="form.remise_type" (ngModelChange)="onRemiseChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                    <nz-option nzValue="" nzLabel="Aucune"></nz-option>
+                    <nz-option nzValue="pourcentage" nzLabel="Pourcentage (%)"></nz-option>
+                    <nz-option nzValue="montant" nzLabel="Montant fixe"></nz-option>
+                  </nz-select>
                 </div>
                 <div class="col-7">
                   <input type="number" class="form-control mf-input" [(ngModel)]="form.remise_valeur"
@@ -384,12 +383,11 @@
         <div class="mf-body">
           <div class="mf-section mf-section--last">
             <div class="mf-section-label"><i class="bi bi-building"></i> Structure</div>
-            <select class="form-select mf-boutique-select mf-input" [(ngModel)]="trialStructureId">
-              <option [ngValue]="null">— Sélectionner la structure —</option>
+            <nz-select class="w-100" [(ngModel)]="trialStructureId" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner la structure —">
               @for (s of structures; track s.id) {
-                <option [ngValue]="s.id">{{ s.nom }}</option>
+                <nz-option [nzValue]="s.id" [nzLabel]="s.nom"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
         </div>
 

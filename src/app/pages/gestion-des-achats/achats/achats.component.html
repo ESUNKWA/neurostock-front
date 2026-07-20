@@ -47,13 +47,12 @@
 
               <div class="col-md-4">
                 <label class="ac-label">Fournisseur <span class="text-danger">*</span></label>
-                <select class="form-select form-select-sm ac-input" formControlName="fournisseur"
+                <nz-select class="w-100" formControlName="fournisseur" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionnez un fournisseur"
                   [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
-                  <option [ngValue]="null" disabled>Sélectionnez un fournisseur</option>
                   @for (fr of fournisseurs; track fr.id) {
-                    <option [ngValue]="fr.id">{{ fr.nom }}</option>
+                    <nz-option [nzValue]="fr.id" [nzLabel]="fr.nom"></nz-option>
                   }
-                </select>
+                </nz-select>
                 @if (isSubmitting && f['fournisseur'].errors?.['required']) {
                   <div class="text-danger small mt-1">Fournisseur requis</div>
                 }
@@ -62,14 +61,13 @@
               @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
                 <div class="col-md-4">
                   <label class="ac-label">Stock central (entrepôt) <span class="text-danger">*</span></label>
-                  <select class="form-select form-select-sm ac-input" formControlName="boutique"
-                    (change)="onBoutiqueChange($event)"
+                  <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner un entrepôt"
+                    (ngModelChange)="onBoutiqueChange($event)"
                     [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
-                    <option value="">Sélectionner un entrepôt</option>
                     @for (b of boutiques; track b.id) {
-                      <option [value]="b.id">{{ b.nom }}</option>
+                      <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                     }
-                  </select>
+                  </nz-select>
                   @if (isSubmitting && f['boutique'].errors?.['required']) {
                     <div class="text-danger small mt-1">Boutique requise</div>
                   }
@@ -197,20 +195,20 @@
           <div class="ac-sidebar-body">
             <div class="mb-3">
               <label class="ac-label">Mode de paiement <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm ac-input" formControlName="mode_paiement"
+              <nz-select class="w-100" formControlName="mode_paiement" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner..."
                 [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
                 @for (mode of modesPaiement; track mode) {
-                  <option [value]="mode">{{ mode | titlecase }}</option>
+                  <nz-option [nzValue]="mode" [nzLabel]="mode | titlecase"></nz-option>
                 }
-              </select>
+              </nz-select>
             </div>
             <div>
               <label class="ac-label">Statut <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm ac-input" formControlName="statut">
-                <option value="payer">Payé</option>
-                <option value="non_payer">Non payé</option>
-                <option value="partiel">Paiement partiel</option>
-              </select>
+              <nz-select class="w-100" formControlName="statut" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                <nz-option nzValue="payer" nzLabel="Payé"></nz-option>
+                <nz-option nzValue="non_payer" nzLabel="Non payé"></nz-option>
+                <nz-option nzValue="partiel" nzLabel="Paiement partiel"></nz-option>
+              </nz-select>
             </div>
           </div>
         </div>

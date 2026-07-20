@@ -7,6 +7,7 @@ import { DevisService } from '../../../services/gestion-des-devis/devis.service'
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import Swal from 'sweetalert2';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -32,7 +33,7 @@ const TRANSITIONS: Record<string, string[]> = {
 @Component({
   selector: 'app-historique-devis',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, NzSelectModule],
   templateUrl: './historique-devis.component.html',
   styleUrl: './historique-devis.component.scss'
 })

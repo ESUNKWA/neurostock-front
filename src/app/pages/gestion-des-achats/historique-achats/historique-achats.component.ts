@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -13,7 +14,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-achats',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, NzSelectModule],
   templateUrl: './historique-achats.component.html',
   styleUrl: './historique-achats.component.scss',
   providers: [ToastrService]
@@ -101,9 +102,8 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     this.dateDebut = debut.toISOString().split('T')[0];
   }
 
-  onBoutiqueChange(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    this.idBoutique = parseInt(selectElement.value);
+  onBoutiqueChange(value: any): void {
+    this.idBoutique = parseInt(value) || 0;
     this.loadAchats();
   }
 

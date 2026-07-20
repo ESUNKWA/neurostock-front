@@ -344,6 +344,12 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     return this.entrepotId() ?? this.currentUser?.boutique_id ?? this.boutiques[0]?.id ?? null;
   }
 
+  /** Boutiques de type entrepôt uniquement (pour le select verrouillé). */
+  get entrepots(): any[] {
+    const list = this.boutiques.filter(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    return list.length ? list : this.boutiques;
+  }
+
   loadBoutiques(): void {
     if (this.currentUser.is_admin === true) {
       this.boutiqueService.find().subscribe({
@@ -513,7 +519,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       this.produitForm.get(key)?.enable();
     });
 
-    const defaultBoutique = this.selectedBoutique || this.boutiques[0]?.id || '';
+    const defaultBoutique = this.defaultBoutiqueId() || this.selectedBoutique || this.boutiques[0]?.id || '';
     this.produitForm.reset({
       nom: '',
       prix_achat: null,
@@ -526,6 +532,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       code_barre: null,
       image: null
     });
+    this.produitForm.get('boutique')?.disable();
   }
 
   openViewProduit(produit: any): void {
@@ -604,7 +611,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
 
     const formData = new FormData();
-    const produit = this.produitForm.value;
+    const produit = this.produitForm.getRawValue();
 
     // Ajouter les champs au FormData
     Object.keys(produit).forEach(key => {

@@ -22,6 +22,48 @@
     }
   </div>
 
+  <!-- ── Ticker alertes stock ──────────────────────────────────────────────── -->
+  @if (alertProduits.length > 0) {
+    <div class="header-ticker d-none d-lg-flex">
+      <span class="header-ticker-label">
+        <i class="bi bi-exclamation-triangle-fill"></i> Stock
+      </span>
+      <div class="header-ticker-overflow">
+        <div class="header-ticker-track" [style.--ticker-dur]="tickerDuration">
+
+          <!-- Première passe -->
+          @for (p of alertProduits; track $index) {
+            <span class="ticker-item" [class.ticker-item--rupture]="p.type === 'rupture'" [class.ticker-item--alerte]="p.type === 'alerte'">
+              <i class="bi" [class.bi-x-octagon-fill]="p.type === 'rupture'" [class.bi-exclamation-triangle-fill]="p.type === 'alerte'"></i>
+              {{ p.nom }}
+              <span class="ticker-stock">· {{ p.stock }}</span>
+            </span>
+          }
+
+          <!-- Séparateur de passage -->
+          <span class="ticker-cycle-sep" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+
+          <!-- Deuxième passe (boucle sans couture) -->
+          @for (p of alertProduits; track $index) {
+            <span class="ticker-item" [class.ticker-item--rupture]="p.type === 'rupture'" [class.ticker-item--alerte]="p.type === 'alerte'">
+              <i class="bi" [class.bi-x-octagon-fill]="p.type === 'rupture'" [class.bi-exclamation-triangle-fill]="p.type === 'alerte'"></i>
+              {{ p.nom }}
+              <span class="ticker-stock">· {{ p.stock }}</span>
+            </span>
+          }
+
+          <!-- Séparateur miroir (marque la reprise) -->
+          <span class="ticker-cycle-sep" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+
+        </div>
+      </div>
+    </div>
+  }
+
   <div class="header-right">
 
     <!-- Cloche alertes stock -->

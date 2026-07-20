@@ -31,12 +31,11 @@
           @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
             <div class="row">
               <div class="col-md-4">
-                <select class="form-select" id="selectBoutique">
-                  <option value="">Sélectionner une boutique</option>
+                <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="loadDevis()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une boutique">
                   @for (b of boutiques; track b.id) {
-                    <option [value]="b.id">{{ b.nom }}</option>
+                    <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                   }
-                </select>
+                </nz-select>
               </div>
             </div>
           }

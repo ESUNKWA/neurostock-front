@@ -7,13 +7,14 @@ import { ToastrService } from 'ngx-toastr';
 import { AbonnementService } from '../../../services/abonnement/abonnement.service';
 import { StructureService } from '../../../services/structure/structure.service';
 import { FactureModalComponent } from '../../../components/facture-modal/facture-modal.component';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 
 @Component({
   selector: 'app-ek-abonnements',
   standalone: true,
-  imports: [CommonModule, FormsModule, FactureModalComponent],
+  imports: [CommonModule, FormsModule, FactureModalComponent, NzSelectModule],
   templateUrl: './ek-abonnements.component.html',
   providers: [ToastrService],
 })

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AbonnementService } from '../../../services/abonnement/abonnement.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-ek-plans',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-plans.component.html',
   providers: [ToastrService],
 })

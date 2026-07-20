@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { RetourVenteService } from '../../../services/gestion-des-retours/retour-vente.service';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface LigneRetour {
   produit_id: number;
@@ -19,7 +20,7 @@ interface LigneRetour {
 @Component({
   selector: 'app-nouveau-retour',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, DatePipe, NzSelectModule],
   templateUrl: './nouveau-retour.component.html',
   providers: [ToastrService],
 })

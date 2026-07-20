@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import { TransfertStockService } from '../../../services/gestion-des-stocks/transfert-stock.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface LigneRapport {
   produit_nom: string;
@@ -20,7 +21,7 @@ interface LigneRapport {
 @Component({
   selector: 'app-rapport-transferts',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NzSelectModule],
   templateUrl: './rapport-transferts.component.html',
 })
 export default class RapportTransfertsComponent implements OnInit {

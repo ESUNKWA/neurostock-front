@@ -59,12 +59,11 @@
       <div class="col-md-4">
         <div class="input-group input-group-sm">
           <span class="input-group-text"><i class="bi bi-shop"></i></span>
-          <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" [ngModelOptions]="{standalone:true}">
-            <option [ngValue]="null">— Selectionner une boutique —</option>
+          <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Selectionner une boutique —">
             @for (b of boutiques; track b.id) {
-              <option [ngValue]="b.id">{{ b.nom }}</option>
+              <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
             }
-          </select>
+          </nz-select>
         </div>
       </div>
     </div>
@@ -707,11 +706,11 @@
             <div class="row g-3">
               <div class="col-12">
                 <label class="mf-label">Mode de paiement</label>
-                <select class="form-select mf-input" formControlName="mode_paiement">
+                <nz-select class="w-100" formControlName="mode_paiement" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
                   @for (m of modesPaiement; track m.value) {
-                    <option [value]="m.value">{{ m.label }}</option>
+                    <nz-option [nzValue]="m.value" [nzLabel]="m.label"></nz-option>
                   }
-                </select>
+                </nz-select>
               </div>
               <div class="col-12">
                 <label class="mf-label">Montant (FCFA) <span class="text-danger">*</span></label>

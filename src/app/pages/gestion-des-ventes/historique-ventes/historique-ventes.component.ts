@@ -8,6 +8,7 @@ import { VentesService } from '../../../services/gestion-des-ventes/ventes.servi
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import Swal from 'sweetalert2';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -15,7 +16,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-ventes',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, NzSelectModule],
   templateUrl: './historique-ventes.component.html',
   styleUrl: './historique-ventes.component.scss',
   providers: [ToastrService]

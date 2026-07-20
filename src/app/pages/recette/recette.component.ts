@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { DashService } from '../../services/dash/dash.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 
@@ -13,7 +14,7 @@ type FilterType = 'today' | 'month' | 'all' | 'custom';
 @Component({
   selector: 'app-recette',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './recette.component.html',
   styleUrl: './recette.component.scss',
 })

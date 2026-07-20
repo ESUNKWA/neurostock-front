@@ -5,11 +5,12 @@ import { RouterLink } from '@angular/router';
 import { PrevisionService } from '../../../services/analyse-ia/prevision.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-resume-journalier',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, NzSelectModule],
   templateUrl: './resume-journalier.component.html',
   styleUrl: './resume-journalier.component.scss',
 })

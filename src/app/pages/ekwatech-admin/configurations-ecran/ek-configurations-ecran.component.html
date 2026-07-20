@@ -25,32 +25,30 @@
 
           <div class="mb-3">
             <label class="form-label small fw-semibold">Type de boutique</label>
-            <select class="form-select" [(ngModel)]="form.boutique_type">
+            <nz-select class="w-100" [(ngModel)]="form.boutique_type" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
               @for (t of BOUTIQUE_TYPES; track t.value) {
-                <option [ngValue]="t.value">{{ t.label }}</option>
+                <nz-option [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
               }
-            </select>
+            </nz-select>
             <div class="form-text">« * (toutes) » = wildcard, s'applique en dernier recours</div>
           </div>
 
           <div class="mb-3">
             <label class="form-label small fw-semibold">Profil utilisateur <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.profil_code">
-              <option value="">— Choisir —</option>
+            <nz-select class="w-100" [(ngModel)]="form.profil_code" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Choisir —">
               @for (p of PROFILS; track p) {
-                <option [value]="p">{{ p }}</option>
+                <nz-option [nzValue]="p" [nzLabel]="p"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
 
           <div class="mb-4">
             <label class="form-label small fw-semibold">Écran cible <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.ecran_cible">
-              <option value="">— Choisir —</option>
+            <nz-select class="w-100" [(ngModel)]="form.ecran_cible" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Choisir —">
               @for (e of ECRANS; track e.value) {
-                <option [value]="e.value">{{ e.label }}</option>
+                <nz-option [nzValue]="e.value" [nzLabel]="e.label"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
 
           <div class="d-grid gap-2">

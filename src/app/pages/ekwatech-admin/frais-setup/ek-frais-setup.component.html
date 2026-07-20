@@ -151,11 +151,11 @@
             <label class="form-label fw-semibold small">Montant <span class="text-danger">*</span></label>
             <div class="input-group">
               <input type="number" class="form-control" [(ngModel)]="form.montant" min="0" placeholder="0">
-              <select class="form-select" style="max-width:90px" [(ngModel)]="form.devise">
-                <option value="XOF">XOF</option>
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-              </select>
+              <nz-select class="w-100" style="max-width:90px" [(ngModel)]="form.devise" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                <nz-option nzValue="XOF" nzLabel="XOF"></nz-option>
+                <nz-option nzValue="EUR" nzLabel="EUR"></nz-option>
+                <nz-option nzValue="USD" nzLabel="USD"></nz-option>
+              </nz-select>
             </div>
           </div>
 

@@ -354,3 +354,126 @@ $transition: 0.25s ease;
 }
 
 .dropdown-divider { margin: 0.25rem 0; }
+
+// ── Ticker alertes stock ───────────────────────────────────────────────────────
+
+.header-ticker {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  overflow: hidden;
+  margin: 0 .75rem;
+}
+
+.header-ticker-label {
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #ef4444;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+
+  i { font-size: .72rem; }
+}
+
+.header-ticker-overflow {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  &::before { left: 0;  background: linear-gradient(to right, #fff, transparent); }
+  &::after  { right: 0; background: linear-gradient(to left,  #fff, transparent); }
+}
+
+.header-ticker-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: header-ticker-scroll var(--ticker-dur, 20s) linear infinite;
+
+  &:hover { animation-play-state: paused; }
+}
+
+@keyframes header-ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .18rem .55rem;
+  margin: 0 .3rem;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+  cursor: default;
+  transition: filter .15s;
+
+  &:hover { filter: brightness(.93); }
+
+  &--rupture {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    i { font-size: .7rem; }
+  }
+
+  &--alerte {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    i { font-size: .7rem; }
+  }
+}
+
+.ticker-stock {
+  font-size: .68rem;
+  opacity: .75;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Séparateur entre chaque passage complet ────────────────────────────────────
+.ticker-cycle-sep {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 1.25rem;
+  vertical-align: middle;
+
+  span {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ef4444;
+    opacity: .35;
+    animation: ticker-dot-pulse 1.2s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: .2s; }
+    &:nth-child(3) { animation-delay: .4s; }
+  }
+}
+
+@keyframes ticker-dot-pulse {
+  0%, 100% { opacity: .25; transform: scale(.8); }
+  50%       { opacity: .7;  transform: scale(1.2); }
+}

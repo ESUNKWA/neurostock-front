@@ -10,14 +10,12 @@
         <a routerLink="/restaurant/commandes" class="btn btn-sm btn-light px-2 py-1 flex-shrink-0">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <select class="form-select form-select-sm" [(ngModel)]="selectedTableId" style="min-width:0; flex:1;"
-                [style.border-color]="!selectedTableId && panierCount > 0 ? '#dc3545' : ''"
-                [style.color]="!selectedTableId ? '#888' : ''">
-          <option [ngValue]="null">Table *</option>
+        <nz-select class="w-100" [(ngModel)]="selectedTableId" style="min-width:0; flex:1;"
+                nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Table *">
           @for (t of tables; track t.id) {
-            <option [ngValue]="t.id">Table {{ t.numero }}{{ t.nom ? ' · ' + t.nom : '' }}</option>
+            <nz-option [nzValue]="t.id" [nzLabel]="'Table ' + t.numero + (t.nom ? ' · ' + t.nom : '')"></nz-option>
           }
-        </select>
+        </nz-select>
         @if (commandeEnCours) {
           <span class="badge flex-shrink-0" style="background:#198754;color:#fff;font-size:.68rem;white-space:nowrap;">
             T{{ commandeEnCours.table?.numero ?? '?' }} <i class="bi bi-check-lg ms-1"></i>

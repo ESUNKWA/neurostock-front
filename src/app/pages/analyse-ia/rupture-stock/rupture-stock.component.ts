@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { PrevisionService } from '../../../services/analyse-ia/prevision.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface PrevisionItem {
   produit: { id: number; nom: string; categorie: string; unite_mesure: string };
@@ -20,7 +21,7 @@ interface PrevisionItem {
 @Component({
   selector: 'app-rupture-stock',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, NzSelectModule],
   templateUrl: './rupture-stock.component.html',
   styleUrl: './rupture-stock.component.scss',
 })

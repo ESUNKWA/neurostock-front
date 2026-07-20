@@ -13,7 +13,7 @@ declare var bootstrap: any;
 
 @Component({
   selector: 'app-users',
-  imports: [CommonModule, ReactiveFormsModule, NzSelectModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NzSelectModule],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
@@ -560,8 +560,7 @@ export class UsersComponent {
     if (structureId) this.boutiqueFind(+structureId);
   }
 
-  onBoutiqueChange(event: Event): void {
-    const boutiqueId = (event.target as HTMLSelectElement).value;
+  onBoutiqueChange(boutiqueId: any): void {
     this.userFind(this.parsedUser.profil.code, boutiqueId || this.parsedUser?.boutique_id);
   }
 

@@ -5,6 +5,7 @@ import { ModuleService, ModuleCode, MODULE_LABELS } from '../../../services/modu
 import { HttpClientService } from '../../../services/http-client/http-client.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { environnement } from '../../../environnement/environnement';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface Structure { id: number; nom: string; }
 interface ModuleRow { module: ModuleCode; label: string; est_actif: boolean; }
@@ -12,7 +13,7 @@ interface ModuleRow { module: ModuleCode; label: string; est_actif: boolean; }
 @Component({
   selector: 'app-ek-modules',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-modules.component.html',
 })
 export default class EkModulesComponent implements OnInit {

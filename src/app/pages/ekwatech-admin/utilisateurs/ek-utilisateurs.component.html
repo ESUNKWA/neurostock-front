@@ -60,23 +60,21 @@
           <!-- Profil -->
           <div class="mb-3">
             <label class="form-label small fw-semibold">Profil <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.profil_id">
-              <option [ngValue]="null">— Choisir un profil —</option>
+            <nz-select class="w-100" [(ngModel)]="form.profil_id" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Choisir un profil —">
               @for (p of profils; track p.id) {
-                <option [ngValue]="p.id">{{ p.nom ?? p.code }}</option>
+                <nz-option [nzValue]="p.id" [nzLabel]="p.nom ?? p.code"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
 
           <!-- Structure -->
           <div class="mb-3">
             <label class="form-label small fw-semibold">Structure</label>
-            <select class="form-select" [(ngModel)]="form.structure_id" (ngModelChange)="onStructureChange()">
-              <option [ngValue]="null">— Aucune (super admin) —</option>
+            <nz-select class="w-100" [(ngModel)]="form.structure_id" (ngModelChange)="onStructureChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Aucune (super admin) —">
               @for (s of structures; track s.id) {
-                <option [ngValue]="s.id">{{ s.nom }}</option>
+                <nz-option [nzValue]="s.id" [nzLabel]="s.nom"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
 
           <!-- Boutique -->
@@ -87,12 +85,11 @@
                 <span class="spinner-border spinner-border-sm"></span> Chargement…
               </div>
             } @else {
-              <select class="form-select" [(ngModel)]="form.boutique_id" [disabled]="!form.structure_id">
-                <option [ngValue]="null">— Aucune boutique —</option>
+              <nz-select class="w-100" [(ngModel)]="form.boutique_id" [nzDisabled]="!form.structure_id" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Aucune boutique —">
                 @for (b of boutiques; track b.id) {
-                  <option [ngValue]="b.id">{{ b.nom }}</option>
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                 }
-              </select>
+              </nz-select>
             }
             @if (!form.structure_id) {
               <div class="form-text">Sélectionnez d'abord une structure.</div>

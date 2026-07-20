@@ -35,12 +35,11 @@
           <div class="card-body">
               <div class="row">
                   <div class="col-md-4">
-                      <select class="form-select" id="mySelect" (change)="onBoutiqueChange($event)">
-                        <option value="">Sélectionner une boutique</option>
+                      <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange($event)" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une boutique">
                         @for (boutique of boutiques; track boutique.id) {
-                          <option [value]="boutique.id">{{ boutique.nom }}</option>
+                          <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
                         }
-                      </select>
+                      </nz-select>
                   </div>
               </div>
           </div>

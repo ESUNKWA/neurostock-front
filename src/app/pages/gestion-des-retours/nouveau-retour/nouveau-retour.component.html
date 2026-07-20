@@ -60,12 +60,11 @@
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
               <label class="form-label fw-semibold">Boutique <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="idBoutique" (change)="onBoutiqueChange()">
-                <option [value]="0">— Sélectionner —</option>
+              <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner —">
                 @for (b of boutiques; track b.id) {
-                  <option [value]="b.id">{{ b.nom }}</option>
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                 }
-              </select>
+              </nz-select>
             </div>
           </div>
         }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { HttpClientService } from '../../../services/http-client/http-client.service';
 import { environnement } from '../../../environnement/environnement';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface ConfigEcran {
   id: number;
@@ -15,7 +16,7 @@ interface ConfigEcran {
 @Component({
   selector: 'app-ek-configurations-ecran',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-configurations-ecran.component.html',
 })
 export default class EkConfigurationsEcranComponent implements OnInit {

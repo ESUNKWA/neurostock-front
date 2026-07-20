@@ -13,12 +13,11 @@
       </div>
     </div>
     @if (boutiques.length > 1) {
-      <select class="rec-hd-select" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()">
-        <option [ngValue]="null">— Boutique —</option>
+      <nz-select class="w-100" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Boutique —">
         @for (b of boutiques; track b.id) {
-          <option [ngValue]="b.id">{{ b.nom }}</option>
+          <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
         }
-      </select>
+      </nz-select>
     }
 
     <!-- Période pills -->
@@ -217,12 +216,11 @@
       <p class="text-muted small mb-0">Synthèse des ventes par boutique et par période</p>
     </div>
     @if (boutiques.length > 1) {
-      <select class="form-select" style="max-width:220px" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()">
-        <option [ngValue]="null">— Boutique —</option>
+      <nz-select class="w-100" style="max-width:220px" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Boutique —">
         @for (b of boutiques; track b.id) {
-          <option [ngValue]="b.id">{{ b.nom }}</option>
+          <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
         }
-      </select>
+      </nz-select>
     }
   </div>
 

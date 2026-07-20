@@ -26,12 +26,11 @@
         <h5 class="card-title mb-0 text-uppercase">Liste des retours</h5>
         @if (boutiques.length > 1 || currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'gerant') {
           <div style="min-width:220px">
-            <select class="form-select form-select-sm" [(ngModel)]="idBoutique" (change)="onBoutiqueChange()">
-              <option [value]="0">— Sélectionner une boutique —</option>
+            <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
               @for (b of boutiques; track b.id) {
-                <option [value]="b.id">{{ b.nom }}</option>
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
         }
       </div>

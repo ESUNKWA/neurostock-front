@@ -12,8 +12,15 @@ export class AlerteService implements OnDestroy {
   private readonly _commandesCount$ = new BehaviorSubject<number>(0);
   readonly commandesCount$ = this._commandesCount$.asObservable();
 
+  private readonly _alertProduits$ = new BehaviorSubject<any[]>([]);
+  readonly alertProduits$ = this._alertProduits$.asObservable();
+
   setCommandesCount(n: number): void {
     this._commandesCount$.next(n);
+  }
+
+  setAlertProduits(products: any[]): void {
+    this._alertProduits$.next(products);
   }
 
   private boutiqueId = 0;

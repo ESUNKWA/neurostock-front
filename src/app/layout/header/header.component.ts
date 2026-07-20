@@ -18,6 +18,7 @@ export class HeaderComponent implements OnInit {
   currentUser: any | null = null;
   alerteCount = 0;
   commandesCount = 0;
+  alertProduits: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -34,6 +35,11 @@ export class HeaderComponent implements OnInit {
     });
     this.alerteService.count$.subscribe(n => this.alerteCount = n);
     this.alerteService.commandesCount$.subscribe(n => this.commandesCount = n);
+    this.alerteService.alertProduits$.subscribe(p => this.alertProduits = p);
+  }
+
+  get tickerDuration(): string {
+    return `${Math.max(15, this.alertProduits.length * 5)}s`;
   }
 
   toggleSidebar(): void {

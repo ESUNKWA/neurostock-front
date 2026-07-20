@@ -53,12 +53,17 @@
             <div class="card-body border-bottom pb-3">
               <div class="row">
                 <div class="col-md-4">
-                  <select class="form-select" (change)="onBoutiqueChange($event)">
-                    <option value="">— Sélectionner une boutique —</option>
-                    @for (boutique of boutiques; track boutique.id) {
-                      <option [value]="boutique.id">{{ boutique.nom }}</option>
-                    }
-                  </select>
+                  <div class="d-flex align-items-center gap-2">
+                    <nz-select class="flex-grow-1" [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange($event)"
+                      nzPlaceHolder="— Entrepôt —" [nzDisabled]="true">
+                      @for (boutique of entrepots; track boutique.id) {
+                        <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
+                      }
+                    </nz-select>
+                    <span class="badge text-bg-warning" style="font-size:.68rem;white-space:nowrap;">
+                      <i class="bi bi-lock-fill me-1"></i>Entrepôt
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,12 +326,11 @@
             Boutique cible <span class="text-danger">*</span>
           </label>
           @if (boutiques.length > 1) {
-            <select class="form-select" [(ngModel)]="importBoutiqueId" [ngModelOptions]="{standalone: true}">
-              <option [ngValue]="null">— Sélectionnez une boutique —</option>
+            <nz-select class="w-100" [(ngModel)]="importBoutiqueId" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionnez une boutique —">
               @for (b of boutiques; track b.id) {
-                <option [ngValue]="b.id">{{ b.nom }}</option>
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
               }
-            </select>
+            </nz-select>
           } @else if (boutiques.length === 1) {
             <input class="form-control" type="text" [value]="boutiques[0].nom" disabled>
           } @else {

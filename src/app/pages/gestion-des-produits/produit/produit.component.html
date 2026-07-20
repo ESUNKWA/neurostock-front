@@ -253,13 +253,12 @@
                         </div>
                         <div class="row">
                             <div class="col-12">
-                                <select class="form-select prd-select" id="boutique" formControlName="boutique"
+                                <nz-select class="w-100" formControlName="boutique" nzPlaceHolder="— Entrepôt —"
                                     [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
-                                    <option value="">— Sélectionner une boutique —</option>
-                                    @for (b of boutiques; track b.id) {
-                                        <option [value]="b.id">{{ b.nom }}</option>
+                                    @for (b of entrepots; track b.id) {
+                                        <nz-option [nzValue]="b.id" [nzLabel]="b.nom + ' (entrepôt)'"></nz-option>
                                     }
-                                </select>
+                                </nz-select>
                                 @if (isSubmitted && f['boutique'].errors?.['required']) {
                                     <div class="invalid-feedback">La boutique est obligatoire</div>
                                 }
@@ -383,18 +382,18 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="prd-label" for="unite_mesure">Unité de mesure</label>
-                                <select class="form-select prd-input" id="unite_mesure" formControlName="unite_mesure">
-                                    <option value="pièce">Pièce</option>
-                                    <option value="kg">Kilogramme (kg)</option>
-                                    <option value="g">Gramme (g)</option>
-                                    <option value="litre">Litre (L)</option>
-                                    <option value="cl">Centilitre (cl)</option>
-                                    <option value="carton">Carton</option>
-                                    <option value="sachet">Sachet</option>
-                                    <option value="boite">Boîte</option>
-                                    <option value="paire">Paire</option>
-                                    <option value="m">Mètre (m)</option>
-                                </select>
+                                <nz-select class="w-100" formControlName="unite_mesure" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                                    <nz-option nzValue="pièce" nzLabel="Pièce"></nz-option>
+                                    <nz-option nzValue="kg" nzLabel="Kilogramme (kg)"></nz-option>
+                                    <nz-option nzValue="g" nzLabel="Gramme (g)"></nz-option>
+                                    <nz-option nzValue="litre" nzLabel="Litre (L)"></nz-option>
+                                    <nz-option nzValue="cl" nzLabel="Centilitre (cl)"></nz-option>
+                                    <nz-option nzValue="carton" nzLabel="Carton"></nz-option>
+                                    <nz-option nzValue="sachet" nzLabel="Sachet"></nz-option>
+                                    <nz-option nzValue="boite" nzLabel="Boîte"></nz-option>
+                                    <nz-option nzValue="paire" nzLabel="Paire"></nz-option>
+                                    <nz-option nzValue="m" nzLabel="Mètre (m)"></nz-option>
+                                </nz-select>
                             </div>
                             <div class="col-md-3 d-none d-md-block">
                                 <label class="prd-label" for="code_barre">

@@ -7,11 +7,12 @@ import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { TenantService, TenantProvisionDto } from '../../../services/tenant/tenant.service';
 import { StructureService } from '../../../services/structure/structure.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-ek-provision',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-provision.component.html',
   providers: [ToastrService],
 })

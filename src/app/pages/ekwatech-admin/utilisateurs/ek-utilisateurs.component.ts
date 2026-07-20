@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { HttpClientService } from '../../../services/http-client/http-client.service';
 import { environnement } from '../../../environnement/environnement';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 interface UserForm {
   nom: string;
@@ -20,7 +21,7 @@ interface UserForm {
 @Component({
   selector: 'app-ek-utilisateurs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './ek-utilisateurs.component.html',
 })
 export default class EkUtilisateursComponent implements OnInit {

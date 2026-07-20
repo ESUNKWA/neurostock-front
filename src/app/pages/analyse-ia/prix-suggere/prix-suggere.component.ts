@@ -8,11 +8,12 @@ import { PrevisionService } from '../../../services/analyse-ia/prevision.service
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-prix-suggere',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ToastrModule],
+  imports: [CommonModule, FormsModule, RouterLink, ToastrModule, NzSelectModule],
   templateUrl: './prix-suggere.component.html',
   styleUrl: './prix-suggere.component.scss',
 })

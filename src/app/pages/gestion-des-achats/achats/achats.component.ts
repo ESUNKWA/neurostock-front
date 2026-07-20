@@ -276,9 +276,8 @@ export default class AchatsComponent implements OnInit {
     }
   }
 
-  onBoutiqueChange(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    this.selectedBoutique = selectElement.value;
+  onBoutiqueChange(value: any): void {
+    this.selectedBoutique = value;
     this.loadProduits();
   }
 

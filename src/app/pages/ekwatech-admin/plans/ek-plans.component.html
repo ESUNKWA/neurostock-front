@@ -75,10 +75,10 @@
           <div class="row g-2 align-items-end">
             <div class="col-5">
               <label class="form-label fw-semibold small mb-1">Type de calcul</label>
-              <select class="form-select" [(ngModel)]="prixBoutiqueForm.type">
-                <option value="montant">Montant fixe</option>
-                <option value="pourcentage">Pourcentage (%)</option>
-              </select>
+              <nz-select class="w-100" [(ngModel)]="prixBoutiqueForm.type" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                <nz-option nzValue="montant" nzLabel="Montant fixe"></nz-option>
+                <nz-option nzValue="pourcentage" nzLabel="Pourcentage (%)"></nz-option>
+              </nz-select>
             </div>
             <div class="col-4">
               <label class="form-label fw-semibold small mb-1">
@@ -114,11 +114,11 @@
         <div class="card-body">
           <div class="mb-3">
             <label class="form-label fw-semibold small">Plan <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="form.plan">
+            <nz-select class="w-100" [(ngModel)]="form.plan" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
               @for (o of PLAN_OPTIONS; track o.value) {
-                <option [value]="o.value">{{ o.label }}</option>
+                <nz-option [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
               }
-            </select>
+            </nz-select>
           </div>
           <div class="mb-3">
             <label class="form-label fw-semibold small">Montant <span class="text-danger">*</span></label>

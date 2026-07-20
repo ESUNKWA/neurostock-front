@@ -440,21 +440,28 @@
                 <div class="f-row">
                   <div class="f-grp">
                     <label class="f-lbl">Type d'activité</label>
-                    <select class="f-sel" [(ngModel)]="form.s_type">
-                      <option value="">— Sélectionner —</option>
-                      <option>Commerce général</option><option>Alimentation / Épicerie</option>
-                      <option>Pharmacie</option><option>Prêt-à-porter</option>
-                      <option>Électronique</option><option>Quincaillerie</option>
-                      <option>Restauration</option><option>Autre</option>
-                    </select>
+                    <nz-select class="w-100" [(ngModel)]="form.s_type" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner —">
+                      <nz-option nzValue="Commerce général" nzLabel="Commerce général"></nz-option>
+                      <nz-option nzValue="Alimentation / Épicerie" nzLabel="Alimentation / Épicerie"></nz-option>
+                      <nz-option nzValue="Pharmacie" nzLabel="Pharmacie"></nz-option>
+                      <nz-option nzValue="Prêt-à-porter" nzLabel="Prêt-à-porter"></nz-option>
+                      <nz-option nzValue="Électronique" nzLabel="Électronique"></nz-option>
+                      <nz-option nzValue="Quincaillerie" nzLabel="Quincaillerie"></nz-option>
+                      <nz-option nzValue="Restauration" nzLabel="Restauration"></nz-option>
+                      <nz-option nzValue="Autre" nzLabel="Autre"></nz-option>
+                    </nz-select>
                   </div>
                   <div class="f-grp">
                     <label class="f-lbl">Pays <span style="color:var(--cta)">*</span></label>
-                    <select class="f-sel" [class.err]="stepErrors['s_pays']" [(ngModel)]="form.s_pays">
-                      <option value="">— Pays —</option>
-                      <option>Côte d'Ivoire</option><option>Sénégal</option><option>Mali</option>
-                      <option>Burkina Faso</option><option>Guinée</option><option>Cameroun</option><option>Autre</option>
-                    </select>
+                    <nz-select class="w-100" [class.err]="stepErrors['s_pays']" [(ngModel)]="form.s_pays" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Pays —">
+                      <nz-option nzValue="Côte d'Ivoire" nzLabel="Côte d'Ivoire"></nz-option>
+                      <nz-option nzValue="Sénégal" nzLabel="Sénégal"></nz-option>
+                      <nz-option nzValue="Mali" nzLabel="Mali"></nz-option>
+                      <nz-option nzValue="Burkina Faso" nzLabel="Burkina Faso"></nz-option>
+                      <nz-option nzValue="Guinée" nzLabel="Guinée"></nz-option>
+                      <nz-option nzValue="Cameroun" nzLabel="Cameroun"></nz-option>
+                      <nz-option nzValue="Autre" nzLabel="Autre"></nz-option>
+                    </nz-select>
                   </div>
                 </div>
                 <div class="f-row">
@@ -483,19 +490,22 @@
                 <div class="f-row">
                   <div class="f-grp">
                     <label class="f-lbl">Type de boutique</label>
-                    <select class="f-sel" [(ngModel)]="form.b_type">
-                      <option>Boutique physique</option><option>Kiosque / Stand</option>
-                      <option>Magasin</option><option>Superette</option><option>Entrepôt</option>
-                    </select>
+                    <nz-select class="w-100" [(ngModel)]="form.b_type" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                      <nz-option nzValue="Boutique physique" nzLabel="Boutique physique"></nz-option>
+                      <nz-option nzValue="Kiosque / Stand" nzLabel="Kiosque / Stand"></nz-option>
+                      <nz-option nzValue="Magasin" nzLabel="Magasin"></nz-option>
+                      <nz-option nzValue="Superette" nzLabel="Superette"></nz-option>
+                      <nz-option nzValue="Entrepôt" nzLabel="Entrepôt"></nz-option>
+                    </nz-select>
                   </div>
                   <div class="f-grp">
                     <label class="f-lbl">Devise</label>
-                    <select class="f-sel" [(ngModel)]="form.b_devise">
-                      <option value="FCFA">FCFA (XOF)</option>
-                      <option value="GNF">Franc Guinéen (GNF)</option>
-                      <option value="XAF">CFA Central (XAF)</option>
-                      <option value="USD">Dollar (USD)</option>
-                    </select>
+                    <nz-select class="w-100" [(ngModel)]="form.b_devise" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                      <nz-option nzValue="FCFA" nzLabel="FCFA (XOF)"></nz-option>
+                      <nz-option nzValue="GNF" nzLabel="Franc Guinéen (GNF)"></nz-option>
+                      <nz-option nzValue="XAF" nzLabel="CFA Central (XAF)"></nz-option>
+                      <nz-option nzValue="USD" nzLabel="Dollar (USD)"></nz-option>
+                    </nz-select>
                   </div>
                 </div>
                 <div class="f-grp">

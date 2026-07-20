@@ -10,6 +10,7 @@ import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../helpers/file-import-preview';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -17,7 +18,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-categorie',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, NzSelectModule],
   templateUrl: './categorie.component.html',
   styleUrl: './categorie.component.scss',
   providers: [ToastrService]
@@ -86,20 +87,42 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Boutiques de type entrepôt uniquement. */
+  get entrepots(): any[] {
+    const list = this.boutiques.filter(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    return list.length ? list : this.boutiques;
+  }
+
+  private selectEntrepot(): void {
+    const e = this.boutiques.find(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    const target = e ?? this.boutiques[0];
+    if (target) {
+      this.selectedBoutiqueId = String(target.id);
+      this.loadCategories();
+    }
+  }
+
   loadBoutiques(): void {
     this.authService.currentUser$.pipe(first()).subscribe((user: any) => {
       if (!user) return;
       if (user.is_admin) {
         this.boutiqueService.find().subscribe({
-          next: (r: any) => { this.boutiques = r?.data ?? []; }
+          next: (r: any) => {
+            this.boutiques = r?.data ?? [];
+            this.selectEntrepot();
+          }
         });
       } else if (user.profil?.code === 'responsable_structure') {
         const structureId = user.structure_id ?? user.structure?.[0]?.id;
         this.boutiqueService.findByStructure(structureId).subscribe({
-          next: (r: any) => { this.boutiques = r?.data ?? []; }
+          next: (r: any) => {
+            this.boutiques = r?.data ?? [];
+            this.selectEntrepot();
+          }
         });
       } else {
         this.boutiques = user.boutique ? [user.boutique] : [];
+        this.selectEntrepot();
       }
     });
   }
@@ -246,8 +269,8 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     }
   }
 
-  onBoutiqueChange(event: any): void {
-    this.selectedBoutiqueId = event.target.value || null;
+  onBoutiqueChange(value: any): void {
+    this.selectedBoutiqueId = value || null;
     this.loadCategories();
   }
 

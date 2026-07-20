@@ -27,12 +27,11 @@
       <div class="col-md-4">
         <div class="input-group input-group-sm">
           <span class="input-group-text"><i class="bi bi-shop"></i></span>
-          <select class="form-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()">
-            <option [ngValue]="0">— Sélectionner une boutique —</option>
+          <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
             @for (b of boutiques; track b.id) {
-              <option [ngValue]="b.id">{{ b.nom }}</option>
+              <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
             }
-          </select>
+          </nz-select>
         </div>
       </div>
     </div>

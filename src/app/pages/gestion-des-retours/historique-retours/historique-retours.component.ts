@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { RetourVenteService } from '../../../services/gestion-des-retours/retour-vente.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -13,7 +14,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-retours',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, NzSelectModule],
   templateUrl: './historique-retours.component.html',
   providers: [ToastrService],
 })
