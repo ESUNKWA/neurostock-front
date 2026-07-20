@@ -18,6 +18,16 @@ export default class EkwatechAdminLayoutComponent implements OnInit {
   sidebarOpen = false;
   inscriptionsEnAttente = 0;
 
+  // Accordéon sidebar
+  openGroups = new Set<string>();
+
+  private readonly groupRoutes: Record<string, string[]> = {
+    organisations: ['/ekwatech/structures', '/ekwatech/boutiques'],
+    acces:         ['/ekwatech/utilisateurs', '/ekwatech/profils', '/ekwatech/configurations-ecran'],
+    abonnements:   ['/ekwatech/inscriptions', '/ekwatech/abonnements', '/ekwatech/plans', '/ekwatech/frais-setup', '/ekwatech/categories'],
+    infra:         ['/ekwatech/tenants', '/ekwatech/provision', '/ekwatech/storage', '/ekwatech/modules'],
+  };
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -26,12 +36,34 @@ export default class EkwatechAdminLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(u => (this.currentUser = u));
-    this.router.events.subscribe(() => { this.sidebarOpen = false; });
-    this.loadInscriptionsCount();
-    // Rafraîchit le compteur à chaque navigation (ex: après validation)
+    this.openActiveGroup();
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      this.sidebarOpen = false;
+      this.openActiveGroup();
       this.loadInscriptionsCount();
     });
+    this.loadInscriptionsCount();
+  }
+
+  toggleGroup(g: string): void {
+    if (this.openGroups.has(g)) {
+      this.openGroups.clear();
+    } else {
+      this.openGroups.clear();
+      this.openGroups.add(g);
+    }
+  }
+
+  isGroupOpen(g: string): boolean { return this.openGroups.has(g); }
+
+  private openActiveGroup(): void {
+    const url = this.router.url;
+    for (const [g, routes] of Object.entries(this.groupRoutes)) {
+      if (routes.some(r => url.startsWith(r))) {
+        this.openGroups.add(g);
+        return;
+      }
+    }
   }
 
   private loadInscriptionsCount(): void {

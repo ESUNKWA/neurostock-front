@@ -93,10 +93,17 @@
     </div>
 
     <!-- Alertes -->
+    @if (abonnement.renouvellement_en_attente && abonnement.statut === 'actif') {
+      <div class="alert alert-info mb-4">
+        <i class="bi bi-hourglass-split me-2"></i>
+        Votre demande de renouvellement est <strong>en attente de validation</strong> par l'administrateur.
+        Vous pouvez continuer à utiliser l'application jusqu'à la fin de votre abonnement en cours.
+      </div>
+    }
     @if (abonnement.statut === 'en_attente') {
       <div class="alert alert-warning mb-4">
         <i class="bi bi-hourglass-split me-2"></i>
-        Votre demande de renouvellement est <strong>en attente de validation</strong> par l'administrateur.
+        Votre demande de souscription est <strong>en attente de validation</strong> par l'administrateur.
         Vous serez notifié dès qu'elle sera traitée.
       </div>
     } @else if (abonnement.statut !== 'actif' || abonnement.jours_restants <= 7) {

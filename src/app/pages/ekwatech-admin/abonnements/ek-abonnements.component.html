@@ -107,7 +107,7 @@
                       <i class="bi bi-tag me-1"></i>{{ devis.categorie_label }}
                     </span>
                   }
-                  @if (!isRenewal && devis.est_premier_abonnement) {
+                  @if (devis.est_premier_abonnement) {
                     <span class="badge bg-warning-subtle text-warning fw-semibold" style="font-size:.68rem">
                       <i class="bi bi-star-fill me-1"></i>1er abonnement
                     </span>
@@ -144,8 +144,8 @@
                   <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
                 </div>
               }
-              <!-- Frais de mise en place (premier abonnement uniquement, jamais au renouvellement) -->
-              @if (!isRenewal && devis.frais_setup?.length > 0) {
+              <!-- Frais de mise en place -->
+              @if (devis.frais_setup?.length > 0) {
                 <div class="border-top border-info-subtle mt-1 pt-1">
                   <div class="text-muted small fw-semibold mb-1" style="font-size:.7rem;letter-spacing:.03em">
                     <i class="bi bi-tools me-1"></i>FRAIS DE MISE EN PLACE

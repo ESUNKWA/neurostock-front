@@ -51,7 +51,7 @@ export class AbonnementBannerComponent implements OnInit, OnDestroy {
     const j = ab.jours_restants ?? 0;
 
     if (ab.statut === 'en_attente') {
-      this.banner = { level: 'warning', icon: 'bi-hourglass-split', message: 'Votre renouvellement est en attente de validation par l\'administrateur.' };
+      this.banner = { level: 'info', icon: 'bi-hourglass-split', message: 'Votre demande de souscription est en attente de validation par l\'administrateur.' };
     } else if (ab.statut === 'expire') {
       this.banner = { level: 'danger', icon: 'bi-exclamation-octagon-fill', message: 'Abonnement expiré. Contactez votre administrateur.' };
     } else if (ab.statut === 'suspendu') {
@@ -60,6 +60,8 @@ export class AbonnementBannerComponent implements OnInit, OnDestroy {
       this.banner = { level: 'danger', icon: 'bi-alarm-fill', message: `Abonnement expire dans ${j} jour${j > 1 ? 's' : ''} !` };
     } else if (j <= 7) {
       this.banner = { level: 'warning', icon: 'bi-exclamation-triangle-fill', message: `Abonnement expire dans ${j} jours.` };
+    } else if (ab.renouvellement_en_attente) {
+      this.banner = { level: 'info', icon: 'bi-hourglass-split', message: 'Votre renouvellement est en attente de validation par l\'administrateur.' };
     } else if (ab.plan === 'essai') {
       this.banner = { level: 'info', icon: 'bi-info-circle-fill', message: `Période d'essai — ${j} jours restants` };
     } else {

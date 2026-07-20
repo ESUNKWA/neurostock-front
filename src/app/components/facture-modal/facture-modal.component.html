@@ -112,6 +112,22 @@
                     </td>
                   </tr>
                 }
+                <!-- Frais de mise en place (premier abonnement) -->
+                @if (facture.detail.frais_setup?.length > 0) {
+                  @for (f of facture.detail.frais_setup; track $index) {
+                    <tr>
+                      <td>
+                        <div class="fw-semibold">{{ f.label }}</div>
+                        <div class="text-muted small" style="color:#b45309">
+                          <i class="bi bi-tools me-1"></i>Frais de mise en place
+                        </div>
+                      </td>
+                      <td class="text-end fw-semibold" style="color:#b45309">
+                        {{ f.montant | number:'1.0-0':'fr' }} {{ f.devise ?? facture.detail.devise }}
+                      </td>
+                    </tr>
+                  }
+                }
               </tbody>
               <tfoot>
                 @if (facture.detail.nb_boutiques_facturees > 0) {
@@ -119,6 +135,25 @@
                     <td class="text-muted small">Sous-total boutiques supplémentaires ({{ facture.detail.nb_boutiques_facturees }})</td>
                     <td class="text-end text-muted small">
                       {{ facture.detail.montant_boutiques | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
+                    </td>
+                  </tr>
+                }
+                @if (facture.detail.montant_frais_setup > 0) {
+                  <tr class="table-light">
+                    <td class="text-muted small"><i class="bi bi-tools me-1"></i>Sous-total frais de mise en place</td>
+                    <td class="text-end text-muted small">
+                      {{ facture.detail.montant_frais_setup | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
+                    </td>
+                  </tr>
+                }
+                @if (facture.detail.remise) {
+                  <tr class="table-warning">
+                    <td class="text-muted small">
+                      <i class="bi bi-tag-fill me-1"></i>
+                      Réduction ({{ facture.detail.remise.type === 'pourcentage' ? facture.detail.remise.valeur + '%' : 'montant fixe' }})
+                    </td>
+                    <td class="text-end text-danger small fw-semibold">
+                      − {{ facture.detail.remise.montant_remise | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
                     </td>
                   </tr>
                 }

@@ -20,8 +20,10 @@ export class CaisseService {
   constructor(private http: HttpClientService) {}
 
   /** Liste des sessions (historique) */
-  getSessions(boutique: number, page = 1, limit = 20) {
-    return this.http.get(this.BASE, { params: { boutique, page, limit } });
+  getSessions(boutique: number, caissier?: string | null, page = 1, limit = 20) {
+    const params: any = { boutique, page, limit };
+    if (caissier) params['caissier'] = caissier;
+    return this.http.get(this.BASE, { params });
   }
 
   /** Session active — caissier optionnel */

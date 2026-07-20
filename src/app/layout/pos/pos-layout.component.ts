@@ -60,7 +60,7 @@ export default class PosLayoutComponent implements OnInit, OnDestroy {
   loadActiveCaisses(): void {
     const boutiqueId = this.currentUser?.boutique_id ?? this.currentUser?.boutique?.id;
     if (!boutiqueId) return;
-    this.caisseSvc.getSessions(boutiqueId, 1, 50).subscribe({
+    this.caisseSvc.getSessions(boutiqueId, null, 1, 50).subscribe({
       next: (r: any) => {
         const all: any[] = Array.isArray(r?.data) ? r.data
                          : Array.isArray(r?.data?.items) ? r.data.items

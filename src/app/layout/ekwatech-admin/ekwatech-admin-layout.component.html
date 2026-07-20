@@ -28,8 +28,8 @@
     <!-- Navigation -->
     <nav class="ek-nav flex-grow-1 px-3 py-3">
 
-      <p class="ek-nav-label">Général</p>
-      <ul class="list-unstyled">
+      <!-- Dashboard (lien direct) -->
+      <ul class="list-unstyled mb-1">
         <li>
           <a routerLink="/ekwatech/dashboard" routerLinkActive="active" class="ek-nav-link">
             <i class="bi bi-grid-1x2-fill"></i>
@@ -38,116 +38,142 @@
         </li>
       </ul>
 
-      <p class="ek-nav-label mt-3">Répertoire</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/structures" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-building-fill"></i>
-            <span>Structures</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/boutiques" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-shop-window"></i>
-            <span>Boutiques</span>
-          </a>
-        </li>
-      </ul>
+      <div class="ek-divider"></div>
 
-      <p class="ek-nav-label mt-3">Utilisateurs</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/utilisateurs" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-people-fill"></i>
-            <span>Utilisateurs</span>
-          </a>
-        </li>
-      </ul>
+      <!-- ── Organisations ───────────────────────────────────────────── -->
+      <button class="ek-group-btn" (click)="toggleGroup('organisations')"
+              [class.has-active]="isGroupOpen('organisations')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-building-fill"></i>
+          <span>Organisations</span>
+        </div>
+        <i class="bi bi-chevron-right ek-chevron" [class.open]="isGroupOpen('organisations')"></i>
+      </button>
+      @if (isGroupOpen('organisations')) {
+        <ul class="ek-submenu list-unstyled">
+          <li>
+            <a routerLink="/ekwatech/structures" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-building"></i><span>Structures</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/boutiques" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-shop-window"></i><span>Boutiques</span>
+            </a>
+          </li>
+        </ul>
+      }
 
-      <p class="ek-nav-label mt-3">Configuration</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/profils" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-person-badge-fill"></i>
-            <span>Profils</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/configurations-ecran" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-layout-wtf"></i>
-            <span>Écrans par profil</span>
-          </a>
-        </li>
-      </ul>
+      <!-- ── Utilisateurs & Accès ────────────────────────────────────── -->
+      <button class="ek-group-btn mt-1" (click)="toggleGroup('acces')"
+              [class.has-active]="isGroupOpen('acces')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-people-fill"></i>
+          <span>Utilisateurs & Accès</span>
+        </div>
+        <i class="bi bi-chevron-right ek-chevron" [class.open]="isGroupOpen('acces')"></i>
+      </button>
+      @if (isGroupOpen('acces')) {
+        <ul class="ek-submenu list-unstyled">
+          <li>
+            <a routerLink="/ekwatech/utilisateurs" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-person-fill"></i><span>Utilisateurs</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/profils" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-person-badge-fill"></i><span>Profils</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/configurations-ecran" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-layout-wtf"></i><span>Écrans par profil</span>
+            </a>
+          </li>
+        </ul>
+      }
 
-      <p class="ek-nav-label mt-3">Multi-tenancy</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/tenants" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-diagram-3-fill"></i>
-            <span>Bases de données</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/provision" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-database-add"></i>
-            <span>Provisionner</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/storage" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-hdd-fill"></i>
-            <span>Stockage</span>
-          </a>
-        </li>
-      </ul>
+      <!-- ── Inscriptions & Abonnements ─────────────────────────────── -->
+      <button class="ek-group-btn mt-1" (click)="toggleGroup('abonnements')"
+              [class.has-active]="isGroupOpen('abonnements')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-check-fill"></i>
+          <span>Abonnements</span>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          @if (inscriptionsEnAttente > 0) {
+            <span class="ek-badge-count">{{ inscriptionsEnAttente }}</span>
+          }
+          <i class="bi bi-chevron-right ek-chevron" [class.open]="isGroupOpen('abonnements')"></i>
+        </div>
+      </button>
+      @if (isGroupOpen('abonnements')) {
+        <ul class="ek-submenu list-unstyled">
+          <li>
+            <a routerLink="/ekwatech/inscriptions" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-person-plus-fill"></i>
+              <span>Inscriptions</span>
+              @if (inscriptionsEnAttente > 0) {
+                <span class="ek-badge-count ms-auto">{{ inscriptionsEnAttente }}</span>
+              }
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/abonnements" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-calendar2-check"></i><span>Abonnements</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/plans" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-tags-fill"></i><span>Plans tarifaires</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/frais-setup" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-receipt-cutoff"></i><span>Frais de mise en place</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/categories" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-diagram-3"></i><span>Plans tarifaires structures</span>
+            </a>
+          </li>
+        </ul>
+      }
 
-      <p class="ek-nav-label mt-3">Modules</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/modules" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-puzzle-fill"></i>
-            <span>Modules par structure</span>
-          </a>
-        </li>
-      </ul>
-
-      <p class="ek-nav-label mt-3">Inscriptions & Abonnements</p>
-      <ul class="list-unstyled">
-        <li>
-          <a routerLink="/ekwatech/inscriptions" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-person-plus-fill"></i>
-            <span>Inscriptions</span>
-            @if (inscriptionsEnAttente > 0) {
-              <span class="ek-badge-count">{{ inscriptionsEnAttente }}</span>
-            }
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/abonnements" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-calendar-check-fill"></i>
-            <span>Abonnements</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/plans" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-tags-fill"></i>
-            <span>Plans tarifaires</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/frais-setup" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-receipt-cutoff"></i>
-            <span>Frais de mise en place</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/ekwatech/categories" routerLinkActive="active" class="ek-nav-link">
-            <i class="bi bi-diagram-3-fill"></i>
-            <span>Catégories</span>
-          </a>
-        </li>
-      </ul>
+      <!-- ── Infrastructure ─────────────────────────────────────────── -->
+      <button class="ek-group-btn mt-1" (click)="toggleGroup('infra')"
+              [class.has-active]="isGroupOpen('infra')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-hdd-stack-fill"></i>
+          <span>Infrastructure</span>
+        </div>
+        <i class="bi bi-chevron-right ek-chevron" [class.open]="isGroupOpen('infra')"></i>
+      </button>
+      @if (isGroupOpen('infra')) {
+        <ul class="ek-submenu list-unstyled">
+          <li>
+            <a routerLink="/ekwatech/tenants" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-diagram-3-fill"></i><span>Bases de données</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/provision" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-database-add"></i><span>Provisionner</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/storage" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-hdd-fill"></i><span>Stockage fichiers</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/ekwatech/modules" routerLinkActive="active" class="ek-sub-link">
+              <i class="bi bi-puzzle-fill"></i><span>Modules</span>
+            </a>
+          </li>
+        </ul>
+      }
 
     </nav>
 

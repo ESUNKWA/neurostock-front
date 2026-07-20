@@ -258,7 +258,8 @@ export default class CaisseComponent implements OnInit {
   loadSessions(): void {
     if (!this.idBoutique) return;
     this.loadingSessions = true;
-    this.caisseService.getSessions(this.idBoutique)
+    const caissierFilter = this.isSuperUser ? undefined : (this.currentUser?.telephone ?? undefined);
+    this.caisseService.getSessions(this.idBoutique, caissierFilter)
       .pipe(finalize(() => (this.loadingSessions = false)))
       .subscribe({
         next: (r: any) => {
