@@ -227,70 +227,53 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               orderable: false,
               render: (data: any, type: any, row: any) => {
                 const marge = row.prix_achat > 0 ? ((row.prix_vente - row.prix_achat) / row.prix_achat) * 100 : 0;
-                const iaClass = marge < 15 ? 'btn-warning' : 'btn-outline-secondary';
+                const iaColorClass = marge < 15 ? 'prd-act-amber' : 'prd-act-violet';
                 const iaTitle = marge < 15 ? `Marge faible (${Math.round(marge)}%) — Suggestion IA` : 'Suggestion IA prix';
-                return `
-                  <div class="btn-group">
-                    <button type="button" class="btn btn-sm ${iaClass} me-1" data-bs-toggle="tooltip" title="${iaTitle}" data-action="ia" data-id="${row.id}">
-                      <i class="bi bi-robot"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="Imprimer étiquette" data-action="label" data-id="${row.id}">
-                      <i class="bi bi-tag"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-success me-1" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                `;
+                return `<div class="prd-actions">
+                  <button class="prd-act-btn ${iaColorClass}" title="${iaTitle}" data-action="ia" data-id="${row.id}"><i class="bi bi-robot"></i></button>
+                  <button class="prd-act-btn prd-act-slate" title="Imprimer étiquette" data-action="label" data-id="${row.id}"><i class="bi bi-tag"></i></button>
+                  <button class="prd-act-btn prd-act-blue" title="Visualiser" data-action="view" data-id="${row.id}"><i class="bi bi-eye"></i></button>
+                  <button class="prd-act-btn prd-act-green" title="Modifier" data-action="edit" data-id="${row.id}"><i class="bi bi-pencil"></i></button>
+                  <button class="prd-act-btn prd-act-red" title="Supprimer" data-action="delete" data-id="${row.id}"><i class="bi bi-trash"></i></button>
+                </div>`;
               }
             }
           ],
           language: {
             emptyTable: 'Aucun produit trouvé',
-            search: 'Rechercher :',
-            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            search: '',
+            searchPlaceholder: 'Rechercher un produit…',
+            info: '_START_–_END_ sur _TOTAL_',
             infoEmpty: 'Aucun résultat',
             zeroRecords: 'Aucun résultat',
             lengthMenu: 'Afficher _MENU_ éléments',
             paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"prd-dt-top"<"prd-dt-exports"B>f>t<"prd-dt-bottom"ip>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-1',
-              exportOptions: {
-                columns: [0, 1, 2, 3, 4] // Exporter les colonnes Nom, Prix d'achat, Prix de vente, Stock, Catégorie
-              }
+              className: 'prd-export-btn prd-export-excel',
+              exportOptions: { columns: [2, 3, 4, 5, 6, 7] }
             },
             {
               extend: 'pdf',
               text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-              className: 'btn btn-danger btn-sm',
-              exportOptions: {
-                columns: [0, 1, 2, 3, 4] // Exporter les colonnes Nom, Prix d'achat, Prix de vente, Stock, Catégorie
-              }
+              className: 'prd-export-btn prd-export-pdf',
+              exportOptions: { columns: [2, 3, 4, 5, 6, 7] }
             }
           ],
-          pageLength: 20,
+          pageLength: 10,
           searching: true,
           info: true,
           responsive: true,
           ordering: true,
-          pagingType: 'full_numbers',
+          pagingType: 'simple_numbers',
           stateSave: false,
           retrieve: false,
           autoWidth: false,
-          drawCallback: () => {
-            $('[data-bs-toggle="tooltip"]').tooltip();
-          },
+          drawCallback: () => {},
           createdRow: (row: any, data: any, dataIndex: any) => {
             // Checkbox sélection
             $(row).find('.row-check').on('change', (e: any) => {

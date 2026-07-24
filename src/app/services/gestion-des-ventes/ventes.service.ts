@@ -6,6 +6,7 @@ export interface VenteParams {
   boutique: number;
   date_debut?: string;
   date_fin?: string;
+  utilisateur?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

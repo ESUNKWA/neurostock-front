@@ -30,6 +30,7 @@ export default class CaisseComponent implements OnInit {
   filteredSessions: any[] = [];
   sessionCaissierFilter: number | null = null;
   activeSession: any = null;
+  caisses: any[] = [];
   theorique: any = null;
   loadingSessions = false;
   loadingActive = false;
@@ -61,10 +62,10 @@ export default class CaisseComponent implements OnInit {
 
   get isSuperUser(): boolean {
     const code = this.currentUser?.profil?.code;
-    return code === 'admin' || code === 'responsable_structure' || this.currentUser?.is_admin === true;
+    return code === 'admin' || code === 'responsable_structure' || code === 'gerant' || this.currentUser?.is_admin === true;
   }
 
-  readonly modesPaiement = [
+  private readonly ALL_MODES_PAIEMENT = [
     { value: 'espece',       label: 'Espèces' },
     { value: 'orange_money', label: 'Orange Money' },
     { value: 'wave',         label: 'Wave' },
@@ -74,6 +75,13 @@ export default class CaisseComponent implements OnInit {
     { value: 'carte',        label: 'Carte bancaire' },
     { value: 'credit',       label: 'Crédit' },
   ];
+
+  modesPaiementActifs: string[] | null = null;
+
+  get modesPaiement() {
+    if (!this.modesPaiementActifs) return this.ALL_MODES_PAIEMENT;
+    return this.ALL_MODES_PAIEMENT.filter(m => this.modesPaiementActifs!.includes(m.value));
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -105,6 +113,18 @@ export default class CaisseComponent implements OnInit {
           this.loadActiveSession();
           this.loadSessions();
           this.loadUsers();
+          this.loadCaisses();
+          // Load modes from user boutique if available
+          if (Array.isArray(user.boutique?.modes_paiement)) {
+            this.modesPaiementActifs = user.boutique.modes_paiement;
+          } else {
+            this.boutiqueService.findOne(boutique).subscribe({
+              next: (r: any) => {
+                const b = r?.data ?? r;
+                if (Array.isArray(b?.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
+              },
+            });
+          }
         }
       }
     });
@@ -123,7 +143,8 @@ export default class CaisseComponent implements OnInit {
     });
 
     this.ouvrirForm = this.fb.group({
-      caissier:      [this.currentUser?.id ?? null, Validators.required],
+      caisse_id:      [null],
+      caissier:       [this.currentUser?.id ?? null, Validators.required],
       fond_ouverture: fondGroup(),
       note: ['']
     });
@@ -167,6 +188,17 @@ export default class CaisseComponent implements OnInit {
     this.loadActiveSession();
     this.loadSessions();
     this.loadUsers();
+    this.loadCaisses();
+    const b = this.boutiques.find((x: any) => x.id === this.idBoutique);
+    this.modesPaiementActifs = Array.isArray(b?.modes_paiement) ? b.modes_paiement : null;
+  }
+
+  loadCaisses(): void {
+    if (!this.idBoutique) return;
+    this.caisseService.getCaisses(this.idBoutique).subscribe({
+      next: (r: any) => { this.caisses = r?.data ?? r ?? []; },
+      error: () => { this.caisses = []; },
+    });
   }
 
   // ── Activation caisse ────────────────────────────────────────────────────────
@@ -306,6 +338,7 @@ export default class CaisseComponent implements OnInit {
     const caissierCtrl = this.ouvrirForm.get('caissier');
     caissierCtrl?.enable();
     this.ouvrirForm.reset({
+      caisse_id: null,
       caissier: null,
       fond_ouverture: { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0, credit: 0 },
       note: ''

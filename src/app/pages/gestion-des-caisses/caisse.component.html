@@ -444,6 +444,26 @@
       <form [formGroup]="ouvrirForm" (ngSubmit)="submitOuvrir()">
         <div class="mf-body">
 
+          <!-- Caisse physique -->
+          @if (caisses.length > 0) {
+            <div class="mf-section">
+              <div class="mf-section-label"><i class="bi bi-cash-register"></i> Caisse</div>
+              <label class="mf-label">Caisse physique</label>
+              <nz-select
+                nzShowSearch
+                nzPlaceHolder="Sélectionner une caisse…"
+                formControlName="caisse_id"
+                nzAllowClear
+                style="width:100%">
+                @for (c of caisses; track c.id) {
+                  <nz-option [nzValue]="c.id" [nzLabel]="c.nom + ' (' + c.code + ')'"
+                             [nzDisabled]="c.statut !== 'ACTIVE'"></nz-option>
+                }
+              </nz-select>
+              <div class="mf-hint">Laissez vide pour une session sans caisse assignée</div>
+            </div>
+          }
+
           <!-- Caissier -->
           <div class="mf-section">
             <div class="mf-section-label"><i class="bi bi-person-fill"></i> Caissier</div>

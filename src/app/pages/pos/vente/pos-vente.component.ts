@@ -139,7 +139,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   retourSubmitting   = false;
   retourResult: any  = null;
 
-  readonly MODES = [
+  private readonly ALL_MODES = [
     { value: 'espece',       label: 'Espèces',       icon: 'bi-cash' },
     { value: 'orange_money', label: 'Orange Money',  icon: 'bi-phone' },
     { value: 'wave',         label: 'Wave',          icon: 'bi-phone' },
@@ -150,6 +150,13 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
     { value: 'credit',       label: 'Crédit',        icon: 'bi-hourglass-split' },
     { value: 'mixte',        label: 'Mixte',         icon: 'bi-layers' },
   ];
+
+  modesPaiementActifs: string[] | null = null;
+
+  get MODES() {
+    if (!this.modesPaiementActifs) return this.ALL_MODES;
+    return this.ALL_MODES.filter(m => this.modesPaiementActifs!.includes(m.value));
+  }
 
   constructor(
     private authService:  AuthService,
@@ -179,6 +186,15 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
         this.loadClients();
         this.loadCaisse();
         this.loadTotalJour();
+        const bid = u.boutique_id ?? u.boutique?.id;
+        if (bid) {
+          this.boutiqueSvc.findOne(bid).subscribe({
+            next: (r: any) => {
+              const b = r?.data ?? r;
+              if (Array.isArray(b?.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
+            },
+          });
+        }
       }
     });
   }

@@ -1,61 +1,29 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashService } from '../../../services/dash/dash.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { DeviceService } from '../../../services/device/device.service';
+
+declare var $: any;
 
 @Component({
   selector: 'app-pos-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './pos-dashboard.component.html',
-  styles: [`
-    .pos-dash-hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 16px;
-      background: linear-gradient(135deg, #1a1d21 0%, #2d3340 100%);
-      border-radius: 0 0 20px 20px;
-      margin-bottom: 4px;
-    }
-    .pos-dash-greeting {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-    }
-    .pos-dash-date {
-      font-size: .75rem;
-      color: rgba(255,255,255,.5);
-      text-transform: capitalize;
-      margin-top: 2px;
-    }
-    .pos-dash-cta {
-      display: inline-flex;
-      align-items: center;
-      padding: 10px 16px;
-      background: linear-gradient(135deg, #0d6efd, #0a58ca);
-      color: #fff;
-      font-size: .84rem;
-      font-weight: 600;
-      border-radius: 50px;
-      text-decoration: none;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(13,110,253,.4);
-      -webkit-tap-highlight-color: transparent;
-    }
-  `]
+  styleUrl: './pos-dashboard.component.scss'
 })
-export default class PosDashboardComponent implements OnInit {
+export default class PosDashboardComponent implements OnInit, OnDestroy {
   currentUser: any;
   stats: any = null;
   isLoading = false;
   isMobile = false;
   today = new Date();
 
-  readonly modesLabels: Record<string, string> = {
+  private dtTimer: any = null;
+
+  readonly modesLabels: Record<string, string | undefined> = {
     espece:       'Espèces',
     carte:        'Carte bancaire',
     credit:       'Crédit',
@@ -64,12 +32,14 @@ export default class PosDashboardComponent implements OnInit {
     mtn_money:    'MTN Money',
     moov_money:   'Moov Money',
     dajmo:        'Dajmo',
+    mixte:        'Mixte',
   };
 
   constructor(
     private dashService: DashService,
     private authService: AuthService,
-    private deviceSvc: DeviceService
+    private deviceSvc: DeviceService,
+    @Inject(PLATFORM_ID) private platformId: any
   ) {}
 
   ngOnInit(): void {
@@ -80,6 +50,10 @@ export default class PosDashboardComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.destroyProdTable();
+  }
+
   load(): void {
     const boutiqueId = this.currentUser?.boutique_id ?? this.currentUser?.boutique?.id;
     const caissier   = this.currentUser?.id ?? this.currentUser?.telephone;
@@ -87,17 +61,99 @@ export default class PosDashboardComponent implements OnInit {
 
     this.isLoading = true;
     this.dashService.findCaissier(boutiqueId, caissier).subscribe({
-      next: (res: any) => { this.stats = res; this.isLoading = false; },
-      error: ()        => { this.stats = {};  this.isLoading = false; },
+      next: (res: any) => {
+        this.stats = res?.data ?? res;
+        this.isLoading = false;
+        this.destroyProdTable();
+        clearTimeout(this.dtTimer);
+        this.dtTimer = setTimeout(() => this.initProdTable(), 80);
+      },
+      error: () => { this.stats = {}; this.isLoading = false; },
     });
   }
 
-  modeEntries(): { label: string; val: number }[] {
+  private destroyProdTable(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const t = $('.pd-prod-dt');
+      if ($.fn.DataTable?.isDataTable(t)) t.DataTable().destroy();
+    } catch {}
+  }
+
+  private initProdTable(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const produits: any[] = this.stats?.produits ?? [];
+    if (!produits.length) return;
+    try {
+      $('.pd-prod-dt').DataTable({
+        data: produits,
+        columns: [
+          {
+            data: 'nom',
+            render: (d: any) =>
+              `<span class="pd-prod-name">${d ?? '—'}</span>`
+          },
+          {
+            data: 'prix_unitaire',
+            className: 'text-end text-muted',
+            render: (d: any) =>
+              `<span style="font-size:.76rem">${Number(d).toLocaleString('fr')} F</span>`
+          },
+          {
+            data: 'quantite_vendue',
+            className: 'text-center',
+            render: (d: any) =>
+              `<span class="pd-qty-badge">${d}</span>`
+          },
+          {
+            data: 'montant_total',
+            className: 'text-end fw-semibold',
+            render: (d: any) =>
+              `${Number(d).toLocaleString('fr')} F`
+          },
+        ],
+        pageLength: 10,
+        lengthChange: false,
+        ordering: true,
+        searching: true,
+        info: true,
+        pagingType: 'simple_numbers',
+        language: {
+          search:     '',
+          searchPlaceholder: 'Rechercher un produit…',
+          emptyTable: 'Aucun produit vendu',
+          info:       '_START_–_END_ sur _TOTAL_',
+          infoEmpty:  '0 résultat',
+          zeroRecords:'Aucun résultat',
+          paginate:   { previous: '‹', next: '›', first: '', last: '' },
+        },
+        dom: '<"pd-dt-top"f>t<"pd-dt-bottom"ip>',
+      });
+    } catch (e) {
+      console.error('DataTable init error', e);
+    }
+  }
+
+  modeEntries(): { label: string; val: number; mode: string }[] {
     const obj = this.stats?.par_mode_paiement;
     if (!obj) return [];
     return Object.entries(obj)
       .filter(([, v]) => Number(v) > 0)
-      .map(([mode, val]) => ({ label: this.modesLabels[mode] ?? mode, val: Number(val) }));
+      .map(([mode, val]) => ({ label: this.modesLabels[mode] ?? mode, val: Number(val), mode }));
+  }
+
+  get fondOuvertureTotal(): number {
+    const fond = this.stats?.session_caisse?.fond_ouverture;
+    if (!fond) return 0;
+    return Object.values(fond as Record<string, number>).reduce((acc, v) => acc + (v ?? 0), 0);
+  }
+
+  get fondOuvertureEntries(): { mode: string; val: number }[] {
+    const fond = this.stats?.session_caisse?.fond_ouverture;
+    if (!fond) return [];
+    return Object.entries(fond as Record<string, number>)
+      .filter(([, v]) => (v ?? 0) > 0)
+      .map(([mode, val]) => ({ mode, val: Number(val) }));
   }
 
   get panierMoyen(): number {

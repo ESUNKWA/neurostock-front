@@ -1,0 +1,577 @@
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.pd-hero {
+  background: var(--pos-nav-bg, linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%));
+  padding: 1.25rem 1.25rem .5rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+}
+
+.pd-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pd-hero-top-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pd-greeting {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.pd-date {
+  font-size: .75rem;
+  color: rgba(255,255,255,.5);
+  text-transform: capitalize;
+  margin-top: .2rem;
+}
+
+// Session status badge
+.pd-session-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .25rem .6rem;
+  border-radius: 99px;
+  font-size: .7rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  i { font-size: .5rem; }
+
+  &.pd-session-open {
+    background: rgba(16, 185, 129, .2);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, .35);
+    i { color: #34d399; animation: pd-pulse 2s infinite; }
+  }
+
+  &.pd-session-closed {
+    background: rgba(148, 163, 184, .15);
+    color: rgba(255,255,255,.5);
+    border: 1px solid rgba(148, 163, 184, .2);
+  }
+}
+
+@keyframes pd-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .3; }
+}
+
+.pd-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .35rem .75rem;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #fff;
+  border-radius: 8px;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { background: rgba(255,255,255,.2); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+// ── KPI tiles ─────────────────────────────────────────────────────────────────
+.pd-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .625rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+
+    .pd-kpi-wide { grid-column: span 2; }
+  }
+}
+
+.pd-kpi-tile {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  backdrop-filter: blur(4px);
+
+  &.pd-kpi-credit {
+    background: rgba(239, 68, 68, .15);
+    border-color: rgba(239, 68, 68, .25);
+  }
+}
+
+.pd-kpi-label {
+  font-size: .66rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.6);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: .2rem;
+}
+
+.pd-kpi-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-kpi-unit {
+  font-size: .68rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.5);
+  margin-left: .2rem;
+}
+
+.pd-kpi-sub {
+  font-size: .64rem;
+  color: rgba(255, 200, 200, .75);
+  margin-top: .2rem;
+}
+
+// CTA bouton Nouvelle vente (mobile only)
+.pd-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  padding: .875rem;
+  background: #fff;
+  color: #1e3a5f;
+  font-size: .9rem;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none;
+  margin-bottom: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  transition: transform .1s, box-shadow .1s;
+
+  &:active { transform: scale(.98); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.pd-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    padding: 1.25rem;
+  }
+}
+
+// ── Section card ──────────────────────────────────────────────────────────────
+.pd-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+.pd-card-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .875rem 1rem .5rem;
+  font-size: .72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.pd-card-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  flex-shrink: 0;
+}
+
+// ── Caisse card ───────────────────────────────────────────────────────────────
+.pd-caisse-body {
+  padding: .875rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+}
+
+.pd-caisse-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  padding: .75rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.pd-caisse-bloc-ca {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.pd-caisse-bloc-credit {
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.pd-caisse-bloc-label {
+  font-size: .7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+
+  .pd-caisse-bloc-ca & { color: #2563eb; }
+  .pd-caisse-bloc-credit & { color: #dc2626; }
+}
+
+.pd-caisse-bloc-amount {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.pd-ca-amount     { color: #1d4ed8; }
+.pd-credit-amount { color: #dc2626; }
+
+.pd-caisse-unit {
+  font-size: .7rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: .2rem;
+}
+
+.pd-caisse-sub {
+  font-size: .72rem;
+  color: #ef4444;
+  margin-top: .1rem;
+}
+
+.pd-fond-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-top: .35rem;
+}
+
+.pd-fond-chip {
+  font-size: .68rem;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: .15rem .5rem;
+  border-radius: 99px;
+}
+
+.pd-session-meta {
+  font-size: .7rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  padding-top: .25rem;
+
+  i { font-size: .75rem; }
+}
+
+// ── Modes paiement ────────────────────────────────────────────────────────────
+.pd-modes {
+  padding: .75rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.pd-mode-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px;
+  align-items: center;
+  gap: .625rem;
+}
+
+.pd-mode-name {
+  font-size: .8rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pd-mode-bar-track {
+  height: 7px;
+  background: #f1f5f9;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.pd-mode-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+.pd-mode-amount {
+  font-size: .76rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// couleurs par mode
+.pd-bar-espece       { background: #10b981; }
+.pd-bar-carte        { background: #3b82f6; }
+.pd-bar-orange_money { background: #f97316; }
+.pd-bar-wave         { background: #06b6d4; }
+.pd-bar-mtn_money    { background: #eab308; }
+.pd-bar-moov_money   { background: #8b5cf6; }
+.pd-bar-dajmo        { background: #ec4899; }
+.pd-bar-credit       { background: #ef4444; }
+.pd-bar-mixte        { background: #6366f1; }
+.pd-bar-default      { background: #94a3b8; }
+
+// ── Produits table ────────────────────────────────────────────────────────────
+.pd-prod-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+
+  thead tr {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  thead th {
+    padding: .6rem 1rem;
+    font-size: .7rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #f8fafc;
+    transition: background .1s;
+
+    &:hover { background: #fafbfc; }
+    &:last-child { border-bottom: none; }
+  }
+
+  tbody td {
+    padding: .625rem 1rem;
+    color: #334155;
+  }
+
+  tfoot tr {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  tfoot td {
+    padding: .6rem 1rem;
+    font-weight: 700;
+    font-size: .82rem;
+  }
+}
+
+.pd-prod-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pd-qty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 .45rem;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  font-size: .76rem;
+  font-weight: 600;
+}
+
+// ── Compteur articles ─────────────────────────────────────────────────────────
+.pd-prod-count {
+  font-size: .68rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: .15rem .55rem;
+  border-radius: 99px;
+}
+
+// ── DataTable produits (::ng-deep car DOM généré hors Angular) ─────────────────
+.pd-dt-wrap { padding: 0 0 .5rem; }
+
+:host ::ng-deep {
+  .pd-dt-top {
+    padding: .75rem 1rem .5rem;
+
+    .dataTables_filter {
+      float: none;
+
+      label { width: 100%; font-size: 0; }
+
+      input {
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: .4rem .75rem .4rem 2rem;
+        font-size: .82rem;
+        background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") .65rem center / 14px no-repeat;
+        outline: none;
+        margin: 0;
+        transition: border-color .15s;
+
+        &:focus { border-color: #3b82f6; background-color: #fff; }
+      }
+    }
+  }
+
+  .pd-dt-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem 1rem .75rem;
+    flex-wrap: wrap;
+    gap: .5rem;
+
+    .dataTables_info {
+      font-size: .72rem;
+      color: #94a3b8;
+      padding: 0;
+    }
+
+    .dataTables_paginate {
+      display: flex;
+      align-items: center;
+      gap: .2rem;
+
+      .paginate_button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 .4rem;
+        border-radius: 7px;
+        font-size: .78rem;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        transition: all .12s;
+
+        &:hover:not(.disabled) { background: #f1f5f9; }
+        &.current, &.current:hover {
+          background: #2563eb;
+          border-color: #2563eb;
+          color: #fff;
+        }
+        &.disabled { opacity: .4; cursor: default; }
+      }
+    }
+  }
+
+  .pd-prod-dt {
+    thead th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 1px solid #e2e8f0;
+      padding: .6rem 1rem;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f8fafc;
+      &:hover td { background: #fafbfc; }
+    }
+
+    tbody td {
+      padding: .55rem 1rem;
+      font-size: .82rem;
+      color: #334155;
+    }
+  }
+}
+
+// ── Empty states ──────────────────────────────────────────────────────────────
+.pd-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: .82rem;
+
+  i { font-size: 1.75rem; display: block; margin-bottom: .5rem; opacity: .4; }
+}
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+.pd-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: .75rem;
+  color: #64748b;
+  font-size: .82rem;
+}
+
+// ── Desktop layout ────────────────────────────────────────────────────────────
+@media (min-width: 768px) {
+  .pd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    .pd-card-full { grid-column: span 2; }
+  }
+}

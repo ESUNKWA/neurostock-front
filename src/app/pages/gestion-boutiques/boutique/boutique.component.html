@@ -296,3 +296,42 @@
     </div>
   </div>
 </div>
+
+<!-- Modal modes de paiement -->
+<div class="modal fade" id="modal-modes-paiement" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-content mf-modal" style="--mf-accent:#0d9488">
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-credit-card-2-front"></i></div>
+        <div>
+          <div class="mf-header-title">Modes de paiement</div>
+          <div class="mf-header-subtitle">{{ modesBoutique?.nom }} — cochez les modes à activer</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="mf-body">
+        <div class="mf-modes-grid">
+          @for (mode of ALL_MODES; track mode.value) {
+            <label class="mf-mode-item" [class.mf-mode-active]="isModeSelected(mode.value)">
+              <input type="checkbox"
+                     [checked]="isModeSelected(mode.value)"
+                     (change)="toggleMode(mode.value)"
+                     class="mf-mode-check">
+              <i class="bi {{ mode.icon }} mf-mode-icon"></i>
+              <span class="mf-mode-label">{{ mode.label }}</span>
+            </label>
+          }
+        </div>
+      </div>
+      <div class="mf-footer">
+        <button class="btn mf-btn-save" (click)="saveModesPaiement()" [disabled]="modesSaving">
+          @if (modesSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
+        <button type="button" class="btn mf-btn-cancel" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg"></i> Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

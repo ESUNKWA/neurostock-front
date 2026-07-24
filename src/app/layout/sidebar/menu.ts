@@ -198,8 +198,19 @@ export const Menu: any = [
             {
                 libelle: 'Gestion de caisse',
                 icon: 'bi bi-cash-coin',
-                lien: '/caisse',
                 module: 'caisse',
+                sousMenu: [
+                    {
+                        libelle: 'Sessions de caisse',
+                        lien: '/caisse',
+                        icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Caisses physiques',
+                        lien: '/caisse/caisses',
+                        icon: 'bi bi-circle'
+                    }
+                ]
             }
         ]
     },

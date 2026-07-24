@@ -49,7 +49,7 @@
           <a routerLink="/pos/caisse" class="pos-caisse-bar-item text-decoration-none">
             <span class="pos-caisse-bar-dot"></span>
             <i class="bi bi-cash-coin"></i>
-            <span>CAISSE #{{ c.id }}</span>
+            <span>{{ c.caisse?.nom || c.caisse?.code || 'Caisse' }}</span>
             <span class="pos-caisse-bar-since">
               — ouverte {{ c.date_ouverture ?? c.created_at | date:'HH:mm' }}
             </span>
@@ -240,12 +240,12 @@
         <!-- Caisses actives -->
         @if (hasModule('caisse') && activeCaisses.length > 0) {
           <div class="d-none d-md-flex align-items-center gap-1">
-            @for (c of activeCaisses; track c.id; let n = $index) {
+            @for (c of activeCaisses; track c.id) {
               <a routerLink="/pos/caisse"
                  class="pos-caisse-chip text-decoration-none"
                  [title]="'Ouverte le ' + (c.date_ouverture ?? c.created_at | date:'dd/MM HH:mm')">
                 <i class="bi bi-cash-coin"></i>
-                <span>CAISSE #{{ c.id }}</span>
+                <span>{{ c.caisse?.nom || c.caisse?.code || 'Caisse' }}</span>
               </a>
             }
           </div>

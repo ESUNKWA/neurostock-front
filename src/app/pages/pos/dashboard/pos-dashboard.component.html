@@ -1,176 +1,233 @@
-<!-- Hero mobile — bouton Nouvelle vente -->
-@if (isMobile) {
-  <div class="pos-dash-hero">
-    <div>
-      <div class="pos-dash-greeting">Bonjour {{ stats?.caissier?.prenoms || stats?.caissier?.prenom || currentUser?.prenoms || 'Caissier' }} 👋</div>
-      <div class="pos-dash-date">{{ today | date:'EEEE d MMMM':'':'fr' }}</div>
-    </div>
-    <a routerLink="/pos/vente" class="pos-dash-cta">
-      <i class="bi bi-cash-register me-2"></i>Nouvelle vente
-    </a>
-  </div>
-}
+<!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
+<div class="pd-hero">
 
-<div class="p-3 p-md-4">
-
-  <!-- En-tête -->
-  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div class="pd-hero-top">
     <div>
-      <h5 class="fw-bold mb-0">Mon tableau de bord</h5>
-      <p class="text-muted small mb-0">
-        <i class="bi bi-calendar3 me-1"></i>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
-        @if (stats?.caissier) {
-          &nbsp;·&nbsp;
-          <i class="bi bi-person-badge me-1"></i>
-          {{ stats.caissier.prenoms || stats.caissier.prenom }} {{ stats.caissier.nom }}
-        }
-      </p>
+      <div class="pd-greeting">
+        Bonjour {{ stats?.caissier?.prenoms || stats?.caissier?.prenom || currentUser?.prenoms || currentUser?.prenom || 'Bienvenue' }} 👋
+      </div>
+      <div class="pd-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
     </div>
-    <button class="btn btn-outline-secondary btn-sm" (click)="load()" [disabled]="isLoading">
-      @if (isLoading) {
-        <span class="spinner-border spinner-border-sm me-1"></span>
-      } @else {
-        <i class="bi bi-arrow-clockwise me-1"></i>
+    <div class="pd-hero-top-right">
+      @if (stats?.session_caisse) {
+        <span class="pd-session-badge pd-session-open">
+          <i class="bi bi-circle-fill"></i>
+          Session ouverte
+        </span>
+      } @else if (stats && !stats.session_caisse) {
+        <span class="pd-session-badge pd-session-closed">
+          <i class="bi bi-circle"></i>
+          Caisse fermée
+        </span>
       }
-      Actualiser
-    </button>
+      <button class="pd-refresh-btn" (click)="load()" [disabled]="isLoading">
+        @if (isLoading) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else {
+          <i class="bi bi-arrow-clockwise"></i>
+        }
+        <span class="d-none d-sm-inline">Actualiser</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Spinner premier chargement -->
-  @if (isLoading && !stats) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary"></div>
-      <p class="text-muted mt-2 small">Chargement…</p>
+  <!-- KPI tiles -->
+  <div class="pd-kpi-row">
+    <div class="pd-kpi-tile">
+      <div class="pd-kpi-label">Ventes</div>
+      <div class="pd-kpi-value">{{ stats?.nb_ventes ?? 0 }}</div>
     </div>
-  }
-
-  @if (stats) {
-
-    <!-- KPI -->
-    <div class="row g-3 mb-4">
-
-      <div class="col-6 col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.05em;">Ventes du jour</p>
-            <h3 class="fw-bold mb-0">{{ stats.nb_ventes ?? 0 }}</h3>
-            <span class="text-muted small">transactions</span>
-          </div>
-        </div>
+    <div class="pd-kpi-tile pd-kpi-wide">
+      <div class="pd-kpi-label">{{ stats?.session_caisse ? 'CA Session' : 'CA Aujourd\'hui' }}</div>
+      <div class="pd-kpi-value">
+        {{ (stats?.chiffre_affaires ?? 0) | number:'1.0-0':'fr' }}
+        <span class="pd-kpi-unit">F CFA</span>
       </div>
-
-      <div class="col-6 col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.05em;">Chiffre d'affaires</p>
-            <h3 class="fw-bold mb-0">{{ (stats.chiffre_affaires ?? 0) | number:'1.0-0':'fr' }}</h3>
-            <span class="text-muted small">FCFA</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.05em;">Panier moyen</p>
-            <h3 class="fw-bold mb-0">{{ panierMoyen | number:'1.0-0':'fr' }}</h3>
-            <span class="text-muted small">FCFA / vente</span>
-          </div>
-        </div>
-      </div>
-
     </div>
-
-    <!-- Modes paiement + Produits -->
-    <div class="row g-3">
-
-      <!-- Modes de paiement -->
-      <div class="col-lg-5">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="fw-semibold text-uppercase text-muted mb-3" style="font-size:.72rem;letter-spacing:.05em;">
-              <i class="bi bi-pie-chart me-1"></i> Répartition par mode de paiement
-            </h6>
-            @let modes = modeEntries();
-            @if (modes.length) {
-              @let total = stats.chiffre_affaires || 1;
-              @for (m of modes; track m.label) {
-                <div class="mb-3">
-                  <div class="d-flex justify-content-between small mb-1">
-                    <span class="fw-semibold">{{ m.label }}</span>
-                    <span class="text-muted">{{ m.val | number:'1.0-0':'fr' }} FCFA</span>
-                  </div>
-                  <div class="progress" style="height:8px;border-radius:4px;">
-                    <div class="progress-bar bg-primary"
-                         [style.width.%]="(m.val / total) * 100"
-                         style="border-radius:4px;"></div>
-                  </div>
-                  <div class="text-end text-muted" style="font-size:.7rem;">
-                    {{ (m.val / total) * 100 | number:'1.0-0':'fr' }}%
-                  </div>
-                </div>
-              }
-            } @else {
-              <p class="text-muted small mb-0">Aucune vente aujourd'hui.</p>
-            }
-          </div>
-        </div>
+    <div class="pd-kpi-tile pd-kpi-credit">
+      <div class="pd-kpi-label">Crédit</div>
+      <div class="pd-kpi-value">
+        {{ (stats?.ventes_credit?.montant ?? 0) | number:'1.0-0':'fr' }}
+        <span class="pd-kpi-unit">F</span>
       </div>
-
-      <!-- Produits vendus -->
-      <div class="col-lg-7">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-transparent border-0 pt-3 pb-0">
-            <h6 class="fw-semibold text-uppercase text-muted mb-0" style="font-size:.72rem;letter-spacing:.05em;">
-              <i class="bi bi-box-seam me-1"></i> Produits vendus aujourd'hui
-            </h6>
-          </div>
-          <div class="card-body p-0">
-            @if (stats.produits?.length) {
-              <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0 align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Produit</th>
-                      <th class="text-end">P.U</th>
-                      <th class="text-end">Qté</th>
-                      <th class="text-end">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (p of stats.produits; track p.produit_id) {
-                      <tr>
-                        <td class="fw-semibold small">{{ p.nom }}</td>
-                        <td class="text-end small text-muted">{{ p.prix_unitaire | number:'1.0-0':'fr' }}</td>
-                        <td class="text-end">
-                          <span class="badge bg-secondary-subtle text-secondary">{{ p.quantite_vendue }}</span>
-                        </td>
-                        <td class="text-end fw-semibold small">{{ p.montant_total | number:'1.0-0':'fr' }} F</td>
-                      </tr>
-                    }
-                  </tbody>
-                  <tfoot class="table-light">
-                    <tr>
-                      <td colspan="3" class="fw-bold small">Total</td>
-                      <td class="text-end fw-bold text-primary small">
-                        {{ (stats.chiffre_affaires ?? 0) | number:'1.0-0':'fr' }} FCFA
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            } @else {
-              <div class="text-center py-4 text-muted small">
-                <i class="bi bi-inbox fs-4 d-block mb-2 opacity-50"></i>
-                Aucun produit vendu aujourd'hui.
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
+      @if ((stats?.ventes_credit?.nb ?? 0) > 0) {
+        <div class="pd-kpi-sub">{{ stats.ventes_credit.nb }} vente{{ stats.ventes_credit.nb > 1 ? 's' : '' }}</div>
+      }
     </div>
+    <div class="pd-kpi-tile">
+      <div class="pd-kpi-label">Panier moyen</div>
+      <div class="pd-kpi-value">
+        {{ panierMoyen | number:'1.0-0':'fr' }}
+        <span class="pd-kpi-unit">F</span>
+      </div>
+    </div>
+  </div>
 
+  <!-- CTA mobile -->
+  @if (isMobile) {
+    <a routerLink="/pos/vente" class="pd-cta">
+      <i class="bi bi-cash-register"></i>
+      Nouvelle vente
+    </a>
   }
 
 </div>
+
+<!-- ── Body ──────────────────────────────────────────────────────────────────── -->
+@if (isLoading && !stats) {
+  <div class="pd-spinner">
+    <div class="spinner-border text-primary"></div>
+    Chargement…
+  </div>
+}
+
+@if (stats) {
+  <div class="pd-body">
+    <div class="pd-grid">
+
+      <!-- Situation caisse -->
+      <div class="pd-card pd-caisse-card">
+        <div class="pd-card-header">
+          <div class="pd-card-icon" style="background:#f0fdf4;color:#16a34a">
+            <i class="bi bi-cash-stack"></i>
+          </div>
+          Situation caisse
+        </div>
+
+        @if (stats.session_caisse) {
+          <div class="pd-caisse-body">
+
+            <!-- Fond d'ouverture -->
+            <div class="pd-caisse-bloc">
+              <div class="pd-caisse-bloc-label">
+                <i class="bi bi-unlock-fill"></i>
+                Fond d'ouverture
+              </div>
+              <div class="pd-caisse-bloc-amount">
+                {{ (fondOuvertureTotal) | number:'1.0-0':'fr' }}
+                <span class="pd-caisse-unit">F CFA</span>
+              </div>
+              @if (fondOuvertureEntries.length > 1) {
+                <div class="pd-fond-detail">
+                  @for (f of fondOuvertureEntries; track f.mode) {
+                    <span class="pd-fond-chip">
+                      {{ modesLabels[f.mode] ?? f.mode }} : {{ f.val | number:'1.0-0':'fr' }} F
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- CA session -->
+            <div class="pd-caisse-bloc pd-caisse-bloc-ca">
+              <div class="pd-caisse-bloc-label">
+                <i class="bi bi-graph-up-arrow"></i>
+                Ventes encaissées
+              </div>
+              <div class="pd-caisse-bloc-amount pd-ca-amount">
+                {{ (stats.chiffre_affaires ?? 0) | number:'1.0-0':'fr' }}
+                <span class="pd-caisse-unit">F CFA</span>
+              </div>
+            </div>
+
+            <!-- Crédit -->
+            @if ((stats.ventes_credit?.montant ?? 0) > 0) {
+              <div class="pd-caisse-bloc pd-caisse-bloc-credit">
+                <div class="pd-caisse-bloc-label">
+                  <i class="bi bi-hourglass-split"></i>
+                  Ventes à crédit
+                </div>
+                <div class="pd-caisse-bloc-amount pd-credit-amount">
+                  {{ stats.ventes_credit.montant | number:'1.0-0':'fr' }}
+                  <span class="pd-caisse-unit">F CFA</span>
+                </div>
+                <div class="pd-caisse-sub">{{ stats.ventes_credit.nb }} vente{{ stats.ventes_credit.nb > 1 ? 's' : '' }} non encaissée{{ stats.ventes_credit.nb > 1 ? 's' : '' }}</div>
+              </div>
+            }
+
+            <!-- Date ouverture -->
+            <div class="pd-session-meta">
+              <i class="bi bi-clock"></i>
+              Ouverte le {{ stats.session_caisse.date_ouverture | date:'d MMM yyyy à HH:mm':'':'fr' }}
+              &nbsp;·&nbsp; Réf. {{ stats.session_caisse.reference }}
+            </div>
+
+          </div>
+        } @else {
+          <div class="pd-empty">
+            <i class="bi bi-lock"></i>
+            Aucune session de caisse ouverte
+          </div>
+        }
+      </div>
+
+      <!-- Modes de paiement -->
+      <div class="pd-card">
+        <div class="pd-card-header">
+          <div class="pd-card-icon" style="background:#eff6ff;color:#2563eb">
+            <i class="bi bi-pie-chart-fill"></i>
+          </div>
+          Répartition paiements
+        </div>
+
+        @let modes = modeEntries();
+        @if (modes.length) {
+          @let total = stats.chiffre_affaires || 1;
+          <div class="pd-modes">
+            @for (m of modes; track m.label) {
+              <div class="pd-mode-row">
+                <div class="pd-mode-name">{{ m.label }}</div>
+                <div class="pd-mode-bar-track">
+                  <div class="pd-mode-bar-fill pd-bar-{{ m.mode }}"
+                       [style.width.%]="(m.val / total) * 100"></div>
+                </div>
+                <div class="pd-mode-amount">{{ m.val | number:'1.0-0':'fr' }} F</div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="pd-empty">
+            <i class="bi bi-pie-chart"></i>
+            Aucune vente
+          </div>
+        }
+      </div>
+
+      <!-- Produits vendus -->
+      <div class="pd-card pd-card-full">
+        <div class="pd-card-header">
+          <div class="pd-card-icon" style="background:#f0fdf4;color:#16a34a">
+            <i class="bi bi-box-seam-fill"></i>
+          </div>
+          Produits vendus {{ stats.session_caisse ? 'cette session' : 'aujourd\'hui' }}
+          @if (stats.produits?.length) {
+            <span class="pd-prod-count ms-auto">{{ stats.produits.length }} article{{ stats.produits.length > 1 ? 's' : '' }}</span>
+          }
+        </div>
+
+        <div class="pd-dt-wrap">
+          @if (!stats.produits?.length) {
+            <div class="pd-empty">
+              <i class="bi bi-inbox"></i>
+              Aucun produit vendu
+            </div>
+          }
+          <div [class.d-none]="!stats.produits?.length">
+            <table class="pd-prod-table pd-prod-dt w-100">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th class="text-end">P.U.</th>
+                  <th class="text-center">Qté</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

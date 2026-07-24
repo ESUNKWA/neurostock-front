@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { environnement } from '../../environnement/environnement';
 import { HttpClientService } from '../http-client/http-client.service';
 
+const CAISSES_BASE = `${environnement.API_URL}/caisses`;
+
 export interface FondCaisse {
   espece?: number;
   orange_money?: number;
@@ -69,5 +71,31 @@ export class CaisseService {
   /** Rapport complet d'une session */
   getRapport(id: number) {
     return this.http.get(`${this.BASE}/${id}/rapport`);
+  }
+
+  // ── Caisses physiques ────────────────────────────────────────────────────────
+
+  getCaisses(boutiqueId: number) {
+    return this.http.get(CAISSES_BASE, { params: { boutique: boutiqueId } });
+  }
+
+  createCaisse(body: { boutique: number; nom: string; code: string; description?: string; emplacement?: string }) {
+    return this.http.post(CAISSES_BASE, body);
+  }
+
+  updateCaisse(id: number, body: Partial<{ nom: string; code: string; description: string; emplacement: string; statut: string }>) {
+    return this.http.patch(`${CAISSES_BASE}/${id}`, body);
+  }
+
+  toggleCaisseStatut(id: number) {
+    return this.http.post(`${CAISSES_BASE}/${id}/toggle-statut`, {});
+  }
+
+  deleteCaisse(id: number) {
+    return this.http.delete(`${CAISSES_BASE}/${id}`);
+  }
+
+  migrerCaisses(boutiqueId: number) {
+    return this.http.post(`${CAISSES_BASE}/migrer?boutique=${boutiqueId}`, {});
   }
 }

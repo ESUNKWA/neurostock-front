@@ -183,48 +183,37 @@ export default class CategorieComponent implements OnInit, OnDestroy {
               width: '15%',
               orderable: false,
               render: (data: any, type: any, row: any) => {
-                return `
-                  <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="visualiser" data-action="view" data-id="${row.id}">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                `;
+                return `<div class="cat-actions">
+                  <button class="cat-act-btn cat-act-blue" title="Visualiser" data-action="view" data-id="${row.id}"><i class="bi bi-eye"></i></button>
+                  <button class="cat-act-btn cat-act-slate" title="Modifier" data-action="edit" data-id="${row.id}"><i class="bi bi-pencil"></i></button>
+                  <button class="cat-act-btn cat-act-red" title="Supprimer" data-action="delete" data-id="${row.id}"><i class="bi bi-trash"></i></button>
+                </div>`;
               }
             }
           ],
           language: {
             emptyTable: 'Aucune catégorie trouvée',
-            search: 'Rechercher :',
-            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            search: '',
+            searchPlaceholder: 'Rechercher une catégorie…',
+            info: '_START_–_END_ sur _TOTAL_',
             infoEmpty: 'Aucun résultat',
             zeroRecords: 'Aucun résultat',
             lengthMenu: 'Afficher _MENU_ éléments',
             paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"cat-dt-top"<"cat-dt-exports"B>f>t<"cat-dt-bottom"ip>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-1',
-              exportOptions: {
-                columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
-              }
+              className: 'cat-export-btn cat-export-excel',
+              exportOptions: { columns: [0, 1, 2] }
             },
             {
               extend: 'pdf',
               text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-              className: 'btn btn-danger btn-sm',
-              exportOptions: {
-                columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
-              }
+              className: 'cat-export-btn cat-export-pdf',
+              exportOptions: { columns: [0, 1, 2] }
             }
           ],
           pageLength: 10,
@@ -232,13 +221,11 @@ export default class CategorieComponent implements OnInit, OnDestroy {
           info: true,
           responsive: true,
           ordering: true,
-          pagingType: 'full_numbers',
+          pagingType: 'simple_numbers',
           stateSave: false,
           retrieve: false,
           autoWidth: false,
-          drawCallback: () => {
-            $('[data-bs-toggle="tooltip"]').tooltip();
-          },
+          drawCallback: () => {},
           createdRow: (row: any, data: any, dataIndex: any) => {
             $(row).find('[data-action]').on('click', (e: any) => {
               const button = $(e.currentTarget);

@@ -1,206 +1,204 @@
-<div class="pagetitle">
-    <div class="d-flex justify-content-between">
-      <h1>Historique des Ventes</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a routerLink="/dashboard">
-            <i class="bi bi-house"></i> Accueil</a>
-          </li>
-          <li class="breadcrumb-item">Gestion des Ventes</li>
-          <li class="breadcrumb-item active">Historique</li>
-        </ol>
-      </nav>
+<!-- ── En-tête page ─────────────────────────────────────────────────────── -->
+<div class="hv-page-header">
+  <div class="hv-page-header-left">
+    <div class="hv-page-icon"><i class="bi bi-clock-history"></i></div>
+    <div>
+      <h1 class="hv-page-title">Historique des ventes</h1>
+      <div class="hv-page-sub">
+        @if (ventes.length > 0) {
+          {{ ventes.length }} vente{{ ventes.length > 1 ? 's' : '' }} ·
+          {{ dateDebut | date:'dd MMM':'':'fr' }} – {{ dateFin | date:'dd MMM yyyy':'':'fr' }}
+        } @else {
+          Consultez et gérez toutes vos transactions
+        }
+      </div>
     </div>
+  </div>
 </div>
 
-<hr>
-
-
-
-<section class="section">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row mb-3">
-                      <div class="col-md-12">
-                        <h5 class="card-title mb-0 text-uppercase">Liste des ventes</h5>
-                      </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                  <div class="row g-2 align-items-end mb-3">
-                    @if (currentUser?.profil?.code.toLowerCase() === 'admin' || currentUser?.profil?.code.toLowerCase() === 'gerant' || currentUser?.profil?.code.toLowerCase() === 'responsable_structure') {
-                      <div class="col-md-4">
-                        <label class="form-label small mb-1">Boutique</label>
-                        <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="loadVentes()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
-                          @for (boutique of boutiques; track boutique.id) {
-                            <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
-                          }
-                        </nz-select>
-                      </div>
-                    } @else {
-                      <div class="col-md-4">
-                        <label class="form-label small mb-1">Boutique</label>
-                        <input type="text" class="form-control form-control-sm bg-light" [value]="currentUser?.boutique?.nom || ''" disabled>
-                      </div>
-                    }
-                    <div class="col-auto">
-                      <label class="form-label small mb-1">Du</label>
-                      <input type="date" class="form-control form-control-sm" [(ngModel)]="dateDebut">
-                    </div>
-                    <div class="col-auto">
-                      <label class="form-label small mb-1">Au</label>
-                      <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFin">
-                    </div>
-                    <div class="col-auto">
-                      <button class="btn btn-sm btn-primary" (click)="loadVentes()" [disabled]="isLoading">
-                        @if (isLoading) {
-                          <span class="spinner-border spinner-border-sm me-1"></span>
-                        } @else {
-                          <i class="bi bi-search me-1"></i>
-                        }
-                        Rechercher
-                      </button>
-                    </div>
-                  </div>
-                  @if (isLoading) {
-                    <div class="text-center py-3">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Chargement...</span>
-                        </div>
-                    </div>
-                  }
-                  <hr>
-
-                 
-                  <!-- DataTable — masqué sur mobile -->
-                  <div class="table-responsive mt-4 d-none d-md-block">
-                    <table class="table table-bordered table-striped table-vcenter js-dataTable-buttons">
-                      <thead>
-                        <tr>
-                          <th>Référence</th>
-                          <th>Montant Total</th>
-                          <th>Statut</th>
-                          <th>Date de vente</th>
-                          <th class="text-center" style="width: 15%;">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <!-- Contenu généré par DataTables -->
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Vue mobile — cards avec détails inline -->
-                  <div class="d-md-none mt-3">
-
-                    @if (isLoading) {
-                      <div class="text-center py-4">
-                        <div class="spinner-border text-primary spinner-border-sm"></div>
-                      </div>
-                    }
-
-                    @if (!isLoading && ventes.length === 0) {
-                      <div class="text-center py-5 text-muted">
-                        <i class="bi bi-receipt display-4 d-block mb-2 opacity-25"></i>
-                        <p class="small">Aucune vente sur cette période</p>
-                      </div>
-                    }
-
-                    @if (!isLoading && ventes.length > 0) {
-                      <!-- Total période -->
-                      <div class="d-flex justify-content-between align-items-center px-1 mb-3">
-                        <span class="small text-muted">{{ ventes.length }} vente{{ ventes.length > 1 ? 's' : '' }}</span>
-                        <span class="fw-bold text-success">
-                          {{ totalVentesMobile | number:'1.0-0':'fr' }}
-                          <small class="fw-normal text-muted">F</small>
-                        </span>
-                      </div>
-
-                      @for (v of ventes; track v.id) {
-                        @let statut = v.statut?.toLowerCase();
-                        @let lignes = venteDetails[v.id];
-                        <div class="hv-mobile-card mb-3">
-
-                          <!-- En-tête -->
-                          <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
-                            <div class="min-w-0 flex-grow-1">
-                              <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <span class="fw-semibold" style="font-size:.85rem">{{ v.reference }}</span>
-                                <span class="badge"
-                                  [class.bg-success]="statut === 'payer'"
-                                  [class.bg-warning]="statut === 'non_payer'"
-                                  [class.text-dark]="statut === 'non_payer'"
-                                  style="font-size:.65rem">
-                                  {{ statut === 'payer' ? 'Payé' : statut === 'non_payer' ? 'Non payé' : v.statut }}
-                                </span>
-                              </div>
-                              <div class="text-muted" style="font-size:.72rem">
-                                <i class="bi bi-clock me-1"></i>{{ v.created_at | date:'dd/MM/yyyy HH:mm' }}
-                                @if (v.client) {
-                                  <span class="ms-2"><i class="bi bi-person me-1"></i>{{ v.client.nom }}</span>
-                                }
-                                <span class="ms-2"><i class="bi bi-credit-card me-1"></i>{{ modeLabel(v.mode_paiement) }}</span>
-                              </div>
-                            </div>
-                            <button class="btn btn-outline-secondary btn-sm py-0 px-2 flex-shrink-0" style="font-size:.72rem"
-                                    (click)="printVenteThermique(v)">
-                              <i class="bi bi-printer"></i>
-                            </button>
-                          </div>
-
-                          <!-- Lignes produits -->
-                          <div class="hv-mobile-detail">
-                            @if (venteDetailLoading[v.id]) {
-                              <div class="text-muted small py-1">
-                                <span class="spinner-border spinner-border-sm me-1"></span>Chargement…
-                              </div>
-                            }
-                            @if (lignes && lignes.length > 0) {
-                              <table class="w-100" style="font-size:.76rem;border-collapse:collapse">
-                                <thead>
-                                  <tr style="color:#94a3b8;border-bottom:1px solid #e2e8f0">
-                                    <th class="py-1 fw-semibold" style="text-align:left">Produit</th>
-                                    <th class="py-1 fw-semibold text-center" style="width:32px">Qté</th>
-                                    <th class="py-1 fw-semibold text-end" style="width:68px">P.U.</th>
-                                    <th class="py-1 fw-semibold text-end" style="width:72px">Total</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  @for (l of lignes; track $index) {
-                                    <tr style="border-bottom:1px solid #f1f5f9">
-                                      <td class="py-1" style="max-width:110px">
-                                        <div class="text-truncate">{{ l.produit?.nom ?? '—' }}</div>
-                                      </td>
-                                      <td class="py-1 text-center text-muted">{{ l.quantite }}</td>
-                                      <td class="py-1 text-end text-muted">{{ l.prix_unitaire_vente | number:'1.0-0':'fr' }}</td>
-                                      <td class="py-1 text-end fw-semibold">{{ (l.quantite * l.prix_unitaire_vente) | number:'1.0-0':'fr' }}</td>
-                                    </tr>
-                                  }
-                                </tbody>
-                              </table>
-                              @if (v.remise > 0) {
-                                <div class="d-flex justify-content-between small text-danger mt-1">
-                                  <span>Remise</span><span>− {{ v.remise | number:'1.0-0':'fr' }} F</span>
-                                </div>
-                              }
-                              <div class="d-flex justify-content-between fw-bold mt-1 pt-1" style="border-top:1px solid #e2e8f0;font-size:.82rem">
-                                <span>Total TTC</span>
-                                <span class="text-success">{{ (v.montant_total_apres_remise ?? v.montant_total) | number:'1.0-0':'fr' }} F</span>
-                              </div>
-                            }
-                          </div>
-
-                        </div>
-                      }
-                    }
-                  </div>
-                </div>
-            </div>
-        </div>
+<!-- ── Barre de filtres ─────────────────────────────────────────────────── -->
+<div class="hv-filter-bar">
+  @if (isAdminView) {
+    <div class="hv-filter-field hv-filter-boutique">
+      <i class="bi bi-shop hv-filter-icon"></i>
+      <nz-select
+        [(ngModel)]="idBoutique"
+        (ngModelChange)="onBoutiqueChange()"
+        nzShowSearch
+        [nzAllowClear]="true"
+        nzPlaceHolder="Toutes les boutiques"
+        class="hv-nz-select">
+        @for (boutique of boutiques; track boutique.id) {
+          <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
+        }
+      </nz-select>
     </div>
-</section>
+  } @else {
+    <div class="hv-filter-field hv-filter-boutique hv-filter-fixed">
+      <i class="bi bi-shop hv-filter-icon"></i>
+      <span class="hv-filter-fixed-label">{{ currentUser?.boutique?.nom }}</span>
+    </div>
+  }
+
+  <div class="hv-filter-field hv-filter-date">
+    <i class="bi bi-calendar-event hv-filter-icon"></i>
+    <input type="date" class="hv-date-input" [(ngModel)]="dateDebut" (change)="onDateChange()">
+  </div>
+
+  <span class="hv-filter-sep">→</span>
+
+  <div class="hv-filter-field hv-filter-date">
+    <input type="date" class="hv-date-input" [(ngModel)]="dateFin" (change)="onDateChange()">
+  </div>
+
+  <!-- Filtre utilisateur -->
+  <div class="hv-filter-field hv-filter-user" [class.hv-filter-disabled]="!canSelectUtilisateur">
+    <i class="bi bi-person hv-filter-icon"></i>
+    @if (canSelectUtilisateur) {
+      <nz-select
+        [(ngModel)]="utilisateurId"
+        (ngModelChange)="loadVentes()"
+        nzShowSearch
+        [nzAllowClear]="true"
+        nzPlaceHolder="Tous les utilisateurs"
+        class="hv-nz-select">
+        @for (u of users; track u.id) {
+          <nz-option [nzValue]="u.id" [nzLabel]="(u.prenoms || u.prenom || '') + ' ' + u.nom"></nz-option>
+        }
+      </nz-select>
+    } @else {
+      <span class="hv-filter-fixed-label">
+        {{ (currentUser?.prenoms || currentUser?.prenom || '') + ' ' + (currentUser?.nom || '') }}
+      </span>
+    }
+  </div>
+
+  <button class="hv-search-btn" (click)="loadVentes()" [disabled]="isLoading">
+    @if (isLoading) {
+      <span class="spinner-border spinner-border-sm"></span>
+    } @else {
+      <i class="bi bi-search"></i>
+    }
+    <span class="d-none d-sm-inline ms-1">Rechercher</span>
+  </button>
+</div>
+
+<!-- ── KPI Cards ────────────────────────────────────────────────────────── -->
+<div class="hv-kpi-row">
+  <div class="hv-kpi-card hv-kpi-blue">
+    <div class="hv-kpi-icon-wrap"><i class="bi bi-receipt-cutoff"></i></div>
+    <div class="hv-kpi-body">
+      <div class="hv-kpi-value">{{ ventes.length }}</div>
+      <div class="hv-kpi-label">Ventes</div>
+    </div>
+  </div>
+  <div class="hv-kpi-card hv-kpi-green">
+    <div class="hv-kpi-icon-wrap"><i class="bi bi-graph-up-arrow"></i></div>
+    <div class="hv-kpi-body">
+      <div class="hv-kpi-value">{{ kpiMontantTotal | number:'1.0-0':'fr' }}<span class="hv-kpi-unit">F</span></div>
+      <div class="hv-kpi-label">Chiffre d'affaires</div>
+    </div>
+  </div>
+  <div class="hv-kpi-card hv-kpi-emerald">
+    <div class="hv-kpi-icon-wrap"><i class="bi bi-check-circle"></i></div>
+    <div class="hv-kpi-body">
+      <div class="hv-kpi-value">{{ kpiCountPayees }}</div>
+      <div class="hv-kpi-label">Payées</div>
+    </div>
+  </div>
+  <div class="hv-kpi-card hv-kpi-red">
+    <div class="hv-kpi-icon-wrap"><i class="bi bi-exclamation-circle"></i></div>
+    <div class="hv-kpi-body">
+      <div class="hv-kpi-value">{{ kpiCountNonPayees }}</div>
+      <div class="hv-kpi-label">Non payées</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Spinner global ───────────────────────────────────────────────────── -->
+@if (isLoading) {
+  <div class="hv-loading-bar">
+    <div class="hv-loading-inner"></div>
+  </div>
+}
+
+<!-- ── DataTable desktop ────────────────────────────────────────────────── -->
+<div class="hv-table-card d-none d-md-block">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 js-dataTable-buttons">
+      <thead class="hv-thead">
+        <tr>
+          <th>Référence</th>
+          <th>Montant</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th class="text-center" style="width:15%">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Vue mobile cards ─────────────────────────────────────────────────── -->
+<div class="d-md-none mt-2">
+  @if (!isLoading && ventes.length === 0) {
+    <div class="hv-empty">
+      <i class="bi bi-receipt hv-empty-icon"></i>
+      <p>Aucune vente sur cette période</p>
+    </div>
+  }
+
+  @if (!isLoading && ventes.length > 0) {
+    @for (v of ventes; track v.id) {
+      @let statut = v.statut?.toLowerCase();
+      @let lignes = venteDetails[v.id];
+      <div class="hv-mob-card" [class.hv-mob-card--paid]="statut === 'payer'" [class.hv-mob-card--unpaid]="statut === 'non_payer'">
+
+        <div class="hv-mob-top">
+          <div class="hv-mob-ref">{{ v.reference }}</div>
+          <span class="hv-mob-badge" [class.hv-badge-paid]="statut === 'payer'" [class.hv-badge-unpaid]="statut !== 'payer'">
+            {{ statut === 'payer' ? 'Payé' : 'Non payé' }}
+          </span>
+        </div>
+
+        <div class="hv-mob-meta">
+          <span><i class="bi bi-clock me-1"></i>{{ v.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          @if (v.client) {
+            <span><i class="bi bi-person me-1"></i>{{ v.client.nom }}</span>
+          }
+          <span><i class="bi bi-credit-card me-1"></i>{{ modeLabel(v.mode_paiement) }}</span>
+        </div>
+
+        @if (lignes && lignes.length > 0) {
+          <div class="hv-mob-lines">
+            @for (l of lignes; track $index) {
+              <div class="hv-mob-line">
+                <span class="hv-mob-line-name">{{ l.produit?.nom ?? '—' }}</span>
+                <span class="hv-mob-line-qty">× {{ l.quantite }}</span>
+                <span class="hv-mob-line-total">{{ (l.quantite * l.prix_unitaire_vente) | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+          </div>
+        }
+        @if (venteDetailLoading[v.id]) {
+          <div class="hv-mob-loading"><span class="spinner-border spinner-border-sm me-1"></span>Chargement…</div>
+        }
+
+        <div class="hv-mob-footer">
+          @if (v.remise > 0) {
+            <span class="hv-mob-remise">Remise − {{ v.remise | number:'1.0-0':'fr' }} F</span>
+          }
+          <span class="hv-mob-total">{{ (v.montant_total_apres_remise ?? v.montant_total) | number:'1.0-0':'fr' }} F CFA</span>
+          <button class="hv-mob-print" (click)="printVenteThermique(v)" title="Imprimer">
+            <i class="bi bi-printer"></i>
+          </button>
+        </div>
+
+      </div>
+    }
+  }
+</div>
 
 <!-- Modal détails vente -->
 <div class="modal fade" id="modal-view-details" tabindex="-1">

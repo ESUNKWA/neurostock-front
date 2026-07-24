@@ -55,4 +55,8 @@ export class BoutiqueService {
   delete(id: string){
     return this.http.delete(`${this.API_URL}/boutique/${id}`);
   }
+
+  updateModesPaiement(id: number, modes: string[]): Observable<any> {
+    return this.http.patch(`${this.API_URL}/boutique/${id}/modes-paiement`, { modes_paiement: modes });
+  }
 }

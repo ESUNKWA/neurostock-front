@@ -315,6 +315,142 @@ select.prd-input { padding-left: 0.75rem; }
   i { margin-right: 4px; }
 }
 
+// ── DataTable action buttons & layout ─────────────────────────────────────────
+:host ::ng-deep {
+
+  .prd-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3rem;
+    flex-wrap: wrap;
+  }
+
+  .prd-act-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    transition: opacity .15s, transform .1s;
+    padding: 0;
+
+    &:hover { opacity: .75; transform: scale(1.08); }
+  }
+
+  .prd-act-blue   { background: #eff6ff; color: #2563eb; }
+  .prd-act-green  { background: #f0fdf4; color: #16a34a; }
+  .prd-act-amber  { background: #fffbeb; color: #d97706; }
+  .prd-act-slate  { background: #f1f5f9; color: #475569; }
+  .prd-act-red    { background: #fef2f2; color: #dc2626; }
+  .prd-act-violet { background: #f5f3ff; color: #7c3aed; }
+
+  .prd-dt-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem 1rem .5rem;
+    flex-wrap: wrap;
+  }
+
+  .prd-dt-exports {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-shrink: 0;
+  }
+
+  .prd-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .35rem .75rem;
+    border-radius: 7px;
+    font-size: .78rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1.4;
+
+    &:focus { box-shadow: none; outline: none; }
+  }
+
+  .prd-export-excel {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+
+    &:hover { background: #dcfce7; }
+  }
+
+  .prd-export-pdf {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+
+    &:hover { background: #fee2e2; }
+  }
+
+  .dataTables_filter {
+    flex: 1;
+    min-width: 180px;
+
+    label { display: flex; align-items: center; margin: 0; font-size: 0; }
+
+    input {
+      font-size: .85rem;
+      padding: .35rem .75rem .35rem 2.1rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") .65rem center no-repeat;
+      width: 100%;
+      min-width: 200px;
+      margin-left: 0;
+      transition: border-color .15s;
+
+      &:focus { outline: none; border-color: #059669; background-color: #fff; }
+    }
+  }
+
+  .prd-dt-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem 1rem .75rem;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .dataTables_info { font-size: .78rem; color: #64748b; }
+
+  .dataTables_paginate {
+    .paginate_button {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 .5rem !important;
+      border-radius: 7px !important;
+      font-size: .8rem;
+      margin: 0 1px;
+      border: none !important;
+      background: transparent !important;
+      color: #475569 !important;
+      cursor: pointer;
+      line-height: 28px;
+
+      &:hover { background: #f1f5f9 !important; color: #1e293b !important; }
+
+      &.current, &.current:hover { background: #059669 !important; color: #fff !important; }
+
+      &.disabled, &.disabled:hover { color: #cbd5e1 !important; cursor: default; background: transparent !important; }
+    }
+  }
+}
+
 // ── IA icon badge (purple gradient) ──────────────────────────────────────────
 .ia-icon-badge {
   display: inline-flex;

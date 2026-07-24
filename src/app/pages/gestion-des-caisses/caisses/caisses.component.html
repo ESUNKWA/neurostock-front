@@ -1,0 +1,179 @@
+<div class="cc-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="card-header cc-page-header">
+    <div class="row align-items-center">
+      <div class="col-md-5">
+        <h5 class="card-title mb-0 text-uppercase text-white">Caisses physiques</h5>
+      </div>
+      <div class="col-md-7 text-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
+        @if (isSuperUser && boutiques.length > 1) {
+          <nz-select
+            [(ngModel)]="idBoutique"
+            (ngModelChange)="onBoutiqueChange()"
+            nzPlaceHolder="Boutique…"
+            style="min-width:160px"
+            class="me-1">
+            @for (b of boutiques; track b.id) {
+              <nz-option [nzValue]="b.id" [nzLabel]="b.r_nom ?? b.nom"></nz-option>
+            }
+          </nz-select>
+        }
+        <button class="btn btn-warning btn-sm" (click)="migrer()" [disabled]="migrating || !idBoutique"
+                title="Rattacher les sessions sans caisse à une Caisse principale">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="migrating"></span>
+          <i class="bi bi-arrow-repeat me-1" *ngIf="!migrating"></i>Migrer sessions
+        </button>
+        <button class="btn btn-light btn-sm" (click)="openCreate()" [disabled]="!idBoutique">
+          <i class="bi bi-plus-lg me-1"></i>Nouvelle caisse
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Contenu ────────────────────────────────────────────────────────────── -->
+  <div class="card cc-card">
+    <div class="card-body p-0">
+
+      @if (loading) {
+        <div class="cc-empty">
+          <div class="spinner-border text-primary mb-2"></div>
+          <div>Chargement…</div>
+        </div>
+      } @else if (!idBoutique) {
+        <div class="cc-empty">
+          <i class="bi bi-shop"></i>
+          <div>Sélectionnez une boutique</div>
+        </div>
+      } @else if (caisses.length === 0) {
+        <div class="cc-empty">
+          <i class="bi bi-cash-register"></i>
+          <div>Aucune caisse configurée</div>
+          <button class="btn btn-primary btn-sm mt-2" (click)="openCreate()">
+            <i class="bi bi-plus-lg me-1"></i>Créer une caisse
+          </button>
+        </div>
+      } @else {
+
+        <div class="table-responsive">
+          <table class="table table-hover cc-table mb-0">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Code</th>
+                <th>Emplacement</th>
+                <th>Statut</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of caisses; track c.id) {
+                <tr>
+                  <td>
+                    <div class="cc-nom">{{ c.nom }}</div>
+                    @if (c.description) {
+                      <div class="cc-desc">{{ c.description }}</div>
+                    }
+                  </td>
+                  <td><span class="cc-code-badge">{{ c.code }}</span></td>
+                  <td class="text-muted small">{{ c.emplacement || '—' }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success]="c.statut === 'ACTIVE'" [class.bg-secondary]="c.statut !== 'ACTIVE'">
+                      {{ c.statut === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="d-flex gap-1 justify-content-end">
+                      <button class="btn btn-sm btn-outline-secondary" title="Modifier" (click)="openEdit(c)">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-sm" title="{{ c.statut === 'ACTIVE' ? 'Désactiver' : 'Activer' }}"
+                              [class.btn-outline-warning]="c.statut === 'ACTIVE'"
+                              [class.btn-outline-success]="c.statut !== 'ACTIVE'"
+                              (click)="toggleStatut(c)">
+                        <i class="bi" [class.bi-toggle-on]="c.statut === 'ACTIVE'" [class.bi-toggle-off]="c.statut !== 'ACTIVE'"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" title="Supprimer" (click)="delete(c)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      }
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  Modal : Créer / Modifier une caisse                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-caisse" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content mf-modal mf-modal--emerald">
+
+      <div class="mf-header">
+        <div class="mf-header-icon"><i class="bi bi-cash-register"></i></div>
+        <div>
+          <div class="mf-header-title">{{ editingId ? 'Modifier la caisse' : 'Nouvelle caisse' }}</div>
+          <div class="mf-header-subtitle">Configuration du terminal de caisse physique</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mf-body">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="mf-label">Nom <span class="text-danger">*</span></label>
+              <input type="text" class="form-control mf-input" formControlName="nom"
+                     placeholder="Ex : Caisse principale"
+                     [ngClass]="{'is-invalid': form.get('nom')?.invalid && form.get('nom')?.touched}">
+              @if (form.get('nom')?.invalid && form.get('nom')?.touched) {
+                <div class="mf-error">Nom requis (max 100 caractères)</div>
+              }
+            </div>
+
+            <div class="col-6">
+              <label class="mf-label">Code <span class="text-danger">*</span></label>
+              <input type="text" class="form-control mf-input" formControlName="code"
+                     placeholder="Ex : MAIN"
+                     style="text-transform:uppercase"
+                     [ngClass]="{'is-invalid': form.get('code')?.invalid && form.get('code')?.touched}">
+              @if (form.get('code')?.invalid && form.get('code')?.touched) {
+                <div class="mf-error">Code requis (max 20 caractères)</div>
+              }
+            </div>
+
+            <div class="col-6">
+              <label class="mf-label">Emplacement</label>
+              <input type="text" class="form-control mf-input" formControlName="emplacement"
+                     placeholder="Ex : Entrée principale">
+            </div>
+
+            <div class="col-12">
+              <label class="mf-label">Description</label>
+              <textarea class="form-control mf-input" formControlName="description"
+                        rows="2" placeholder="Description facultative…"></textarea>
+            </div>
+          </div>
+
+        </div>
+        <div class="mf-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary mf-btn-save" [disabled]="submitting || form.invalid">
+            <span class="spinner-border spinner-border-sm me-1" *ngIf="submitting"></span>
+            {{ editingId ? 'Enregistrer' : 'Créer la caisse' }}
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

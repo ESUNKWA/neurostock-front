@@ -23,7 +23,13 @@ declare var $: any;
 })
 export default class AchatsComponent implements OnInit {
   achatForm!: FormGroup;
-  modesPaiement: string[] = ['espece', 'cheque', 'virement', 'carte', 'orange_money', 'wave', 'mtn_money', 'moov_money', 'dajmo'];
+  private readonly ALL_MODES_PAIEMENT: string[] = ['espece', 'cheque', 'virement', 'carte', 'orange_money', 'wave', 'mtn_money', 'moov_money', 'dajmo'];
+  modesPaiementActifs: string[] | null = null;
+
+  get modesPaiement(): string[] {
+    if (!this.modesPaiementActifs) return this.ALL_MODES_PAIEMENT;
+    return this.ALL_MODES_PAIEMENT.filter(m => this.modesPaiementActifs!.includes(m));
+  }
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
   fournisseurs: any[] = [];
   produits: any[] = [];
@@ -243,8 +249,10 @@ export default class AchatsComponent implements OnInit {
     const afterLoad = (list: any[]) => {
       this.boutiques = onlyEntrepots(list);
       if (this.boutiques.length === 1) {
-        this.achatForm.patchValue({ boutique: this.boutiques[0].id });
-        this.selectedBoutique = String(this.boutiques[0].id);
+        const b = this.boutiques[0];
+        this.achatForm.patchValue({ boutique: b.id });
+        this.selectedBoutique = String(b.id);
+        if (Array.isArray(b.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
         this.loadProduits();
       }
     };
@@ -269,6 +277,7 @@ export default class AchatsComponent implements OnInit {
         this.boutiques = [b];
         this.achatForm.patchValue({ boutique: b.id });
         this.selectedBoutique = String(b.id);
+        if (Array.isArray(b.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
         this.loadProduits();
       } else {
         this.boutiques = [];
@@ -278,6 +287,8 @@ export default class AchatsComponent implements OnInit {
 
   onBoutiqueChange(value: any): void {
     this.selectedBoutique = value;
+    const b = this.boutiques.find((x: any) => String(x.id) === String(value));
+    this.modesPaiementActifs = Array.isArray(b?.modes_paiement) ? b.modes_paiement : null;
     this.loadProduits();
   }
 

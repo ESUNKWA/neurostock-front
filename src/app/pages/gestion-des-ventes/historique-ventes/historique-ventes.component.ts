@@ -1,12 +1,13 @@
 import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { UserService } from '../../../services/user/user.service';
 import Swal from 'sweetalert2';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 
@@ -16,7 +17,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-ventes',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, NzSelectModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NzSelectModule],
   templateUrl: './historique-ventes.component.html',
   styleUrl: './historique-ventes.component.scss',
   providers: [ToastrService]
@@ -26,6 +27,8 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   currentUser: any;
   idBoutique: number = 0;
   boutiques: any[] = [];
+  users: any[] = [];
+  utilisateurId: number | null = null;
   isLoading: boolean = false;
   dateDebut: string = '';
   dateFin: string = '';
@@ -43,7 +46,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   regularForm = { mode_paiement: 'espece', montant_recu: 0 };
   regularDetailsPaiement: Record<string, number> = { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0 };
 
-  readonly MODES_PAIEMENT = [
+  private readonly ALL_MODES_PAIEMENT = [
     { value: 'espece',       label: 'Espèces',      icon: 'bi-cash' },
     { value: 'orange_money', label: 'Orange Money', icon: 'bi-phone' },
     { value: 'wave',         label: 'Wave',         icon: 'bi-phone' },
@@ -53,11 +56,19 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     { value: 'carte',        label: 'Carte',        icon: 'bi-credit-card' },
     { value: 'mixte',        label: 'Mixte',        icon: 'bi-layers' },
   ];
+
+  modesPaiementActifs: string[] | null = null;
+
+  get MODES_PAIEMENT() {
+    if (!this.modesPaiementActifs) return this.ALL_MODES_PAIEMENT;
+    return this.ALL_MODES_PAIEMENT.filter(m => this.modesPaiementActifs!.includes(m.value));
+  }
   
   constructor(
     private ventesService: VentesService,
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
+    private userService: UserService,
     private toastr: ToastrService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: any
@@ -102,18 +113,47 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user: any) => {
       this.currentUser = user;
+      if (user) {
+        // Non-admin : verrou sur l'utilisateur en cours
+        if (!this.canSelectUtilisateur) {
+          this.utilisateurId = user.id ?? null;
+        }
+        const boutiqueId = user.boutique_id ?? user.boutique?.id;
+        if (boutiqueId) this.loadUsers(boutiqueId);
+      }
+    });
+  }
+
+  get canSelectUtilisateur(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return code === 'admin' || code === 'responsable_structure' || code === 'gerant' || code === 'super_admin'
+      || this.currentUser?.is_admin === true;
+  }
+
+  loadUsers(boutiqueId?: number): void {
+    const id = boutiqueId ?? this.idBoutique;
+    if (!id) return;
+    this.userService.find('', String(id)).subscribe({
+      next: (r: any) => { this.users = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []); },
+      error: () => { this.users = []; },
     });
   }
 
   private initDateRange(): void {
-    const today = new Date();
-    const debut = new Date();
-    debut.setDate(today.getDate() - 30);
-    this.dateFin   = today.toISOString().split('T')[0];
-    this.dateDebut = debut.toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    this.dateDebut = today;
+    this.dateFin   = today;
   }
 
   onDateChange(): void {
+    this.loadVentes();
+  }
+
+  onBoutiqueChange(): void {
+    this.utilisateurId = null;
+    const b = this.boutiques.find((x: any) => x.id === this.idBoutique);
+    this.modesPaiementActifs = Array.isArray(b?.modes_paiement) ? b.modes_paiement : null;
+    this.loadUsers();
     this.loadVentes();
   }
 
@@ -143,6 +183,9 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
         });
       } else {
         this.boutiques[0] = this.currentUser.boutique;
+        if (Array.isArray(this.currentUser.boutique?.modes_paiement)) {
+          this.modesPaiementActifs = this.currentUser.boutique.modes_paiement;
+        }
       }
     }
   }
@@ -172,8 +215,9 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     
     const body: any = {
       boutique: this.idBoutique,
-      ...(this.dateDebut && { date_debut: this.dateDebut }),
-      ...(this.dateFin   && { date_fin:   this.dateFin }),
+      ...(this.dateDebut       && { date_debut:   this.dateDebut }),
+      ...(this.dateFin         && { date_fin:      this.dateFin }),
+      ...(this.utilisateurId   && { utilisateur:   this.utilisateurId }),
     };
 
     this.ventesService.getAllVentes(body).subscribe({
@@ -282,24 +326,23 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
               render: (data: any, type: any, row: any) => {
                 const isNonPaye = row.statut?.toLowerCase() === 'non_payer';
                 const regularBtn = isNonPaye
-                  ? `<button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip"
-                        title="Régulariser le paiement" data-action="regulariser" data-id="${row.id}">
+                  ? `<button class="hv-act-btn hv-act-green" title="Régulariser" data-action="regulariser" data-id="${row.id}">
                        <i class="bi bi-cash-coin"></i>
                      </button>`
                   : '';
                 return `
-                  <div class="btn-group flex-wrap">
+                  <div class="hv-actions">
                     ${regularBtn}
-                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="Visualiser" data-action="view" data-id="${row.id}">
+                    <button class="hv-act-btn hv-act-blue" title="Voir détails" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-warning me-2" data-bs-toggle="tooltip" title="Imprimer" data-action="print" data-id="${row.id}">
+                    <button class="hv-act-btn hv-act-amber" title="Imprimer" data-action="print" data-id="${row.id}">
                       <i class="bi bi-printer"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
-                      <i class="bi bi-pencil-square"></i>
+                    <button class="hv-act-btn hv-act-slate" title="Modifier" data-action="edit" data-id="${row.id}">
+                      <i class="bi bi-pencil"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
+                    <button class="hv-act-btn hv-act-red" title="Supprimer" data-action="delete" data-id="${row.id}">
                       <i class="bi bi-trash"></i>
                     </button>
                   </div>
@@ -308,39 +351,35 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
             }
           ],
           language: {
+            search: '',
+            searchPlaceholder: 'Rechercher une vente…',
             emptyTable: 'Aucune vente trouvée',
-            search: 'Rechercher :',
-            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
-            infoEmpty: 'Aucun résultat',
+            info: '_START_–_END_ sur _TOTAL_',
+            infoEmpty: '0 résultat',
             zeroRecords: 'Aucun résultat',
-            lengthMenu: 'Afficher _MENU_ éléments',
-            paginate: { first: '«', last: '»', next: '›', previous: '‹' },
+            paginate: { previous: '‹', next: '›', first: '', last: '' },
           },
-          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"hv-dt-top"<"hv-dt-exports"B>f>t<"hv-dt-bottom"ip>',
           buttons: [
             {
               extend: 'excel',
               text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-              className: 'btn btn-success btn-sm me-1',
-              exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5] // Exporter toutes les colonnes sauf Actions
-              }
+              className: 'hv-export-btn hv-export-excel',
+              exportOptions: { columns: [0, 1, 2, 3] }
             },
             {
               extend: 'pdf',
               text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-              className: 'btn btn-danger btn-sm',
-              exportOptions: {
-                columns: [0, 1, 2, 3, 4, 5] // Exporter toutes les colonnes sauf Actions
-              }
+              className: 'hv-export-btn hv-export-pdf',
+              exportOptions: { columns: [0, 1, 2, 3] }
             }
           ],
-          pageLength: 20,
+          pageLength: 10,
           searching: true,
           info: true,
           responsive: true,
           ordering: true,
-          pagingType: 'full_numbers',
+          pagingType: 'simple_numbers',
           stateSave: false,
           retrieve: false,
           autoWidth: false,
@@ -491,6 +530,20 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
 
   get totalVentesMobile(): number {
     return this.ventes.reduce((s, v) => s + (v.montant_total_apres_remise ?? v.montant_total ?? 0), 0);
+  }
+
+  get kpiMontantTotal(): number {
+    return this.totalVentesMobile;
+  }
+  get kpiCountPayees(): number {
+    return this.ventes.filter(v => v.statut?.toLowerCase() === 'payer').length;
+  }
+  get kpiCountNonPayees(): number {
+    return this.ventes.filter(v => v.statut?.toLowerCase() === 'non_payer').length;
+  }
+  get isAdminView(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return code === 'admin' || code === 'responsable_structure' || code === 'gerant';
   }
 
   loadVenteDetailMobile(id: number): void {

@@ -32,8 +32,23 @@ export class BoutiqueComponent {
     return code !== 'responsable_structure';
   }
 
+  readonly ALL_MODES = [
+    { value: 'espece',       label: 'Espèces',       icon: 'bi-cash' },
+    { value: 'orange_money', label: 'Orange Money',  icon: 'bi-phone' },
+    { value: 'wave',         label: 'Wave',          icon: 'bi-phone' },
+    { value: 'mtn_money',    label: 'MTN Money',     icon: 'bi-phone' },
+    { value: 'moov_money',   label: 'Moov Money',    icon: 'bi-phone' },
+    { value: 'dajmo',        label: 'Dajmo',         icon: 'bi-phone' },
+    { value: 'carte',        label: 'Carte bancaire', icon: 'bi-credit-card' },
+    { value: 'credit',       label: 'Crédit',        icon: 'bi-hourglass-split' },
+    { value: 'mixte',        label: 'Mixte',         icon: 'bi-layers' },
+  ];
+
   boutiques: any [] = [];
   boutiqueData: any = {};
+  modesBoutique: any = null;
+  modesBoutiqueSelectionnes: string[] = [];
+  modesSaving = false;
 
   isLoading: boolean = false;
   isEditMode: boolean = false;
@@ -270,6 +285,49 @@ export class BoutiqueComponent {
     });
   }
 
+  openModesPaiement(boutique: any): void {
+    this.modesBoutique = boutique;
+    const current: string[] = Array.isArray(boutique.modes_paiement)
+      ? boutique.modes_paiement
+      : this.ALL_MODES.map(m => m.value);
+    this.modesBoutiqueSelectionnes = [...current];
+    const modal = document.getElementById('modal-modes-paiement');
+    if (modal) new bootstrap.Modal(modal).show();
+  }
+
+  toggleMode(value: string): void {
+    const idx = this.modesBoutiqueSelectionnes.indexOf(value);
+    if (idx >= 0) {
+      this.modesBoutiqueSelectionnes.splice(idx, 1);
+    } else {
+      this.modesBoutiqueSelectionnes.push(value);
+    }
+  }
+
+  isModeSelected(value: string): boolean {
+    return this.modesBoutiqueSelectionnes.includes(value);
+  }
+
+  saveModesPaiement(): void {
+    if (!this.modesBoutique || this.modesSaving) return;
+    this.modesSaving = true;
+    this.boutiqueService.updateModesPaiement(this.modesBoutique.id, this.modesBoutiqueSelectionnes).subscribe({
+      next: () => {
+        this.modesBoutique.modes_paiement = [...this.modesBoutiqueSelectionnes];
+        const b = this.boutiques.find((x: any) => x.id === this.modesBoutique.id);
+        if (b) b.modes_paiement = [...this.modesBoutiqueSelectionnes];
+        this.toastr.success('Modes de paiement mis à jour');
+        const modal = document.getElementById('modal-modes-paiement');
+        if (modal) bootstrap.Modal.getInstance(modal)?.hide();
+        this.modesSaving = false;
+      },
+      error: () => {
+        this.toastr.error('Erreur lors de la mise à jour');
+        this.modesSaving = false;
+      }
+    });
+  }
+
   private destroyDataTable(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
@@ -345,63 +403,50 @@ export class BoutiqueComponent {
               width: '15%',
               orderable: false,
               render: (data: any, type: any, row: any) => {
-                return `
-                  <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="visualiser" data-action="view" data-id="${row.id}">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Modifier" data-action="edit" data-id="${row.id}">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" data-action="delete" data-id="${row.id}">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                `;
+                return `<div class="btq-actions">
+                  <button class="btq-act-btn btq-act-blue" title="Visualiser" data-action="view" data-id="${row.id}"><i class="bi bi-eye"></i></button>
+                  <button class="btq-act-btn btq-act-slate" title="Modifier" data-action="edit" data-id="${row.id}"><i class="bi bi-pencil"></i></button>
+                  <button class="btq-act-btn btq-act-teal" title="Modes de paiement" data-action="modes" data-id="${row.id}"><i class="bi bi-credit-card-2-front"></i></button>
+                  <button class="btq-act-btn btq-act-red" title="Supprimer" data-action="delete" data-id="${row.id}"><i class="bi bi-trash"></i></button>
+                </div>`;
               }
             }
           ],
           language: {
             emptyTable: 'Aucune boutique trouvée',
-            search: 'Rechercher :',
-            info: 'Affichage de _START_ à _END_ sur _TOTAL_ résultat(s)',
+            search: '',
+            searchPlaceholder: 'Rechercher une boutique…',
+            info: '_START_–_END_ sur _TOTAL_',
             infoEmpty: 'Aucun résultat',
             zeroRecords: 'Aucun résultat',
             lengthMenu: 'Afficher _MENU_ éléments',
             paginate: { first: '«', last: '»', next: '›', previous: '‹' },
           },
-          dom: '<"row mb-2"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          dom: '<"btq-dt-top"<"btq-dt-exports"B>f>t<"btq-dt-bottom"ip>',
           buttons: [
-          {
-            extend: 'excel',
-            text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-            className: 'btn btn-success btn-sm me-1',
-            exportOptions: {
-              columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
+            {
+              extend: 'excel',
+              text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+              className: 'btq-export-btn btq-export-excel',
+              exportOptions: { columns: [1, 2, 3, 4, 5, 6] }
+            },
+            {
+              extend: 'pdf',
+              text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+              className: 'btq-export-btn btq-export-pdf',
+              exportOptions: { columns: [1, 2, 3, 4, 5, 6] }
             }
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-            className: 'btn btn-danger btn-sm',
-            exportOptions: {
-              columns: [0, 1, 2] // Exporter uniquement les colonnes Nom, Description et Date
-            }
-          }
-        ],
-        pageLength: 10,
-        searching: true,
-        info: true,
-        responsive: true,
-        ordering: true,
-        pagingType: 'full_numbers',
-        stateSave: false,
-        retrieve: false,
-        autoWidth: false, // Désactiver l'ajustement automatique de la largeur pour plus de stabilité
-          drawCallback: () => {
-            // Réinitialiser les tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
-          },
+          ],
+          pageLength: 10,
+          searching: true,
+          info: true,
+          responsive: true,
+          ordering: true,
+          pagingType: 'simple_numbers',
+          stateSave: false,
+          retrieve: false,
+          autoWidth: false,
+          drawCallback: () => {},
           createdRow: (row: any, data: any, dataIndex: any) => {
             // Ajouter les gestionnaires d'événements pour les actions
             $(row).find('[data-action]').on('click', (e: any) => {
@@ -420,8 +465,10 @@ export class BoutiqueComponent {
                 case 'edit':
                   this.openEdit(boutique);
                   break;
+                case 'modes':
+                  this.openModesPaiement(boutique);
+                  break;
                 case 'delete':
-                  //this.deleteCategorie(categorie);
                   break;
               }
             });

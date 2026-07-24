@@ -10,6 +10,11 @@ const caisseRoutes: Routes = [
     path: 'rapport/:id',
     loadComponent: () => import('./rapport/rapport.component'),
     title: 'neurostock | Rapport de caisse'
+  },
+  {
+    path: 'caisses',
+    loadComponent: () => import('./caisses/caisses.component'),
+    title: 'neurostock | Gestion des caisses'
   }
 ];
 

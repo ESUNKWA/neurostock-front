@@ -70,7 +70,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   caissierStats: any = null;
   isLoadingCaissier = false;
 
-  private readonly CAISSIER_PROFILES = ['caissier', 'vendeur', 'gerant', 'user'];
+  private readonly CAISSIER_PROFILES = ['caissier', 'vendeur', 'user'];
 
   get isCaissierView(): boolean {
     const code = this.currentUser?.profil?.code?.toLowerCase();
@@ -172,8 +172,11 @@ export default class DashboardComponent implements OnInit, OnDestroy {
         });
         break;
 
-      case 'responsable_structure': {
-        const structureId = this.currentUser.structure_id ?? this.currentUser.structure?.[0]?.id;
+      case 'responsable_structure':
+      case 'gerant': {
+        const structureId = this.currentUser.structure_id
+          ?? this.currentUser.boutique?.structure_id
+          ?? this.currentUser.structure?.[0]?.id;
         this.boutiqueService.findByStructure(structureId).subscribe({
           next: (r: any) => {
             this.boutiques = r?.data ?? [];
@@ -183,9 +186,9 @@ export default class DashboardComponent implements OnInit, OnDestroy {
             }
           },
           error: () => {
-            this.boutiques = this.currentUser.boutiques ?? [];
+            this.boutiques = this.currentUser.boutiques ?? (this.currentUser.boutique ? [this.currentUser.boutique] : []);
             if (this.boutiques.length > 0) {
-              this.idBoutique = this.boutiques[0].id;
+              this.idBoutique = this.currentUser.boutique_id ?? this.boutiques[0].id;
               this.loadStats();
             }
           }
@@ -194,7 +197,6 @@ export default class DashboardComponent implements OnInit, OnDestroy {
       }
 
       default:
-        // gérant et autres rôles non-caissier avec boutique assignée
         this.idBoutique = this.currentUser.boutique_id ?? null;
         this.boutiques = this.currentUser.boutiques ?? (this.currentUser.boutique ? [this.currentUser.boutique] : []);
         if (this.idBoutique) this.loadStats();
@@ -224,7 +226,8 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadStats(): void {
-    const boutiqueId = this.currentUser.profil.code === 'admin' || this.currentUser.profil.code === 'responsable_structure'
+    const adminLike = ['admin', 'responsable_structure', 'gerant'];
+    const boutiqueId = adminLike.includes(this.currentUser.profil.code)
       ? this.idBoutique
       : this.currentUser.boutique_id;
 
