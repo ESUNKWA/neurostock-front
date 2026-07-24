@@ -262,13 +262,34 @@
 
   <!-- ── Historique des sessions ──────────────────────────────────────────── -->
   <div class="card border-0 shadow-sm">
-    <div class="card-header d-flex align-items-center justify-content-between py-3">
-      <h6 class="mb-0 fw-semibold">Historique des sessions</h6>
-      @if (!activeSession && idBoutique) {
-        <button type="button" class="btn btn-primary btn-sm" (click)="openModalOuvrir()">
-          <i class="bi bi-plus-circle me-1"></i> Ouvrir
-        </button>
-      }
+    <div class="card-header py-3">
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h6 class="mb-0 fw-semibold">
+          Historique des sessions
+          @if (sessions.length > 0) {
+            <span class="badge bg-secondary ms-2 fw-normal" style="font-size:.7rem">{{ filteredSessions.length }}</span>
+          }
+        </h6>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          @if (isSuperUser && sessionUsers.length > 1) {
+            <nz-select
+              [(ngModel)]="sessionCaissierFilter"
+              (ngModelChange)="onSessionFilterChange()"
+              nzAllowClear
+              nzPlaceHolder="Tous les caissiers"
+              style="min-width:180px">
+              @for (u of sessionUsers; track u.id) {
+                <nz-option [nzValue]="u.id" [nzLabel]="(u.prenoms || u.prenom || '') + ' ' + u.nom"></nz-option>
+              }
+            </nz-select>
+          }
+          @if (!activeSession && idBoutique) {
+            <button type="button" class="btn btn-primary btn-sm" (click)="openModalOuvrir()">
+              <i class="bi bi-plus-circle me-1"></i> Ouvrir
+            </button>
+          }
+        </div>
+      </div>
     </div>
     <div class="card-body">
       @if (loadingSessions) {
@@ -279,12 +300,12 @@
 
       <!-- Mobile cards -->
       <div class="d-md-none">
-        @if (sessions.length === 0 && !loadingSessions) {
+        @if (filteredSessions.length === 0 && !loadingSessions) {
           <div class="text-center py-4 text-muted small">
             <i class="bi bi-inbox fs-3 d-block mb-2 opacity-40"></i>Aucune session enregistr&eacute;e
           </div>
         }
-        @for (s of sessions; track s.id) {
+        @for (s of filteredSessions; track s.id) {
           <div class="mc-card d-flex align-items-start justify-content-between gap-2">
             <div class="flex-grow-1 min-w-0">
               <div class="mc-title">Session #{{ s.id }}</div>
@@ -318,7 +339,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (s of sessions; track s.id) {
+            @for (s of filteredSessions; track s.id) {
               <tr>
                 <td>{{ s.id }}</td>
                 <td>

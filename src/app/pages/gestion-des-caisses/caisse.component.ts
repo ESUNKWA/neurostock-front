@@ -27,12 +27,15 @@ export default class CaisseComponent implements OnInit {
   idBoutique: number | null = null;
 
   sessions: any[] = [];
+  filteredSessions: any[] = [];
+  sessionCaissierFilter: number | null = null;
   activeSession: any = null;
   theorique: any = null;
   loadingSessions = false;
   loadingActive = false;
   loadingTheorique = false;
   users: any[] = [];
+  sessionUsers: any[] = [];
   caisseActivee: boolean | null = null;
   activating = false;
   mobileDetailItem: any = null;
@@ -58,7 +61,7 @@ export default class CaisseComponent implements OnInit {
 
   get isSuperUser(): boolean {
     const code = this.currentUser?.profil?.code;
-    return code === 'admin' || code === 'responsable_structure';
+    return code === 'admin' || code === 'responsable_structure' || this.currentUser?.is_admin === true;
   }
 
   readonly modesPaiement = [
@@ -157,6 +160,9 @@ export default class CaisseComponent implements OnInit {
 
   onBoutiqueChange(): void {
     if (!this.idBoutique) return;
+    this.sessionCaissierFilter = null;
+    this.sessionUsers = [];
+    this.filteredSessions = [];
     this.checkCaisseActivee();
     this.loadActiveSession();
     this.loadSessions();
@@ -259,14 +265,39 @@ export default class CaisseComponent implements OnInit {
     if (!this.idBoutique) return;
     this.loadingSessions = true;
     const caissierFilter = this.isSuperUser ? undefined : (this.currentUser?.telephone ?? undefined);
-    this.caisseService.getSessions(this.idBoutique, caissierFilter)
+    this.caisseService.getSessions(this.idBoutique, caissierFilter, 1, 500)
       .pipe(finalize(() => (this.loadingSessions = false)))
       .subscribe({
         next: (r: any) => {
           this.sessions = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []);
+          this.buildSessionUsers();
+          this.applySessionFilter();
         },
-        error: () => { this.sessions = []; }
+        error: () => { this.sessions = []; this.filteredSessions = []; this.sessionUsers = []; }
       });
+  }
+
+  buildSessionUsers(): void {
+    const seen = new Set<number>();
+    this.sessionUsers = [];
+    for (const s of this.sessions) {
+      if (s.caissier && !seen.has(s.caissier.id)) {
+        seen.add(s.caissier.id);
+        this.sessionUsers.push(s.caissier);
+      }
+    }
+  }
+
+  applySessionFilter(): void {
+    if (!this.sessionCaissierFilter) {
+      this.filteredSessions = this.sessions;
+    } else {
+      this.filteredSessions = this.sessions.filter(s => s.caissier?.id === this.sessionCaissierFilter);
+    }
+  }
+
+  onSessionFilterChange(): void {
+    this.applySessionFilter();
   }
 
   // ── Modals ───────────────────────────────────────────────────────────────────

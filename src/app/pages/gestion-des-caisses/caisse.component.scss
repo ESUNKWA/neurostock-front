@@ -34,7 +34,7 @@
 // ── Session active header gradient ────────────────────────────────────────────
 
 .caisse-session-hd {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: var(--pos-nav-bg, linear-gradient(135deg, #059669 0%, #047857 100%));
   color: #fff;
   padding: 1rem 1.25rem;
   display: flex;
@@ -43,7 +43,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   border-radius: calc(.375rem - 1px) calc(.375rem - 1px) 0 0;
-  box-shadow: 0 4px 16px rgba(5, 150, 105, .25);
+  box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb, 5, 150, 105), .25);
 }
 
 .caisse-session-icon {

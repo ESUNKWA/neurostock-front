@@ -98,7 +98,7 @@
           </button>
         </div>
         @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.is_admin === true) {
-          <nz-select class="mob-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
+          <nz-select class="mob-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —" [compareWith]="compareBoutiqueId">
             @for (b of boutiques; track b.id) {
               <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
             }
@@ -478,7 +478,7 @@
       <div class="db-hero-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
     </div>
     @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.is_admin === true) {
-      <nz-select class="db-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
+      <nz-select class="db-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —" [compareWith]="compareBoutiqueId">
         @for (b of boutiques; track b.id) {
           <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
         }

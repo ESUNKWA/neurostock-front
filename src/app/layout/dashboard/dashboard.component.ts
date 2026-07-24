@@ -48,6 +48,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   boutiques: any = [];
   idBoutique: number | null = null;
   currentUser: any = {};
+  compareBoutiqueId = (o1: any, o2: any) => Number(o1) === Number(o2);
 
   private sseSource: EventSource | null = null;
   private sseBoutiqueId: number | null = null;

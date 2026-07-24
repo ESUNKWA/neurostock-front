@@ -1,3 +1,12 @@
+// ── En-tête de la page (section en haut) ─────────────────────────────────────
+.hac-page-header {
+  background: var(--pos-nav-bg, linear-gradient(135deg, #4d8eef 0%, #1b5dc1 100%));
+  color: #fff;
+  padding: 0.875rem 1.25rem;
+  border-bottom: none;
+  box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb, 30, 58, 150), .22);
+}
+
 // Styles pour le modal de détails des approvisionnements
 #modal-view-details {
   .card {
@@ -14,7 +23,7 @@
       border-radius: 6px 6px 0 0;
       
       &.bg-primary {
-        background: linear-gradient(135deg, #4d8eef, #1b5dc1) !important;
+        background: var(--pos-nav-bg, linear-gradient(135deg, #4d8eef, #1b5dc1)) !important;
         padding: 1px 15px;
       }
       
