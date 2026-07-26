@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,6 +16,8 @@ import { RetourVenteService } from '../../../services/gestion-des-retours/retour
 import { SmsService } from '../../../services/sms/sms.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { ModuleService, ModuleCode } from '../../../services/modules/module.service';
+import { io, Socket } from 'socket.io-client';
+import { environnement } from '../../../environnement/environnement';
 
 interface CartLine {
   produit: any;
@@ -49,7 +51,7 @@ interface CartSession {
   styleUrl: './pos-vente.component.scss',
   providers: [ToastrService],
 })
-export default class PosVenteComponent implements OnInit, AfterViewInit {
+export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('scannerInput') scannerInputRef!: ElementRef<HTMLInputElement>;
   currentUser: any;
   produits:  any[] = [];
@@ -95,7 +97,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   showPayModal  = false;
   modePaiement  = 'espece';
   montantRecu   = 0;
-  detailsPaiement = { espece: 0, carte: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, credit: 0 };
+  detailsPaiement: Record<string, number> = { espece: 0, carte: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, credit: 0 };
 
   // Barcode
   barcodeInput = '';
@@ -119,6 +121,10 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   loading      = false;
   isSubmitting = false;
+
+  // ── Synchronisation temps réel du stock entre caissiers ────────────────────
+  private socket: Socket | null = null;
+  private socketBoutiqueId: number | null = null;
 
   // ── Push notification panier ───────────────────────────────────────────────
   posNotif: { msg: string; type: 'success' | 'error' | 'warning'; visible: boolean } | null = null;
@@ -158,6 +164,10 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
     return this.ALL_MODES.filter(m => this.modesPaiementActifs!.includes(m.value));
   }
 
+  get mixteModesActifs() {
+    return this.MODES.filter(m => m.value !== 'mixte');
+  }
+
   constructor(
     private authService:  AuthService,
     private produitSvc:   ProduitService,
@@ -191,9 +201,12 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
           this.boutiqueSvc.findOne(bid).subscribe({
             next: (r: any) => {
               const b = r?.data ?? r;
-              if (Array.isArray(b?.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
+              this.modesPaiementActifs = Array.isArray(b?.modes_paiement) && b.modes_paiement.length > 0
+                ? b.modes_paiement
+                : this.ALL_MODES.map(m => m.value);
             },
           });
+          this.startRealtime(bid);
         }
       }
     });
@@ -201,6 +214,51 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.focusScanner();
+  }
+
+  ngOnDestroy(): void {
+    this.stopRealtime();
+  }
+
+  // ── Synchronisation temps réel du stock entre caissiers ────────────────────
+  // Le backend émet "vente.created" dans la room `boutique:<id>` dès qu'une vente
+  // est enregistrée par n'importe quel caissier de la boutique (events.gateway.ts).
+  private startRealtime(boutiqueId: number): void {
+    if (!boutiqueId) return;
+    if (this.socketBoutiqueId === boutiqueId && this.socket?.connected) return;
+    this.stopRealtime();
+    this.socketBoutiqueId = boutiqueId;
+
+    // API_URL est relatif ('/api', proxié par ng serve) en dev, mais une URL
+    // absolue vers un sous-domaine distinct en prod (voir environnement.prod.ts) :
+    // le socket doit viser l'origine du backend, pas celle de la page courante.
+    const socketOrigin = environnement.API_URL.startsWith('http') ? environnement.API_URL : '';
+    this.socket = io(`${socketOrigin}/events`, { path: '/socket.io', transports: ['websocket'] });
+    this.socket.on('connect', () => this.socket?.emit('join', { boutique: boutiqueId }));
+    this.socket.on('vente.created', () => this.refreshStockSilent());
+  }
+
+  private stopRealtime(): void {
+    this.socket?.disconnect();
+    this.socket           = null;
+    this.socketBoutiqueId = null;
+  }
+
+  // Rafraîchit les quantités en stock sans spinner ni clignotement du catalogue.
+  // Met à jour les objets produits en place pour que les lignes déjà présentes
+  // dans le panier (qui référencent ces mêmes objets) restent synchronisées.
+  private refreshStockSilent(): void {
+    if (!this.boutiqueId) return;
+    this.produitSvc.getProduits({ boutique: this.boutiqueId }).subscribe({
+      next: (r: any) => {
+        const frais: any[] = r?.data ?? (Array.isArray(r) ? r : []);
+        const parId = new Map(frais.map(p => [p.id, p]));
+        for (const p of this.produits) {
+          const maj = parId.get(p.id);
+          if (maj) p.stock_disponible = maj.stock_disponible;
+        }
+      },
+    });
   }
 
   focusScanner(): void {
@@ -604,12 +662,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit {
   get isCredit(): boolean { return this.modePaiement === 'credit'; }
 
   get totalMixte(): number {
-    const d = this.detailsPaiement;
-    return (Number(d.espece) || 0) + (Number(d.carte) || 0)
-         + (Number(d.credit) || 0)
-         + (Number(d.orange_money) || 0) + (Number(d.wave) || 0)
-         + (Number(d.mtn_money) || 0) + (Number(d.moov_money) || 0)
-         + (Number(d.dajmo) || 0);
+    return Object.values(this.detailsPaiement).reduce((sum, v) => sum + (Number(v) || 0), 0);
   }
 
   // ── Clients ───────────────────────────────────────────────────────────────

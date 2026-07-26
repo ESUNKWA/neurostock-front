@@ -97,6 +97,10 @@
                       <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(b)" title="Modifier">
                         <i class="bi bi-pencil"></i>
                       </button>
+                      <button class="btn btn-sm btn-outline-success" (click)="openModesPaiement(b)" title="Modes de paiement"
+                              style="color:#0d9488;border-color:#0d9488">
+                        <i class="bi bi-cash-stack"></i>
+                      </button>
                       <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(b)" title="Supprimer">
                         <i class="bi bi-trash"></i>
                       </button>
@@ -112,6 +116,64 @@
     </div>
   </div>
 </div>
+
+<!-- Modal modes de paiement -->
+@if (showModesModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content mf-modal mf-modal--orange">
+
+        <div class="mf-header">
+          <div class="mf-header-icon"><i class="bi bi-cash-stack"></i></div>
+          <div>
+            <div class="mf-header-title">Modes de paiement</div>
+            <div class="mf-header-subtitle">{{ modesBoutique?.nom }} — cochez les modes autorisés</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeModesModal()" [disabled]="modesSaving"></button>
+        </div>
+
+        <div class="mf-body">
+          <div class="mf-section mf-section--last">
+            <div class="row g-2">
+              @for (mode of ALL_MODES; track mode.value) {
+                <div class="col-6">
+                  <label class="d-flex align-items-center gap-2 p-2 rounded border cursor-pointer"
+                         style="cursor:pointer;transition:all .15s"
+                         [style.border-color]="isModeSelected(mode.value) ? '#0d9488' : '#dee2e6'"
+                         [style.background]="isModeSelected(mode.value) ? '#f0fdfa' : '#fff'">
+                    <input type="checkbox" class="form-check-input mt-0"
+                           [checked]="isModeSelected(mode.value)"
+                           (change)="toggleMode(mode.value)">
+                    <div>
+                      <div class="fw-semibold small">
+                        <i class="bi {{ mode.icon }} me-1"></i>{{ mode.label }}
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              }
+            </div>
+            <p class="text-muted small mt-3 mb-0">
+              {{ modesSelectionnes.length }} mode(s) activé(s) sur {{ ALL_MODES.length }}
+            </p>
+          </div>
+        </div>
+
+        <div class="mf-footer">
+          <button class="btn mf-btn-save" (click)="saveModesPaiement()" [disabled]="modesSaving">
+            @if (modesSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            @else { <i class="bi bi-check2 me-1"></i> }
+            Enregistrer
+          </button>
+          <button class="btn mf-btn-cancel" (click)="closeModesModal()" [disabled]="modesSaving">
+            <i class="bi bi-x-lg"></i> Annuler
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}
 
 <!-- Modal boutique -->
 @if (showModal) {

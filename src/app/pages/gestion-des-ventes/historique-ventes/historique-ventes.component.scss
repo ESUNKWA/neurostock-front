@@ -400,6 +400,13 @@
   flex-shrink: 0;
 
   &:hover { background: #f1f5f9; color: #334155; }
+
+  &.hv-mob-whatsapp {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+    &:hover { background: #dcfce7; }
+  }
 }
 
 // ── Action buttons (::ng-deep car générés par DataTables hors template Angular)

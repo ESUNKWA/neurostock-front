@@ -143,7 +143,7 @@ export default class CaisseComponent implements OnInit {
     });
 
     this.ouvrirForm = this.fb.group({
-      caisse_id:      [null],
+      caisse_id:      [null, Validators.required],
       caissier:       [this.currentUser?.id ?? null, Validators.required],
       fond_ouverture: fondGroup(),
       note: ['']
@@ -196,9 +196,17 @@ export default class CaisseComponent implements OnInit {
   loadCaisses(): void {
     if (!this.idBoutique) return;
     this.caisseService.getCaisses(this.idBoutique).subscribe({
-      next: (r: any) => { this.caisses = r?.data ?? r ?? []; },
-      error: () => { this.caisses = []; },
+      next: (r: any) => { this.caisses = r?.data ?? r ?? []; this.refreshCaisseIdValidator(); },
+      error: () => { this.caisses = []; this.refreshCaisseIdValidator(); },
     });
+  }
+
+  /** La caisse physique n'est obligatoire que si la boutique en a au moins une de configurée. */
+  private refreshCaisseIdValidator(): void {
+    const ctrl = this.ouvrirForm?.get('caisse_id');
+    if (!ctrl) return;
+    ctrl.setValidators(this.caisses.length > 0 ? [Validators.required] : []);
+    ctrl.updateValueAndValidity();
   }
 
   // ── Activation caisse ────────────────────────────────────────────────────────
@@ -343,6 +351,7 @@ export default class CaisseComponent implements OnInit {
       fond_ouverture: { espece: 0, orange_money: 0, wave: 0, mtn_money: 0, moov_money: 0, dajmo: 0, carte: 0, credit: 0 },
       note: ''
     });
+    this.refreshCaisseIdValidator();
 
     const openModal = () => {
       // setTimeout(0) laisse nz-select enregistrer ses options avant setValue

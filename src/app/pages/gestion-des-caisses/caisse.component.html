@@ -448,19 +448,22 @@
           @if (caisses.length > 0) {
             <div class="mf-section">
               <div class="mf-section-label"><i class="bi bi-cash-register"></i> Caisse</div>
-              <label class="mf-label">Caisse physique</label>
+              <label class="mf-label">Caisse physique <span class="text-danger">*</span></label>
               <nz-select
                 nzShowSearch
                 nzPlaceHolder="Sélectionner une caisse…"
                 formControlName="caisse_id"
                 nzAllowClear
-                style="width:100%">
+                style="width:100%"
+                [ngClass]="{'is-invalid': ouvrirForm.get('caisse_id')?.invalid && ouvrirForm.get('caisse_id')?.touched}">
                 @for (c of caisses; track c.id) {
                   <nz-option [nzValue]="c.id" [nzLabel]="c.nom + ' (' + c.code + ')'"
                              [nzDisabled]="c.statut !== 'ACTIVE'"></nz-option>
                 }
               </nz-select>
-              <div class="mf-hint">Laissez vide pour une session sans caisse assignée</div>
+              @if (ouvrirForm.get('caisse_id')?.invalid && ouvrirForm.get('caisse_id')?.touched) {
+                <div class="mf-error mt-1">Caisse requise</div>
+              }
             </div>
           }
 

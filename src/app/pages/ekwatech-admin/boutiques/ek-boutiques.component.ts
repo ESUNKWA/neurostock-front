@@ -23,6 +23,18 @@ interface BoutiqueForm {
   type: 'boutique' | 'restaurant' | 'entrepot';
 }
 
+const ALL_MODES = [
+  { value: 'espece',      label: 'Espèces',      icon: 'bi-cash-coin' },
+  { value: 'orange_money',label: 'Orange Money', icon: 'bi-phone' },
+  { value: 'wave',        label: 'Wave',         icon: 'bi-phone' },
+  { value: 'mtn_money',   label: 'MTN Money',    icon: 'bi-phone' },
+  { value: 'moov_money',  label: 'Moov Money',   icon: 'bi-phone' },
+  { value: 'dajmo',       label: 'Dajmo',        icon: 'bi-phone' },
+  { value: 'carte',       label: 'Carte',        icon: 'bi-credit-card' },
+  { value: 'credit',      label: 'Crédit',       icon: 'bi-clock-history' },
+  { value: 'mixte',       label: 'Mixte',        icon: 'bi-layers' },
+];
+
 @Component({
   selector: 'app-ek-boutiques',
   standalone: true,
@@ -42,6 +54,12 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
   isEditMode = false;
   isSubmitting = false;
   editTarget: any = null;
+
+  readonly ALL_MODES = ALL_MODES;
+  showModesModal = false;
+  modesBoutique: any = null;
+  modesSelectionnes: string[] = [];
+  modesSaving = false;
 
   form: BoutiqueForm = { nom: '', telephone: '', email: '', rccm: '', situation_geo: '', structure: null, type: 'boutique' };
 
@@ -191,6 +209,44 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
 
   structureName(id: number | null): string {
     return this.structures.find(s => s.id === id)?.nom ?? '—';
+  }
+
+  openModesPaiement(b: any): void {
+    this.modesBoutique = b;
+    this.modesSelectionnes = Array.isArray(b.modes_paiement) && b.modes_paiement.length
+      ? [...b.modes_paiement]
+      : ALL_MODES.map(m => m.value);
+    this.showModesModal = true;
+  }
+
+  closeModesModal(): void { this.showModesModal = false; }
+
+  toggleMode(value: string): void {
+    const idx = this.modesSelectionnes.indexOf(value);
+    if (idx >= 0) this.modesSelectionnes.splice(idx, 1);
+    else this.modesSelectionnes.push(value);
+  }
+
+  isModeSelected(value: string): boolean {
+    return this.modesSelectionnes.includes(value);
+  }
+
+  saveModesPaiement(): void {
+    if (!this.modesSelectionnes.length) {
+      this.toastr.warning('Sélectionnez au moins un mode de paiement');
+      return;
+    }
+    this.modesSaving = true;
+    this.boutiqueSvc.updateModesPaiement(this.modesBoutique.id, this.modesSelectionnes, this.selectedStructureId ?? undefined)
+      .pipe(finalize(() => (this.modesSaving = false)))
+      .subscribe({
+        next: () => {
+          this.modesBoutique.modes_paiement = [...this.modesSelectionnes];
+          this.toastr.success('Modes de paiement mis à jour');
+          this.showModesModal = false;
+        },
+        error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la mise à jour'),
+      });
   }
 
   boutiqueType(b: any): 'boutique' | 'restaurant' | 'entrepot' {

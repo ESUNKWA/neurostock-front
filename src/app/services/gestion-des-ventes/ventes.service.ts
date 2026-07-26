@@ -46,4 +46,11 @@ export class VentesService {
   regulariser(id: number, body: { mode_paiement: string; montant_recu: number; details_paiement: any }) {
     return this.http.patch(`${this.API_URL}/vente/${id}/regulariser`, body);
   }
+
+  envoyerRecuWhatsapp(id: number, documentUrl?: string) {
+    const body = documentUrl
+      ? { documentUrl, nomFichier: `Reçu_vente_${id}.pdf` }
+      : {};
+    return this.http.post(`${this.API_URL}/vente/${id}/whatsapp-recu`, body);
+  }
 }

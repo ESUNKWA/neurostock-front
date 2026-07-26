@@ -193,6 +193,18 @@
           <button class="hv-mob-print" (click)="printVenteThermique(v)" title="Imprimer">
             <i class="bi bi-printer"></i>
           </button>
+          @if (v.client?.telephone) {
+            <button class="hv-mob-print hv-mob-whatsapp"
+                    (click)="envoyerRecuWhatsapp(v); $event.stopPropagation()"
+                    [disabled]="sendingWhatsapp[v.id]"
+                    title="Envoyer par WhatsApp">
+              @if (sendingWhatsapp[v.id]) {
+                <span class="spinner-border spinner-border-sm" style="width:.9rem;height:.9rem"></span>
+              } @else {
+                <i class="bi bi-whatsapp"></i>
+              }
+            </button>
+          }
         </div>
 
       </div>
@@ -356,6 +368,21 @@
           }
           Thermique 80mm
         </button>
+
+        <!-- Envoyer reçu par WhatsApp -->
+        @if (vente?.client?.telephone) {
+          <button type="button" class="btn btn-success"
+                  (click)="envoyerRecuWhatsapp(vente)"
+                  [disabled]="sendingWhatsapp[vente?.id]"
+                  title="Envoyer le reçu par WhatsApp">
+            @if (sendingWhatsapp[vente?.id]) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            } @else {
+              <i class="bi bi-whatsapp me-1"></i>
+            }
+            WhatsApp
+          </button>
+        }
 
         <!-- Régulariser depuis le modal détail -->
         @if (vente?.statut?.toLowerCase() === 'non_payer') {

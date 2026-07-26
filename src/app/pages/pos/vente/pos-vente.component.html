@@ -736,62 +736,16 @@
             <div class="card bg-light border-0 p-3 mb-3">
               <p class="small fw-semibold text-muted mb-2">Répartition du paiement</p>
               <div class="row g-2">
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Espèces</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.espece" min="0">
-                    <span class="input-group-text">F</span>
+                @for (m of mixteModesActifs; track m.value) {
+                  <div class="col-6">
+                    <label class="form-label form-label-sm">{{ m.label }}</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control"
+                             [(ngModel)]="detailsPaiement[m.value]" min="0">
+                      <span class="input-group-text">F</span>
+                    </div>
                   </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Orange Money</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.orange_money" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Wave</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.wave" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">MTN Money</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.mtn_money" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Moov Money</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.moov_money" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Dajmo</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.dajmo" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Carte</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.carte" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label form-label-sm">Crédit</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" class="form-control" [(ngModel)]="detailsPaiement.credit" min="0">
-                    <span class="input-group-text">F</span>
-                  </div>
-                </div>
+                }
               </div>
               <div class="d-flex justify-content-between small mt-2 fw-semibold"
                    [class.text-danger]="totalMixte !== totalTTC"
@@ -830,13 +784,13 @@
             </div>
           }
 
-          <!-- Client (optionnel) — module clients requis -->
-          @if (hasModule('clients')) {
-            <div class="border-top pt-3 mt-1">
-              <p class="small fw-semibold text-muted mb-2">
-                <i class="bi bi-person me-1"></i>Client
-                <span class="fw-normal">(optionnel)</span>
-              </p>
+          <!-- Client (optionnel) — saisie libre toujours disponible -->
+          <div class="border-top pt-3 mt-1">
+            <p class="small fw-semibold text-muted mb-2">
+              <i class="bi bi-person me-1"></i>Client
+              <span class="fw-normal">(optionnel)</span>
+            </p>
+            @if (hasModule('clients') && clients.length > 0) {
               <nz-select class="w-100 mb-2" nzShowSearch nzAllowClear
                          nzPlaceHolder="Sélectionner un client existant…"
                          [(ngModel)]="selectedClientId"
@@ -848,18 +802,18 @@
                   </nz-option>
                 }
               </nz-select>
-              <div class="row g-2">
-                <div class="col">
-                  <input type="text" class="form-control form-control-sm"
-                         placeholder="Nom du client" [(ngModel)]="clientNom">
-                </div>
-                <div class="col">
-                  <input type="tel" class="form-control form-control-sm"
-                         placeholder="Téléphone" [(ngModel)]="clientTel">
-                </div>
+            }
+            <div class="row g-2">
+              <div class="col">
+                <input type="text" class="form-control form-control-sm"
+                       placeholder="Nom du client" [(ngModel)]="clientNom">
+              </div>
+              <div class="col">
+                <input type="tel" class="form-control form-control-sm"
+                       placeholder="Téléphone" [(ngModel)]="clientTel">
               </div>
             </div>
-          }
+          </div>
 
         </div><!-- /modal-body -->
 

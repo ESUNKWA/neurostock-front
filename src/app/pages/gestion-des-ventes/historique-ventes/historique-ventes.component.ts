@@ -584,6 +584,32 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
     return Object.values(this.regularDetailsPaiement).reduce((s: number, v: any) => s + (Number(v) || 0), 0);
   }
 
+  // ── WhatsApp reçu ─────────────────────────────────────────────────────────
+
+  sendingWhatsapp: Record<number, boolean> = {};
+
+  envoyerRecuWhatsapp(vente: any): void {
+    if (this.sendingWhatsapp[vente.id]) return;
+    this.sendingWhatsapp[vente.id] = true;
+
+    const send = (documentUrl?: string) =>
+      this.ventesService.envoyerRecuWhatsapp(vente.id, documentUrl)
+        .pipe(finalize(() => { this.sendingWhatsapp[vente.id] = false; }))
+        .subscribe({
+          next: () => this.toastr.success('Reçu envoyé par WhatsApp ✅'),
+          error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur envoi WhatsApp'),
+        });
+
+    // Générer le PDF d'abord pour l'envoyer en document
+    this.ventesService.imprimerRecu(vente.id).subscribe({
+      next: (r: any) => {
+        const url: string | undefined = r?.data?.path ?? r?.path;
+        send(url);
+      },
+      error: () => send(), // Si PDF échoue, envoyer le texte
+    });
+  }
+
   submitRegularisation(): void {
     if (!this.regularVente) return;
     const isMixte = this.regularForm.mode_paiement === 'mixte';
