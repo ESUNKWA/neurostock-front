@@ -12,9 +12,22 @@ export class RestaurantGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
+    if (!this.moduleService.hasModule('restauration')) {
+      this.router.navigateByUrl('/dashboard');
+      return false;
+    }
+
+    // Écran dédié restaurant (serveur, cuisine, caissier, admin restaurant)…
     const ecran = this.authService.getEcranCible();
-    const hasModule = this.moduleService.hasModule('restauration');
-    if (ecran.startsWith('restaurant-') && hasModule) return true;
+    if (ecran.startsWith('restaurant-')) return true;
+
+    // …ou rôle de gestion (admin / gérant / responsable de structure) qui bascule
+    // ponctuellement en mode Restaurant depuis le bouton du header — même règle
+    // que HeaderComponent.hasRestaurantAccess, sinon le bouton est visible mais
+    // la navigation est bloquée silencieusement.
+    const code = this.authService.getCurrentUser()?.profil?.code?.toLowerCase();
+    if (code === 'admin' || code === 'responsable_structure' || code === 'gerant') return true;
+
     this.router.navigateByUrl('/dashboard');
     return false;
   }

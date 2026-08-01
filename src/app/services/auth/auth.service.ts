@@ -36,6 +36,10 @@ export class AuthService {
     return localStorage.getItem('ecran_cible') ?? '';
   }
 
+  getCurrentUser(): any {
+    return this.currentUserSubject.value;
+  }
+
   login(credentials: { telephone: string; mot_de_passe: string }) {
     return this.http.post(`${this.API_URL}/authentication`, credentials).pipe(
       tap((response: any) => {
