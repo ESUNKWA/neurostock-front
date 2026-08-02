@@ -36,12 +36,21 @@
                     @if (boutiques.length >= 1) {
                         <div class="card-body border-bottom pb-3">
                             <div class="row">
-                                <div class="col-md-4">
-                                    <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange($event)" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Toutes les boutiques">
+                                <div class="col-12">
+                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+                                        <input type="radio" class="btn-check" name="usrBoutiqueRadio" id="usr-boutique-tout"
+                                            [value]="null" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
+                                            (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
+                                        <label class="btn btn-sm btn-outline-primary usr-boutique-radio-label" for="usr-boutique-tout">Tout</label>
                                         @for (boutique of boutiques; track boutique.id) {
-                                            <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
+                                            <input type="radio" class="btn-check" name="usrBoutiqueRadio" [id]="'usr-boutique-' + boutique.id"
+                                                [value]="boutique.id" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
+                                                (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
+                                            <label class="btn btn-sm btn-outline-primary usr-boutique-radio-label" [for]="'usr-boutique-' + boutique.id">
+                                                {{ boutique.nom }}
+                                            </label>
                                         }
-                                    </nz-select>
+                                    </div>
                                 </div>
                             </div>
                         </div>

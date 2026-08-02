@@ -33,6 +33,9 @@ export default class PosComptageComponent implements OnInit {
   lignes: LigneComptage[] = [];
   filtered: LigneComptage[] = [];
 
+  page = 1;
+  readonly pageSize = 10;
+
   // Caisse
   caisseActivee = false;
   activeSessionId: number | null = null;
@@ -106,6 +109,24 @@ export default class PosComptageComponent implements OnInit {
     const q = this.searchQuery.toLowerCase().trim();
     this.filtered = this.lignes.filter(l =>
       !q || l.produit.nom?.toLowerCase().includes(q) || l.produit.code_barre?.toLowerCase().includes(q));
+    this.page = 1;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  get pagedFiltered(): LigneComptage[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(p: number): void {
+    this.page = Math.min(Math.max(1, p), this.totalPages);
   }
 
   // ── Caisse ──────────────────────────────────────────────────────────────

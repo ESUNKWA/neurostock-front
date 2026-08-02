@@ -20,7 +20,7 @@ declare var bootstrap: any;
 export class UsersComponent {
   souscription: Subscription = new Subscription();
   userForm: FormGroup;
-   idBoutique: number = 0;
+   idBoutique: number | null = 0;
   //Injection des services
   userService: any = inject(UserService);
   profilService: any = inject(ProfilService);
@@ -547,7 +547,8 @@ export class UsersComponent {
   }
 
   onBoutiqueChange(boutiqueId: any): void {
-    this.userFind(this.parsedUser.profil.code, boutiqueId || this.parsedUser?.boutique_id);
+    // "Tout" (valeur null) : affiche tous les utilisateurs de la structure, quelle que soit la boutique
+    this.userFind(this.parsedUser.profil.code, boutiqueId ?? '');
   }
 
   ngOnDestroy(): void {

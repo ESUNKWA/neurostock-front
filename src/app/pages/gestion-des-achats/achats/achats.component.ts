@@ -340,13 +340,14 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadProduits(): void {
-    if (this.currentUser.profil.description.toLowerCase() === 'admin' || this.currentUser.profil.description.toLowerCase() === 'responsable_structure') {
-      if (!this.selectedBoutique) {
-        this.produits = [];
-        return;
-      }
-    } else {
-      this.selectedBoutique = this.currentUser.boutique_id
+    // `selectedBoutique` est déjà restreint à l'entrepôt par loadBoutiques()
+    // (pour un utilisateur non admin/responsable_structure, elle n'est
+    // renseignée que si sa propre boutique est de type 'entrepot'). On ne
+    // doit donc jamais retomber sur currentUser.boutique_id ici, sous peine
+    // de charger les produits d'une boutique classique lors de l'appro.
+    if (!this.selectedBoutique) {
+      this.produits = [];
+      return;
     }
 
     const body: any = {

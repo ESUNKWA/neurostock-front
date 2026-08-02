@@ -5,7 +5,6 @@ import { finalize } from 'rxjs';
 import { DashService } from '../../services/dash/dash.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 
@@ -14,7 +13,7 @@ type FilterType = 'today' | 'month' | 'all' | 'custom';
 @Component({
   selector: 'app-recette',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './recette.component.html',
   styleUrl: './recette.component.scss',
 })
@@ -80,6 +79,10 @@ export default class RecetteComponent implements OnInit, OnDestroy {
       .map(([mode, montant]) => ({ mode, label: this.modesLabels[mode] ?? mode, montant: Number(montant) }));
   }
 
+  get boutiquesSansEntrepot(): any[] {
+    return this.boutiques.filter((b: any) => (b?.type ?? '').toLowerCase() !== 'entrepot');
+  }
+
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
     this.loadBoutiques();
@@ -95,8 +98,8 @@ export default class RecetteComponent implements OnInit, OnDestroy {
       this.boutiqueService.find().subscribe({
         next: (r: any) => {
           this.boutiques = r?.data ?? [];
-          if (this.boutiques.length === 1) {
-            this.boutiqueId = this.boutiques[0].id;
+          if (this.boutiquesSansEntrepot.length === 1) {
+            this.boutiqueId = this.boutiquesSansEntrepot[0].id;
             this.setFilter('today');
           }
         },

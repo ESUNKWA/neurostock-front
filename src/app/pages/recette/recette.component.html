@@ -12,12 +12,15 @@
         <div class="rec-hd-sub">Synthèse des ventes</div>
       </div>
     </div>
-    @if (boutiques.length > 1) {
-      <nz-select class="w-100" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Boutique —">
-        @for (b of boutiques; track b.id) {
-          <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+    @if (boutiquesSansEntrepot.length > 1) {
+      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+        @for (b of boutiquesSansEntrepot; track b.id) {
+          <input type="radio" class="btn-check" name="recBoutiqueRadioMob" [id]="'rec-boutique-mob-' + b.id"
+            [value]="b.id" [(ngModel)]="boutiqueId" [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onBoutiqueChange()" autocomplete="off">
+          <label class="btn btn-sm btn-outline-primary rec-boutique-radio-label" [for]="'rec-boutique-mob-' + b.id">{{ b.nom }}</label>
         }
-      </nz-select>
+      </div>
     }
 
     <!-- Période pills -->
@@ -215,12 +218,15 @@
       <h4 class="fw-bold mb-1"><i class="bi bi-cash-stack me-2 text-success"></i>Recette</h4>
       <p class="text-muted small mb-0">Synthèse des ventes par boutique et par période</p>
     </div>
-    @if (boutiques.length > 1) {
-      <nz-select class="w-100" style="max-width:220px" [(ngModel)]="boutiqueId" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Boutique —">
-        @for (b of boutiques; track b.id) {
-          <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+    @if (boutiquesSansEntrepot.length > 1) {
+      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+        @for (b of boutiquesSansEntrepot; track b.id) {
+          <input type="radio" class="btn-check" name="recBoutiqueRadio" [id]="'rec-boutique-' + b.id"
+            [value]="b.id" [(ngModel)]="boutiqueId" [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onBoutiqueChange()" autocomplete="off">
+          <label class="btn btn-sm btn-outline-primary rec-boutique-radio-label" [for]="'rec-boutique-' + b.id">{{ b.nom }}</label>
         }
-      </nz-select>
+      </div>
     }
   </div>
 
