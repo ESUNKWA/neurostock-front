@@ -6,7 +6,6 @@ import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -14,7 +13,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-historique-achats',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, NzSelectModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './historique-achats.component.html',
   styleUrl: './historique-achats.component.scss',
   providers: [ToastrService]
@@ -72,6 +71,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
+            this.selectDefaultEntrepot();
           }
         },
         error: (error: any) => {
@@ -83,6 +83,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
+            this.selectDefaultEntrepot();
           }
         },
         error: (error: any) => {
@@ -94,12 +95,23 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private selectDefaultEntrepot(): void {
+    if (!this.idBoutique && this.entrepots.length > 0) {
+      this.idBoutique = this.entrepots[0].id;
+    }
+    this.loadAchats();
+  }
+
   private initDateRange(): void {
     const today = new Date();
     const debut = new Date();
     debut.setDate(today.getDate() - 30);
     this.dateFin   = today.toISOString().split('T')[0];
     this.dateDebut = debut.toISOString().split('T')[0];
+  }
+
+  get entrepots(): any[] {
+    return this.boutiques.filter((b: any) => (b?.type ?? '').toLowerCase() === 'entrepot');
   }
 
   onBoutiqueChange(value: any): void {

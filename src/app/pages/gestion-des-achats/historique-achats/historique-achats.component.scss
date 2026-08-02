@@ -1,3 +1,13 @@
+// ── Barre de filtres : hauteur uniforme pour tous les champs ─────────────────
+.hac-filter-row {
+  .form-control-sm,
+  .btn.btn-sm {
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 // ── En-tête de la page (section en haut) ─────────────────────────────────────
 .hac-page-header {
   background: var(--pos-nav-bg, linear-gradient(135deg, #4d8eef 0%, #1b5dc1 100%));

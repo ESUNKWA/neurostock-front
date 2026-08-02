@@ -26,7 +26,7 @@
     <div class="row g-4">
 
       <!-- ── Colonne principale ────────────────────────────────────────────── -->
-      <div class="col-md-8">
+      <div [class]="prixAchatOptionnel ? 'col-12' : 'col-md-8'">
 
         <!-- Informations générales -->
         <div class="ac-card">
@@ -233,9 +233,9 @@
       </div>
 
       <!-- ── Panneau latéral ───────────────────────────────────────────────── -->
-      <div class="col-md-4 d-flex flex-column">
+      @if (!prixAchatOptionnel) {
+        <div class="col-md-4 d-flex flex-column">
 
-        @if (!prixAchatOptionnel) {
           <!-- Paiement -->
           <div class="ac-sidebar-section">
             <div class="ac-sidebar-header"><i class="bi bi-credit-card"></i> Paiement</div>
@@ -270,9 +270,9 @@
               <div class="text-muted small mt-1">FCFA</div>
             </div>
           </div>
-        }
 
-      </div>
+        </div>
+      }
     </div>
 
     <!-- ── Actions ─────────────────────────────────────────────────────────── -->

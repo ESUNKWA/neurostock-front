@@ -275,7 +275,7 @@ export default class VenteComponent implements OnInit {
     if (!produit) return;
 
     ligne.patchValue({
-      prix_unitaire_vente: produit.prix_vente,
+      prix_unitaire_vente: produit.prix_effectif ?? produit.prix_vente,
       image: produit.imageUrl,
       stock: produit.stock_disponible,
       nom: produit.nom,
@@ -832,7 +832,7 @@ calculerMontantTotalApresRemise(): void {
           this.detail_vente.push(ligne);
           ligne.patchValue({
             produit: produit.id,
-            prix_unitaire_vente: produit.prix_vente,
+            prix_unitaire_vente: produit.prix_effectif ?? produit.prix_vente,
             image: produit.imageUrl,
             stock: produit.stock_disponible,
             nom: produit.nom,

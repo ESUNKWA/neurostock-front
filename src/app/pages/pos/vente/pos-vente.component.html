@@ -189,12 +189,22 @@
                   @if (isInCart(p.id)) {
                     <span class="pos-incart-badge"><i class="bi bi-check-lg"></i></span>
                   }
+                  @if (p.en_promo) {
+                    <span class="badge bg-danger position-absolute top-0 start-0 m-1" style="font-size:.6rem">PROMO</span>
+                  }
                 </div>
                 <div class="pos-product-body text-center">
                   <p class="pos-product-name">{{ p.nom }}</p>
-                  <p class="pos-product-price">
-                    {{ p.prix_vente | number:'1.0-0':'fr' }}<small>F</small>
-                  </p>
+                  @if (p.en_promo) {
+                    <p class="pos-product-price mb-0">
+                      <span class="text-decoration-line-through text-muted" style="font-size:.75em">{{ p.prix_vente | number:'1.0-0':'fr' }}</span>
+                      <span class="text-danger fw-bold">{{ p.prix_effectif | number:'1.0-0':'fr' }}</span><small>F</small>
+                    </p>
+                  } @else {
+                    <p class="pos-product-price">
+                      {{ p.prix_vente | number:'1.0-0':'fr' }}<small>F</small>
+                    </p>
+                  }
                 </div>
               </div>
             }
@@ -238,7 +248,13 @@
                   </td>
                   <!-- Prix -->
                   <td class="pos-lt-price text-end fw-bold" style="white-space:nowrap">
-                    {{ p.prix_vente | number:'1.0-0':'fr' }}
+                    @if (p.en_promo) {
+                      <span class="text-decoration-line-through text-muted small">{{ p.prix_vente | number:'1.0-0':'fr' }}</span>
+                      <span class="text-danger">{{ p.prix_effectif | number:'1.0-0':'fr' }}</span>
+                      <span class="badge bg-danger" style="font-size:.55rem">PROMO</span>
+                    } @else {
+                      {{ p.prix_vente | number:'1.0-0':'fr' }}
+                    }
                     <span class="pos-lt-currency">FCFA</span>
                   </td>
                   <!-- Stock -->

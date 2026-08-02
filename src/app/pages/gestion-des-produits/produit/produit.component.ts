@@ -83,6 +83,13 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   isLoadingPrixSuggere = false;
   isAppliquerPrix = false;
 
+  // Promotion temporaire (modal dédiée)
+  promoProduit: any | null = null;
+  promoForm: { prix_promo: number | null; promo_date_debut: string | null; promo_date_fin: string | null } = {
+    prix_promo: null, promo_date_debut: null, promo_date_fin: null,
+  };
+  isSavingPromo = false;
+
   // Ajout / modification / suppression de produits réservés au stock central :
   // seuls admin et responsable_structure peuvent gérer le catalogue produit.
   // Les autres rôles (gérant, caissier…) ne font que consulter le stock de leur
@@ -213,9 +220,16 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               data: 'prix_achat',
               render: (data: any) => `${data} FCFA` 
             },
-            { 
+            {
               data: 'prix_vente',
-              render: (data: any) => `${data} FCFA` 
+              render: (data: any, type: any, row: any) => {
+                if (row.en_promo) {
+                  return `<span class="text-decoration-line-through text-muted small">${data} FCFA</span>
+                          <span class="fw-semibold text-danger ms-1">${row.prix_effectif} FCFA</span>
+                          <span class="badge bg-danger ms-1" style="font-size:.6rem">PROMO</span>`;
+                }
+                return `${data} FCFA`;
+              }
             },
             { 
               data: 'stock_disponible',
@@ -248,8 +262,10 @@ export default class ProduitComponent implements OnInit, OnDestroy {
                 const iaColorClass = marge < 15 ? 'prd-act-amber' : 'prd-act-violet';
                 const iaTitle = marge < 15 ? `Marge faible (${Math.round(marge)}%) — Suggestion IA` : 'Suggestion IA prix';
                 // Ajout/modification/suppression réservés au stock central (admin / responsable_structure)
+                const promoTitle = row.en_promo ? 'Promotion en cours — modifier' : 'Programmer une promotion';
                 const actionsGestion = this.canManageProduits ? `
                   <button class="prd-act-btn ${iaColorClass}" title="${iaTitle}" data-action="ia" data-id="${row.id}"><i class="bi bi-robot"></i></button>
+                  <button class="prd-act-btn ${row.en_promo ? 'prd-act-red' : 'prd-act-slate'}" title="${promoTitle}" data-action="promo" data-id="${row.id}"><i class="bi bi-tags"></i></button>
                   <button class="prd-act-btn prd-act-green" title="Modifier" data-action="edit" data-id="${row.id}"><i class="bi bi-pencil"></i></button>
                   <button class="prd-act-btn prd-act-red" title="Supprimer" data-action="delete" data-id="${row.id}"><i class="bi bi-trash"></i></button>
                 ` : '';
@@ -315,6 +331,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               switch (action) {
                 case 'ia':
                   this.voirPrixSuggere(produit);
+                  break;
+                case 'promo':
+                  this.ouvrirPromoModal(produit);
                   break;
                 case 'label':
                   this.imprimerEtiquette(produit);
@@ -858,6 +877,49 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       const inst = bootstrap.Modal.getInstance(modal);
       if (inst) inst.hide();
     }
+  }
+
+  // ── Promotion temporaire ────────────────────────────────────────────────
+
+  ouvrirPromoModal(produit: any): void {
+    this.promoProduit = produit;
+    this.promoForm = {
+      prix_promo: produit.prix_promo ?? null,
+      promo_date_debut: produit.promo_date_debut ?? null,
+      promo_date_fin: produit.promo_date_fin ?? null,
+    };
+    const modal = document.getElementById('modal-promo');
+    if (modal) {
+      const modalInstance = new bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+  }
+
+  savePromo(): void {
+    if (!this.promoProduit) return;
+    this.isSavingPromo = true;
+    this.produitService.updateProduit(this.promoProduit.id, {
+      prix_promo: this.promoForm.prix_promo,
+      promo_date_debut: this.promoForm.promo_date_debut,
+      promo_date_fin: this.promoForm.promo_date_fin,
+    }).pipe(first()).subscribe({
+      next: () => {
+        this.isSavingPromo = false;
+        const modal = document.getElementById('modal-promo');
+        if (modal) bootstrap.Modal.getInstance(modal)?.hide();
+        this.toastr.success('Promotion mise à jour avec succès');
+        this.loadProduits();
+      },
+      error: () => {
+        this.isSavingPromo = false;
+        this.toastr.error('Erreur lors de la mise à jour de la promotion');
+      }
+    });
+  }
+
+  retirerPromo(): void {
+    this.promoForm = { prix_promo: null, promo_date_debut: null, promo_date_fin: null };
+    this.savePromo();
   }
 
   copierCodeBarre(code: string): void {

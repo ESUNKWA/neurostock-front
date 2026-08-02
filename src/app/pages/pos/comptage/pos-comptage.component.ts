@@ -95,7 +95,7 @@ export default class PosComptageComponent implements OnInit {
           this.lignes = produits.map(p => ({
             produit: p,
             quantite_restante: p.stock_disponible ?? 0,
-            prix_unitaire_vente: p.prix_vente ?? 0,
+            prix_unitaire_vente: p.prix_effectif ?? p.prix_vente ?? 0,
           }));
           this.applyFilter();
         },

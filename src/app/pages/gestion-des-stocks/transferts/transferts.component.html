@@ -22,15 +22,18 @@
       <!-- Barre d'actions -->
       <div class="trx-topbar">
         @if (boutiques.length > 1) {
-          <nz-select class="trx-topbar-select"
-            [(ngModel)]="filterBoutiqueId" (ngModelChange)="loadTransferts()"
-            nzPlaceHolder="Toutes les boutiques" nzShowSearch nzAllowClear>
+          <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrer par boutique">
+            <input type="radio" class="btn-check" name="trxBoutiqueRadio" id="trx-boutique-all"
+              [value]="null" [(ngModel)]="filterBoutiqueId" (ngModelChange)="loadTransferts()" autocomplete="off">
+            <label class="btn btn-sm btn-outline-primary trx-boutique-radio-label" for="trx-boutique-all">Toutes</label>
             @for (b of boutiques; track b.id) {
-              <nz-option [nzValue]="b.id"
-                [nzLabel]="b.nom + (b.type === 'entrepot' ? ' (Entrepôt)' : '')">
-              </nz-option>
+              <input type="radio" class="btn-check" name="trxBoutiqueRadio" [id]="'trx-boutique-' + b.id"
+                [value]="b.id" [(ngModel)]="filterBoutiqueId" (ngModelChange)="loadTransferts()" autocomplete="off">
+              <label class="btn btn-sm btn-outline-primary trx-boutique-radio-label" [for]="'trx-boutique-' + b.id">
+                {{ b.nom }}{{ b.type === 'entrepot' ? ' (Entrepôt)' : '' }}
+              </label>
             }
-          </nz-select>
+          </div>
         }
         <button class="trx-new-btn" (click)="ouvrirFormulaire()"
           [disabled]="entrepots.length === 0">
@@ -218,8 +221,14 @@
   padding: 0 2px;
 }
 
-/* nz-select topbar */
-.trx-topbar-select { flex: 1; min-width: 160px; max-width: 300px; }
+/* Filtre boutique (radios) : dimensions uniformes et alignées */
+.trx-boutique-radio-label {
+  width: 220px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* Bouton Nouveau */
 .trx-new-btn {
@@ -497,22 +506,6 @@
 }
 .trx-required { color: #ef4444; }
 
-/* nz-select overrides dans le modal */
-.trx-nz .ant-select-selector {
-  border-radius: 12px !important;
-  border: 1.5px solid #e5e7eb !important;
-  background: #f9fafb !important;
-  min-height: 44px !important;
-  padding: 6px 11px !important;
-  font-size: .88rem !important;
-}
-.trx-nz.ant-select-focused .ant-select-selector,
-.trx-nz .ant-select-selector:focus-within {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.15) !important;
-}
-.trx-nz .ant-select-selection-search-input { height: 30px !important; }
-
 /* Connecteur route */
 .trx-route-connector {
   text-align: center;
@@ -770,8 +763,6 @@
   .trx-textarea, .trx-qty-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
   .trx-textarea:focus, .trx-qty-input:focus { background: #4b5563; border-color: #3b82f6; }
   .trx-field-label { color: #d1d5db; }
-  .trx-nz .ant-select-selector { background: #374151 !important; border-color: #4b5563 !important; color: #f9fafb !important; }
-  .trx-nz .ant-select-selection-placeholder { color: #6b7280 !important; }
   .trx-sheet-footer { border-top-color: #374151; }
   .trx-sheet-cancel { background: #374151; border-color: #4b5563; color: #9ca3af; }
   .trx-route-connector { color: #4b5563; }
@@ -829,13 +820,13 @@
             <label class="trx-field-label">
               <i class="bi bi-building me-1"></i>Source (entrepôt) <span class="trx-required">*</span>
             </label>
-            <nz-select class="w-100 trx-nz"
-              [(ngModel)]="form.boutique_source" (ngModelChange)="onSourceChange()"
-              nzPlaceHolder="— Sélectionner l'entrepôt —" nzShowSearch nzAllowClear>
+            <div class="d-flex flex-column gap-2" role="radiogroup" aria-label="Sélectionner l'entrepôt source">
               @for (e of entrepots; track e.id) {
-                <nz-option [nzValue]="e.id" [nzLabel]="e.nom"></nz-option>
+                <input type="radio" class="btn-check" name="trxSourceRadio" [id]="'trx-source-' + e.id"
+                  [value]="e.id" [(ngModel)]="form.boutique_source" (ngModelChange)="onSourceChange()" autocomplete="off">
+                <label class="btn btn-sm btn-outline-primary text-start" [for]="'trx-source-' + e.id">{{ e.nom }}</label>
               }
-            </nz-select>
+            </div>
           </div>
 
           <div class="trx-route-connector"><i class="bi bi-arrow-down"></i></div>
@@ -844,13 +835,13 @@
             <label class="trx-field-label">
               <i class="bi bi-shop me-1"></i>Destination <span class="trx-required">*</span>
             </label>
-            <nz-select class="w-100 trx-nz"
-              [(ngModel)]="form.boutique_destination"
-              nzPlaceHolder="— Sélectionner la boutique —" nzShowSearch nzAllowClear>
+            <div class="d-flex flex-column gap-2" role="radiogroup" aria-label="Sélectionner la boutique destination">
               @for (b of boutiquesDestination; track b.id) {
-                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                <input type="radio" class="btn-check" name="trxDestRadio" [id]="'trx-dest-' + b.id"
+                  [value]="b.id" [(ngModel)]="form.boutique_destination" autocomplete="off">
+                <label class="btn btn-sm btn-outline-primary text-start" [for]="'trx-dest-' + b.id">{{ b.nom }}</label>
               }
-            </nz-select>
+            </div>
           </div>
         </div>
 
@@ -907,7 +898,7 @@
                     </th>
                     <th>Produit</th>
                     <th class="text-end" style="width:90px">Stock dispo</th>
-                    <th class="text-center" style="width:80px">Quantité</th>
+                    <th class="text-center" style="width:170px">Quantité</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -930,10 +921,41 @@
                       </td>
                       <td class="trx-prod-td-qty" (click)="$event.stopPropagation()">
                         @if (isSelected(p.id)) {
-                          <input type="number" class="trx-qty-input trx-qty-sm"
-                                 [value]="getQty(p.id)"
-                                 (input)="setQty(p.id, $event)"
-                                 min="1" [max]="p.stock_disponible">
+                          @if (hasConditionnement(p)) {
+                            <div class="d-flex flex-column align-items-center gap-1">
+                              <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn"
+                                        [ngClass]="getMode(p.id) === 'unite' ? 'btn-primary' : 'btn-outline-secondary'"
+                                        (click)="toggleLigneMode(p, 'unite')">
+                                  {{ p.unite_mesure || 'Unité' }}
+                                </button>
+                                <button type="button" class="btn"
+                                        [ngClass]="getMode(p.id) === 'colis' ? 'btn-primary' : 'btn-outline-secondary'"
+                                        (click)="toggleLigneMode(p, 'colis')">
+                                  {{ p.unite_conditionnement }}
+                                </button>
+                              </div>
+                              @if (getMode(p.id) === 'colis') {
+                                <input type="number" class="trx-qty-input trx-qty-sm"
+                                       [value]="getColisQty(p.id)"
+                                       (input)="setColisQty(p, $event)"
+                                       min="1">
+                                <span class="text-muted" style="font-size:.65rem">
+                                  = {{ getQty(p.id) }} {{ p.unite_mesure || 'unité(s)' }}
+                                </span>
+                              } @else {
+                                <input type="number" class="trx-qty-input trx-qty-sm"
+                                       [value]="getQty(p.id)"
+                                       (input)="setQty(p.id, $event)"
+                                       min="1" [max]="p.stock_disponible">
+                              }
+                            </div>
+                          } @else {
+                            <input type="number" class="trx-qty-input trx-qty-sm"
+                                   [value]="getQty(p.id)"
+                                   (input)="setQty(p.id, $event)"
+                                   min="1" [max]="p.stock_disponible">
+                          }
                         }
                       </td>
                     </tr>
@@ -1041,7 +1063,12 @@
               @for (l of detail.lignes; track l.id) {
                 <tr>
                   <td>{{ l.produit?.nom }}</td>
-                  <td class="text-center"><strong>{{ l.quantite }}</strong></td>
+                  <td class="text-center">
+                    <strong>{{ l.quantite }}</strong>
+                    @if (l.mode_saisie === 'colis' && l.quantite_colis) {
+                      <span class="text-muted small">({{ l.quantite_colis }} {{ l.produit?.unite_conditionnement }})</span>
+                    }
+                  </td>
                 </tr>
               } @empty {
                 <tr><td colspan="2" class="text-center text-muted">Aucune ligne</td></tr>

@@ -1,3 +1,12 @@
+// ── Filtre boutique (radios) : dimensions uniformes ─────────────────────────
+.prd-boutique-radio-label {
+  width: 200px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // ── Stock badge (mobile cards) ────────────────────────────────────────────────
 .prd-stock-badge {
   display: inline-flex;

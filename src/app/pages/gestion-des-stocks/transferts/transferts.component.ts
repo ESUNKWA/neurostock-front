@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 import { TransfertStockService } from '../../../services/gestion-des-stocks/transfert-stock.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
@@ -15,7 +14,7 @@ declare var $: any;
 @Component({
   selector: 'app-transferts',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NzSelectModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './transferts.component.html',
 })
 export default class TransfertsComponent implements OnInit, OnDestroy {
@@ -27,7 +26,9 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   currentUser: any;
 
   // Sélection produits (nouvelle UX)
-  selectedMap: { [id: number]: number } = {}; // produit_id → quantite
+  selectedMap: { [id: number]: number } = {}; // produit_id → quantite (toujours en unité de détail)
+  modeMap: { [id: number]: 'unite' | 'colis' } = {};    // produit_id → mode de saisie
+  colisMap: { [id: number]: number } = {};              // produit_id → nb de cartons/casiers saisi
   produitSearch = '';
   produitPage = 1;
   readonly produitPageSize = 30;
@@ -134,8 +135,15 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
       };
       // Pré-cocher les produits des lignes existantes
       this.selectedMap = {};
+      this.modeMap = {};
+      this.colisMap = {};
       for (const l of lignes) {
-        if (l.produit?.id) this.selectedMap[l.produit.id] = l.quantite;
+        if (!l.produit?.id) continue;
+        this.selectedMap[l.produit.id] = l.quantite;
+        if (l.mode_saisie === 'colis') {
+          this.modeMap[l.produit.id] = 'colis';
+          this.colisMap[l.produit.id] = l.quantite_colis ?? 1;
+        }
       }
       if (this.form.boutique_source) {
         this.loadProduitsSrc(this.form.boutique_source, lignes);
@@ -143,6 +151,8 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
     } else {
       this.editId = null;
       this.selectedMap = {};
+      this.modeMap = {};
+      this.colisMap = {};
       this.form = {
         boutique_source: this.entrepots[0]?.id ?? null,
         boutique_destination: null,
@@ -158,6 +168,8 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
 
   onSourceChange(): void {
     this.selectedMap = {};
+    this.modeMap = {};
+    this.colisMap = {};
     this.produitSearch = '';
     this.produitPage = 1;
     this.produitsSrc = [];
@@ -233,6 +245,8 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   toggleProduit(p: any): void {
     if (this.selectedMap[p.id]) {
       delete this.selectedMap[p.id];
+      delete this.modeMap[p.id];
+      delete this.colisMap[p.id];
     } else {
       this.selectedMap[p.id] = 1;
     }
@@ -249,6 +263,41 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Conditionnement (carton/casier) ────────────────────────────────────────
+
+  hasConditionnement(p: any): boolean {
+    return !!p.unite_conditionnement && !!p.quantite_par_conditionnement;
+  }
+
+  getMode(id: number): 'unite' | 'colis' {
+    return this.modeMap[id] ?? 'unite';
+  }
+
+  toggleLigneMode(p: any, mode: 'unite' | 'colis'): void {
+    this.modeMap[p.id] = mode;
+    this.recalcQty(p);
+  }
+
+  getColisQty(id: number): number {
+    return this.colisMap[id] ?? 1;
+  }
+
+  setColisQty(p: any, event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10);
+    if (!isNaN(val) && val >= 0) {
+      this.colisMap[p.id] = val;
+      this.recalcQty(p);
+    }
+  }
+
+  // Recalcule la quantité en unité de détail (source de vérité) à partir du nb de cartons.
+  private recalcQty(p: any): void {
+    if (this.getMode(p.id) === 'colis' && this.hasConditionnement(p)) {
+      const facteur = p.quantite_par_conditionnement || 1;
+      this.selectedMap[p.id] = (this.colisMap[p.id] ?? 1) * facteur;
+    }
+  }
+
   toggleAll(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     for (const p of this.filteredProduits) {
@@ -256,6 +305,8 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
         if (!this.selectedMap[p.id]) this.selectedMap[p.id] = 1;
       } else {
         delete this.selectedMap[p.id];
+        delete this.modeMap[p.id];
+        delete this.colisMap[p.id];
       }
     }
   }
@@ -272,7 +323,15 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
       boutique_source: this.form.boutique_source,
       boutique_destination: this.form.boutique_destination,
       notes: this.form.notes || undefined,
-      lignes: selectedEntries.map(([id, qty]) => ({ produit: +id, quantite: +qty })),
+      lignes: selectedEntries.map(([id, qty]) => {
+        const enColis = this.getMode(+id) === 'colis';
+        return {
+          produit: +id,
+          quantite: +qty,
+          mode_saisie: enColis ? 'colis' : 'unite',
+          quantite_colis: enColis ? this.colisMap[+id] : null,
+        };
+      }),
     };
 
     const obs = this.editId

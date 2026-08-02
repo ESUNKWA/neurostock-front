@@ -31,21 +31,21 @@
             </div>
           </div>
         </div>
-        @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
-          <div class="card-body">
-              <div class="row">
-                  <div class="col-md-4">
-                      <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange($event)" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une boutique">
-                        @for (boutique of boutiques; track boutique.id) {
-                          <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
-                        }
-                      </nz-select>
-                  </div>
-              </div>
-          </div>
-        }
         <div class="card-body">
-          <div class="row g-2 align-items-end mb-3">
+          <div class="row g-2 align-items-end mb-3 hac-filter-row">
+            @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
+              <div class="col-auto">
+                <label class="form-label small mb-1">Entrepôt</label>
+                <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un entrepôt">
+                  @for (entrepot of entrepots; track entrepot.id) {
+                    <input type="radio" class="btn-check" name="hacEntrepotRadio" [id]="'hac-entrepot-' + entrepot.id"
+                      [value]="entrepot.id" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
+                    <label class="btn btn-sm btn-outline-primary" [for]="'hac-entrepot-' + entrepot.id">{{ entrepot.nom }}</label>
+                  }
+                </div>
+              </div>
+            }
             <div class="col-auto">
               <label class="form-label small mb-1">Du</label>
               <input type="date" class="form-control form-control-sm" [(ngModel)]="dateDebut" (change)="onDateChange()">

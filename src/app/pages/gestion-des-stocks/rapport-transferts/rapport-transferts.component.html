@@ -17,15 +17,17 @@
       <div class="card mb-3">
         <div class="card-body py-2 py-md-3">
           <div class="row g-2 align-items-end">
-            <div class="col-12 col-md-3">
+            <div class="col-12">
               <label class="form-label fw-semibold mb-1 small">
                 Boutique destination <span class="text-danger">*</span>
               </label>
-              <nz-select class="w-100" [(ngModel)]="filtres.boutique_destination" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Choisir —">
+              <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique destination">
                 @for (b of boutiquesDestination; track b.id) {
-                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+                  <input type="radio" class="btn-check" name="rtBoutiqueDestRadio" [id]="'rt-boutique-dest-' + b.id"
+                    [value]="b.id" [(ngModel)]="filtres.boutique_destination" [ngModelOptions]="{standalone: true}" autocomplete="off">
+                  <label class="btn btn-sm btn-outline-primary" [for]="'rt-boutique-dest-' + b.id">{{ b.nom }}</label>
                 }
-              </nz-select>
+              </div>
             </div>
             <div class="col-12 col-md-3">
               <label class="form-label fw-semibold mb-1 small">Entrepôt source</label>

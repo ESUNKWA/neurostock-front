@@ -615,7 +615,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
         this.notify(`Stock max atteint (${product.stock_disponible})`, 'warning');
       }
     } else {
-      this.cart.push({ produit: product, quantite: 1, prix: product.prix_vente });
+      this.cart.push({ produit: product, quantite: 1, prix: product.prix_effectif ?? product.prix_vente });
       this.beep('success');
       this.notify(`${product.nom} ajouté au panier`, 'success');
     }

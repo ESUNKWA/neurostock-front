@@ -77,7 +77,7 @@
                                             <input type="radio" class="btn-check" name="prdBoutiqueRadio" [id]="'prd-boutique-' + boutique.id"
                                                 [value]="boutique.id" [(ngModel)]="selectedBoutiqueFilter"
                                                 [ngModelOptions]="{standalone: true}" (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
-                                            <label class="btn btn-sm btn-outline-primary" [for]="'prd-boutique-' + boutique.id">
+                                            <label class="btn btn-sm btn-outline-primary prd-boutique-radio-label" [for]="'prd-boutique-' + boutique.id">
                                                 {{ boutique.nom }}{{ (boutique.type ?? '').toLowerCase().trim() === 'entrepot' ? ' (Entrepôt)' : '' }}
                                             </label>
                                         }
@@ -214,8 +214,11 @@
                             </div>
                           </div>
                           @if (canManageProduits) {
-                            <div class="mc-popup-footer">
-                              <button class="prd-mob-edit-btn" (click)="openEditProduit(mobileDetailItem); mobileDetailItem = null">
+                            <div class="mc-popup-footer d-flex gap-2">
+                              <button class="prd-mob-edit-btn flex-grow-1" (click)="ouvrirPromoModal(mobileDetailItem); mobileDetailItem = null">
+                                <i class="bi bi-tags me-1"></i> Promo
+                              </button>
+                              <button class="prd-mob-edit-btn flex-grow-1" (click)="openEditProduit(mobileDetailItem); mobileDetailItem = null">
                                 <i class="bi bi-pencil-square me-1"></i> Modifier
                               </button>
                             </div>
@@ -534,6 +537,61 @@
 
         </div>
     </div>
+</div>
+
+<!-- Modal Promotion temporaire -->
+<div class="modal fade" id="modal-promo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 pb-1">
+        <h5 class="modal-title fw-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-tags-fill text-danger"></i>
+          Promotion — {{ promoProduit?.nom }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p class="text-muted mb-3" style="font-size:.82rem">
+          Renseignez un prix promotionnel et une période : le produit sera automatiquement
+          vendu à ce prix entre ces deux dates, puis reviendra au prix de vente normal
+          ({{ promoProduit?.prix_vente | number:'1.0-0':'fr' }} F).
+        </p>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Prix promo (FCFA)</label>
+          <input type="number" class="form-control" placeholder="Ex : 6000"
+                 [(ngModel)]="promoForm.prix_promo" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label fw-semibold small">Du</label>
+            <input type="date" class="form-control"
+                   [(ngModel)]="promoForm.promo_date_debut" [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold small">Au</label>
+            <input type="date" class="form-control" [min]="promoForm.promo_date_debut"
+                   [(ngModel)]="promoForm.promo_date_fin" [ngModelOptions]="{standalone: true}">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        @if (promoProduit?.prix_promo) {
+          <button type="button" class="btn btn-outline-danger me-auto" (click)="retirerPromo()" [disabled]="isSavingPromo">
+            <i class="bi bi-x-circle me-1"></i>Retirer la promo
+          </button>
+        }
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-success" (click)="savePromo()" [disabled]="isSavingPromo">
+          @if (isSavingPromo) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          } @else {
+            <i class="bi bi-check2-circle me-1"></i>
+          }
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal Suggestion IA — Prix suggéré -->

@@ -26,21 +26,12 @@
   text-transform: capitalize;
 }
 
-.db-boutique-select {
-  padding: .5rem .9rem;
-  border-radius: .6rem;
-  border: 1px solid rgba(255,255,255,.25);
-  background: rgba(255,255,255,.1);
-  color: #fff;
-  font-size: .84rem;
-  backdrop-filter: blur(4px);
-  min-width: 200px;
-  cursor: pointer;
-  outline: none;
-  transition: border-color .15s;
-
-  option { color: #0f172a; background: #fff; }
-  &:focus { border-color: rgba(255,255,255,.55); }
+.db-boutique-radio-label {
+  width: 200px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .db-refresh-btn {

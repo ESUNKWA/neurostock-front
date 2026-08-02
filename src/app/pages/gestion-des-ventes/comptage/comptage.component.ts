@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
@@ -20,7 +19,7 @@ interface LigneComptage {
 @Component({
   selector: 'app-comptage',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NzSelectModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './comptage.component.html',
   providers: [ToastrService],
 })
@@ -33,6 +32,9 @@ export default class ComptageComponent implements OnInit {
 
   lignes: LigneComptage[] = [];
   filtered: LigneComptage[] = [];
+
+  page = 1;
+  readonly pageSize = 10;
 
   // Boutique (admin / responsable_structure peuvent choisir la boutique)
   boutiquesStructure: any[] = [];
@@ -77,8 +79,14 @@ export default class ComptageComponent implements OnInit {
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
       if (u) {
-        if (this.canSelectBoutique) this.loadBoutiquesStructure();
-        this.loadProduits();
+        if (this.canSelectBoutique) {
+          // Admin / responsable_structure : le tableau reste vide tant qu'aucune
+          // boutique n'est sélectionnée (cf. loadBoutiquesStructure pour le cas
+          // d'une structure à boutique unique, sélectionnée automatiquement).
+          this.loadBoutiquesStructure();
+        } else {
+          this.loadProduits();
+        }
       }
     });
   }
@@ -92,8 +100,18 @@ export default class ComptageComponent implements OnInit {
     const structureId = this.currentUser?.structure_id ?? this.currentUser?.structure?.id;
     if (!structureId) return;
     this.boutiqueSvc.findByStructure(structureId).subscribe({
-      next: (r: any) => { this.boutiquesStructure = r?.data ?? []; },
+      next: (r: any) => {
+        this.boutiquesStructure = r?.data ?? [];
+        if (this.boutiquesSansEntrepot.length === 1) {
+          this.selectedProduitsBoutique = this.boutiquesSansEntrepot[0].id;
+          this.loadProduits();
+        }
+      },
     });
+  }
+
+  get boutiquesSansEntrepot(): any[] {
+    return this.boutiquesStructure.filter((b: any) => (b?.type ?? '').toLowerCase() !== 'entrepot');
   }
 
   onProduitsBoutiqueChange(): void {
@@ -128,7 +146,7 @@ export default class ComptageComponent implements OnInit {
           this.lignes = produits.map(p => ({
             produit: p,
             quantite_restante: p.stock_disponible ?? 0,
-            prix_unitaire_vente: p.prix_vente ?? 0,
+            prix_unitaire_vente: p.prix_effectif ?? p.prix_vente ?? 0,
           }));
           this.applyFilter();
         },
@@ -140,6 +158,24 @@ export default class ComptageComponent implements OnInit {
     const q = this.searchQuery.toLowerCase().trim();
     this.filtered = this.lignes.filter(l =>
       !q || l.produit.nom?.toLowerCase().includes(q) || l.produit.code_barre?.toLowerCase().includes(q));
+    this.page = 1;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  get pagedFiltered(): LigneComptage[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(p: number): void {
+    this.page = Math.min(Math.max(1, p), this.totalPages);
   }
 
   // ── Caisse ──────────────────────────────────────────────────────────────

@@ -484,7 +484,7 @@
         @for (b of boutiquesSansEntrepot; track b.id) {
           <input type="radio" class="btn-check" name="dbBoutiqueRadio" [id]="'db-boutique-' + b.id"
             [value]="b.id" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" autocomplete="off">
-          <label class="btn btn-sm btn-outline-light" [for]="'db-boutique-' + b.id">{{ b.nom }}</label>
+          <label class="btn btn-sm btn-outline-light db-boutique-radio-label" [for]="'db-boutique-' + b.id">{{ b.nom }}</label>
         }
       </div>
     }

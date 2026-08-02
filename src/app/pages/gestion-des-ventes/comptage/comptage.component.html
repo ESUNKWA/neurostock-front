@@ -80,14 +80,17 @@
               <i class="bi bi-clipboard-check me-2 text-primary"></i>Quantités restantes en boutique
             </span>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              @if (canSelectBoutique && boutiquesStructure.length > 1) {
-                <nz-select style="width:180px" [(ngModel)]="selectedProduitsBoutique"
-                           (ngModelChange)="onProduitsBoutiqueChange()"
-                           nzShowSearch nzPlaceHolder="Boutique…">
-                  @for (b of boutiquesStructure; track b.id) {
-                    <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              @if (canSelectBoutique && boutiquesSansEntrepot.length > 1) {
+                <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+                  @for (b of boutiquesSansEntrepot; track b.id) {
+                    <input type="radio" class="btn-check" name="cptBoutiqueRadio" [id]="'cpt-boutique-' + b.id"
+                      [value]="b.id" [(ngModel)]="selectedProduitsBoutique" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onProduitsBoutiqueChange()" autocomplete="off">
+                    <label class="btn btn-sm btn-outline-primary cpt-boutique-radio-label" [for]="'cpt-boutique-' + b.id">
+                      {{ b.nom }}
+                    </label>
                   }
-                </nz-select>
+                </div>
               }
               <div class="input-group input-group-sm" style="width:220px">
                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -109,7 +112,14 @@
               </div>
             }
 
-            @if (!loading && filtered.length === 0) {
+            @if (!loading && filtered.length === 0 && !selectedProduitsBoutique) {
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-shop display-4 d-block mb-2 opacity-25"></i>
+                <p class="small mb-0">Sélectionnez une boutique pour afficher ses produits</p>
+              </div>
+            }
+
+            @if (!loading && filtered.length === 0 && selectedProduitsBoutique) {
               <div class="text-center py-5 text-muted">
                 <i class="bi bi-box-seam display-4 d-block mb-2 opacity-25"></i>
                 <p class="small mb-0">Aucun produit trouvé</p>
@@ -128,7 +138,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (l of filtered; track l.produit.id) {
+                  @for (l of pagedFiltered; track l.produit.id) {
                     <tr [class.table-warning]="quantiteVendue(l) > 0" [class.table-danger]="depasseStock(l)">
                       <td class="ps-3">
                         <div class="fw-semibold small">{{ l.produit.nom }}</div>
@@ -166,6 +176,29 @@
                   }
                 </tbody>
               </table>
+
+              @if (totalPages > 1) {
+                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top flex-wrap gap-2">
+                  <span class="text-muted small">
+                    {{ (page - 1) * pageSize + 1 }}–{{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} / {{ filtered.length }}
+                  </span>
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === 1" (click)="goToPage(page - 1)">
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                    @for (p of pageNumbers; track p) {
+                      @if (p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)) {
+                        <button type="button" class="btn btn-sm" [class.btn-primary]="p === page" [class.btn-outline-secondary]="p !== page" (click)="goToPage(p)">{{ p }}</button>
+                      } @else if (p === page - 2 || p === page + 2) {
+                        <span class="px-1 text-muted">…</span>
+                      }
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === totalPages" (click)="goToPage(page + 1)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              }
             }
           </div>
         </div>
@@ -257,3 +290,13 @@
     </div>
   </section>
 }
+
+<style>
+.cpt-boutique-radio-label {
+  width: 180px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
