@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
+import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
@@ -26,6 +27,7 @@ declare var bootstrap: any;
 export default class ProduitComponent implements OnInit, OnDestroy {
   produits: any[] = [];
   categories: any[] = [];
+  fournisseurs: any[] = [];
   boutiques: any[] = [];
   selectedBoutique: string = '';
   isLoading: boolean = false;
@@ -81,6 +83,15 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   isLoadingPrixSuggere = false;
   isAppliquerPrix = false;
 
+  // Ajout / modification / suppression de produits réservés au stock central :
+  // seuls admin et responsable_structure peuvent gérer le catalogue produit.
+  // Les autres rôles (gérant, caissier…) ne font que consulter le stock de leur
+  // boutique — ils reçoivent leurs produits via les Transferts de stock.
+  get canManageProduits(): boolean {
+    const code = this.currentUser?.profil?.code?.toLowerCase();
+    return code === 'admin' || code === 'responsable_structure';
+  }
+
   get margeActuelle(): number {
     if (!this.produitPrixSuggere) return 0;
     const { prix_achat, prix_vente } = this.produitPrixSuggere;
@@ -92,6 +103,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private produitService: ProduitService,
     private categorieService: CategorieService,
+    private fournisseurService: FournisseurService,
     private boutiqueService: BoutiqueService,
     private authService: AuthService,
     private toastr: ToastrService,
@@ -105,9 +117,12 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       stock_initial: [0, [Validators.required, Validators.min(0)]],
       seuil_alert: [2, [Validators.required]],
       categorie: ['', Validators.required],
+      fournisseur: [null],
       boutique: ['', Validators.required],
       unite_mesure: ['pièce', Validators.required],
       code_barre: [null],
+      unite_conditionnement: [null],
+      quantite_par_conditionnement: [null],
       image: [null]
     });
   }
@@ -117,6 +132,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     this.loadBoutiques();
     this.loadProduits();
     this.loadCategories();
+    this.loadFournisseurs();
 
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -181,7 +197,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
               width: '2%',
               className: 'text-center',
               render: (_: any, __: any, row: any) =>
-                `<input type="checkbox" class="form-check-input row-check" data-id="${row.id}" ${this.selectedIds.has(row.id) ? 'checked' : ''}>`,
+                this.canManageProduits
+                  ? `<input type="checkbox" class="form-check-input row-check" data-id="${row.id}" ${this.selectedIds.has(row.id) ? 'checked' : ''}>`
+                  : '',
             },
             {
               data: 'imageUrl',
@@ -229,12 +247,16 @@ export default class ProduitComponent implements OnInit, OnDestroy {
                 const marge = row.prix_achat > 0 ? ((row.prix_vente - row.prix_achat) / row.prix_achat) * 100 : 0;
                 const iaColorClass = marge < 15 ? 'prd-act-amber' : 'prd-act-violet';
                 const iaTitle = marge < 15 ? `Marge faible (${Math.round(marge)}%) — Suggestion IA` : 'Suggestion IA prix';
-                return `<div class="prd-actions">
+                // Ajout/modification/suppression réservés au stock central (admin / responsable_structure)
+                const actionsGestion = this.canManageProduits ? `
                   <button class="prd-act-btn ${iaColorClass}" title="${iaTitle}" data-action="ia" data-id="${row.id}"><i class="bi bi-robot"></i></button>
-                  <button class="prd-act-btn prd-act-slate" title="Imprimer étiquette" data-action="label" data-id="${row.id}"><i class="bi bi-tag"></i></button>
-                  <button class="prd-act-btn prd-act-blue" title="Visualiser" data-action="view" data-id="${row.id}"><i class="bi bi-eye"></i></button>
                   <button class="prd-act-btn prd-act-green" title="Modifier" data-action="edit" data-id="${row.id}"><i class="bi bi-pencil"></i></button>
                   <button class="prd-act-btn prd-act-red" title="Supprimer" data-action="delete" data-id="${row.id}"><i class="bi bi-trash"></i></button>
+                ` : '';
+                return `<div class="prd-actions">
+                  <button class="prd-act-btn prd-act-slate" title="Imprimer étiquette" data-action="label" data-id="${row.id}"><i class="bi bi-tag"></i></button>
+                  <button class="prd-act-btn prd-act-blue" title="Visualiser" data-action="view" data-id="${row.id}"><i class="bi bi-eye"></i></button>
+                  ${actionsGestion}
                 </div>`;
               }
             }
@@ -382,6 +404,21 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Les fournisseurs ne sont plus liés à une boutique : la base tenant appartient déjà
+  // à une seule structure, donc la liste complète correspond directement à ce client.
+  loadFournisseurs(): void {
+    this.fournisseurService.getAllFournisseurs().subscribe({
+      next: (response: any) => {
+        if (response.status === 'success' && response.data) {
+          this.fournisseurs = response.data;
+        }
+      },
+      error: () => {
+        this.toastr.error('Erreur lors du chargement des fournisseurs');
+      }
+    });
+  }
+
   onBoutiqueChange(value: any): void {
     this.selectedBoutique = value ?? '';
     this.selectedBoutiqueFilter = value ?? null;
@@ -510,9 +547,12 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       stock_initial: 0,
       seuil_alert: 2,
       categorie: '',
+      fournisseur: null,
       boutique: defaultBoutique,
       unite_mesure: 'pièce',
       code_barre: null,
+      unite_conditionnement: null,
+      quantite_par_conditionnement: null,
       image: null
     });
     this.produitForm.get('boutique')?.disable();
@@ -533,10 +573,13 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: produit.prix_vente,
       stock_initial: produit.stock_initial,
       categorie: produit.categorie?.id,
+      fournisseur: produit.fournisseur?.id ?? null,
       boutique: produit.boutique?.id,
       seuil_alert: produit.seuil_alert || 0,
       unite_mesure: produit.unite_mesure || 'pièce',
-      code_barre: produit.code_barre || null
+      code_barre: produit.code_barre || null,
+      unite_conditionnement: produit.unite_conditionnement || null,
+      quantite_par_conditionnement: produit.quantite_par_conditionnement || null
     });
 
     // Désactiver les champs du formulaire
@@ -571,12 +614,18 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       prix_vente: produit.prix_vente,
       stock_initial: produit.stock_initial,
       categorie: produit.categorie?.id,
+      fournisseur: produit.fournisseur?.id ?? null,
       boutique: produit.boutique?.id,
       image: produit.image,
       seuil_alert: produit.seuil_alert || 0,
       unite_mesure: produit.unite_mesure || 'pièce',
-      code_barre: produit.code_barre || null
+      code_barre: produit.code_barre || null,
+      unite_conditionnement: produit.unite_conditionnement || null,
+      quantite_par_conditionnement: produit.quantite_par_conditionnement || null
     });
+
+    // La boutique reste toujours le stock central : non modifiable, même en édition.
+    this.produitForm.get('boutique')?.disable();
 
     const modal = document.getElementById('modal-fadein');
     if (modal) {

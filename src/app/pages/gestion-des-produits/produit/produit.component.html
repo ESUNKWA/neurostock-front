@@ -20,7 +20,7 @@
                     <div class="row align-items-center mb-3">
                         <div class="col-md-5 d-flex align-items-center gap-3">
                             <h5 class="card-title mb-0 text-uppercase">Liste des produits</h5>
-                            @if (selectedIds.size > 0) {
+                            @if (canManageProduits && selectedIds.size > 0) {
                               <button class="btn btn-danger btn-sm" (click)="deleteSelected()" [disabled]="isDeletingMany">
                                 @if (isDeletingMany) {
                                   <span class="spinner-border spinner-border-sm me-1"></span>
@@ -32,7 +32,6 @@
                             }
                         </div>
                         <div class="col-md-7 text-end">
-                            <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
                             <button type="button" class="btn btn-outline-dark me-2 d-none d-md-inline-flex" (click)="downloadCatalogueBarcodes()" [disabled]="cataloguePdfLoading" title="Catalogue codes-barres PDF">
                               @if (cataloguePdfLoading) {
                                 <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -41,45 +40,48 @@
                               }
                               Codes-barres
                             </button>
-                            <button type="button" class="btn btn-outline-secondary me-2 d-none d-md-inline-flex" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
-                              <i class="bi bi-download"></i> Modèle Excel
-                            </button>
-                            <button type="button" class="btn btn-success me-2 d-none d-md-inline-flex" (click)="importProduitInput.click()" [disabled]="isParsingFile">
-                              @if (isParsingFile) {
-                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> Lecture du fichier...
-                              } @else {
-                                <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
-                              }
-                            </button>
-                            <button type="button" class="btn btn-primary d-none d-md-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
-                                <i class="bi bi-plus-circle"></i> Nouveau Produit
-                            </button>
+                            @if (canManageProduits) {
+                              <input type="file" #importProduitInput class="d-none" accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)">
+                              <button type="button" class="btn btn-outline-secondary me-2 d-none d-md-inline-flex" (click)="downloadTemplate()" title="Télécharger le modèle Excel">
+                                <i class="bi bi-download"></i> Modèle Excel
+                              </button>
+                              <button type="button" class="btn btn-success me-2 d-none d-md-inline-flex" (click)="importProduitInput.click()" [disabled]="isParsingFile">
+                                @if (isParsingFile) {
+                                  <span class="spinner-border spinner-border-sm me-1" role="status"></span> Lecture du fichier...
+                                } @else {
+                                  <i class="bi bi-file-earmark-excel"></i> Importer CSV/Excel
+                                }
+                              </button>
+                              <button type="button" class="btn btn-primary d-none d-md-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                                  <i class="bi bi-plus-circle"></i> Nouveau Produit
+                              </button>
+                            }
                         </div>
                     </div>
                 </div>
 
                 <!-- FAB mobile -->
-                <button type="button" class="prd-fab d-md-none" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
-                  <i class="bi bi-plus-lg"></i>
-                </button>
-                
+                @if (canManageProduits) {
+                  <button type="button" class="prd-fab d-md-none" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                }
+
                 @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
                    @if (boutiques.length >= 1) {
                         <div class="card-body pb-0">
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <nz-select
-                                        style="width:100%"
-                                        nzShowSearch
-                                        nzAllowClear
-                                        nzPlaceHolder="Sélectionner une boutique"
-                                        [(ngModel)]="selectedBoutiqueFilter"
-                                        [ngModelOptions]="{standalone: true}"
-                                        (ngModelChange)="onBoutiqueChange($event)">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
                                         @for (boutique of boutiques; track boutique.id) {
-                                            <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
+                                            <input type="radio" class="btn-check" name="prdBoutiqueRadio" [id]="'prd-boutique-' + boutique.id"
+                                                [value]="boutique.id" [(ngModel)]="selectedBoutiqueFilter"
+                                                [ngModelOptions]="{standalone: true}" (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
+                                            <label class="btn btn-sm btn-outline-primary" [for]="'prd-boutique-' + boutique.id">
+                                                {{ boutique.nom }}{{ (boutique.type ?? '').toLowerCase().trim() === 'entrepot' ? ' (Entrepôt)' : '' }}
+                                            </label>
                                         }
-                                    </nz-select>
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <nz-select
@@ -211,11 +213,13 @@
                               <span class="mc-row-value">{{ mobileDetailItem.stock_disponible ?? '—' }}</span>
                             </div>
                           </div>
-                          <div class="mc-popup-footer">
-                            <button class="prd-mob-edit-btn" (click)="openEditProduit(mobileDetailItem); mobileDetailItem = null">
-                              <i class="bi bi-pencil-square me-1"></i> Modifier
-                            </button>
-                          </div>
+                          @if (canManageProduits) {
+                            <div class="mc-popup-footer">
+                              <button class="prd-mob-edit-btn" (click)="openEditProduit(mobileDetailItem); mobileDetailItem = null">
+                                <i class="bi bi-pencil-square me-1"></i> Modifier
+                              </button>
+                            </div>
+                          }
                         </div>
                       </div>
                     }
@@ -301,6 +305,19 @@
                                 @if (isSubmitted && f['categorie'].errors?.['required']) {
                                     <div class="prd-error">La catégorie est obligatoire</div>
                                 }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="prd-label">Fournisseur <span class="text-muted fw-normal">(optionnel)</span></label>
+                                <nz-select
+                                    formControlName="fournisseur"
+                                    nzShowSearch
+                                    nzAllowClear
+                                    nzPlaceHolder="Sélectionner un fournisseur"
+                                    style="width:100%">
+                                    @for (fr of fournisseurs; track fr?.id) {
+                                        <nz-option [nzValue]="fr?.id" [nzLabel]="fr?.nom ?? ''"></nz-option>
+                                    }
+                                </nz-select>
                             </div>
                         </div>
                     </div>
@@ -419,6 +436,46 @@
                                         </button>
                                     </div>
                                 }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conditionnement fournisseur -->
+                    <div class="prd-section">
+                        <div class="prd-section-label">
+                            <i class="bi bi-box-seam"></i> Conditionnement fournisseur
+                            <span class="text-muted fw-normal" style="font-size:.75rem">(optionnel)</span>
+                        </div>
+                        <p class="text-muted mb-2" style="font-size:.78rem">
+                            Si ce produit vous arrive en carton/casier chez le fournisseur, renseignez ici pour pouvoir
+                            saisir l'approvisionnement par carton — le stock restera compté en {{ f['unite_mesure'].value || 'détail' }}.
+                        </p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="prd-label" for="unite_conditionnement">Unité de conditionnement</label>
+                                <nz-select class="w-100" formControlName="unite_conditionnement" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                                    <nz-option nzValue="carton" nzLabel="Carton"></nz-option>
+                                    <nz-option nzValue="casier" nzLabel="Casier"></nz-option>
+                                    <nz-option nzValue="palette" nzLabel="Palette"></nz-option>
+                                    <nz-option nzValue="pack" nzLabel="Pack"></nz-option>
+                                    <nz-option nzValue="sac" nzLabel="Sac"></nz-option>
+                                    <nz-option nzValue="fût" nzLabel="Fût"></nz-option>
+                                    <nz-option nzValue="bidon" nzLabel="Bidon"></nz-option>
+                                    <nz-option nzValue="ballot" nzLabel="Ballot"></nz-option>
+                                    <nz-option nzValue="rouleau" nzLabel="Rouleau"></nz-option>
+                                    <nz-option nzValue="boite" nzLabel="Boîte"></nz-option>
+                                </nz-select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="prd-label" for="quantite_par_conditionnement">
+                                    Quantité par {{ f['unite_conditionnement'].value || 'conditionnement' }}
+                                </label>
+                                <div class="prd-input-wrap">
+                                    <i class="bi bi-123 prd-input-icon"></i>
+                                    <input type="number" class="form-control prd-input" id="quantite_par_conditionnement"
+                                        placeholder="Ex : 24" min="1"
+                                        formControlName="quantite_par_conditionnement">
+                                </div>
                             </div>
                         </div>
                     </div>

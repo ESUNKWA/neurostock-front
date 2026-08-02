@@ -28,19 +28,6 @@
                             </button>
                         </div>
                     </div>
-                    <div class="row">
-                        @if (boutiques?.length >= 1) {
-                     
-                            <div class="col-md-4">
-                                <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="loadFournisseurs($event)" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une boutique">
-                                    @for (boutique of boutiques; track boutique.id) {
-                                      <nz-option [nzValue]="boutique.id" [nzLabel]="boutique.nom"></nz-option>
-                                    }
-                                </nz-select>
-                               
-                            </div>
-                        }
-                    </div>
                 </div>
                 <div class="card-body">
                     @if (isLoading) {
@@ -85,6 +72,9 @@
                             <div class="mc-sub">{{ fournisseur.contact ?? '' }}</div>
                             <div class="mc-meta">{{ fournisseur.email ?? '' }}</div>
                           </div>
+                          <button class="mc-plus-btn" (click)="voirProduitsFournisseur(fournisseur); $event.stopPropagation()" title="Produits liés">
+                            <i class="bi bi-box-seam"></i>
+                          </button>
                           <button class="mc-plus-btn" (click)="mobileDetailItem = fournisseur; $event.stopPropagation()">
                             <i class="bi bi-plus"></i>
                           </button>
@@ -159,26 +149,6 @@
             <form novalidate [formGroup]="fournisseurForm" (ngSubmit)="saveOrUpdateFournisseur()">
                 <div class="modal-body frs-body">
 
-                    <!-- Boutique (en premier) -->
-                    <div class="frs-section">
-                        <div class="frs-section-label">
-                            <i class="bi bi-shop-window"></i> Boutique rattachée
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —"
-                                    [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
-                                    @for (b of boutiques; track b.id) {
-                                        <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
-                                    }
-                                </nz-select>
-                                @if (isSubmitted && f['boutique'].errors) {
-                                    <div class="invalid-feedback">La boutique est obligatoire</div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Informations générales -->
                     <div class="frs-section">
                         <div class="frs-section-label">
@@ -217,17 +187,13 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="frs-label" for="contact">Contact principal <span class="text-danger">*</span></label>
+                                <label class="frs-label" for="contact">Contact principal</label>
                                 <div class="frs-input-wrap">
                                     <i class="bi bi-telephone frs-input-icon"></i>
                                     <input type="text" class="form-control frs-input" id="contact"
                                         placeholder="Ex : +225 07 00 00 00"
-                                        formControlName="contact"
-                                        [ngClass]="{'is-invalid': isSubmitted && f['contact'].errors}">
+                                        formControlName="contact">
                                 </div>
-                                @if (isSubmitted && f['contact'].errors?.['required']) {
-                                    <div class="frs-error">Le contact est obligatoire</div>
-                                }
                             </div>
                             <div class="col-md-6">
                                 <label class="frs-label" for="email">Adresse e-mail</label>
@@ -252,30 +218,22 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="frs-label" for="interlocuteur">Nom <span class="text-danger">*</span></label>
+                                <label class="frs-label" for="interlocuteur">Nom</label>
                                 <div class="frs-input-wrap">
                                     <i class="bi bi-person frs-input-icon"></i>
                                     <input type="text" class="form-control frs-input" id="interlocuteur"
                                         placeholder="Ex : M. KONÉ Kouadio"
-                                        formControlName="interlocuteur"
-                                        [ngClass]="{'is-invalid': isSubmitted && f['interlocuteur'].errors}">
+                                        formControlName="interlocuteur">
                                 </div>
-                                @if (isSubmitted && f['interlocuteur'].errors?.['required']) {
-                                    <div class="frs-error">Le nom de l'interlocuteur est obligatoire</div>
-                                }
                             </div>
                             <div class="col-md-6">
-                                <label class="frs-label" for="contact_interlocuteur">Contact <span class="text-danger">*</span></label>
+                                <label class="frs-label" for="contact_interlocuteur">Contact</label>
                                 <div class="frs-input-wrap">
                                     <i class="bi bi-phone frs-input-icon"></i>
                                     <input type="text" class="form-control frs-input" id="contact_interlocuteur"
                                         placeholder="Ex : +225 05 00 00 00"
-                                        formControlName="contact_interlocuteur"
-                                        [ngClass]="{'is-invalid': isSubmitted && f['contact_interlocuteur'].errors}">
+                                        formControlName="contact_interlocuteur">
                                 </div>
-                                @if (isSubmitted && f['contact_interlocuteur'].errors?.['required']) {
-                                    <div class="frs-error">Le contact de l'interlocuteur est obligatoire</div>
-                                }
                             </div>
                         </div>
                     </div>
@@ -294,6 +252,71 @@
                     </button>
                 </div>
             </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal produits liés -->
+<div class="modal fade" id="modal-produits-fournisseur" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content frs-modal">
+
+            <div class="frs-modal-header">
+                <div class="frs-modal-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <div class="frs-modal-title">Produits liés{{ fournisseurConsulte ? ' — ' + fournisseurConsulte.nom : '' }}</div>
+                    <div class="frs-modal-subtitle">Liste des produits rattachés à ce fournisseur</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                @if (produitsFournisseurLoading) {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                }
+
+                @if (!produitsFournisseurLoading && produitsFournisseur.length === 0) {
+                    <p class="text-center text-muted py-4 mb-0">Aucun produit n'est encore lié à ce fournisseur.</p>
+                }
+
+                @if (!produitsFournisseurLoading && produitsFournisseur.length > 0) {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Boutique</th>
+                                    <th class="text-center">Stock disponible</th>
+                                    <th class="text-end">Prix d'achat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (p of produitsFournisseur; track p.id) {
+                                    <tr>
+                                        <td class="fw-semibold">{{ p.nom }}</td>
+                                        <td>{{ p.boutique?.nom ?? '—' }}</td>
+                                        <td class="text-center">{{ p.stock_disponible ?? 0 }}</td>
+                                        <td class="text-end">{{ (p.prix_achat ?? 0).toLocaleString('fr-FR') }} FCFA</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <div class="frs-footer">
+                <button type="button" class="btn frs-btn-cancel" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Fermer
+                </button>
+            </div>
 
         </div>
     </div>

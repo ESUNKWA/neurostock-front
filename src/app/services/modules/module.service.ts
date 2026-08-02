@@ -12,7 +12,8 @@ export type ModuleCode =
   | 'ia'
   | 'restauration'
   | 'clients'
-  | 'fournisseurs';
+  | 'fournisseurs'
+  | 'prix_achat_optionnel';
 
 export const MODULE_LABELS: Record<ModuleCode, string> = {
   commandes_fournisseurs: 'Commandes fournisseurs',
@@ -24,6 +25,7 @@ export const MODULE_LABELS: Record<ModuleCode, string> = {
   restauration: 'Restauration',
   clients: 'Gestion des clients',
   fournisseurs: 'Gestion des fournisseurs',
+  prix_achat_optionnel: 'Prix d\'achat non obligatoire à l\'approvisionnement',
 };
 
 @Injectable({ providedIn: 'root' })

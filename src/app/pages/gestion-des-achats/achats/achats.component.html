@@ -48,6 +48,7 @@
               <div class="col-md-4">
                 <label class="ac-label">Fournisseur <span class="text-danger">*</span></label>
                 <nz-select class="w-100" formControlName="fournisseur" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionnez un fournisseur"
+                  (ngModelChange)="onFournisseurChange($event)"
                   [ngClass]="{'is-invalid': isSubmitting && f['fournisseur'].errors}">
                   @for (fr of fournisseurs; track fr.id) {
                     <nz-option [nzValue]="fr.id" [nzLabel]="fr.nom"></nz-option>
@@ -89,98 +90,143 @@
         <div class="ac-card">
           <div class="ac-card-header">
             <span class="ac-card-title"><i class="bi bi-box-seam"></i> Produits approvisionnés</span>
-            <button type="button" class="ac-btn-add" style="width:auto;margin:0;padding:.3rem .875rem" (click)="addDetailAchat()">
-              <i class="bi bi-plus-circle me-1"></i> Ajouter
-            </button>
+            @if (lignes.length > 0) {
+              <div class="input-group input-group-sm" style="width:220px">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" placeholder="Rechercher un produit…"
+                  [(ngModel)]="searchQuery" [ngModelOptions]="{standalone: true}">
+              </div>
+            }
           </div>
           <div class="ac-card-body p-0">
-            <div formArrayName="detail_achat">
-              @for (detail of detailAchat.controls; track $index) {
-                <div [formGroupName]="$index" class="ac-ligne px-4">
-                  <div class="row g-2 align-items-end">
 
-                    <div class="col-auto fw-bold text-muted align-self-center" style="min-width:24px;padding-bottom:.5rem">
-                      {{ $index + 1 }}
-                    </div>
-
-                    <!-- Produit (image inline + select) -->
-                    <div class="col-md-5">
-                      <label class="ac-label">Produit <span class="text-danger">*</span></label>
-                      <div class="ac-produit-field">
-                        @if (detail.get('image')?.value) {
-                          <div class="ac-thumb">
-                            <img [src]="detail.get('image')?.value" alt="produit">
-                            <span class="ac-stock-badge badge"
-                              [ngClass]="(detail.get('stock')?.value || 0) > 5 ? 'bg-success' : 'bg-danger'">
-                              {{ detail.get('stock')?.value }}
-                            </span>
-                          </div>
-                        }
-                        <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un produit"
-                          formControlName="produit"
-                          [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                          @for (p of produits; track p.id) {
-                            <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
-                          }
-                        </nz-select>
-                      </div>
-                      @if (isSubmitting && detail.get('produit')?.errors?.['required']) {
-                        <div class="text-danger small mt-1">Produit requis</div>
+            @if (!f['fournisseur'].value) {
+              <div class="text-center text-muted py-5">
+                <i class="bi bi-truck fs-3 d-block mb-2"></i>
+                Sélectionnez un fournisseur pour afficher ses produits
+              </div>
+            } @else if (lignes.length === 0) {
+              <div class="text-center text-muted py-5">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                Aucun produit lié à ce fournisseur
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-4">Produit</th>
+                      <th class="text-center">Stock actuel</th>
+                      <th class="text-center" style="width:160px">Mode</th>
+                      @if (!prixAchatOptionnel) {
+                        <th class="text-center" style="width:150px">Prix <span class="text-danger">*</span></th>
                       }
-                    </div>
+                      <th class="text-center" style="width:120px">Quantité</th>
+                      @if (!prixAchatOptionnel) {
+                        <th class="text-end pe-4">Sous-total</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of filtered; track l.produit.id) {
+                      <tr [class.table-success]="quantiteUnites(l) > 0">
+                        <td class="ps-4">
+                          <div class="d-flex align-items-center gap-2">
+                            @if (l.produit.imageUrl) {
+                              <img [src]="l.produit.imageUrl" alt=""
+                                style="width:32px;height:32px;object-fit:cover;border-radius:6px;flex-shrink:0">
+                            }
+                            <span class="fw-semibold">{{ l.produit.nom }}</span>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge" [ngClass]="(l.produit.stock_disponible || 0) > 5 ? 'bg-success' : 'bg-danger'">
+                            {{ l.produit.stock_disponible ?? 0 }}
+                          </span>
+                        </td>
 
-                    <!-- Prix unitaire -->
-                    <div class="col-md-3">
-                      <label class="ac-label">Prix unitaire <span class="text-danger">*</span></label>
-                      <div class="input-group input-group-sm">
-                        <span class="input-group-text">FCFA</span>
-                        <input type="text" class="form-control ac-input" formControlName="prix_unitaire"
-                          thousandSeparator (input)="onPrixOuQuantiteChange()"
-                          [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire')?.errors}">
-                      </div>
-                    </div>
+                        <!-- Mode de saisie : unité de détail ou carton/casier -->
+                        <td class="text-center">
+                          @if (hasConditionnement(l)) {
+                            <div class="btn-group btn-group-sm" role="group">
+                              <button type="button" class="btn"
+                                [ngClass]="l.mode === 'unite' ? 'btn-primary' : 'btn-outline-secondary'"
+                                (click)="toggleMode(l, 'unite')">
+                                {{ l.produit.unite_mesure || 'Unité' }}
+                              </button>
+                              <button type="button" class="btn"
+                                [ngClass]="l.mode === 'colis' ? 'btn-primary' : 'btn-outline-secondary'"
+                                (click)="toggleMode(l, 'colis')">
+                                {{ l.produit.unite_conditionnement }}
+                              </button>
+                            </div>
+                          } @else {
+                            <span class="text-muted small">{{ l.produit.unite_mesure || 'Unité' }}</span>
+                          }
+                        </td>
 
-                    <!-- Quantité -->
-                    <div class="col-md-2">
-                      <label class="ac-label">Qté <span class="text-danger">*</span></label>
-                      <input type="number" class="form-control form-control-sm ac-input" formControlName="quantite" min="1"
-                        (input)="onPrixOuQuantiteChange()"
-                        [ngClass]="{'is-invalid': isSubmitting && detail.get('quantite')?.errors}">
-                    </div>
+                        <!-- Prix : par unité, ou par carton/casier si mode colis -->
+                        @if (!prixAchatOptionnel) {
+                          <td class="text-center">
+                            @if (l.mode === 'colis' && hasConditionnement(l)) {
+                              <div class="input-group input-group-sm">
+                                <input type="number" class="form-control text-end" [(ngModel)]="l.prix_colis"
+                                  [class.is-invalid]="prixManquant(l)"
+                                  [ngModelOptions]="{standalone: true}" min="0" (ngModelChange)="onPrixOuQuantiteChange()">
+                                <span class="input-group-text">F</span>
+                              </div>
+                              <div class="text-muted" style="font-size:.68rem">
+                                soit {{ prixUnitaireEffectif(l) | number:'1.0-0':'fr' }} F / {{ l.produit.unite_mesure || 'unité' }}
+                              </div>
+                            } @else {
+                              <div class="input-group input-group-sm">
+                                <input type="number" class="form-control text-end" [(ngModel)]="l.prix_unitaire"
+                                  [class.is-invalid]="prixManquant(l)"
+                                  [ngModelOptions]="{standalone: true}" min="0" (ngModelChange)="onPrixOuQuantiteChange()">
+                                <span class="input-group-text">F</span>
+                              </div>
+                            }
+                            @if (prixManquant(l)) {
+                              <div class="text-danger" style="font-size:.68rem">Prix requis</div>
+                            }
+                          </td>
+                        }
 
-                    <!-- Supprimer -->
-                    <div class="col-auto">
-                      <button type="button" class="btn btn-outline-danger btn-sm"
-                        style="border-radius:8px;padding:.3rem .5rem"
-                        (click)="removeDetailAchat($index)" [disabled]="detailAchat.length === 1">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
+                        <!-- Quantité : en unités, ou en nb de cartons/casiers si mode colis -->
+                        <td class="text-center">
+                          @if (l.mode === 'colis' && hasConditionnement(l)) {
+                            <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="l.quantite_colis"
+                              [ngModelOptions]="{standalone: true}" min="0" placeholder="0"
+                              (ngModelChange)="onPrixOuQuantiteChange()">
+                            <div class="text-muted" style="font-size:.68rem">
+                              = {{ quantiteUnites(l) }} {{ l.produit.unite_mesure || 'unité(s)' }}
+                            </div>
+                          } @else {
+                            <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="l.quantite"
+                              [ngModelOptions]="{standalone: true}" min="0" placeholder="0"
+                              (ngModelChange)="onPrixOuQuantiteChange()">
+                          }
+                        </td>
 
-                    <!-- Sous-total ligne -->
-                    <div class="col-12 text-end">
-                      <span class="ac-ligne-subtotal">
-                        Sous-total : {{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire || 0)) | number:'1.0-0':'fr' }} FCFA
-                      </span>
-                    </div>
+                        @if (!prixAchatOptionnel) {
+                          <td class="text-end pe-4 fw-semibold">
+                            @if (quantiteUnites(l) > 0) {
+                              {{ montantLigne(l) | number:'1.0-0':'fr' }} FCFA
+                            } @else {
+                              <span class="text-muted">—</span>
+                            }
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
 
-                  </div>
-                </div>
-              }
-
-              @if (detailAchat.length === 0) {
-                <div class="text-center text-muted py-5">
-                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                  Aucun produit ajouté
-                </div>
-              }
-            </div>
-
-            <div class="px-4 py-3">
-              <button type="button" class="ac-btn-add" (click)="addDetailAchat()">
-                <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
-              </button>
-            </div>
+            @if (isSubmitting && lignesSaisies.length === 0 && lignes.length > 0) {
+              <div class="text-danger small px-4 pb-3">Saisissez au moins une quantité approvisionnée.</div>
+            }
           </div>
         </div>
 
@@ -189,40 +235,42 @@
       <!-- ── Panneau latéral ───────────────────────────────────────────────── -->
       <div class="col-md-4 d-flex flex-column">
 
-        <!-- Paiement -->
-        <div class="ac-sidebar-section">
-          <div class="ac-sidebar-header"><i class="bi bi-credit-card"></i> Paiement</div>
-          <div class="ac-sidebar-body">
-            <div class="mb-3">
-              <label class="ac-label">Mode de paiement <span class="text-danger">*</span></label>
-              <nz-select class="w-100" formControlName="mode_paiement" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner..."
-                [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
-                @for (mode of modesPaiement; track mode) {
-                  <nz-option [nzValue]="mode" [nzLabel]="mode | titlecase"></nz-option>
-                }
-              </nz-select>
-            </div>
-            <div>
-              <label class="ac-label">Statut <span class="text-danger">*</span></label>
-              <nz-select class="w-100" formControlName="statut" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
-                <nz-option nzValue="payer" nzLabel="Payé"></nz-option>
-                <nz-option nzValue="non_payer" nzLabel="Non payé"></nz-option>
-                <nz-option nzValue="partiel" nzLabel="Paiement partiel"></nz-option>
-              </nz-select>
+        @if (!prixAchatOptionnel) {
+          <!-- Paiement -->
+          <div class="ac-sidebar-section">
+            <div class="ac-sidebar-header"><i class="bi bi-credit-card"></i> Paiement</div>
+            <div class="ac-sidebar-body">
+              <div class="mb-3">
+                <label class="ac-label">Mode de paiement <span class="text-danger">*</span></label>
+                <nz-select class="w-100" formControlName="mode_paiement" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner..."
+                  [ngClass]="{'is-invalid': isSubmitting && f['mode_paiement'].errors}">
+                  @for (mode of modesPaiement; track mode) {
+                    <nz-option [nzValue]="mode" [nzLabel]="mode | titlecase"></nz-option>
+                  }
+                </nz-select>
+              </div>
+              <div>
+                <label class="ac-label">Statut <span class="text-danger">*</span></label>
+                <nz-select class="w-100" formControlName="statut" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
+                  <nz-option nzValue="payer" nzLabel="Payé"></nz-option>
+                  <nz-option nzValue="non_payer" nzLabel="Non payé"></nz-option>
+                  <nz-option nzValue="partiel" nzLabel="Paiement partiel"></nz-option>
+                </nz-select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Montant total -->
-        <div class="ac-sidebar-section">
-          <div class="ac-sidebar-header"><i class="bi bi-receipt"></i> Montant total</div>
-          <div class="ac-sidebar-body text-center py-3">
-            <div class="ac-total-amount">
-              {{ achatForm.get('montant_total')?.value | number:'1.0-0':'fr' }}
+          <!-- Montant total -->
+          <div class="ac-sidebar-section">
+            <div class="ac-sidebar-header"><i class="bi bi-receipt"></i> Montant total</div>
+            <div class="ac-sidebar-body text-center py-3">
+              <div class="ac-total-amount">
+                {{ achatForm.get('montant_total')?.value | number:'1.0-0':'fr' }}
+              </div>
+              <div class="text-muted small mt-1">FCFA</div>
             </div>
-            <div class="text-muted small mt-1">FCFA</div>
           </div>
-        </div>
+        }
 
       </div>
     </div>

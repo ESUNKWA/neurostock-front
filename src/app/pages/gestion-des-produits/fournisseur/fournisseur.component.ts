@@ -2,11 +2,11 @@ import { Component, inject, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angu
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { FournisseurService } from '../../../services/gestion-des-produits/fournisseur.service';
+import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { first } from 'rxjs';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { AuthService } from '../../../services/auth/auth.service';
-import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 
 declare var $: any;
@@ -33,37 +33,32 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
   currentUser: any = {};
   authService = inject(AuthService);
 
-    boutiques: any = [];
-    idBoutique: number | undefined = undefined;
-  
-    boutiqueService = inject(BoutiqueService);
-  
+  // Produits liés au fournisseur consulté
+  produitsFournisseur: any[] = [];
+  produitsFournisseurLoading = false;
+  fournisseurConsulte: any = null;
+
   constructor(
     private fb: FormBuilder,
     private fournisseurService: FournisseurService,
+    private produitService: ProduitService,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
     this.fournisseurForm = this.fb.group({
       nom: ['', Validators.required],
       addresse_geo: [''],
-      contact: ['', Validators.required],
-      email: ['', []],
-      interlocuteur: ['', Validators.required],
-      contact_interlocuteur: ['', Validators.required],
-      boutique: ['', Validators.required],
+      contact: [''],
+      email: [''],
+      interlocuteur: [''],
+      contact_interlocuteur: [''],
     });
   }
 
   ngOnInit(): void {
     this.getCurrentUser();
-    this.loadBoutiques();
-    const defaultId = this.boutiques[0]?.id;
-    if (defaultId) {
-      this.idBoutique = defaultId;
-      this.loadFournisseurs(defaultId);
-    }
-     
+    this.loadFournisseurs();
+
     // Configurer les tooltips pour qu'ils se réinitialisent correctement
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
@@ -82,27 +77,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyDataTable();
-  }
-
-  loadBoutiques(): void {
-    
-    console.log(this.currentUser.boutiques);
-    
-    switch(this.currentUser.profil.code){
-
-      case "responsable_structure":
-        
-         this.boutiques = this.currentUser.boutiques;
-        break;
-
-      case "admin":
-        this.boutiques = this.currentUser.boutiques;
-        break;
-
-        default:
-          this.boutiques[0] = this.currentUser.boutique;
-    }
-    
   }
 
   // getter pour un accès facile aux champs du formulaire
@@ -146,7 +120,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             {
               data: 'contact',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.toUpperCase() || 'Non définie' 
+              render: (data: any) => data ? data.toUpperCase() : 'Non défini'
             },
             { 
               data: 'email',
@@ -156,12 +130,12 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             {
               data: 'interlocuteur',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.toUpperCase() || 'Non définie' 
+              render: (data: any) => data ? data.toUpperCase() : 'Non défini'
             },
             {
               data: 'contact_interlocuteur',
               className: 'd-none d-sm-table-cell',
-              render: (data: any) => data.toUpperCase() || 'Non définie' 
+              render: (data: any) => data ? data.toUpperCase() : 'Non défini'
             },
             { 
               data: 'created_at',
@@ -180,6 +154,9 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
               render: (data: any, type: any, row: any) => {
                 return `
                   <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-secondary me-2" data-bs-toggle="tooltip" title="Produits liés" data-action="produits" data-id="${row.id}">
+                      <i class="bi bi-box-seam"></i>
+                    </button>
                     <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="tooltip" title="visualiser" data-action="view" data-id="${row.id}">
                       <i class="bi bi-eye"></i>
                     </button>
@@ -244,6 +221,9 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
               if (!fournisseur) return;
               
               switch (action) {
+                case 'produits':
+                  this.voirProduitsFournisseur(fournisseur);
+                  break;
                 case 'view':
                   this.openViewFournisseur(fournisseur);
                   break;
@@ -263,17 +243,33 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectFournisseurs(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const fournisseurId = +selectElement.value;
-    this.loadFournisseurs(fournisseurId);
+  voirProduitsFournisseur(fournisseur: any): void {
+    this.fournisseurConsulte = fournisseur;
+    this.produitsFournisseur = [];
+    this.produitsFournisseurLoading = true;
+
+    const modal = document.getElementById('modal-produits-fournisseur');
+    if (modal) {
+      const modalInstance = new bootstrap.Modal(modal);
+      modalInstance.show();
+    }
+
+    this.produitService.getProduits({ fournisseur: fournisseur.id }).subscribe({
+      next: (response: any) => {
+        this.produitsFournisseurLoading = false;
+        this.produitsFournisseur = response?.data ?? (Array.isArray(response) ? response : []);
+      },
+      error: () => {
+        this.produitsFournisseurLoading = false;
+        this.toastr.error('Erreur lors du chargement des produits liés');
+      }
+    });
   }
 
-  loadFournisseurs(id: number): void {
-    if (!id) return;
+  loadFournisseurs(): void {
     this.isLoading = true;
-    
-    this.fournisseurService.getFournisseursByBoutik(id).subscribe({
+
+    this.fournisseurService.getAllFournisseurs().subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.fournisseurs = response.data;
@@ -320,8 +316,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.reset();
     this.isSubmitted = false;
 
-    this.fournisseurForm.patchValue({ boutique: this.currentUser?.boutique_id ?? '' });
-
     // Activer les champs du formulaire
     this.fournisseurForm.get('nom')?.enable();
     this.fournisseurForm.get('addresse_geo')?.enable();
@@ -329,7 +323,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.enable();
     this.fournisseurForm.get('interlocuteur')?.enable();
     this.fournisseurForm.get('contact_interlocuteur')?.enable();
-    this.fournisseurForm.get('boutique')?.enable();
   }
 
   openViewFournisseur(fournisseur: any): void {
@@ -349,7 +342,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
       email: fournisseur.email || '',
       interlocuteur: fournisseur.interlocuteur || '',
       contact_interlocuteur: fournisseur.contact_interlocuteur || '',
-      boutique: fournisseur.boutique_id ?? fournisseur.boutique?.id ?? this.currentUser?.boutique_id ?? '',
     });
 
     // Désactiver les champs du formulaire
@@ -359,7 +351,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.disable();
     this.fournisseurForm.get('interlocuteur')?.disable();
     this.fournisseurForm.get('contact_interlocuteur')?.disable();
-    this.fournisseurForm.get('boutique')?.disable();
 
     const modal = document.getElementById('modal-fadein');
     if (modal) {
@@ -384,7 +375,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
     this.fournisseurForm.get('email')?.enable();
     this.fournisseurForm.get('interlocuteur')?.enable();
     this.fournisseurForm.get('contact_interlocuteur')?.enable();
-    this.fournisseurForm.get('boutique')?.enable();
 
     if (this.isEditMode && fournisseur) {
       // Remplir le formulaire avec les données du fournisseur
@@ -395,7 +385,6 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
         email: fournisseur.email || '',
         interlocuteur: fournisseur.interlocuteur || '',
         contact_interlocuteur: fournisseur.contact_interlocuteur || '',
-        boutique: fournisseur.boutique_id ?? fournisseur.boutique?.id ?? this.currentUser?.boutique_id ?? '',
       });
     } else {
       // Réinitialiser le formulaire pour un nouveau fournisseur
@@ -449,7 +438,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             'Fournisseur ajouté avec succès');
 
           // Recharger les données sans détruire complètement le tableau
-          this.loadFournisseurs(this.currentUser.boutique_id);
+          this.loadFournisseurs();
 
           // Réinitialiser le formulaire et les états
           this.fournisseurForm.reset();
@@ -488,7 +477,7 @@ export default class FournisseurComponent implements OnInit, OnDestroy {
             if (response.affected === 1) {
               this.toastr.success('Le fournisseur a été supprimé avec succès.');
               // Recharger les données sans détruire complètement le tableau
-              this.loadFournisseurs(this.currentUser.boutique_id);
+              this.loadFournisseurs();
             } else {
               this.toastr.error('Le fournisseur n\'a pas pu être supprimé.');
               this.isLoading = false;

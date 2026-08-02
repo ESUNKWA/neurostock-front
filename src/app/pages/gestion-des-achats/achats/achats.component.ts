@@ -9,15 +9,22 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
-import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.directive';
+import { ModuleService } from '../../../services/modules/module.service';
 import { NzOptionComponent, NzSelectModule } from "ng-zorro-antd/select";
-import Swal from 'sweetalert2';
-declare var $: any;
+
+interface LigneApprovisionnement {
+  produit: any;
+  mode: 'unite' | 'colis';
+  quantite: number | null;        // saisie en mode 'unite' (unité de détail)
+  prix_unitaire: number;          // prix par unité de détail (mode 'unite')
+  quantite_colis: number | null;  // saisie en mode 'colis' (nb de cartons/casiers)
+  prix_colis: number;             // prix par carton/casier (mode 'colis')
+}
 
 @Component({
   selector: 'app-achats',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ThousandSeparatorDirective, NzSelectModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, NzSelectModule],
   templateUrl: './achats.component.html',
   styleUrl: './achats.component.scss'
 })
@@ -33,6 +40,8 @@ export default class AchatsComponent implements OnInit {
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
   fournisseurs: any[] = [];
   produits: any[] = [];
+  lignes: LigneApprovisionnement[] = [];
+  searchQuery = '';
   isSubmitting = false;
   currentUser: any;
   boutiques: any[] = [];
@@ -51,8 +60,14 @@ export default class AchatsComponent implements OnInit {
     private authService: AuthService,
     private boutiqueService: BoutiqueService,
     private produitService: ProduitService,
+    private moduleService: ModuleService,
     private toastr: ToastrService
   ) {}
+
+  /** Certains clients (SaaS) désactivent l'obligation de saisir le prix d'achat. */
+  get prixAchatOptionnel(): boolean {
+    return this.moduleService.hasModule('prix_achat_optionnel');
+  }
 
   ngOnInit(): void {
     this.getCurrentUser();
@@ -87,7 +102,6 @@ export default class AchatsComponent implements OnInit {
       mode_paiement: ['espece', Validators.required],
       fournisseur: [null, Validators.required],
       statut: ['payer', Validators.required],
-      detail_achat: this.fb.array([])
     });
   }
 
@@ -116,9 +130,6 @@ export default class AchatsComponent implements OnInit {
         console.error('Erreur lors de la récupération des données d\'édition:', error);
         localStorage.removeItem('editAchatData');
       }
-    } else {
-      // Si pas en mode édition, ajouter un détail d'achat par défaut
-      this.addDetailAchat();
     }
   }
 
@@ -147,26 +158,34 @@ export default class AchatsComponent implements OnInit {
       statut: achat.statut || 'payer'
     });
     
-    // Vider le FormArray des détails d'achat existants
-    while (this.detailAchat.length > 0) {
-      this.detailAchat.removeAt(0);
-    }
-    
-    // Ajouter les détails d'achat
-    if (achat.detail_achat && achat.detail_achat.length > 0) {
-      achat.detail_achat.forEach((detail: any) => {
-        const detailGroup = this.fb.group({
-          produit: [detail.produit.id, Validators.required],
-          prix_unitaire: [detail.prix_unitaire, [Validators.required, Validators.min(0)]],
-          quantite: [detail.quantite, [Validators.required, Validators.min(1)]]
+    // Reporter les quantités/prix historiques sur les lignes déjà générées depuis
+    // `produits` (filtrées par fournisseur/boutique) ; les produits qui ne s'y
+    // trouvent plus (ex: lien fournisseur modifié depuis) sont ajoutés en plus
+    // pour ne pas perdre la donnée historique lors de l'édition.
+    const historique: any[] = achat.detail_achat ?? [];
+    for (const detail of historique) {
+      const produitHist = detail.produit;
+      if (!produitHist) continue;
+      // `quantite`/`prix_unitaire` restent la vérité en unité de détail ; `mode_saisie`
+      // (+ quantite_colis/prix_colis) ne sert qu'à rouvrir le formulaire dans le mode
+      // utilisé à l'origine (rétro-compatible : les anciens achats n'ont pas ce champ).
+      const enColis = detail.mode_saisie === 'colis';
+      const idx = this.lignes.findIndex(l => l.produit.id === produitHist.id);
+      if (idx >= 0) {
+        this.lignes[idx].mode = enColis ? 'colis' : 'unite';
+        this.lignes[idx].quantite = detail.quantite;
+        this.lignes[idx].prix_unitaire = detail.prix_unitaire;
+        this.lignes[idx].quantite_colis = detail.quantite_colis ?? null;
+        this.lignes[idx].prix_colis = detail.prix_colis ?? 0;
+      } else {
+        this.lignes.push({
+          produit: produitHist, mode: enColis ? 'colis' : 'unite',
+          quantite: detail.quantite, prix_unitaire: detail.prix_unitaire,
+          quantite_colis: detail.quantite_colis ?? null, prix_colis: detail.prix_colis ?? 0,
         });
-        this.detailAchat.push(detailGroup);
-      });
-    } else {
-      // Si aucun détail n'est présent, ajouter une ligne vide
-      this.addDetailAchat();
+      }
     }
-    
+
     // Calculer le montant total
     this.calculerMontantTotal();
     
@@ -183,58 +202,75 @@ export default class AchatsComponent implements OnInit {
     return this.achatForm.controls;
   }
 
-  get detailAchat(): FormArray {
-    return this.achatForm.get('detail_achat') as FormArray;
+  // ── Lignes produits (tableau produits du fournisseur × quantité saisie) ────
+
+  get filtered(): LigneApprovisionnement[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) return this.lignes;
+    return this.lignes.filter(l => l.produit.nom?.toLowerCase().includes(q));
   }
 
-  createDetailAchat(): FormGroup {
-    
-    const ligne = this.fb.group({
-      image: [''],
-      stock:[],
-      produit: [null, Validators.required],
-      prix_unitaire: [null, [Validators.required, Validators.min(0)]],
-      quantite: [null, [Validators.required, Validators.min(1)]]
+  get lignesSaisies(): LigneApprovisionnement[] {
+    return this.lignes.filter(l => this.quantiteUnites(l) > 0);
+  }
+
+  // Reconstruit `lignes` à partir de la liste de produits courante (déjà filtrée
+  // par boutique + fournisseur via `loadProduits()`), en conservant les
+  // quantités/prix déjà saisis pour les produits qui restent dans la liste.
+  private syncLignesFromProduits(): void {
+    this.lignes = this.produits.map((p: any) => {
+      const existante = this.lignes.find(l => l.produit.id === p.id);
+      return {
+        produit: p,
+        mode: existante?.mode ?? 'unite',
+        quantite: existante?.quantite ?? null,
+        prix_unitaire: existante?.prix_unitaire ?? p.prix_achat ?? 0,
+        quantite_colis: existante?.quantite_colis ?? null,
+        prix_colis: existante?.prix_colis ?? ((p.prix_achat && p.quantite_par_conditionnement) ? p.prix_achat * p.quantite_par_conditionnement : 0),
+      };
     });
-
-     // 🔥 Écoute du produit sélectionné
-    ligne.get('produit')?.valueChanges.subscribe((idProduit: any) => {
-      this.selectProduit(ligne, idProduit);
-    });
-
-    return ligne;
   }
 
-  addDetailAchat(): void {
-    this.detailAchat.push(this.createDetailAchat());
-    this.calculerMontantTotal();
+  // ── Conditionnement (carton/casier) ────────────────────────────────────────
 
-    // Attendre que Angular rende la nouvelle ligne
-    setTimeout(() => {
-      const selects = $('.mySelect');          // tous les selects
-      const lastSelect = selects[selects.length - 1]; // dernier select ajouté
-      $(lastSelect).select2({
-        placeholder: 'Sélectionnez une boutique',
-        allowClear: true,
-        width: 'resolve',
-      });
-
-      
-    }, 0);
+  hasConditionnement(l: LigneApprovisionnement): boolean {
+    return !!l.produit.unite_conditionnement && !!l.produit.quantite_par_conditionnement;
   }
 
-  removeDetailAchat(index: number): void {
-    this.detailAchat.removeAt(index);
+  toggleMode(l: LigneApprovisionnement, mode: 'unite' | 'colis'): void {
+    l.mode = mode;
     this.calculerMontantTotal();
+  }
+
+  // Quantité en unité de détail, quel que soit le mode de saisie — c'est ce qui
+  // impacte réellement le stock et qui est envoyé au backend.
+  quantiteUnites(l: LigneApprovisionnement): number {
+    if (l.mode === 'colis' && this.hasConditionnement(l)) {
+      return (Number(l.quantite_colis) || 0) * (l.produit.quantite_par_conditionnement || 1);
+    }
+    return Number(l.quantite) || 0;
+  }
+
+  // Prix par unité de détail, quel que soit le mode de saisie.
+  prixUnitaireEffectif(l: LigneApprovisionnement): number {
+    if (l.mode === 'colis' && this.hasConditionnement(l)) {
+      const facteur = l.produit.quantite_par_conditionnement || 1;
+      return (Number(l.prix_colis) || 0) / facteur;
+    }
+    return Number(l.prix_unitaire) || 0;
+  }
+
+  montantLigne(l: LigneApprovisionnement): number {
+    return this.quantiteUnites(l) * this.prixUnitaireEffectif(l);
+  }
+
+  // Ligne à quantité saisie mais sans prix, alors que le prix est obligatoire pour ce client.
+  prixManquant(l: LigneApprovisionnement): boolean {
+    return !this.prixAchatOptionnel && this.quantiteUnites(l) > 0 && this.prixUnitaireEffectif(l) <= 0;
   }
 
   calculerMontantTotal(): void {
-    let total = 0;
-    for (const detail of this.detailAchat.controls) {
-      const quantite = detail.get('quantite')?.value || 0;
-      const prix = detail.get('prix_unitaire')?.value || 0;
-      total += quantite * prix;
-    }
+    const total = this.lignesSaisies.reduce((s, l) => s + this.montantLigne(l), 0);
     this.achatForm.patchValue({ montant_total: total });
   }
 
@@ -293,7 +329,7 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadFournisseurs(): void {
-    this.fournisseurService.getFournisseursByBoutik(this.currentUser.boutique_id).subscribe({
+    this.fournisseurService.getAllFournisseurs().subscribe({
       next: (response: any) => {
         this.fournisseurs = response.data;
       },
@@ -312,15 +348,19 @@ export default class AchatsComponent implements OnInit {
     } else {
       this.selectedBoutique = this.currentUser.boutique_id
     }
-    
+
     const body: any = {
       boutique: this.selectedBoutique
     }
+    const fournisseurId = this.achatForm?.get('fournisseur')?.value;
+    if (fournisseurId) body.fournisseur = fournisseurId;
 
     this.produitService.getProduits(body).subscribe({
       next: (response: any) => {
         if (response.status === 'success' && response.data) {
           this.produits = response.data;
+          this.syncLignesFromProduits();
+          this.calculerMontantTotal();
         }
       },
       error: (error: any) => {
@@ -329,17 +369,32 @@ export default class AchatsComponent implements OnInit {
     });
   }
 
+  onFournisseurChange(value: any): void {
+    this.loadProduits();
+  }
+
   onSubmit(): void {
     this.isSubmitting = true;
-      
+
     if (this.achatForm.invalid) {
       // Marquer tous les champs comme touchés pour afficher les erreurs
       this.markFormGroupTouched(this.achatForm);
       return;
     }
 
+    if (this.lignesSaisies.length === 0) {
+      this.toastr.error('Veuillez saisir au moins une quantité approvisionnée.');
+      return;
+    }
+
+    if (!this.prixAchatOptionnel && this.lignesSaisies.some(l => this.prixUnitaireEffectif(l) <= 0)) {
+      this.toastr.error('Veuillez saisir un prix d\'achat pour chaque produit approvisionné.');
+      return;
+    }
+
+    this.calculerMontantTotal();
     this.loading = true;
-    
+
     // Si on est en mode édition, appeler la méthode de mise à jour
     if (this.isEditMode && this.editAchatId) {
       this.updateAchat();
@@ -348,14 +403,30 @@ export default class AchatsComponent implements OnInit {
       this.createAchat();
     }
   }
-  
+
+  private buildDetailAchat(): any[] {
+    return this.lignesSaisies.map(l => {
+      const enColis = l.mode === 'colis' && this.hasConditionnement(l);
+      return {
+        produit: l.produit.id,
+        prix_unitaire: this.prixUnitaireEffectif(l),
+        quantite: this.quantiteUnites(l),
+        mode_saisie: enColis ? 'colis' : 'unite',
+        quantite_colis: enColis ? l.quantite_colis : null,
+        prix_colis: enColis ? l.prix_colis : null,
+      };
+    });
+  }
+
   createAchat(): void {
-    this.achatsService.createAchat(this.achatForm.value)
+    const body = { ...this.achatForm.value, detail_achat: this.buildDetailAchat() };
+    this.achatsService.createAchat(body)
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
           this.initForm(); // Réinitialiser le formulaire
-          this.addDetailAchat(); // Ajouter une ligne par défaut après réinitialisation
+          this.lignes = [];
+          this.loadProduits(); // Recharger les lignes produits vierges
           this.toastr.success('Approvisionnement effectué avec succès');
           this.isSubmitting = false;
         },
@@ -366,24 +437,26 @@ export default class AchatsComponent implements OnInit {
         }
       });
   }
-  
+
   updateAchat(): void {
-    this.achatsService.updateAchat(this.editAchatId, this.achatForm.value)
+    const body = { ...this.achatForm.value, detail_achat: this.buildDetailAchat() };
+    this.achatsService.updateAchat(this.editAchatId, body)
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (response: any) => {
           this.toastr.success('Approvisionnement modifié avec succès');
           this.isSubmitting = false;
-          
+
           // Réinitialiser le mode édition
           this.isEditMode = false;
           this.editAchatId = null;
           this.editAchatData = null;
-          
+
           // Réinitialiser le formulaire
           this.initForm();
-          this.addDetailAchat();
-          
+          this.lignes = [];
+          this.loadProduits();
+
           // Mettre à jour le titre
           setTimeout(() => {
             const cardTitle = document.querySelector('.card-title');
@@ -417,30 +490,4 @@ export default class AchatsComponent implements OnInit {
     });
   }
 
-  selectProduit(ligne: FormGroup, idProduit: number) {
-    const produit = this.produits.find(p => p.id === idProduit);
-   
-      // Vérifier si le produit existe déjà
-        const existe = this.detailAchat.value.some((p: { produit: any; }) => p.produit == idProduit);
-  
-        if (!existe) {
-          //this.selectProduit(idProduit, index);
-        } else {
-         
-          Swal.fire({
-            icon: "warning",
-            title: "Oops...",
-            text: "⚠️ Ce produit existe déjà dans la liste !"
-          });
-          return
-        }
-    if (!produit) return;
-  
-    ligne.patchValue({
-      prix_unitaire_vente: produit.prix_vente,
-      image: produit.imageUrl,
-      stock: produit.stock_disponible,
-      nom: produit.nom
-    });
-  }
 }

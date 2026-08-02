@@ -32,7 +32,7 @@ export default class EkModulesComponent implements OnInit {
   readonly ALL_CODES: ModuleCode[] = [
     'commandes_fournisseurs', 'devis', 'commandes_clients',
     'retours_produits', 'caisse', 'ia', 'restauration',
-    'clients', 'fournisseurs',
+    'clients', 'fournisseurs', 'prix_achat_optionnel',
   ];
 
   ngOnInit(): void {

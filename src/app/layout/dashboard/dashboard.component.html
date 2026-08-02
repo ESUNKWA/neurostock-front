@@ -98,11 +98,13 @@
           </button>
         </div>
         @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'gerant' || currentUser?.is_admin === true) {
-          <nz-select class="mob-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —" [compareWith]="compareBoutiqueId">
-            @for (b of boutiques; track b.id) {
-              <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+          <div class="mob-boutique-radios d-flex flex-nowrap gap-2 overflow-auto py-1" role="radiogroup" aria-label="Sélectionner une boutique">
+            @for (b of boutiquesSansEntrepot; track b.id) {
+              <input type="radio" class="btn-check" name="mobBoutiqueRadio" [id]="'mob-boutique-' + b.id"
+                [value]="b.id" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" autocomplete="off">
+              <label class="btn btn-sm btn-outline-light text-nowrap" [for]="'mob-boutique-' + b.id">{{ b.nom }}</label>
             }
-          </nz-select>
+          </div>
         }
       </div>
 
@@ -478,11 +480,13 @@
       <div class="db-hero-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
     </div>
     @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'gerant' || currentUser?.is_admin === true) {
-      <nz-select class="db-boutique-select" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —" [compareWith]="compareBoutiqueId">
-        @for (b of boutiques; track b.id) {
-          <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+      <div class="db-boutique-radios d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+        @for (b of boutiquesSansEntrepot; track b.id) {
+          <input type="radio" class="btn-check" name="dbBoutiqueRadio" [id]="'db-boutique-' + b.id"
+            [value]="b.id" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" autocomplete="off">
+          <label class="btn btn-sm btn-outline-light" [for]="'db-boutique-' + b.id">{{ b.nom }}</label>
         }
-      </nz-select>
+      </div>
     }
     <button class="db-refresh-btn" (click)="loadStats()" [disabled]="!idBoutique" title="Actualiser">
       <i class="bi bi-arrow-clockwise"></i>

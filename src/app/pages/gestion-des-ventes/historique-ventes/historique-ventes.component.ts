@@ -27,6 +27,11 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
   currentUser: any;
   idBoutique: number = 0;
   boutiques: any[] = [];
+
+  // Une vente ne se fait jamais à l'entrepôt (stock central) : on l'exclut du filtre.
+  get boutiquesSansEntrepot(): any[] {
+    return this.boutiques.filter((b: any) => (b.type ?? '').toLowerCase().trim() !== 'entrepot');
+  }
   users: any[] = [];
   utilisateurId: number | null = null;
   isLoading: boolean = false;

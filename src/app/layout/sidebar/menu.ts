@@ -116,6 +116,11 @@ export const Menu: any = [
                         libelle: 'Voir les ventes',
                         lien: '/gestion-des-ventes/historique-ventes',
                         icon: 'bi bi-circle'
+                    },
+                    {
+                        libelle: 'Point après vente',
+                        lien: '/gestion-des-ventes/comptage',
+                        icon: 'bi bi-circle'
                     }
                 ]
             },

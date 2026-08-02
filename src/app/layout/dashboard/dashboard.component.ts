@@ -8,7 +8,6 @@ import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { environnement } from '../../environnement/environnement';
 import { FormsModule } from '@angular/forms';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { PrevisionService } from '../../services/analyse-ia/prevision.service';
 import { DeviceService } from '../../services/device/device.service';
@@ -21,7 +20,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule, NzSpinModule],
+  imports: [CommonModule, FormsModule, NzSpinModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -48,7 +47,11 @@ export default class DashboardComponent implements OnInit, OnDestroy {
   boutiques: any = [];
   idBoutique: number | null = null;
   currentUser: any = {};
-  compareBoutiqueId = (o1: any, o2: any) => Number(o1) === Number(o2);
+
+  // Le tableau de bord ne concerne que les boutiques de vente — l'entrepôt (stock central) n'y figure pas.
+  get boutiquesSansEntrepot(): any[] {
+    return this.boutiques.filter((b: any) => (b.type ?? '').toLowerCase().trim() !== 'entrepot');
+  }
 
   private sseSource: EventSource | null = null;
   private sseBoutiqueId: number | null = null;
@@ -161,7 +164,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
             if (response.status === 'success' && response.data) {
               this.boutiques = response.data;
               if (this.boutiques.length > 0) {
-                this.idBoutique = this.boutiques[0].id;
+                this.idBoutique = (this.boutiquesSansEntrepot[0] ?? this.boutiques[0]).id;
                 this.loadStats();
               }
             }
@@ -181,14 +184,14 @@ export default class DashboardComponent implements OnInit, OnDestroy {
           next: (r: any) => {
             this.boutiques = r?.data ?? [];
             if (this.boutiques.length > 0) {
-              this.idBoutique = this.currentUser.boutique_id ?? this.boutiques[0].id;
+              this.idBoutique = this.currentUser.boutique_id ?? (this.boutiquesSansEntrepot[0] ?? this.boutiques[0]).id;
               this.loadStats();
             }
           },
           error: () => {
             this.boutiques = this.currentUser.boutiques ?? (this.currentUser.boutique ? [this.currentUser.boutique] : []);
             if (this.boutiques.length > 0) {
-              this.idBoutique = this.currentUser.boutique_id ?? this.boutiques[0].id;
+              this.idBoutique = this.currentUser.boutique_id ?? (this.boutiquesSansEntrepot[0] ?? this.boutiques[0]).id;
               this.loadStats();
             }
           }

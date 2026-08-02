@@ -43,6 +43,11 @@ const POS_ROUTES: Routes = [
     title: 'NeuroStock | Historique des ventes',
   },
   {
+    path: 'comptage',
+    loadComponent: () => import('./comptage/pos-comptage.component'),
+    title: 'NeuroStock | Point après vente',
+  },
+  {
     path: 'caisse',
     loadComponent: () => import('../gestion-des-caisses/caisse.component'),
     title: 'NeuroStock | Caisse',

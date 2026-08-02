@@ -208,5 +208,5 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px calc(72px + env(safe-area-inset-bottom, 0px));
 }

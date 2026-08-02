@@ -133,6 +133,12 @@
                 <span>Nouvelle commande</span>
               </a>
             }
+            <a routerLink="/pos/comptage" class="pos-drawer-item" (click)="posMenuOpen = false">
+              <div class="pos-di-icon" style="background:#dcfce7;color:#15803d">
+                <i class="bi bi-clipboard-check"></i>
+              </div>
+              <span>Point après vente</span>
+            </a>
             @if (peutFaireRetour && hasModule('retours_produits')) {
               <a routerLink="/pos/retours" class="pos-drawer-item" (click)="posMenuOpen = false">
                 <div class="pos-di-icon" style="background:#fee2e2;color:#dc2626">
@@ -214,6 +220,12 @@
             <a routerLink="/pos/historique" routerLinkActive="active" class="pos-nav-link">
               <i class="bi bi-clock-history me-1"></i>
               <span class="d-none d-sm-inline">Historique</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/pos/comptage" routerLinkActive="active" class="pos-nav-link">
+              <i class="bi bi-clipboard-check me-1"></i>
+              <span class="d-none d-sm-inline">Point après vente</span>
             </a>
           </li>
           @if (hasModule('caisse')) {

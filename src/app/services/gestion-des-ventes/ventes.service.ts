@@ -27,6 +27,10 @@ export class VentesService {
     return this.http.post(`${this.API_URL}/vente`, body);
   }
 
+  saveComptage(body: any) {
+    return this.http.post(`${this.API_URL}/vente/comptage`, body);
+  }
+
   updateVente(id: any, body: any) {
     return this.http.patch(`${this.API_URL}/vente/${id}`, body);
   }

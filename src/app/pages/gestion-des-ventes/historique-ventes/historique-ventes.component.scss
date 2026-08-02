@@ -5,6 +5,11 @@
   justify-content: space-between;
   padding: 1.25rem 0 .75rem;
   gap: 1rem;
+
+  @media (max-width: 991px) {
+    padding: .75rem 0 .5rem;
+    margin-bottom: .25rem;
+  }
 }
 
 .hv-page-header-left {
@@ -52,6 +57,15 @@
   margin-bottom: 1rem;
   flex-wrap: wrap;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
+
+  @media (max-width: 991px) {
+    gap: .625rem;
+    margin-bottom: .875rem;
+  }
+
+  @media (max-width: 640px) {
+    padding: .5rem .625rem;
+  }
 }
 
 .hv-filter-field {
@@ -64,6 +78,20 @@
 .hv-filter-boutique {
   flex: 1;
   min-width: 160px;
+
+  // Boutons radio boutique : compacts sur mobile (les noms de boutique peuvent être longs)
+  @media (max-width: 640px) {
+    label.btn {
+      font-size: .76rem;
+      padding: .28rem .6rem;
+    }
+  }
+
+  @media (max-width: 991px) {
+    flex: 1 1 100%;
+    min-width: 100%;
+    align-items: flex-start;
+  }
 }
 
 .hv-filter-icon {
@@ -162,8 +190,14 @@
   gap: .75rem;
   margin-bottom: 1rem;
 
+  @media (max-width: 991px) {
+    margin-bottom: 1rem;
+  }
+
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
+    gap: .5rem;
+    margin-bottom: .75rem;
   }
 }
 
@@ -177,6 +211,12 @@
   gap: .75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,.04);
   overflow: hidden;
+
+  @media (max-width: 640px) {
+    padding: .5rem .625rem;
+    gap: .5rem;
+    border-radius: 10px;
+  }
 }
 
 .hv-kpi-icon-wrap {
@@ -188,6 +228,13 @@
   justify-content: center;
   font-size: 1rem;
   flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    width: 28px;
+    height: 28px;
+    font-size: .8rem;
+    border-radius: 7px;
+  }
 }
 
 .hv-kpi-blue  { border-left: 3px solid #3b82f6; .hv-kpi-icon-wrap { background: #eff6ff; color: #2563eb; } }
@@ -207,6 +254,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  @media (max-width: 640px) {
+    font-size: .95rem;
+  }
 }
 
 .hv-kpi-unit {
@@ -222,6 +273,11 @@
   margin-top: .15rem;
   text-transform: uppercase;
   letter-spacing: .03em;
+
+  @media (max-width: 640px) {
+    font-size: .58rem;
+    margin-top: 0;
+  }
 }
 
 // ── Loading bar ───────────────────────────────────────────────────────────────
