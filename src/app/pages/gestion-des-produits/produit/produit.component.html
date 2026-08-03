@@ -72,7 +72,7 @@
                         <div class="card-body pb-0">
                             <div class="row g-2 align-items-center">
                                 <div class="col-md-8">
-                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
                                         @for (boutique of boutiques; track boutique.id) {
                                             <input type="radio" class="btn-check" name="prdBoutiqueRadio" [id]="'prd-boutique-' + boutique.id"
                                                 [value]="boutique.id" [(ngModel)]="selectedBoutiqueFilter"
@@ -256,7 +256,7 @@
                     <!-- Boutique (en premier) -->
                     <div class="prd-section">
                         <div class="prd-section-label">
-                            <i class="bi bi-shop-window"></i> Boutique rattachée
+                            <i class="bi bi-shop-window"></i> Point de vente rattaché
                         </div>
                         <div class="row">
                             <div class="col-12">
@@ -267,7 +267,7 @@
                                     }
                                 </nz-select>
                                 @if (isSubmitted && f['boutique'].errors?.['required']) {
-                                    <div class="invalid-feedback">La boutique est obligatoire</div>
+                                    <div class="invalid-feedback">Le point de vente est obligatoire</div>
                                 }
                             </div>
                         </div>

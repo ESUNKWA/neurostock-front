@@ -37,7 +37,7 @@
                         <div class="card-body border-bottom pb-3">
                             <div class="row">
                                 <div class="col-12">
-                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+                                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
                                         <input type="radio" class="btn-check" name="usrBoutiqueRadio" id="usr-boutique-tout"
                                             [value]="null" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
                                             (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
@@ -73,7 +73,7 @@
                                   <th>Nom</th>
                                   <th>Prenoms</th>
                                   <th class="d-none d-sm-table-cell">profil</th>
-                                  <th class="d-none d-sm-table-cell">Boutique</th>
+                                  <th class="d-none d-sm-table-cell">Point de vente</th>
                                   <th class="d-none d-sm-table-cell">Date de création</th>
                                   <th class="text-center" style="width: 15%;">Actions</th>
                                 </tr>
@@ -125,7 +125,7 @@
                               <span class="mc-row-value">{{ mobileDetailItem.profil?.nom ?? mobileDetailItem.profil?.libelle ?? '—' }}</span>
                             </div>
                             <div class="mc-popup-row">
-                              <span class="mc-row-label">Boutique</span>
+                              <span class="mc-row-label">Point de vente</span>
                               <span class="mc-row-value">{{ mobileDetailItem.boutique?.nom ?? '—' }}</span>
                             </div>
                             <div class="mc-popup-row">
@@ -268,15 +268,15 @@
                 }
               </div>
               <div class="col-md-6">
-                <label class="mf-label" for="boutique">Boutique <span class="text-danger">*</span></label>
-                <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionnez la boutique —"
+                <label class="mf-label" for="boutique">Point de vente <span class="text-danger">*</span></label>
+                <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionnez le point de vente —"
                   [ngClass]="{'is-invalid': isSubmitted && f['boutique'].errors}">
                   @for (item of boutiques; track item.id) {
                     <nz-option [nzValue]="item.id" [nzLabel]="item.nom"></nz-option>
                   }
                 </nz-select>
                 @if (isSubmitted && f['boutique'].errors?.['required']) {
-                  <div class="mf-error">La boutique est obligatoire</div>
+                  <div class="mf-error">Le point de vente est obligatoire</div>
                 }
               </div>
             </div>

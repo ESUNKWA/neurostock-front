@@ -79,13 +79,13 @@
 
           <!-- Boutique -->
           <div class="mb-4">
-            <label class="form-label small fw-semibold">Boutique</label>
+            <label class="form-label small fw-semibold">Point de vente</label>
             @if (loadingBoutiques) {
               <div class="form-control d-flex align-items-center gap-2 text-muted">
                 <span class="spinner-border spinner-border-sm"></span> Chargement…
               </div>
             } @else {
-              <nz-select class="w-100" [(ngModel)]="form.boutique_id" [nzDisabled]="!form.structure_id" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Aucune boutique —">
+              <nz-select class="w-100" [(ngModel)]="form.boutique_id" [nzDisabled]="!form.structure_id" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Aucun point de vente —">
                 @for (b of boutiques; track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                 }

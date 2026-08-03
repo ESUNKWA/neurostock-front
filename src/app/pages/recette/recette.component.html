@@ -13,7 +13,7 @@
       </div>
     </div>
     @if (boutiquesSansEntrepot.length > 1) {
-      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
         @for (b of boutiquesSansEntrepot; track b.id) {
           <input type="radio" class="btn-check" name="recBoutiqueRadioMob" [id]="'rec-boutique-mob-' + b.id"
             [value]="b.id" [(ngModel)]="boutiqueId" [ngModelOptions]="{standalone: true}"
@@ -58,7 +58,7 @@
   @if (!boutiqueId && !loading) {
     <div class="rec-empty">
       <i class="bi bi-shop rec-empty-icon"></i>
-      <p>Sélectionnez une boutique</p>
+      <p>Sélectionnez un point de vente</p>
     </div>
   }
 
@@ -216,10 +216,10 @@
   <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
     <div>
       <h4 class="fw-bold mb-1"><i class="bi bi-cash-stack me-2 text-success"></i>Recette</h4>
-      <p class="text-muted small mb-0">Synthèse des ventes par boutique et par période</p>
+      <p class="text-muted small mb-0">Synthèse des ventes par point de vente et par période</p>
     </div>
     @if (boutiquesSansEntrepot.length > 1) {
-      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
         @for (b of boutiquesSansEntrepot; track b.id) {
           <input type="radio" class="btn-check" name="recBoutiqueRadio" [id]="'rec-boutique-' + b.id"
             [value]="b.id" [(ngModel)]="boutiqueId" [ngModelOptions]="{standalone: true}"
@@ -273,7 +273,7 @@
   @if (!boutiqueId && !loading) {
     <div class="text-center py-5 text-muted">
       <i class="bi bi-shop display-3 d-block mb-3 opacity-25"></i>
-      <p>Sélectionnez une boutique pour afficher la recette</p>
+      <p>Sélectionnez un point de vente pour afficher la recette</p>
     </div>
   }
   @if (loading) {

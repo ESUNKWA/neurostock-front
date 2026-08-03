@@ -15,7 +15,7 @@ const routes: Routes = [
   {
     path: 'boutiques',
     loadComponent: () => import('./boutiques/ek-boutiques.component'),
-    title: 'Ekwatech | Boutiques',
+    title: 'Ekwatech | Points de vente',
   },
   {
     path: 'tenants',

@@ -337,7 +337,7 @@ export default class CommandeTableComponent implements OnInit {
 
   async validerCommande(): Promise<void> {
     if (this.panierVide) { this.toastr.warning('Le panier est vide'); return; }
-    if (!this.selectedBoutiqueId) { this.toastr.warning('Boutique requise'); return; }
+    if (!this.selectedBoutiqueId) { this.toastr.warning('Point de vente requis'); return; }
     if (!this.selectedTableId) { this.toastr.warning('Veuillez sélectionner une table'); return; }
 
     this.isSaving = true;

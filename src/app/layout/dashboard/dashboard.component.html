@@ -98,7 +98,7 @@
           </button>
         </div>
         @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'gerant' || currentUser?.is_admin === true) {
-          <div class="mob-boutique-radios d-flex flex-nowrap gap-2 overflow-auto py-1" role="radiogroup" aria-label="Sélectionner une boutique">
+          <div class="mob-boutique-radios d-flex flex-nowrap gap-2 overflow-auto py-1" role="radiogroup" aria-label="Sélectionner un point de vente">
             @for (b of boutiquesSansEntrepot; track b.id) {
               <input type="radio" class="btn-check" name="mobBoutiqueRadio" [id]="'mob-boutique-' + b.id"
                 [value]="b.id" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" autocomplete="off">
@@ -480,7 +480,7 @@
       <div class="db-hero-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
     </div>
     @if (currentUser?.profil?.code === 'responsable_structure' || currentUser?.profil?.code === 'admin' || currentUser?.profil?.code === 'gerant' || currentUser?.is_admin === true) {
-      <div class="db-boutique-radios d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+      <div class="db-boutique-radios d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
         @for (b of boutiquesSansEntrepot; track b.id) {
           <input type="radio" class="btn-check" name="dbBoutiqueRadio" [id]="'db-boutique-' + b.id"
             [value]="b.id" [(ngModel)]="idBoutique" (ngModelChange)="loadStats()" autocomplete="off">

@@ -44,7 +44,7 @@ export const Menu: any = [
                 module: 'fournisseurs'
             },
             {
-                libelle: 'Gestion boutiques',
+                libelle: 'Gestion points de vente',
                 icon: 'bi bi-houses',
                 target: 'boutique-nav',
                 sousMenu: [
@@ -54,7 +54,7 @@ export const Menu: any = [
                         icon: 'bi bi-circle'
                     },
                     {
-                        libelle: 'Boutiques',
+                        libelle: 'Points de vente',
                         lien: '/structure/boutiques',
                         icon: 'bi bi-circle'
                     }

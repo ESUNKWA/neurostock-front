@@ -19,7 +19,7 @@ export default class LandingComponent implements AfterViewInit, OnDestroy {
 
   form = {
     s_nom: '', s_type: '', s_pays: '', s_ville: '', s_commune: '',
-    b_nom: '', b_adr: '', b_type: 'Boutique physique', b_devise: 'FCFA', b_caisse: false,
+    b_nom: '', b_adr: '', b_type: 'Point de vente physique', b_devise: 'FCFA', b_caisse: false,
     r_prenom: '', r_nom: '', r_tel: '', r_email: '', r_pwd: '', r_pwd2: '',
   };
   stepErrors: Record<string, boolean> = {};

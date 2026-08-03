@@ -3,11 +3,11 @@
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
-      <h4 class="fw-bold mb-1">Boutiques</h4>
+      <h4 class="fw-bold mb-1">Points de vente</h4>
       <p class="text-muted small mb-0">Points de vente par structure</p>
     </div>
     <button class="btn btn-primary btn-sm" (click)="openCreate()" [disabled]="!selectedStructureId">
-      <i class="bi bi-plus-lg me-1"></i>Nouvelle boutique
+      <i class="bi bi-plus-lg me-1"></i>Nouveau point de vente
     </button>
   </div>
 
@@ -24,7 +24,7 @@
         }
       </nz-select>
       @if (selectedStructureId) {
-        <span class="text-muted small">{{ boutiques.length }} boutique(s)</span>
+        <span class="text-muted small">{{ boutiques.length }} point(s) de vente</span>
       }
     </div>
   </div>
@@ -36,7 +36,7 @@
       @if (!selectedStructureId) {
         <div class="text-center py-5 text-muted">
           <i class="bi bi-building display-3 d-block mb-3 opacity-25"></i>
-          <p>Sélectionnez une structure pour voir ses boutiques</p>
+          <p>Sélectionnez une structure pour voir ses points de vente</p>
         </div>
       }
 
@@ -50,7 +50,7 @@
       @if (selectedStructureId && !loading && boutiques.length === 0) {
         <div class="text-center py-5 text-muted">
           <i class="bi bi-shop display-3 d-block mb-3 opacity-25"></i>
-          <p>Aucune boutique pour cette structure</p>
+          <p>Aucun point de vente pour cette structure</p>
           <button class="btn btn-sm btn-primary" (click)="openCreate()">
             <i class="bi bi-plus-lg me-1"></i>Créer la première
           </button>
@@ -85,7 +85,7 @@
                     } @else if (boutiqueType(b) === 'entrepot') {
                       <span class="badge bg-success-subtle text-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                     } @else {
-                      <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>
+                      <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>
                     }
                   </td>
                   <td class="text-muted small">{{ b.telephone || '—' }}</td>
@@ -184,7 +184,7 @@
         <div class="mf-header">
           <div class="mf-header-icon"><i class="bi bi-shop"></i></div>
           <div>
-            <div class="mf-header-title">{{ isEditMode ? 'Modifier la boutique' : 'Nouvelle boutique' }}</div>
+            <div class="mf-header-title">{{ isEditMode ? 'Modifier le point de vente' : 'Nouveau point de vente' }}</div>
             <div class="mf-header-subtitle">Renseignez les informations du point de vente</div>
           </div>
           <button type="button" class="btn-close btn-close-white ms-auto" (click)="closeModal()" [disabled]="isSubmitting"></button>
@@ -202,7 +202,7 @@
                      [style.background]="form.type === 'boutique' ? '#fff5eb' : '#fff'">
                 <input type="radio" [(ngModel)]="form.type" name="type" value="boutique" class="form-check-input mt-0">
                 <div>
-                  <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Boutique classique</div>
+                  <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Point de vente classique</div>
                   <small class="text-muted">Commerce, épicerie, superette…</small>
                 </div>
               </label>
@@ -223,7 +223,7 @@
                 <input type="radio" [(ngModel)]="form.type" name="type" value="entrepot" class="form-check-input mt-0">
                 <div>
                   <div class="fw-semibold"><i class="bi bi-box-seam me-1"></i>Entrepôt</div>
-                  <small class="text-muted">Stock central, réapprovisionnement boutiques…</small>
+                  <small class="text-muted">Stock central, réapprovisionnement points de vente…</small>
                 </div>
               </label>
             </div>
@@ -247,7 +247,7 @@
                 <label class="mf-label">Nom <span class="text-danger">*</span></label>
                 <div class="mf-input-wrap">
                   <i class="bi bi-shop mf-input-icon"></i>
-                  <input type="text" class="form-control mf-input" [(ngModel)]="form.nom" name="nom" placeholder="Nom de la boutique">
+                  <input type="text" class="form-control mf-input" [(ngModel)]="form.nom" name="nom" placeholder="Nom du point de vente">
                 </div>
               </div>
               <div class="col-md-6">

@@ -132,7 +132,7 @@ export class BoutiqueComponent {
     this.boutiqueForm.enable();
     this.isEditMode = false;
     this.boutiqueData = null;
-    const title = 'Ajouter une nouvelle boutique';
+    const title = 'Ajouter un nouveau point de vente';
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Enregistrer';
     this.icon = 'ri ri-save-3-line';
@@ -142,7 +142,7 @@ export class BoutiqueComponent {
   openView(boutique: any): void {
     this.boutiqueForm.disable();
     this.boutiqueData = boutique;
-    const title = `Visualiser la boutique [ ${boutique?.nom} ]`;
+    const title = `Visualiser le point de vente [ ${boutique?.nom} ]`;
     this.titleModal = title.toUpperCase();
     this.buttonText = 'Fermer';
     this.icon = 'ri ri-close-circle-line';
@@ -166,7 +166,7 @@ export class BoutiqueComponent {
     this.isEditMode = !!boutique;
     this.buttonText = this.isEditMode ? 'Modifier' : 'Enregistrer';
     this.icon = this.isEditMode ? 'bi bi-pencil-square' : 'ri ri-save-3-line';
-    const title = `Modifier la boutique [${boutique?.nom}]`;
+    const title = `Modifier le point de vente [${boutique?.nom}]`;
     this.titleModal = title;
     
     this.isSubmitted = false;
@@ -385,7 +385,7 @@ export class BoutiqueComponent {
                 const t = (data ?? '').toLowerCase().trim();
                 if (t === 'restaurant') return `<span class="badge bg-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>`;
                 if (t === 'entrepot' || t === 'entrepôt') return `<span class="badge bg-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>`;
-                return `<span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>`;
+                return `<span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>`;
               }
             },
             // {
@@ -413,9 +413,9 @@ export class BoutiqueComponent {
             }
           ],
           language: {
-            emptyTable: 'Aucune boutique trouvée',
+            emptyTable: 'Aucun point de vente trouvé',
             search: '',
-            searchPlaceholder: 'Rechercher une boutique…',
+            searchPlaceholder: 'Rechercher un point de vente…',
             info: '_START_–_END_ sur _TOTAL_',
             infoEmpty: 'Aucun résultat',
             zeroRecords: 'Aucun résultat',

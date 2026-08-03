@@ -24,7 +24,7 @@
           <tr>
             <th>#</th>
             <th>Structure</th>
-            <th>Boutique</th>
+            <th>Point de vente</th>
             <th>Responsable</th>
             <th>Contact</th>
             <th>Statut</th>
@@ -53,7 +53,7 @@
             <h5 class="modal-title fw-bold">Valider l'inscription</h5>
             <p class="text-muted small mb-0">
               <strong>{{ validerTarget?.structure_nom }}</strong> ·
-              Boutique : {{ validerTarget?.boutique_nom }}
+              Point de vente : {{ validerTarget?.boutique_nom }}
             </p>
           </div>
           <button class="btn-close" (click)="closeValiderModal()"></button>
@@ -70,7 +70,7 @@
                   <li>Structure : <strong>{{ validerResult.structure.nom }}</strong> (ID {{ validerResult.structure.id }})</li>
                 }
                 @if (validerResult.boutique) {
-                  <li>Boutique : <strong>{{ validerResult.boutique.nom }}</strong> (ID {{ validerResult.boutique.id }})</li>
+                  <li>Point de vente : <strong>{{ validerResult.boutique.nom }}</strong> (ID {{ validerResult.boutique.id }})</li>
                 }
                 @if (validerResult.admin) {
                   <li>Admin : <strong>{{ validerResult.admin.prenoms }} {{ validerResult.admin.nom }}</strong></li>
@@ -123,7 +123,7 @@
             <div class="alert alert-info border-0 mt-3 mb-0 small">
               <i class="bi bi-info-circle me-1"></i>
               Le système créera la base si elle n'existe pas et synchronisera le schéma,
-              puis créera la structure, la boutique et le compte responsable automatiquement.
+              puis créera la structure, le point de vente et le compte responsable automatiquement.
             </div>
           }
         </div>

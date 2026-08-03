@@ -87,7 +87,7 @@
                   <td>
                     <div class="fw-semibold">{{ facture.detail.plan_base.label }}</div>
                     <div class="text-muted small">
-                      {{ facture.detail.plan_base.boutiques_incluses ?? 1 }} boutique{{ (facture.detail.plan_base.boutiques_incluses ?? 1) > 1 ? 's' : '' }} incluse{{ (facture.detail.plan_base.boutiques_incluses ?? 1) > 1 ? 's' : '' }}
+                      {{ facture.detail.plan_base.boutiques_incluses ?? 1 }} point{{ (facture.detail.plan_base.boutiques_incluses ?? 1) > 1 ? 's' : '' }} de vente inclus
                     </div>
                   </td>
                   <td class="text-end fw-semibold">
@@ -99,7 +99,7 @@
                 @for (b of facture.detail.boutiques_supplementaires; track b.boutiqueNom) {
                   <tr>
                     <td>
-                      <div class="fw-semibold">Boutique supplémentaire — {{ b.boutiqueNom }}</div>
+                      <div class="fw-semibold">Point de vente supplémentaire — {{ b.boutiqueNom }}</div>
                       <div class="text-muted small">
                         Tarif unitaire : {{ b.prix_unitaire | number:'1.0-0':'fr' }} {{ b.devise }}
                         @if (!b.est_active) {
@@ -132,7 +132,7 @@
               <tfoot>
                 @if (facture.detail.nb_boutiques_facturees > 0) {
                   <tr class="table-light">
-                    <td class="text-muted small">Sous-total boutiques supplémentaires ({{ facture.detail.nb_boutiques_facturees }})</td>
+                    <td class="text-muted small">Sous-total points de vente supplémentaires ({{ facture.detail.nb_boutiques_facturees }})</td>
                     <td class="text-end text-muted small">
                       {{ facture.detail.montant_boutiques | number:'1.0-0':'fr' }} {{ facture.detail.devise }}
                     </td>

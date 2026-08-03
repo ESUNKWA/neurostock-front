@@ -473,7 +473,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   downloadCatalogueBarcodes(): void {
     const boutiqueId = Number(this.selectedBoutique) || this.currentUser?.boutique_id;
     if (!boutiqueId) {
-      this.toastr.warning('Sélectionnez une boutique d\'abord');
+      this.toastr.warning('Sélectionnez un point de vente d\'abord');
       return;
     }
     this.cataloguePdfLoading = true;
@@ -754,7 +754,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   confirmImport(): void {
     if (!this.pendingImportFile) return;
     if (!this.importBoutiqueId) {
-      this.toastr.error('Veuillez sélectionner une boutique avant d\'importer.');
+      this.toastr.error('Veuillez sélectionner un point de vente avant d\'importer.');
       return;
     }
 
@@ -828,7 +828,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     const boutiqueId = produit.boutique?.id ?? this.currentUser?.boutique_id;
     if (!boutiqueId) {
       this.isLoadingPrixSuggere = false;
-      this.prixSuggereError = 'Boutique introuvable pour ce produit.';
+      this.prixSuggereError = 'Point de vente introuvable pour ce produit.';
       return;
     }
 

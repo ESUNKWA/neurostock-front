@@ -21,7 +21,7 @@
   @if (isAdminView) {
     <div class="hv-filter-field hv-filter-boutique">
       <i class="bi bi-shop hv-filter-icon"></i>
-      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner une boutique">
+      <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un point de vente">
         @for (boutique of boutiquesSansEntrepot; track boutique.id) {
           <input type="radio" class="btn-check" name="hvBoutiqueRadio" [id]="'hv-boutique-' + boutique.id"
             [value]="boutique.id" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
@@ -252,7 +252,7 @@
           </div>
           @if (vente?.boutique?.nom) {
             <div class="px-3 py-2 border-end">
-              <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Boutique</div>
+              <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">Point de vente</div>
               <div class="fw-semibold small"><i class="bi bi-shop me-1"></i>{{ vente.boutique.nom }}</div>
             </div>
           }

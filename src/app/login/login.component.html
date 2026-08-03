@@ -12,17 +12,14 @@
       <h1 class="brand-title">NeuroStock</h1>
       <p class="brand-tagline">Vendez plus. Gérez mieux</p>
 
-      <div class="slideshow-wrapper">
-        <div class="slideshow">
-          <div class="slide" id="slide1"></div>
-          <div class="slide" id="slide2"></div>
-        </div>
-      </div>
-
-      <div class="left-footer">
-        <span class="badge-pill">Gestion des stocks</span>
-        <span class="badge-pill">Ventes & Achats</span>
-        <span class="badge-pill">Caisse</span>
+      <p class="modules-heading">Tout ce que NeuroStock gère pour vous</p>
+      <div class="modules-grid">
+        @for (m of modules; track m.label; let i = $index) {
+          <div class="module-card" [style.animation-delay.ms]="i * 60">
+            <i class="bi {{ m.icon }}"></i>
+            <span>{{ m.label }}</span>
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -40,7 +37,7 @@
       </div>
 
       <div class="form-header">
-        <h2>Bon retour&nbsp;!</h2>
+        <h2>{{ greeting }}&nbsp;!</h2>
         <p>Connectez-vous à votre espace de gestion</p>
       </div>
 
@@ -63,7 +60,7 @@
               formControlName="telephone"
               placeholder="Votre identifiant"
               maxlength="10"
-              autocomplete="username">
+              autocomplete="off">
           </div>
           @if (submitted && f['telephone'].errors) {
             <span class="field-error">
@@ -83,7 +80,7 @@
               id="password"
               formControlName="mot_de_passe"
               placeholder="Votre mot de passe"
-              autocomplete="current-password">
+              autocomplete="off">
             <button type="button" class="toggle-pass" (click)="togglePasswordVisibility()">
               <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>

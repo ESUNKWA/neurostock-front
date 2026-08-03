@@ -96,7 +96,7 @@ export default class NouveauRetourComponent implements OnInit {
 
   // ── Recherche de ventes ────────────────────────────────────────────────────
   rechercherVentes(): void {
-    if (!this.idBoutique) { this.toastr.warning('Sélectionnez une boutique'); return; }
+    if (!this.idBoutique) { this.toastr.warning('Sélectionnez un point de vente'); return; }
     const params: any = { boutique: this.idBoutique, page: 1, limit: 10 };
     if (this.searchReference?.trim()) params['reference'] = this.searchReference.trim();
     if (this.searchMontant != null && !isNaN(Number(this.searchMontant))) params['montant'] = this.searchMontant;

@@ -31,7 +31,7 @@
           <div class="step-line" [class.active]="step > 1"></div>
           <div class="ins-step" [class.active]="step >= 2" [class.done]="step > 2">
             <div class="step-circle">{{ step > 2 ? '✓' : '2' }}</div>
-            <span class="step-label">Boutique</span>
+            <span class="step-label">Point de vente</span>
           </div>
           <div class="step-line" [class.active]="step > 2"></div>
           <div class="ins-step" [class.active]="step >= 3">
@@ -96,20 +96,20 @@
           </div>
         }
 
-        <!-- ─── Étape 2 : Votre boutique ────────────────────────────────── -->
+        <!-- ─── Étape 2 : Votre point de vente ────────────────────────────────── -->
         @if (step === 2) {
           <div class="step-block">
             <div class="step-intro">
               <i class="bi bi-shop step-ico"></i>
               <div>
-                <div class="step-ttl">Votre boutique</div>
+                <div class="step-ttl">Votre point de vente</div>
                 <div class="step-sub">Le premier point de vente qui sera créé</div>
               </div>
             </div>
 
             <form [formGroup]="step2" class="row g-3" (ngSubmit)="next()">
               <div class="col-12">
-                <label class="form-label">Nom de la boutique <span class="req">*</span></label>
+                <label class="form-label">Nom du point de vente <span class="req">*</span></label>
                 <input type="text" class="form-control"
                   formControlName="boutique_nom"
                   placeholder="Ex : Épicerie du Centre"

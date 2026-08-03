@@ -172,7 +172,7 @@
         <!-- ── Mode grille ── -->
         @if (viewMode === 'grid') {
           <div class="pos-product-grid">
-            @for (p of filtered; track p.id) {
+            @for (p of pagedFiltered; track p.id) {
               <div class="pos-product-card card border-0 shadow-sm"
                    [class.out-of-stock]="(p.stock_disponible ?? 0) <= 0"
                    [class.in-cart]="isInCart(p.id)"
@@ -224,7 +224,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (p of filtered; track p.id) {
+              @for (p of pagedFiltered; track p.id) {
                 <tr class="pos-list-row"
                     [class.pos-list-row--oos]="(p.stock_disponible ?? 0) <= 0"
                     [class.pos-list-row--incart]="isInCart(p.id)"
@@ -279,6 +279,29 @@
               }
             </tbody>
           </table>
+        }
+
+        @if (totalPages > 1) {
+          <div class="d-flex align-items-center justify-content-between px-2 py-2 flex-wrap gap-2">
+            <span class="text-muted small">
+              {{ (page - 1) * pageSize + 1 }}–{{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} / {{ filtered.length }}
+            </span>
+            <div class="d-flex align-items-center gap-1">
+              <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === 1" (click)="goToPage(page - 1)">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              @for (p of pageNumbers; track p) {
+                @if (p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)) {
+                  <button type="button" class="btn btn-sm" [class.btn-primary]="p === page" [class.btn-outline-secondary]="p !== page" (click)="goToPage(p)">{{ p }}</button>
+                } @else if (p === page - 2 || p === page + 2) {
+                  <span class="px-1 text-muted">…</span>
+                }
+              }
+              <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === totalPages" (click)="goToPage(page + 1)">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
         }
 
       }

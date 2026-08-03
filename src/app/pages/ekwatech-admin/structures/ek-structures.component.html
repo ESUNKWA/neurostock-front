@@ -41,7 +41,7 @@
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Catégorie</th>
-                <th>Boutiques</th>
+                <th>Points de vente</th>
                 <th class="text-end pe-4">Actions</th>
               </tr>
             </thead>
@@ -78,7 +78,7 @@
                   <td>
                     <a [routerLink]="['/ekwatech/boutiques']" [queryParams]="{structure: s.id}"
                        class="badge bg-primary-subtle text-primary text-decoration-none">
-                      <i class="bi bi-shop me-1"></i>{{ s.boutiques?.length ?? 0 }} boutique(s)
+                      <i class="bi bi-shop me-1"></i>{{ s.boutiques?.length ?? 0 }} point(s) de vente
                     </a>
                   </td>
                   <td class="text-end pe-4">

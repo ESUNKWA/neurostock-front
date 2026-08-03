@@ -15,14 +15,14 @@
       @if (entrepots.length === 0) {
         <div class="alert alert-warning">
           <i class="bi bi-exclamation-triangle me-2"></i>
-          Aucun entrepôt configuré. Créez d'abord une boutique de type <strong>Entrepôt</strong> dans la gestion des boutiques.
+          Aucun entrepôt configuré. Créez d'abord un point de vente de type <strong>Entrepôt</strong> dans la gestion des points de vente.
         </div>
       }
 
       <!-- Barre d'actions -->
       <div class="trx-topbar">
         @if (boutiques.length > 1) {
-          <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrer par boutique">
+          <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrer par point de vente">
             <input type="radio" class="btn-check" name="trxBoutiqueRadio" id="trx-boutique-all"
               [value]="null" [(ngModel)]="filterBoutiqueId" (ngModelChange)="loadTransferts()" autocomplete="off">
             <label class="btn btn-sm btn-outline-primary trx-boutique-radio-label" for="trx-boutique-all">Toutes</label>
@@ -835,7 +835,7 @@
             <label class="trx-field-label">
               <i class="bi bi-shop me-1"></i>Destination <span class="trx-required">*</span>
             </label>
-            <div class="d-flex flex-column gap-2" role="radiogroup" aria-label="Sélectionner la boutique destination">
+            <div class="d-flex flex-column gap-2" role="radiogroup" aria-label="Sélectionner le point de vente destination">
               @for (b of boutiquesDestination; track b.id) {
                 <input type="radio" class="btn-check" name="trxDestRadio" [id]="'trx-dest-' + b.id"
                   [value]="b.id" [(ngModel)]="form.boutique_destination" autocomplete="off">

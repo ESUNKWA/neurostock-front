@@ -1,12 +1,12 @@
 <div class="pagetitle">
     <div class="d-flex justify-content-between">
-        <h1>Gestion des boutiques</h1>
+        <h1>Gestion des points de vente</h1>
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a routerLink="/dashboard">
-                <i class="bi bi-house"></i> Gestion des Boutiques</a>
+                <i class="bi bi-house"></i> Gestion des points de vente</a>
             </li>
-            <li class="breadcrumb-item active">Boutique</li>
+            <li class="breadcrumb-item active">Point de vente</li>
           </ol>
         </nav>
     </div>
@@ -21,11 +21,11 @@
                 <div class="card-header">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <h5 class="card-title mb-0 text-uppercase">Boutique</h5>
+                            <h5 class="card-title mb-0 text-uppercase">Point de vente</h5>
                         </div>
                         <div class="col-md-6 text-end" hidden>
                             <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#modal-fadein" (click)="openNewModal()">
-                                <i class="bi bi-plus-circle"></i> Nouvelle Boutique
+                                <i class="bi bi-plus-circle"></i> Nouveau Point de vente
                             </button>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                             <thead>
                                 <tr>
                                   <th>Logo</th>
-                                  <th>Boutique</th>
+                                  <th>Point de vente</th>
                                   <th>Téléphone</th>
                                   <th class="d-none d-sm-table-cell">Email</th>
                                   <th class="d-none d-sm-table-cell">RCCM</th>
@@ -63,7 +63,7 @@
                     <!-- Vue mobile -->
                     <div class="d-md-none mt-3">
                       @if (!isLoading && boutiques.length === 0) {
-                        <p class="text-center text-muted small py-4">Aucune boutique trouvée</p>
+                        <p class="text-center text-muted small py-4">Aucun point de vente trouvé</p>
                       }
                       @for (boutique of boutiques; track boutique.id) {
                         <div class="mc-card d-flex align-items-center justify-content-between gap-2"
@@ -124,7 +124,7 @@
                                 } @else if (mobileDetailItem.type === 'entrepot') {
                                   <span class="badge bg-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                                 } @else {
-                                  <span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Boutique</span>
+                                  <span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>
                                 }
                               </span>
                             </div>
@@ -152,7 +152,7 @@
         <div class="mf-header-icon"><i class="bi bi-shop"></i></div>
         <div>
           <div class="mf-header-title">{{ titleModal }}</div>
-          <div class="mf-header-subtitle">Renseignez les informations de la boutique</div>
+          <div class="mf-header-subtitle">Renseignez les informations du point de vente</div>
         </div>
         <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
       </div>
@@ -171,7 +171,7 @@
                        [style.background]="f['type'].value === 'boutique' ? '#fff5eb' : '#fff'">
                   <input type="radio" formControlName="type" value="boutique" class="form-check-input mt-0">
                   <div>
-                    <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Boutique classique</div>
+                    <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Point de vente classique</div>
                     <small class="text-muted">Commerce, épicerie, superette…</small>
                   </div>
                 </label>
@@ -192,7 +192,7 @@
                   <input type="radio" formControlName="type" value="entrepot" class="form-check-input mt-0">
                   <div>
                     <div class="fw-semibold"><i class="bi bi-box-seam me-1"></i>Entrepôt</div>
-                    <small class="text-muted">Stock central, réapprovisionnement boutiques…</small>
+                    <small class="text-muted">Stock central, réapprovisionnement points de vente…</small>
                   </div>
                 </label>
               </div>
@@ -203,11 +203,11 @@
             <div class="mf-section-label"><i class="bi bi-info-circle"></i> Informations générales</div>
             <div class="row g-3">
               <div class="col-12">
-                <label class="mf-label" for="nom">Nom de la boutique <span class="text-danger">*</span></label>
+                <label class="mf-label" for="nom">Nom du point de vente <span class="text-danger">*</span></label>
                 <div class="mf-input-wrap">
                   <i class="bi bi-shop mf-input-icon"></i>
                   <input type="text" class="form-control mf-input" id="nom"
-                    placeholder="Ex : Boutique Centrale"
+                    placeholder="Ex : Point de vente Central"
                     formControlName="nom"
                     [ngClass]="{'is-invalid': isSubmitted && f['nom'].errors}">
                 </div>
@@ -233,7 +233,7 @@
                 <div class="mf-input-wrap">
                   <i class="bi bi-envelope mf-input-icon"></i>
                   <input type="email" class="form-control mf-input" id="email"
-                    placeholder="contact@boutique.com"
+                    placeholder="contact@pointdevente.com"
                     formControlName="email">
                 </div>
               </div>

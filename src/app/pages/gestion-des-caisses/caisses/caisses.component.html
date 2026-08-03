@@ -11,7 +11,7 @@
           <nz-select
             [(ngModel)]="idBoutique"
             (ngModelChange)="onBoutiqueChange()"
-            nzPlaceHolder="Boutique…"
+            nzPlaceHolder="Point de vente…"
             style="min-width:160px"
             class="me-1">
             @for (b of boutiques; track b.id) {
@@ -43,7 +43,7 @@
       } @else if (!idBoutique) {
         <div class="cc-empty">
           <i class="bi bi-shop"></i>
-          <div>Sélectionnez une boutique</div>
+          <div>Sélectionnez un point de vente</div>
         </div>
       } @else if (caisses.length === 0) {
         <div class="cc-empty">

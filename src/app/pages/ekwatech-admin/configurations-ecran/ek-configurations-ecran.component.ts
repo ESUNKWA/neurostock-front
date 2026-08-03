@@ -30,7 +30,7 @@ export default class EkConfigurationsEcranComponent implements OnInit {
 
   readonly BOUTIQUE_TYPES = [
     { value: null,         label: '* (toutes)' },
-    { value: 'boutique',   label: 'Boutique' },
+    { value: 'boutique',   label: 'Point de vente' },
     { value: 'restaurant', label: 'Restaurant' },
     { value: 'entrepot',   label: 'Entrepôt' },
     { value: 'departement',label: 'Département' },

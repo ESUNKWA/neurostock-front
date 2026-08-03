@@ -313,7 +313,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
 
   sauvegarder(): void {
     if (!this.form.boutique_source) { this.erreur = 'Sélectionnez la source (entrepôt)'; return; }
-    if (!this.form.boutique_destination) { this.erreur = 'Sélectionnez la boutique de destination'; return; }
+    if (!this.form.boutique_destination) { this.erreur = 'Sélectionnez le point de vente de destination'; return; }
     const selectedEntries = Object.entries(this.selectedMap).filter(([, qty]) => +qty > 0);
     if (selectedEntries.length === 0) { this.erreur = 'Cochez au moins un produit dans la liste'; return; }
 
@@ -374,7 +374,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   recevoir(t: any): void {
     Swal.fire({
       title: 'Réceptionner le transfert ?',
-      text: `${t.reference} — le stock de la boutique de destination sera crédité.`,
+      text: `${t.reference} — le stock du point de vente de destination sera crédité.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Réceptionner',

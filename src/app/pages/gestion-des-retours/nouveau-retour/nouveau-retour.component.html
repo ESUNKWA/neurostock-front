@@ -59,7 +59,7 @@
         @if (boutiques.length > 1 || (isAdminOrGerant && boutiques.length > 0)) {
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-              <label class="form-label fw-semibold">Boutique <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold">Point de vente <span class="text-danger">*</span></label>
               <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner —">
                 @for (b of boutiques; track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>

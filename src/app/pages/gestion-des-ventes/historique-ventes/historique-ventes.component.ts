@@ -98,7 +98,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
    ngAfterViewInit() {
     // Initialisation de Select2
     ($('#mySelect') as any).select2({
-      placeholder: 'Sélectionnez une boutique',
+      placeholder: 'Sélectionnez un point de vente',
       allowClear: true,
       width: 'resolve',
     });

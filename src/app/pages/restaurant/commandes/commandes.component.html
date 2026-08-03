@@ -59,7 +59,7 @@
       <div class="d-flex gap-2 align-items-center flex-wrap">
         @if (isAdmin) {
           <nz-select [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
-                     nzPlaceHolder="Boutique" nzShowSearch style="min-width:200px;">
+                     nzPlaceHolder="Point de vente" nzShowSearch style="min-width:200px;">
             @for (b of boutiques; track b.id) {
               <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
             }
@@ -186,7 +186,7 @@
     @if (!selectedBoutiqueId && !isLoading && !isMobileView) {
       <div class="text-center py-5 text-muted">
         <i class="bi bi-building display-4"></i>
-        <p class="mt-2">Sélectionnez une boutique</p>
+        <p class="mt-2">Sélectionnez un point de vente</p>
       </div>
     }
 

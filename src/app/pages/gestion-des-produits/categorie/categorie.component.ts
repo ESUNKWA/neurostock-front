@@ -469,7 +469,7 @@ export default class CategorieComponent implements OnInit, OnDestroy {
   confirmImport(): void {
     if (!this.pendingImportFile) return;
     if (!this.importBoutiqueId) {
-      this.toastr.error('Veuillez sélectionner une boutique avant d\'importer.');
+      this.toastr.error('Veuillez sélectionner un point de vente avant d\'importer.');
       return;
     }
 

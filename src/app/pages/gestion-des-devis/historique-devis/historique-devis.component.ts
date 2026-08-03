@@ -98,7 +98,7 @@ export default class HistoriqueDevisComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      ($('#selectBoutique') as any).select2({ placeholder: 'Sélectionner une boutique', allowClear: true, width: 'resolve' });
+      ($('#selectBoutique') as any).select2({ placeholder: 'Sélectionner un point de vente', allowClear: true, width: 'resolve' });
       ($('#selectBoutique') as any).on('change', () => {
         this.idBoutique = parseInt(($('#selectBoutique') as any).val());
         this.loadDevis();

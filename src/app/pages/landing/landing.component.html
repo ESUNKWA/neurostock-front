@@ -21,7 +21,7 @@
       <div class="hero-grid">
         <div>
           <div class="hero-tag">✦ Gestion de stock intelligente · SaaS</div>
-          <h1 class="hero-h">Gérez votre boutique avec <em>l'intelligence</em> de données</h1>
+          <h1 class="hero-h">Gérez votre point de vente avec <em>l'intelligence</em> de données</h1>
           <p class="hero-sub">NeuroStock centralise vos ventes, votre stock, votre caisse et vos clients dans une seule plateforme. Simple à utiliser, puissant en coulisses.</p>
           <div class="hero-btns">
             <a routerLink="/inscription" class="btn-p">Essai gratuit 1 mois →</a>
@@ -164,7 +164,7 @@
             <li>Fiche client avec historique</li>
             <li>Gestion des ventes à crédit</li>
             <li>Relances et suivi des impayés</li>
-            <li>Base clients partagée par boutique</li>
+            <li>Base clients partagée par point de vente</li>
           </ul>
         </div>
         <div class="mod-card rv" style="--ca:#EC4899;--cai:rgba(236,72,153,.1)">
@@ -180,7 +180,7 @@
         </div>
         <div class="mod-card rv" style="--ca:#10B981;--cai:rgba(16,185,129,.1)">
           <div class="mod-ico">🏪</div>
-          <div class="mod-title">Multi-Boutiques</div>
+          <div class="mod-title">Multi-Points de vente</div>
           <p class="mod-desc">Gérez plusieurs points de vente depuis une seule interface, données isolées et vue consolidée.</p>
           <ul class="mod-ul">
             <li>Base de données isolée par structure</li>
@@ -352,7 +352,7 @@
         </div>
         <div class="vid-text rv">
           <p class="eyebrow" style="color:rgba(255,255,255,.38);margin-bottom:10px">Pourquoi NeuroStock</p>
-          <h2 class="t-h2" style="color:#fff;margin-bottom:12px">Tout ce dont votre boutique a besoin, sans la complexité</h2>
+          <h2 class="t-h2" style="color:#fff;margin-bottom:12px">Tout ce dont votre point de vente a besoin, sans la complexité</h2>
           <p style="color:rgba(255,255,255,.62);margin-bottom:22px;line-height:1.72">NeuroStock est conçu pour les commerçants, pas pour les informaticiens. Prenez le contrôle de votre stock et de votre caisse sans formation longue.</p>
           <ul class="feat-list">
             <li><span class="feat-chk">✓</span>Interface en français, adaptée au marché local</li>
@@ -379,7 +379,7 @@
         <div class="price-big">Gratuit <span style="font-size:.95rem;font-weight:400;color:var(--muted)">/ 1 mois</span></div>
         <p class="price-note">Puis sur devis selon votre volume d'activité</p>
         <ul class="price-ul">
-          <li>Toutes les fonctionnalités</li><li>Multi-boutiques inclus</li>
+          <li>Toutes les fonctionnalités</li><li>Multi-points de vente inclus</li>
           <li>Analyse IA incluse</li><li>Support prioritaire</li>
           <li>Import / Export Excel</li><li>Reçus et étiquettes PDF</li>
           <li>Gestion de caisse complète</li><li>Données sécurisées &amp; isolées</li>
@@ -397,11 +397,11 @@
 
         <div class="form-side rv">
           <p class="eyebrow" style="margin-bottom:10px">Inscription gratuite</p>
-          <h2 class="t-h2" style="margin-bottom:12px">Votre boutique opérationnelle aujourd'hui</h2>
+          <h2 class="t-h2" style="margin-bottom:12px">Votre point de vente opérationnel aujourd'hui</h2>
           <p class="t-body" style="margin-bottom:28px">Remplissez le formulaire en 3 étapes. Votre espace est créé instantanément, prêt à l'emploi.</p>
           <ul class="perks">
             <li class="perk"><div class="perk-ico">🏗️</div><div class="perk-body"><strong>Votre structure créée</strong><span>Nom de l'entreprise, secteur, localisation</span></div></li>
-            <li class="perk"><div class="perk-ico">🏪</div><div class="perk-body"><strong>Votre boutique configurée</strong><span>Nom du point de vente, adresse, type</span></div></li>
+            <li class="perk"><div class="perk-ico">🏪</div><div class="perk-body"><strong>Votre point de vente configuré</strong><span>Nom du point de vente, adresse, type</span></div></li>
             <li class="perk"><div class="perk-ico">👤</div><div class="perk-body"><strong>Votre compte responsable</strong><span>Accès sécurisé, gestion des droits</span></div></li>
             <li class="perk"><div class="perk-ico">🚀</div><div class="perk-body"><strong>Démarrage immédiat</strong><span>Identifiants par SMS, première vente en 5 min</span></div></li>
           </ul>
@@ -471,16 +471,16 @@
               </div>
               <div class="form-ft">
                 <span style="font-size:.78rem;color:var(--muted)">Étape 1 sur 3</span>
-                <button class="btn-nx" (click)="go(1,2)">Suivant → Boutique</button>
+                <button class="btn-nx" (click)="go(1,2)">Suivant → Point de vente</button>
               </div>
             }
 
-            <!-- Étape 2 — Boutique -->
+            <!-- Étape 2 — Point de vente -->
             @if (formStep === 2) {
               <div class="form-body">
-                <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px">Étape 2 / 3 · <strong style="color:var(--ink)">Votre boutique</strong></p>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:18px">Étape 2 / 3 · <strong style="color:var(--ink)">Votre point de vente</strong></p>
                 <div class="f-grp">
-                  <label class="f-lbl">Nom de la boutique <span style="color:var(--cta)">*</span></label>
+                  <label class="f-lbl">Nom du point de vente <span style="color:var(--cta)">*</span></label>
                   <input class="f-in" [class.err]="stepErrors['b_nom']" type="text" [(ngModel)]="form.b_nom" placeholder="Ex : Épicerie du Centre">
                 </div>
                 <div class="f-grp">
@@ -489,9 +489,9 @@
                 </div>
                 <div class="f-row">
                   <div class="f-grp">
-                    <label class="f-lbl">Type de boutique</label>
+                    <label class="f-lbl">Type de point de vente</label>
                     <nz-select class="w-100" [(ngModel)]="form.b_type" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
-                      <nz-option nzValue="Boutique physique" nzLabel="Boutique physique"></nz-option>
+                      <nz-option nzValue="Point de vente physique" nzLabel="Point de vente physique"></nz-option>
                       <nz-option nzValue="Kiosque / Stand" nzLabel="Kiosque / Stand"></nz-option>
                       <nz-option nzValue="Magasin" nzLabel="Magasin"></nz-option>
                       <nz-option nzValue="Superette" nzLabel="Superette"></nz-option>

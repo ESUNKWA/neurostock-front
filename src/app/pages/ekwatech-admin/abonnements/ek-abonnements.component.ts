@@ -356,10 +356,10 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
     const action = b.est_active ? 'désactiver' : 'activer';
     const label  = b.est_active ? 'Désactiver' : 'Activer';
     Swal.fire({
-      title: `${label} cette boutique ?`,
+      title: `${label} ce point de vente ?`,
       html: b.est_active
-        ? `<strong>${b.boutiqueNom}</strong> ne sera plus facturée au prochain renouvellement.`
-        : `<strong>${b.boutiqueNom}</strong> sera à nouveau facturée au prochain renouvellement.`,
+        ? `<strong>${b.boutiqueNom}</strong> ne sera plus facturé au prochain renouvellement.`
+        : `<strong>${b.boutiqueNom}</strong> sera à nouveau facturé au prochain renouvellement.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: label,
@@ -378,7 +378,7 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
             const idx = this.boutiques.findIndex(x => x.boutiqueId === b.boutiqueId);
             if (idx !== -1) { this.boutiques[idx] = { ...this.boutiques[idx], ...updated }; }
           }
-          this.toastr.success(`Boutique ${action === 'désactiver' ? 'désactivée' : 'activée'}`);
+          this.toastr.success(`Point de vente ${action === 'désactiver' ? 'désactivé' : 'activé'}`);
           this.load();
         },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
@@ -389,7 +389,7 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
   retirerBoutique(b: any): void {
     if (!this.boutiquesModalStructureId) return;
     Swal.fire({
-      title: 'Retirer cette boutique ?',
+      title: 'Retirer ce point de vente ?',
       html: `<strong>${b.boutiqueNom}</strong> ne sera plus comptée dans les prochains renouvellements.`,
       icon: 'warning',
       showCancelButton: true,
@@ -403,7 +403,7 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
         .pipe(finalize(() => (this.retirerLoading = null)))
         .subscribe({
           next: () => {
-            this.toastr.success('Boutique retirée de la facturation');
+            this.toastr.success('Point de vente retiré de la facturation');
             this.syncResult = null;
             this.loadBoutiques();
             this.load();
@@ -425,10 +425,10 @@ export default class EkAbonnementsComponent implements OnInit, OnDestroy {
           this.syncResult = { ajoutees: d.ajoutees ?? 0, deja_presentes: d.deja_presentes ?? 0 };
           this.boutiques = d.boutiques ?? [];
           if (d.ajoutees > 0) {
-            this.toastr.success(`${d.ajoutees} boutique(s) synchronisée(s)`);
+            this.toastr.success(`${d.ajoutees} point(s) de vente synchronisé(s)`);
             this.load();
           } else {
-            this.toastr.info('Toutes les boutiques sont déjà synchronisées');
+            this.toastr.info('Tous les points de vente sont déjà synchronisés');
           }
         },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur de synchronisation'),

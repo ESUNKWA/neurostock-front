@@ -86,7 +86,7 @@ export default class EkPlansComponent implements OnInit {
     this.abonnementSvc.savePrixBoutique(this.prixBoutiqueForm)
       .pipe(finalize(() => (this.isSavingPrixBoutique = false)))
       .subscribe({
-        next: () => { this.toastr.success('Prix boutique mis à jour'); this.loadPrixBoutique(); },
+        next: () => { this.toastr.success('Prix point de vente mis à jour'); this.loadPrixBoutique(); },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur'),
       });
   }

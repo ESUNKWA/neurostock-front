@@ -63,6 +63,9 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   selectedCategoryId: number | null = null;
   viewMode: 'grid' | 'list' = 'grid';
 
+  page = 1;
+  readonly pageSize = 20;
+
   // ── Multi-session cart ────────────────────────────────────────────────────
   sessions: CartSession[] = [];
   activeSessionIdx = 0;
@@ -390,11 +393,29 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
         || p.categorie?.id === this.selectedCategoryId;
       return matchSearch && matchCat;
     });
+    this.page = 1;
   }
 
   selectCategory(id: number | null): void {
     this.selectedCategoryId = id;
     this.applyFilter();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  get pagedFiltered(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(p: number): void {
+    this.page = Math.min(Math.max(1, p), this.totalPages);
   }
 
   productImage(p: any): string {

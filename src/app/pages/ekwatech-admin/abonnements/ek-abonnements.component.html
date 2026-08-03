@@ -34,7 +34,7 @@
               <th>Début</th>
               <th>Fin</th>
               <th>Jours restants</th>
-              <th class="text-center">Boutiques sup.</th>
+              <th class="text-center">Points de vente sup.</th>
               <th>Statut</th>
               <th class="text-end">Actions</th>
             </tr>
@@ -118,7 +118,7 @@
                 <span class="text-muted">
                   Plan {{ planLabel(devis.plan) }}
                   @if (devis.boutiques_incluses) {
-                    <span class="opacity-75 ms-1">({{ devis.boutiques_incluses }} boutique{{ devis.boutiques_incluses > 1 ? 's' : '' }} incluse{{ devis.boutiques_incluses > 1 ? 's' : '' }})</span>
+                    <span class="opacity-75 ms-1">({{ devis.boutiques_incluses }} point{{ devis.boutiques_incluses > 1 ? 's' : '' }} de vente inclus)</span>
                   }
                   @if (devis.categorie_label) {
                     <span class="opacity-75 ms-1">· tarif {{ devis.categorie_label }}</span>
@@ -126,11 +126,11 @@
                 </span>
                 <span>{{ devis.prix_base | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}</span>
               </div>
-              <!-- Boutiques supplémentaires -->
+              <!-- Points de vente supplémentaires -->
               @if (devis.boutiques_supplementaires > 0) {
                 <div class="d-flex justify-content-between small py-1">
                   <span class="text-muted">
-                    {{ devis.boutiques_supplementaires }} boutique(s) sup.
+                    {{ devis.boutiques_supplementaires }} point(s) de vente sup.
                     @if (devis.config_boutique) {
                       <span class="opacity-75">
                         × {{ devis.prix_boutique_supplementaire | number:'1.0-0':'fr' }} {{ devis.devise ?? 'XOF' }}
@@ -253,7 +253,7 @@
         <div class="mf-header">
           <div class="mf-header-icon"><i class="bi bi-shop-window"></i></div>
           <div>
-            <div class="mf-header-title">Boutiques facturées</div>
+            <div class="mf-header-title">Points de vente facturés</div>
             <div class="mf-header-subtitle">{{ boutiquesModalNom }}</div>
           </div>
           <button class="btn-close btn-close-white ms-auto" (click)="showBoutiquesModal=false"></button>
@@ -270,11 +270,11 @@
                      [class.alert-info]="syncResult.ajoutees === 0">
                   @if (syncResult.ajoutees > 0) {
                     <i class="bi bi-check-circle-fill me-1"></i>
-                    <strong>{{ syncResult.ajoutees }}</strong> boutique(s) ajoutée(s),
-                    {{ syncResult.deja_presentes }} déjà présente(s).
+                    <strong>{{ syncResult.ajoutees }}</strong> point(s) de vente ajouté(s),
+                    {{ syncResult.deja_presentes }} déjà présent(s).
                   } @else {
                     <i class="bi bi-info-circle-fill me-1"></i>
-                    Toutes les boutiques sont déjà synchronisées ({{ syncResult.deja_presentes }} présente(s)).
+                    Tous les points de vente sont déjà synchronisés ({{ syncResult.deja_presentes }} présent(s)).
                   }
                 </div>
               </div>
@@ -288,15 +288,15 @@
             @if (!boutiquesLoading && boutiques.length === 0) {
               <div class="text-center py-4 text-muted small px-3">
                 <i class="bi bi-shop display-6 d-block mb-2 opacity-25"></i>
-                Aucune boutique supplémentaire enregistrée.<br>
-                <span class="text-muted">Utilisez "Synchroniser" pour importer les boutiques existantes.</span>
+                Aucun point de vente supplémentaire enregistré.<br>
+                <span class="text-muted">Utilisez "Synchroniser" pour importer les points de vente existants.</span>
               </div>
             }
             @if (!boutiquesLoading && boutiques.length > 0) {
               <table class="table table-sm align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="ps-3">Boutique</th>
+                    <th class="ps-3">Point de vente</th>
                     <th>Date ajout</th>
                     <th>Statut</th>
                     <th></th>

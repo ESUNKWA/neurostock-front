@@ -1,10 +1,10 @@
 <div class="pagetitle">
     <div class="d-flex justify-content-between">
-        <h1>Gestion des boutiques</h1>
+        <h1>Gestion des points de vente</h1>
         <nav>
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a routerLink="/dashboard">
-                <i class="bi bi-house"></i> Gestion des boutiques</a>
+                <i class="bi bi-house"></i> Gestion des points de vente</a>
             </li>
             <li class="breadcrumb-item active">structures</li>
           </ol>
@@ -280,11 +280,11 @@
           <!-- Boutiques -->
           @if (boutiques?.length) {
             <div class="mf-section mf-section--last">
-              <div class="mf-section-label"><i class="bi bi-shop"></i> Boutiques rattachées ({{ boutiques.length }})</div>
+              <div class="mf-section-label"><i class="bi bi-shop"></i> Points de vente rattachés ({{ boutiques.length }})</div>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered align-middle mb-0">
                   <thead class="table-light">
-                    <tr><th>Boutique</th><th>Localisation</th><th>Téléphone</th></tr>
+                    <tr><th>Point de vente</th><th>Localisation</th><th>Téléphone</th></tr>
                   </thead>
                   <tbody>
                     @for (item of boutiques; track $index) {

@@ -27,6 +27,30 @@ export default class LoginComponent implements OnInit {
   error = '';
   readonly currentYear = new Date().getFullYear();
 
+  /** Aperçu 360° des modules de l'app, affiché sur le panneau de connexion. */
+  readonly modules = [
+    { icon: 'bi-box-seam',           label: 'Produits & catégories' },
+    { icon: 'bi-shop',               label: 'Multi-boutiques' },
+    { icon: 'bi-cart4',              label: 'Achats & appro' },
+    { icon: 'bi-truck',              label: 'Cmd. fournisseurs' },
+    { icon: 'bi-currency-dollar',    label: 'Ventes & caisse' },
+    { icon: 'bi-file-earmark-text',  label: 'Devis' },
+    { icon: 'bi-bag-check',          label: 'Cmd. clients' },
+    { icon: 'bi-arrow-return-left',  label: 'Retours produits' },
+    { icon: 'bi-arrow-left-right',   label: 'Transferts stock' },
+    { icon: 'bi-cash-stack',         label: 'Rapports & recette' },
+    { icon: 'bi-stars',              label: 'Analyse IA' },
+    { icon: 'bi-person-workspace',   label: 'Utilisateurs' },
+  ];
+
+  /** Salutation selon l'heure du moment, pour un accueil qui change dans la journée. */
+  get greeting(): string {
+    const h = new Date().getHours();
+    if (h < 12) return 'Bonjour';
+    if (h < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+  }
+
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,

@@ -20,7 +20,7 @@
             <h5 class="card-title mb-0 text-uppercase">Mouvements de stock</h5>
 
             @if (boutiques.length > 1) {
-              <nz-select nzPlaceHolder="Sélectionner une boutique" nzAllowClear
+              <nz-select nzPlaceHolder="Sélectionner un point de vente" nzAllowClear
                 [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()"
                 style="min-width:220px;">
                 @for (b of boutiques; track b.id) {
@@ -35,7 +35,7 @@
 
           @if (!selectedBoutiqueId && boutiques.length > 1) {
             <div class="alert alert-info">
-              <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour afficher les mouvements.
+              <i class="bi bi-info-circle me-2"></i>Sélectionnez un point de vente pour afficher les mouvements.
             </div>
           }
 

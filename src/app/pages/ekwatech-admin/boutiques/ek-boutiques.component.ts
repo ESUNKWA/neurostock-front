@@ -181,7 +181,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
 
     req.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: () => {
-        this.toastr.success(this.isEditMode ? 'Boutique modifiée' : 'Boutique créée');
+        this.toastr.success(this.isEditMode ? 'Point de vente modifié' : 'Point de vente créé');
         this.showModal = false;
         this.load();
       },
@@ -201,7 +201,7 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
     }).then(r => {
       if (!r.isConfirmed) return;
       this.boutiqueSvc.delete(b.id).subscribe({
-        next: () => { this.toastr.success('Boutique supprimée'); this.load(); },
+        next: () => { this.toastr.success('Point de vente supprimé'); this.load(); },
         error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la suppression'),
       });
     });

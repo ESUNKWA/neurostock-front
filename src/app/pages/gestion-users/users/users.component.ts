@@ -140,7 +140,7 @@ export class UsersComponent {
     
     $('.js-example-tags').select2({
       dropdownParent: $('#modal-fadein'),
-      placeholder: 'Sélectionnez une boutique',
+      placeholder: 'Sélectionnez un point de vente',
       allowClear: true
     });
 

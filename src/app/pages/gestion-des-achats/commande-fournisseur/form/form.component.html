@@ -24,8 +24,8 @@
             <!-- Boutique -->
             @if (boutiques.length > 1) {
               <div class="mb-3">
-                <label class="form-label fw-semibold">Boutique <span class="text-danger">*</span></label>
-                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner une boutique"
+                <label class="form-label fw-semibold">Point de vente <span class="text-danger">*</span></label>
+                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Sélectionner un point de vente"
                   formControlName="boutique"
                   (ngModelChange)="onBoutiqueChange($event)"
                   style="width:100%"
@@ -35,7 +35,7 @@
                   }
                 </nz-select>
                 @if (form.get('boutique')?.invalid && form.get('boutique')?.touched) {
-                  <div class="invalid-feedback d-block">La boutique est obligatoire</div>
+                  <div class="invalid-feedback d-block">Le point de vente est obligatoire</div>
                 }
               </div>
             }
@@ -91,7 +91,7 @@
 
             @if (!form.get('boutique')?.value) {
               <div class="alert alert-info mb-0">
-                <i class="bi bi-info-circle me-2"></i>Sélectionnez une boutique pour ajouter des produits.
+                <i class="bi bi-info-circle me-2"></i>Sélectionnez un point de vente pour ajouter des produits.
               </div>
             } @else if (!lignes.length) {
               <div class="text-center py-5 text-muted">

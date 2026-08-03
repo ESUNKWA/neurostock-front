@@ -147,9 +147,9 @@
           }
 
           @if (abonnement.boutiques_supplementaires > 0) {
-            <dt class="col-sm-4 text-muted small py-2">Boutiques sup.</dt>
+            <dt class="col-sm-4 text-muted small py-2">Points de vente sup.</dt>
             <dd class="col-sm-8 py-2 mb-0">
-              <span class="badge bg-warning-subtle text-warning">{{ abonnement.boutiques_supplementaires }} boutique(s)</span>
+              <span class="badge bg-warning-subtle text-warning">{{ abonnement.boutiques_supplementaires }} point(s) de vente</span>
             </dd>
           }
         </dl>
@@ -217,7 +217,7 @@
               </div>
               @if (devis.boutiques_supplementaires > 0) {
                 <div class="d-flex justify-content-between small py-1">
-                  <span class="text-muted">{{ devis.boutiques_supplementaires }} boutique(s) sup.</span>
+                  <span class="text-muted">{{ devis.boutiques_supplementaires }} point(s) de vente sup.</span>
                   <span>{{ devis.montant_boutiques_supplementaires | number:'1.0-0':'fr' }} {{ devis.devise }}</span>
                 </div>
               }

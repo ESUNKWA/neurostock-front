@@ -69,7 +69,7 @@ export const routes: Routes = [
         {
             path: 'structure',
             loadChildren:()=> import('./pages/gestion-boutiques/gestion.boutique.route').then((u) => u.boutiqueRoute),
-            title: 'neurostock | Gestion des boutiques'
+            title: 'neurostock | Gestion des points de vente'
         },
         {
             path: 'analyse-ia',
@@ -113,7 +113,7 @@ export const routes: Routes = [
     },
     { path: 'abonnement-expire', loadComponent: () => import('./pages/abonnement-expire/abonnement-expire.component'), title: 'Abonnement expiré' },
     { path: 'no-access', loadComponent: () => import('./pages/no-access/no-access.component'), title: 'Accès non configuré' },
-    { path: 'landing', loadComponent: () => import('./pages/landing/landing.component'), title: 'NeuroStock · Gérez vos boutiques intelligemment' },
+    { path: 'landing', loadComponent: () => import('./pages/landing/landing.component'), title: 'NeuroStock · Gérez vos points de vente intelligemment' },
     // Restaurant layout dédié
     {
         path: 'restaurant',

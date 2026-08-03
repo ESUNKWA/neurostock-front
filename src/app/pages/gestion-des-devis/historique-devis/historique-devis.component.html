@@ -31,7 +31,7 @@
           @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
             <div class="row">
               <div class="col-md-4">
-                <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="loadDevis()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner une boutique">
+                <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="loadDevis()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner un point de vente">
                   @for (b of boutiques; track b.id) {
                     <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                   }

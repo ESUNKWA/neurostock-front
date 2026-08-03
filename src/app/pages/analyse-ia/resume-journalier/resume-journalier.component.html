@@ -17,7 +17,7 @@
     </div>
 
     @if (isAdmin) {
-      <nz-select class="ia-mob-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
+      <nz-select class="ia-mob-select" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner un point de vente —">
         @for (b of boutiques; track b.id) {
           <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
         }
@@ -37,7 +37,7 @@
   @if (!isLoading && isAdmin && !boutiqueId) {
     <div class="ia-mob-empty">
       <i class="bi bi-shop"></i>
-      <p>Sélectionnez une boutique pour afficher le résumé du jour</p>
+      <p>Sélectionnez un point de vente pour afficher le résumé du jour</p>
     </div>
   }
 
@@ -176,7 +176,7 @@
         <div class="col-md-4">
           <div class="input-group input-group-sm">
             <span class="input-group-text"><i class="bi bi-shop"></i></span>
-            <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
+            <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner un point de vente —">
               @for (b of boutiques; track b.id) {
                 <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
               }
@@ -207,7 +207,7 @@
     @if (!isLoading && isAdmin && !boutiqueId) {
       <div class="text-center py-5 text-muted">
         <i class="bi bi-shop fs-1 d-block mb-2 opacity-25"></i>
-        Sélectionnez une boutique pour afficher le résumé du jour
+        Sélectionnez un point de vente pour afficher le résumé du jour
       </div>
     }
 

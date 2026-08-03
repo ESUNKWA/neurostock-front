@@ -26,7 +26,7 @@
         <h5 class="card-title mb-0 text-uppercase">Liste des retours</h5>
         @if (boutiques.length > 1 || currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'gerant') {
           <div style="min-width:220px">
-            <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner une boutique —">
+            <nz-select class="w-100" [(ngModel)]="idBoutique" (ngModelChange)="onBoutiqueChange()" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="— Sélectionner un point de vente —">
               @for (b of boutiques; track b.id) {
                 <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
               }

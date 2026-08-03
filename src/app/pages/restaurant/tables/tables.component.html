@@ -9,7 +9,7 @@
       </div>
       <div class="d-flex gap-2">
         @if (isAdmin) {
-          <nz-select [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()" nzPlaceHolder="Sélectionner une boutique" nzShowSearch style="min-width:220px;">
+          <nz-select [(ngModel)]="selectedBoutiqueId" (ngModelChange)="onBoutiqueChange()" nzPlaceHolder="Sélectionner un point de vente" nzShowSearch style="min-width:220px;">
             @for (b of boutiques; track b.id) {
               <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
             }
@@ -47,7 +47,7 @@
     @if (!selectedBoutiqueId && !isLoading) {
       <div class="text-center py-5 text-muted">
         <i class="bi bi-building display-4"></i>
-        <p class="mt-2">Sélectionnez une boutique pour voir le plan de salle</p>
+        <p class="mt-2">Sélectionnez un point de vente pour voir le plan de salle</p>
       </div>
     }
 

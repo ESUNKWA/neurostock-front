@@ -76,7 +76,7 @@
                 [(ngModel)]="selectedProduitsBoutique"
                 [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onProduitsBoutiqueChange()"
-                nzShowSearch nzPlaceHolder="Boutique…">
+                nzShowSearch nzPlaceHolder="Point de vente…">
                 @for (b of boutiquesStructure; track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
                 }
