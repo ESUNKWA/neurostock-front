@@ -14,23 +14,43 @@ $radius-sm:   10px;
 $transition:  0.25s ease;
 
 // ── Layout ────────────────────────────────────────────────────────────────────
+// La page occupe tout le viewport et centre la carte de connexion (réduite) au milieu.
 .login-page {
   display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  background: $bg-page;
+  padding: 2rem;
+  background:
+    linear-gradient(135deg, rgba(30, 58, 138, 0.28) 0%, rgba(15, 23, 42, 0.18) 55%, rgba(88, 28, 135, 0.22) 100%),
+    url('https://images.unsplash.com/photo-1760463921956-b21cfa5cb2ac?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat fixed;
   font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+// Carte globale : regroupe les deux panneaux, réduite et centrée dans la page.
+.login-shell {
+  display: flex;
+  width: 100%;
+  max-width: 1080px;
+  height: min(660px, 88vh);
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow:
+    0 24px 60px rgba(30, 41, 59, 0.14),
+    0 2px 8px rgba(30, 41, 59, 0.06);
 }
 
 // ── LEFT PANEL ────────────────────────────────────────────────────────────────
 .login-left {
   position: relative;
   flex: 0 0 48%;
+  height: 100%;
   background: linear-gradient(160deg, #eef2ff 0%, #dbeafe 55%, #ede9fe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 3rem;
+  padding: 2.25rem;
   border-right: 1px solid $border;
 }
 
@@ -167,11 +187,13 @@ $transition:  0.25s ease;
 // ── RIGHT PANEL ───────────────────────────────────────────────────────────────
 .login-right {
   flex: 1;
-  background: $bg-page;
+  height: 100%;
+  background: $bg-card;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 .form-wrapper {
@@ -371,9 +393,16 @@ $transition:  0.25s ease;
   overflow-x: hidden;
 }
 
+// Le panneau gauche disparaît sous 992px (cf. d-none d-lg-flex) : la carte
+// n'a alors plus besoin d'une hauteur fixe, elle s'ajuste à son seul contenu.
 @media (max-width: 991.98px) {
+  .login-shell {
+    height: auto;
+    max-width: 460px;
+    box-shadow: none;
+  }
+
   .login-right {
-    min-height: 100vh;
     padding: 1.5rem 1rem;
   }
 
@@ -383,6 +412,12 @@ $transition:  0.25s ease;
 }
 
 @media (max-width: 575.98px) {
+  .login-page {
+    padding: 1rem;
+    // background-attachment:fixed est coûteux/mal supporté sur mobile (Safari iOS notamment)
+    background-attachment: scroll;
+  }
+
   .login-right {
     padding: 1.25rem 0.75rem;
   }
