@@ -23,7 +23,7 @@ $transition:  0.25s ease;
   padding: 2rem;
   background:
     linear-gradient(135deg, rgba(30, 58, 138, 0.28) 0%, rgba(15, 23, 42, 0.18) 55%, rgba(88, 28, 135, 0.22) 100%),
-    url('https://images.unsplash.com/photo-1760463921956-b21cfa5cb2ac?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat fixed;
+    url('/assets/img/bg/bg-login.png') center / cover no-repeat fixed;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -386,6 +386,26 @@ $transition:  0.25s ease;
 
   i      { color: $error; font-size: 0.65rem; }
   strong { color: $accent-dk; }
+}
+
+.footer-links {
+  text-align: center;
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+
+  a {
+    color: $accent-dk;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color $transition;
+
+    &:hover { color: $accent; text-decoration: underline; }
+  }
+}
+
+.footer-links-sep {
+  color: $border;
+  margin: 0 0.5rem;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────

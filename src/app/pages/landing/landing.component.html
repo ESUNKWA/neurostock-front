@@ -21,11 +21,11 @@
       <div class="hero-grid">
         <div>
           <div class="hero-tag">✦ Gestion de stock intelligente · SaaS</div>
-          <h1 class="hero-h">Gérez votre point de vente avec <em>l'intelligence</em> de données</h1>
+          <h1 class="hero-h">Vendez plus, <em>Gérez</em> mieux</h1>
           <p class="hero-sub">NeuroStock centralise vos ventes, votre stock, votre caisse et vos clients dans une seule plateforme. Simple à utiliser, puissant en coulisses.</p>
           <div class="hero-btns">
             <a routerLink="/inscription" class="btn-p">Essai gratuit 1 mois →</a>
-            <a href="#apercu" class="btn-g">▷ Voir une démo</a>
+            <button type="button" class="btn-g" (click)="openVideoModal()">▷ Voir une démo</button>
           </div>
           <div class="hero-meta">
             <span>Aucune carte bancaire requise</span>
@@ -35,51 +35,27 @@
         </div>
         <div class="mock-wrap">
           <div class="mock-glow"></div>
-          <div class="mock">
-            <div class="mock-bar">
-              <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-              <span class="mock-bar-ttl">NEUROSTOCK · POINT DE VENTE</span>
-            </div>
-            <div class="mock-body">
-              <div class="mock-sb">
-                <div class="mk-ni on">🏪</div>
-                <div class="mk-ni">📦</div>
-                <div class="mk-ni">📊</div>
-                <div class="mk-ni">👥</div>
-                <div class="mk-ni">💰</div>
-              </div>
-              <div class="mock-main">
-                <div class="mk-kpis">
-                  <div class="mk-kpi"><div class="mk-kl">Ventes du jour</div><div class="mk-kv am">347 500</div></div>
-                  <div class="mk-kpi"><div class="mk-kl">Transactions</div><div class="mk-kv">28</div></div>
-                  <div class="mk-kpi"><div class="mk-kl">Stock alerte</div><div class="mk-kv or">3</div></div>
-                </div>
-                <div class="mk-prods">
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(245,171,42,.1)">🧴</div><div class="mk-pnm">Huile Palme</div><div class="mk-ppr">1 200 F</div><span class="mk-pst ok">48</span></div>
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(74,222,128,.08)">🌾</div><div class="mk-pnm">Farine 1kg</div><div class="mk-ppr">650 F</div><span class="mk-pst lw">3 ⚠</span></div>
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(96,165,250,.08)">🥤</div><div class="mk-pnm">Jus Tamarin</div><div class="mk-ppr">350 F</div><span class="mk-pst ok">22</span></div>
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(251,113,133,.08)">🍬</div><div class="mk-pnm">Bonbons Mix</div><div class="mk-ppr">100 F</div><span class="mk-pst ok">150</span></div>
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(167,139,250,.08)">🧼</div><div class="mk-pnm">Savon Lux</div><div class="mk-ppr">450 F</div><span class="mk-pst ok">30</span></div>
-                  <div class="mk-pd"><div class="mk-pimg" style="background:rgba(34,197,94,.08)">🫘</div><div class="mk-pnm">Haricot 1kg</div><div class="mk-ppr">900 F</div><span class="mk-pst lw">5</span></div>
-                </div>
-              </div>
-              <div class="mock-cart">
-                <div class="mk-ct">Panier</div>
-                <div class="mk-items">
-                  <div class="mk-it"><span class="mk-it-n">Huile ×2</span><span class="mk-it-p">2 400</span></div>
-                  <div class="mk-it"><span class="mk-it-n">Farine ×1</span><span class="mk-it-p">650</span></div>
-                  <div class="mk-it"><span class="mk-it-n">Savon ×3</span><span class="mk-it-p">1 350</span></div>
-                </div>
-                <div class="mk-div"></div>
-                <div class="mk-tot"><span class="mk-tot-l">Total</span><span class="mk-tot-v">4 400 F</span></div>
-                <button class="mk-pay">💳 Encaisser</button>
-              </div>
-            </div>
+          <div class="vid-player hero-vid-player" (click)="openVideoModal()"
+            [style.background-image]="'url(' + videoThumbnailUrl + ')'">
+            <div class="vid-scrim"></div>
+            <div class="play-ring">▶</div>
+            <span class="vid-lbl">Démo complète · 3 min</span>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- MODAL VIDÉO (déclenchable depuis le hero, sans avoir à défiler) -->
+  @if (showVideoModal) {
+    <div class="video-modal-backdrop" (click)="closeVideoModal()">
+      <div class="video-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="video-modal-close" (click)="closeVideoModal()" aria-label="Fermer">✕</button>
+        <iframe class="vid-frame" [src]="modalVideoEmbedUrl" title="Démo NeuroStock"
+          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  }
 
   <!-- METRICS -->
   <div class="metrics">
@@ -346,9 +322,16 @@
   <section class="sec video-sec" id="video">
     <div class="wrap">
       <div class="vid-grid">
-        <div class="vid-player rv">
-          <div class="play-ring">▶</div>
-          <span class="vid-lbl">Démo complète · 3 min</span>
+        <div class="vid-player rv" (click)="!videoPlaying && playVideo()"
+          [style.background-image]="!videoPlaying ? 'url(' + bottomVideoThumbnailUrl + ')' : null">
+          @if (videoPlaying) {
+            <iframe class="vid-frame" [src]="videoEmbedUrl" title="Démo NeuroStock"
+              frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          } @else {
+            <div class="vid-scrim"></div>
+            <div class="play-ring">▶</div>
+            <span class="vid-lbl">Démo complète · 3 min</span>
+          }
         </div>
         <div class="vid-text rv">
           <p class="eyebrow" style="color:rgba(255,255,255,.38);margin-bottom:10px">Pourquoi NeuroStock</p>

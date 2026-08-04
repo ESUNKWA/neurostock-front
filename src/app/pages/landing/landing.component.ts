@@ -1,7 +1,8 @@
-import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
+import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-landing',
@@ -27,7 +28,19 @@ export default class LandingComponent implements AfterViewInit, OnDestroy {
   private observer?: IntersectionObserver;
   private themeUnlisten?: () => void;
 
-  constructor(private el: ElementRef) {}
+  /** Démos vidéo YouTube — chargées uniquement au clic (pas d'iframe tierce au chargement de la page) */
+  private readonly heroVideoId = '0z8gKJeY6_o';
+  private readonly bottomVideoId = 'vZmRKzmF8m4';
+  readonly videoThumbnailUrl = `https://img.youtube.com/vi/${this.heroVideoId}/maxresdefault.jpg`;
+  readonly bottomVideoThumbnailUrl = `https://img.youtube.com/vi/${this.bottomVideoId}/maxresdefault.jpg`;
+  videoPlaying = false;
+  videoEmbedUrl: SafeResourceUrl | null = null;
+
+  /** Modal vidéo déclenchable depuis le hero, pour les visiteurs qui ne défilent pas jusqu'à la section vidéo */
+  showVideoModal = false;
+  modalVideoEmbedUrl: SafeResourceUrl | null = null;
+
+  constructor(private el: ElementRef, private sanitizer: DomSanitizer) {}
 
   ngAfterViewInit(): void {
     this.initTheme();
@@ -60,6 +73,32 @@ export default class LandingComponent implements AfterViewInit, OnDestroy {
 
   scrollTo(id: string): void {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  playVideo(): void {
+    this.videoEmbedUrl = this.buildEmbedUrl(this.bottomVideoId);
+    this.videoPlaying = true;
+  }
+
+  openVideoModal(): void {
+    this.modalVideoEmbedUrl = this.buildEmbedUrl(this.heroVideoId);
+    this.showVideoModal = true;
+  }
+
+  closeVideoModal(): void {
+    this.showVideoModal = false;
+    this.modalVideoEmbedUrl = null;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showVideoModal) this.closeVideoModal();
+  }
+
+  private buildEmbedUrl(videoId: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`
+    );
   }
 
   private initReveal(): void {
