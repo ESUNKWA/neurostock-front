@@ -17,6 +17,7 @@ export default class EkTenantsComponent implements OnInit {
   tenants: any[] = [];
   loading = false;
   resetting: number | null = null;
+  deleting: number | null = null;
 
   constructor(private tenantSvc: TenantService, private toastr: ToastrService) {}
 
@@ -46,6 +47,33 @@ export default class EkTenantsComponent implements OnInit {
         .subscribe({
           next: () => this.toastr.success('Pool réinitialisé avec succès'),
           error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la réinitialisation'),
+        });
+    });
+  }
+
+  deleteDatabase(tenant: any): void {
+    Swal.fire({
+      title: 'Supprimer définitivement cette base ?',
+      html: `Cette action est <strong>irréversible</strong> : toutes les données de
+             <strong>${tenant.structure?.nom || 'cette structure'}</strong> (produits, ventes, stocks…)
+             seront perdues.<br><br>
+             Tapez le nom de la base <code>${tenant.database}</code> pour confirmer :`,
+      icon: 'error',
+      input: 'text',
+      inputPlaceholder: tenant.database,
+      showCancelButton: true,
+      confirmButtonText: 'Supprimer définitivement',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#dc3545',
+      inputValidator: (value) => (value !== tenant.database ? 'Le nom saisi ne correspond pas' : null),
+    }).then((r) => {
+      if (!r.isConfirmed) return;
+      this.deleting = tenant.structureId;
+      this.tenantSvc.deleteDatabase(tenant.structureId, r.value)
+        .pipe(finalize(() => (this.deleting = null)))
+        .subscribe({
+          next: () => { this.toastr.success('Base de données supprimée'); this.load(); },
+          error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors de la suppression'),
         });
     });
   }

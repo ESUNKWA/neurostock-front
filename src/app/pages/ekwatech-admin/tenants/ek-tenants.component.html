@@ -96,6 +96,17 @@
                         }
                         Reset
                       </button>
+                      <button class="btn btn-sm btn-outline-danger"
+                              [disabled]="deleting === t.structureId"
+                              (click)="deleteDatabase(t)"
+                              title="Supprimer définitivement cette base">
+                        @if (deleting === t.structureId) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        } @else {
+                          <i class="bi bi-trash3 me-1"></i>
+                        }
+                        Supprimer
+                      </button>
                     </div>
                   </td>
                 </tr>

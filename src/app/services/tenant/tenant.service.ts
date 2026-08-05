@@ -27,6 +27,9 @@ export class TenantService {
   getOne(structureId: number)       { return this.http.get(`${this.base}/${structureId}`); }
   provision(dto: TenantProvisionDto){ return this.http.post(`${this.base}/provision`, dto); }
   reset(structureId: number)        { return this.http.delete(`${this.base}/${structureId}/reset`); }
+  deleteDatabase(structureId: number, confirmDatabase: string) {
+    return this.http.delete(`${this.base}/${structureId}/database`, { body: { confirmDatabase } });
+  }
 
   getStorage()                      { return this.http.get(`${this.base}/storage`); }
   getTables(structureId: number)    { return this.http.get(`${this.base}/${structureId}/tables`); }
