@@ -172,7 +172,7 @@
             @for (l of lignes; track $index) {
               <div class="hv-mob-line">
                 <span class="hv-mob-line-name">{{ l.produit?.nom ?? '—' }}</span>
-                <span class="hv-mob-line-qty">× {{ l.quantite }}</span>
+                <span class="hv-mob-line-qty">{{ l.quantite }} × {{ l.prix_unitaire_vente | number:'1.0-0':'fr' }} F</span>
                 <span class="hv-mob-line-total">{{ (l.quantite * l.prix_unitaire_vente) | number:'1.0-0':'fr' }} F</span>
               </div>
             }
