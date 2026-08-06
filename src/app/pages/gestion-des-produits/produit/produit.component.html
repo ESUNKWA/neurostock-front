@@ -332,7 +332,7 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="prd-label" for="prix_achat">Prix d'achat (FCFA) <span class="text-danger">*</span></label>
+                                <label class="prd-label" for="prix_achat">Prix d'achat (FCFA) <span class="text-muted fw-normal">(optionnel)</span></label>
                                 <div class="prd-input-wrap">
                                     <i class="bi bi-arrow-down-circle prd-input-icon"></i>
                                     <input type="text" class="form-control prd-input" id="prix_achat"
@@ -341,9 +341,6 @@
                                         thousandSeparator
                                         [ngClass]="{'is-invalid': isSubmitted && f['prix_achat'].errors}">
                                 </div>
-                                @if (isSubmitted && f['prix_achat'].errors?.['required']) {
-                                    <div class="prd-error">Le prix d'achat est obligatoire</div>
-                                }
                                 @if (isSubmitted && f['prix_achat'].errors?.['min']) {
                                     <div class="prd-error">Doit être supérieur à 0</div>
                                 }
@@ -754,6 +751,12 @@
           </div>
         </div>
 
+        <p class="text-muted small mb-2">
+          Colonnes obligatoires : <strong>nom</strong>, <strong>prix_vente</strong>. Le <strong>prix_achat</strong> est optionnel (0 si absent).
+          La colonne <strong>categorie</strong> est optionnelle (recherchée par nom exact ; la ligne est rejetée si la valeur indiquée n'est pas trouvée).
+          Le <strong>fournisseur</strong> se choisit directement ligne par ligne ci-dessous.
+        </p>
+
         @if (importPreview && importPreview.rows.length) {
           <p class="text-muted">{{ importPreview.rows.length }} ligne(s) détectée(s) dans le fichier.</p>
           <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
@@ -763,6 +766,7 @@
                   @for (col of importPreview.columns; track col) {
                     <th>{{ col }}</th>
                   }
+                  <th>Fournisseur</th>
                 </tr>
               </thead>
               <tbody>
@@ -771,6 +775,14 @@
                     @for (col of importPreview.columns; track col) {
                       <td>{{ row[col] }}</td>
                     }
+                    <td style="min-width:180px">
+                      <select class="form-select form-select-sm" [(ngModel)]="row.fournisseurId" [ngModelOptions]="{standalone: true}">
+                        <option [ngValue]="null">— Aucun —</option>
+                        @for (f of fournisseurs; track f.id) {
+                          <option [ngValue]="f.id">{{ f.nom }}</option>
+                        }
+                      </select>
+                    </td>
                   </tr>
                 }
               </tbody>

@@ -46,9 +46,10 @@ export class ProduitService {
     return `${this.API_URL}/produit/${id}/etiquette?copies=${copies}`;
   }
 
-  importProduits(file: File, boutiqueId: number, categorieId?: number) {
+  importProduits(file: File, boutiqueId: number, categorieId?: number, fournisseurIds?: (number | null)[]) {
     const formData = new FormData();
     formData.append('file', file);
+    if (fournisseurIds) formData.append('fournisseurs', JSON.stringify(fournisseurIds));
     let url = `${this.API_URL}/produit/import?boutique=${boutiqueId}`;
     if (categorieId) url += `&categorie=${categorieId}`;
     return this.http.post(url, formData, {});

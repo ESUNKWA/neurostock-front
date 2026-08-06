@@ -119,7 +119,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   ) {
     this.produitForm = this.fb.group({
       nom: ['', Validators.required],
-      prix_achat: ['', [Validators.required, Validators.min(0)]],
+      prix_achat: ['', [Validators.min(0)]],
       prix_vente: ['', [Validators.required, Validators.min(0)]],
       stock_initial: [0, [Validators.required, Validators.min(0)]],
       seuil_alert: [2, [Validators.required]],
@@ -664,6 +664,11 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     const produit = this.produitForm.getRawValue();
 
+    // Le prix d'achat est facultatif : s'il est vide, on ne l'envoie pas (le backend applique 0 par défaut).
+    if (produit.prix_achat === '' || produit.prix_achat === null || isNaN(produit.prix_achat)) {
+      produit.prix_achat = null;
+    }
+
     // Ajouter les champs au FormData
     Object.keys(produit).forEach(key => {
       if (key === 'image' && this.selectedFile) {
@@ -742,6 +747,16 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Pré-sélectionne le fournisseur de chaque ligne si le fichier contient déjà
+    // une colonne texte "fournisseur" correspondant à un nom connu ; sinon "Aucun".
+    for (const row of this.importPreview.rows) {
+      const nomFournisseur = String(row['fournisseur'] ?? row['Fournisseur'] ?? '').trim().toLowerCase();
+      const match = nomFournisseur
+        ? this.fournisseurs.find((f: any) => (f.nom ?? '').trim().toLowerCase() === nomFournisseur)
+        : null;
+      row.fournisseurId = match?.id ?? null;
+    }
+
     this.isParsingFile = false;
 
     const modal = document.getElementById('modal-import-preview');
@@ -758,8 +773,10 @@ export default class ProduitComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const fournisseurIds = (this.importPreview?.rows ?? []).map((row: any) => row.fournisseurId ?? null);
+
     this.isImporting = true;
-    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId, this.importCategorieId ?? undefined).pipe(first()).subscribe({
+    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId, this.importCategorieId ?? undefined, fournisseurIds).pipe(first()).subscribe({
       next: (response: any) => {
         this.isImporting = false;
         const data = response?.data ?? response;
@@ -787,10 +804,10 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   downloadTemplate(): void {
     downloadXlsxTemplate(
-      ['nom', 'prix_achat', 'prix_vente', 'stock_initial', 'seuil_alert', 'unite_mesure', 'code_barre'],
+      ['nom', 'prix_achat', 'prix_vente', 'stock_initial', 'seuil_alert', 'unite_mesure', 'code_barre', 'categorie', 'fournisseur'],
       [
-        { nom: 'Téléphone XR', prix_achat: 80000, prix_vente: 100000, stock_initial: 10, seuil_alert: 2, unite_mesure: 'pièce', code_barre: 'ABC123' },
-        { nom: 'Casque audio', prix_achat: 15000, prix_vente: 25000, stock_initial: 5, seuil_alert: 1, unite_mesure: 'pièce', code_barre: '' }
+        { nom: 'Téléphone XR', prix_achat: 80000, prix_vente: 100000, stock_initial: 10, seuil_alert: 2, unite_mesure: 'pièce', code_barre: 'ABC123', categorie: '', fournisseur: '' },
+        { nom: 'Casque audio', prix_achat: '', prix_vente: 25000, stock_initial: 5, seuil_alert: 1, unite_mesure: 'pièce', code_barre: '', categorie: '', fournisseur: '' }
       ],
       'modele_produits.xlsx'
     );
