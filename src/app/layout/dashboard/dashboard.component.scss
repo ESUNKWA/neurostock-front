@@ -53,6 +53,56 @@
   &:disabled { opacity: .45; cursor: default; }
 }
 
+// ── Vente du jour — hero desktop ────────────────────────────────────────────────
+.db-hero-vente {
+  background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+  border-radius: 1rem;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(6, 78, 59, .28);
+}
+
+.dhv-left { display: flex; align-items: center; gap: 1rem; }
+
+.dhv-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.16);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.dhv-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  color: rgba(255,255,255,.7);
+  margin: 0 0 .2rem;
+}
+
+.dhv-amount {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.dhv-unit { font-size: 1rem; font-weight: 500; color: rgba(255,255,255,.7); }
+
+.dhv-sub { font-size: .8rem; color: rgba(255,255,255,.75); margin-top: .25rem; }
+
+.dhv-trend .db-trend--up   { background: rgba(255,255,255,.18); color: #fff; }
+.dhv-trend .db-trend--down { background: rgba(255,255,255,.18); color: #fecaca; }
+.dhv-trend .db-trend--flat { background: rgba(255,255,255,.18); color: #fff; }
+
 // ── IA insights bar ───────────────────────────────────────────────────────────
 
 .db-ia-bar {
@@ -580,9 +630,69 @@ nz-select {
 
 // ── KPI défilables ────────────────────────────────────────────────────────────
 
+// ── Vente du jour — hero mobile ─────────────────────────────────────────────────
+.mob-hero-vente {
+  margin: 0 16px 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(6, 78, 59, .3);
+}
+
+.mhv-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mhv-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+
+.mhv-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 700;
+  color: rgba(255,255,255,.85);
+  flex: 1;
+}
+
+.mhv-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: .15em .5em;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 700;
+  background: rgba(255,255,255,.18);
+  color: #fff;
+
+  &.mhv-trend--down { color: #fecaca; }
+}
+
+.mhv-amount {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mhv-unit { font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.75); }
+
+.mhv-sub { font-size: .72rem; color: rgba(255,255,255,.8); margin-top: 4px; }
+
 .mob-kpi-scroll {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   padding: 0 16px;
   margin-bottom: 20px;

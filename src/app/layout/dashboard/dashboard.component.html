@@ -117,22 +117,29 @@
 
       @if (stats) {
 
+        <!-- Vente du jour — mise en évidence -->
+        <div class="mob-hero-vente">
+          <div class="mhv-top">
+            <span class="mhv-icon"><i class="bi bi-graph-up-arrow"></i></span>
+            <span class="mhv-label">Ventes du jour</span>
+            @if (variationJr > 0) {
+              <span class="mhv-trend mhv-trend--up"><i class="bi bi-arrow-up-short"></i>+{{ variationJr }}%</span>
+            } @else if (variationJr < 0) {
+              <span class="mhv-trend mhv-trend--down"><i class="bi bi-arrow-down-short"></i>{{ variationJr }}%</span>
+            } @else {
+              <span class="mhv-trend mhv-trend--flat"><i class="bi bi-dash"></i>Stable</span>
+            }
+          </div>
+          <div class="mhv-amount">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} <span class="mhv-unit">FCFA</span></div>
+          <div class="mhv-sub">{{ stats.dash.vente?.nbre_vente_jr || 0 }} vente(s) aujourd'hui</div>
+        </div>
+
         <!-- KPI cards défilables -->
         <div class="mob-kpi-scroll">
-          <div class="mob-kpi-card mob-kpi--primary">
-            <div class="mob-kpi-label">Ventes du jour</div>
-            <div class="mob-kpi-value">{{ stats.dash.vente?.nbre_vente_jr || 0 }}</div>
-            <div class="mob-kpi-sub">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} FCFA</div>
-          </div>
           <div class="mob-kpi-card mob-kpi--success">
             <div class="mob-kpi-label">CA du mois</div>
             <div class="mob-kpi-value">{{ stats.dash.vente?.total_vente_mois | number:'1.0-0':'fr' }}</div>
             <div class="mob-kpi-sub">FCFA</div>
-          </div>
-          <div class="mob-kpi-card mob-kpi--emerald">
-            <div class="mob-kpi-label">Bénéfice estimé</div>
-            <div class="mob-kpi-value">{{ stats.dash.benefice_estime?.jr | number:'1.0-0':'fr' }}</div>
-            <div class="mob-kpi-sub">FCFA aujourd'hui</div>
           </div>
           <div class="mob-kpi-card mob-kpi--amber">
             <div class="mob-kpi-label">Valeur stock</div>
@@ -534,29 +541,31 @@
 
   @if (stats) {
 
-    <!-- ── Row 1 : 4 KPIs principaux ── -->
-    <div class="row g-3 mb-3">
-
-      <div class="col-xl-3 col-md-6">
-        <div class="card border-0 h-100" style="border-left:3px solid #3b82f6 !important;box-shadow:0 1px 8px rgba(0,0,0,.07);">
-          <div class="card-body">
-            <p class="text-uppercase fw-semibold text-muted mb-2" style="font-size:.68rem;letter-spacing:.06em;">Ventes du jour</p>
-            <h3 class="fw-bold mb-0" style="font-size:1.9rem;letter-spacing:-.02em;">{{ stats.dash.vente?.nbre_vente_jr || 0 }}</h3>
-            <div class="fw-semibold mt-1" style="color:#3b82f6;font-size:.82rem;">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} FCFA</div>
-            <div class="mt-2">
-              @if (variationJr > 0) {
-                <span class="db-trend db-trend--up"><i class="bi bi-arrow-up-short"></i>+{{ variationJr }}% vs hier</span>
-              } @else if (variationJr < 0) {
-                <span class="db-trend db-trend--down"><i class="bi bi-arrow-down-short"></i>{{ variationJr }}% vs hier</span>
-              } @else {
-                <span class="db-trend db-trend--flat"><i class="bi bi-dash"></i>Stable vs hier</span>
-              }
-            </div>
-          </div>
+    <!-- ── Vente du jour — mise en évidence ── -->
+    <div class="db-hero-vente mb-4">
+      <div class="dhv-left">
+        <div class="dhv-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div>
+          <p class="dhv-label">Ventes du jour</p>
+          <h2 class="dhv-amount">{{ stats.dash.vente?.total_vente_jr | number:'1.0-0':'fr' }} <span class="dhv-unit">FCFA</span></h2>
+          <div class="dhv-sub">{{ stats.dash.vente?.nbre_vente_jr || 0 }} vente(s) aujourd'hui</div>
         </div>
       </div>
+      <div class="dhv-trend">
+        @if (variationJr > 0) {
+          <span class="db-trend db-trend--up"><i class="bi bi-arrow-up-short"></i>+{{ variationJr }}% vs hier</span>
+        } @else if (variationJr < 0) {
+          <span class="db-trend db-trend--down"><i class="bi bi-arrow-down-short"></i>{{ variationJr }}% vs hier</span>
+        } @else {
+          <span class="db-trend db-trend--flat"><i class="bi bi-dash"></i>Stable vs hier</span>
+        }
+      </div>
+    </div>
 
-      <div class="col-xl-3 col-md-6">
+    <!-- ── Row 1 : KPIs secondaires ── -->
+    <div class="row g-3 mb-3">
+
+      <div class="col-md-6">
         <div class="card border-0 h-100" style="border-left:3px solid #10b981 !important;box-shadow:0 1px 8px rgba(0,0,0,.07);">
           <div class="card-body">
             <p class="text-uppercase fw-semibold text-muted mb-2" style="font-size:.68rem;letter-spacing:.06em;">CA du mois</p>
@@ -575,20 +584,7 @@
         </div>
       </div>
 
-      <div class="col-xl-3 col-md-6">
-        <div class="card border-0 h-100" style="border-left:3px solid #059669 !important;box-shadow:0 1px 8px rgba(0,0,0,.07);">
-          <div class="card-body">
-            <p class="text-uppercase fw-semibold text-muted mb-2" style="font-size:.68rem;letter-spacing:.06em;">Bénéfice estimé</p>
-            <h3 class="fw-bold mb-0 text-success" style="font-size:1.9rem;letter-spacing:-.02em;">{{ stats.dash.benefice_estime?.jr | number:'1.0-0':'fr' }}</h3>
-            <div class="text-muted mt-1" style="font-size:.82rem;">FCFA aujourd'hui</div>
-            <div class="text-muted mt-2" style="font-size:.75rem;">
-              Ce mois : <strong class="text-dark">{{ stats.dash.benefice_estime?.mois | number:'1.0-0':'fr' }} F</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xl-3 col-md-6">
+      <div class="col-md-6">
         <div class="card border-0 h-100" style="border-left:3px solid #f59e0b !important;box-shadow:0 1px 8px rgba(0,0,0,.07);">
           <div class="card-body">
             <p class="text-uppercase fw-semibold text-muted mb-2" style="font-size:.68rem;letter-spacing:.06em;">Valeur du stock</p>
@@ -931,28 +927,21 @@
               <i class="bi bi-bar-chart me-1"></i> Vue annuelle
             </h6>
             <div class="row g-2">
-              <div class="col-6">
+              <div class="col-4">
                 <div class="db-stat-box" style="background:#eff6ff;">
                   <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Ventes (année)</div>
                   <div class="fw-bold mt-1">{{ stats.dash.vente?.total_vente_annee | number:'1.0-0':'fr' }}</div>
                   <div class="text-muted" style="font-size:.72rem;">FCFA</div>
                 </div>
               </div>
-              <div class="col-6">
-                <div class="db-stat-box" style="background:#f0fdf4;">
-                  <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Bénéfice (année)</div>
-                  <div class="fw-bold mt-1 text-success">{{ stats.dash.benefice_estime?.annee | number:'1.0-0':'fr' }}</div>
-                  <div class="text-muted" style="font-size:.72rem;">FCFA</div>
-                </div>
-              </div>
-              <div class="col-6">
+              <div class="col-4">
                 <div class="db-stat-box" style="background:#fffbeb;">
                   <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Achats (mois)</div>
                   <div class="fw-bold mt-1">{{ stats.dash.achat?.total_achat_mois | number:'1.0-0':'fr' }}</div>
                   <div class="text-muted" style="font-size:.72rem;">FCFA</div>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-4">
                 <div class="db-stat-box" style="background:#fff7ed;">
                   <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;">Achats (année)</div>
                   <div class="fw-bold mt-1">{{ stats.dash.achat?.total_achat_annee | number:'1.0-0':'fr' }}</div>
