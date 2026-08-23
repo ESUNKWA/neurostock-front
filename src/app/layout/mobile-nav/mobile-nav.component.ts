@@ -3,8 +3,9 @@ import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/ro
 import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
 import { ModuleService, ModuleCode } from '../../services/modules/module.service';
+import { AuthService } from '../../services/auth/auth.service';
 
-interface NavModule { label: string; icon: string; lien: string; color: string; bg: string; module?: ModuleCode; }
+interface NavModule { label: string; icon: string; lien: string; color: string; bg: string; module?: ModuleCode; alwaysVisibleFor?: string[]; }
 
 @Component({
   selector: 'app-mobile-nav',
@@ -15,11 +16,18 @@ interface NavModule { label: string; icon: string; lien: string; color: string; 
 })
 export class MobileNavComponent implements OnInit, OnDestroy {
   menuOpen = false;
+  isResponsableStructure = false;
+  private role = '';
+
   private router = inject(Router);
   private moduleService = inject(ModuleService);
-  private sub!: Subscription;
+  private authService = inject(AuthService);
+  private navSub!: Subscription;
+  private userSub!: Subscription;
+  private modulesSub!: Subscription;
 
   private readonly ALL_MODULES: NavModule[] = [
+    { label: 'Points de vente', icon: 'bi-shop',             lien: '/structure/boutiques',                              color: '#c2410c', bg: '#ffedd5' },
     { label: 'Ventes',          icon: 'bi-receipt',           lien: '/gestion-des-ventes/historique-ventes',             color: '#059669', bg: '#d1fae5' },
     { label: 'Produits',        icon: 'bi-box-seam',          lien: '/gestion-des-produits/produit',                     color: '#8b5cf6', bg: '#ede9fe' },
     { label: 'Appro.',          icon: 'bi-cart4',             lien: '/gestion-des-approvisionnements/approvisionnement', color: '#d97706', bg: '#fef3c7' },
@@ -32,25 +40,61 @@ export class MobileNavComponent implements OnInit, OnDestroy {
     { label: 'Rapp. transf.',   icon: 'bi-bar-chart-line',    lien: '/stocks/rapport-transferts',                        color: '#0f766e', bg: '#d1fae5' },
     { label: 'Recette',         icon: 'bi-cash-stack',        lien: '/recette',                                          color: '#0d9488', bg: '#ccfbf1' },
     { label: 'Analyse IA',      icon: 'bi-stars',             lien: '/analyse-ia/resume-journalier',                     color: '#7c3aed', bg: '#ede9fe', module: 'ia' },
-    { label: 'Fournisseurs',    icon: 'bi-truck',             lien: '/gestion-des-produits/fournisseur',                 color: '#b45309', bg: '#fef3c7', module: 'fournisseurs' },
+    { label: 'Fournisseurs',    icon: 'bi-truck',             lien: '/gestion-des-produits/fournisseur',                 color: '#b45309', bg: '#fef3c7', module: 'fournisseurs', alwaysVisibleFor: ['responsable_structure'] },
     { label: 'Utilisateurs',    icon: 'bi-person-workspace',  lien: '/utilisateurs/list',                                color: '#374151', bg: '#f9fafb' },
+    { label: 'Abonnement',      icon: 'bi-calendar-check',    lien: '/mon-abonnement',                                   color: '#0369a1', bg: '#e0f2fe' },
+  ];
+
+  // Pour le responsable de structure : pilotage multi-boutiques et équipe en premier,
+  // tâches opérationnelles du quotidien ensuite. Les autres rôles gardent l'ordre par défaut.
+  private readonly PRIORITE_RESPONSABLE_STRUCTURE = [
+    'Points de vente', 'Ventes', 'Recette', 'Utilisateurs', 'Abonnement',
+    'Appro.', 'Fournisseurs', 'Produits', 'Clients', 'Devis', 'Commandes', 'Caisse',
+    'Transferts', 'Rapp. transf.', 'Retours', 'Analyse IA',
   ];
 
   modules: NavModule[] = [];
   hasCaisse = false;
 
   ngOnInit(): void {
-    this.sub = this.router.events
+    this.navSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => { this.menuOpen = false; });
 
-    this.moduleService.modules$.subscribe(() => {
+    this.userSub = this.authService.currentUser$.subscribe((user: any) => {
+      this.role = user?.profil?.code?.toLowerCase() ?? '';
+      this.isResponsableStructure = this.role === 'responsable_structure';
+      this.rebuildModules();
+    });
+
+    this.modulesSub = this.moduleService.modules$.subscribe(() => {
       this.hasCaisse = this.moduleService.hasModule('caisse');
-      this.modules = this.ALL_MODULES.filter(m => !m.module || this.moduleService.hasModule(m.module));
+      this.rebuildModules();
     });
   }
 
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  private rebuildModules(): void {
+    const disponibles = this.ALL_MODULES.filter(m =>
+      !m.module || this.moduleService.hasModule(m.module) || m.alwaysVisibleFor?.includes(this.role)
+    );
+
+    if (!this.isResponsableStructure) {
+      this.modules = disponibles;
+      return;
+    }
+
+    const ordre = this.PRIORITE_RESPONSABLE_STRUCTURE;
+    this.modules = [...disponibles].sort(
+      (a, b) => ordre.indexOf(a.label) - ordre.indexOf(b.label)
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.navSub?.unsubscribe();
+    this.userSub?.unsubscribe();
+    this.modulesSub?.unsubscribe();
+  }
+
   toggleMenu(): void { this.menuOpen = !this.menuOpen; }
   closeMenu(): void { this.menuOpen = false; }
 }

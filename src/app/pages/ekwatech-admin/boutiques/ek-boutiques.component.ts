@@ -20,7 +20,7 @@ interface BoutiqueForm {
   rccm: string;
   situation_geo: string;
   structure: number | null;
-  type: 'boutique' | 'restaurant' | 'entrepot';
+  type: 'boutique' | 'entrepot';
 }
 
 const ALL_MODES = [
@@ -249,9 +249,8 @@ export default class EkBoutiquesComponent implements OnInit, OnDestroy {
       });
   }
 
-  boutiqueType(b: any): 'boutique' | 'restaurant' | 'entrepot' {
+  boutiqueType(b: any): 'boutique' | 'entrepot' {
     const t = (b.type ?? '').toString().toLowerCase().trim();
-    if (t === 'restaurant') return 'restaurant';
     if (t === 'entrepot' || t === 'entrepôt' || t === 'warehouse') return 'entrepot';
     return 'boutique';
   }

@@ -42,10 +42,20 @@ export default class VenteComponent implements OnInit {
   barcodeInput = '';
   scanLoading = false;
   produits: any[] = [];
+  filtered: any[] = [];
+  categories: { id: number; nom: string }[] = [];
+  produitsLoading = false;
+  searchQuery = '';
+  selectedCategoryId: number | null = null;
+  // Sur mobile, la vue tableau est plus lisible qu'une grille de cartes : c'est le défaut sous 992px.
+  viewMode: 'grid' | 'list' = window.innerWidth < 992 ? 'list' : 'grid';
+  page = 1;
+  readonly pageSize = 20;
+  mobileTab: 'catalog' | 'cart' = 'catalog';
+  showPayModal = false;
   clients: any[] = [];
   selectedClientId: number | null = null;
   isSubmitting = false;
-  activeTab: 'produits' | 'paiement' | 'client' | 'vendeur' = 'produits';
   currentUser: any;
   boutiques: any[] = [];
   boutiquesStructure: any[] = [];
@@ -86,7 +96,7 @@ export default class VenteComponent implements OnInit {
     return this.venteForm?.get('mode_paiement')?.value === 'credit';
   }
 
-  setTab(tab: string): void { this.activeTab = tab as any; }
+  switchMobileTab(tab: 'catalog' | 'cart'): void { this.mobileTab = tab; }
 
   setModePaiement(mode: string): void {
     this.venteForm.patchValue({ mode_paiement: mode });
@@ -230,7 +240,6 @@ export default class VenteComponent implements OnInit {
   checkForEditData(): void {
     const editDataStr = localStorage.getItem('editVenteData');
     if (!editDataStr) {
-      this.addDetailVente();
       return;
     }
     try {
@@ -245,7 +254,6 @@ export default class VenteComponent implements OnInit {
     } catch (error) {
       console.error('Erreur lors de la récupération des données d\'édition:', error);
       localStorage.removeItem('editVenteData');
-      this.addDetailVente();
     }
   }
 
@@ -396,6 +404,24 @@ export default class VenteComponent implements OnInit {
     setTimeout(() => this.calculerMontantTotal(), 0);
   }
 
+  viderPanier(): void {
+    if (this.detailVente.length === 0) return;
+    Swal.fire({
+      title: 'Vider le panier ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Vider',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#dc3545',
+    }).then(r => {
+      if (r.isConfirmed) {
+        while (this.detailVente.length > 0) this.detailVente.removeAt(0);
+        this.venteForm.patchValue({ remise: 0 });
+        this.calculerMontantTotal();
+      }
+    });
+  }
+
   calculerMontantTotal(): void {
     let total = 0;
 
@@ -416,10 +442,6 @@ export default class VenteComponent implements OnInit {
     this.venteForm.patchValue({ montant_total: total, montant_total_apres_remise: total });
   }
 
-
-  onPrixOuQuantiteChange(): void {
-    this.calculerMontantTotal();
-  }
 
   // Calcul de la monnaie rendue
 calculerMonnaieRendue(): void {
@@ -573,14 +595,109 @@ calculerMontantTotalApresRemise(): void {
     // Synchroniser le champ boutique du formulaire
     this.venteForm?.patchValue({ boutique: this.selectedProduitsBoutique });
 
-    this.produitService.getProduits({ boutique: this.selectedProduitsBoutique }).subscribe({
-      next: (response: any) => {
-        if (response.status === 'success' && response.data) {
-          this.produits = response.data;
-        }
-      },
-      error: (error: any) => { console.log('error', error); }
+    this.produitsLoading = true;
+    this.produitService.getProduits({ boutique: this.selectedProduitsBoutique })
+      .pipe(finalize(() => { this.produitsLoading = false; }))
+      .subscribe({
+        next: (response: any) => {
+          if (response.status === 'success' && response.data) {
+            this.produits = response.data;
+            const catMap = new Map<number, string>();
+            for (const p of this.produits) {
+              if (p.categorie?.id) catMap.set(p.categorie.id, p.categorie.nom);
+            }
+            this.categories = Array.from(catMap, ([id, nom]) => ({ id, nom }));
+            this.applyFilter();
+          }
+        },
+        error: (error: any) => { console.log('error', error); }
+      });
+  }
+
+  // ── Catalogue — recherche / catégories / pagination ─────────────────────────
+  applyFilter(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    this.filtered = this.produits.filter(p => {
+      const matchSearch = !q
+        || p.nom?.toLowerCase().includes(q)
+        || p.code_barre?.toLowerCase().includes(q);
+      const matchCat = !this.selectedCategoryId || p.categorie?.id === this.selectedCategoryId;
+      return matchSearch && matchCat;
     });
+    this.page = 1;
+  }
+
+  selectCategory(id: number | null): void {
+    this.selectedCategoryId = id;
+    this.applyFilter();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  get pagedFiltered(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(p: number): void {
+    this.page = Math.min(Math.max(1, p), this.totalPages);
+  }
+
+  productImage(p: any): string {
+    return p?.imageUrl || p?.image || '';
+  }
+
+  stockBadge(p: any): string {
+    const s = p.stock_disponible ?? 0;
+    if (s <= 0) return 'danger';
+    if (s <= 5) return 'warning';
+    return 'success';
+  }
+
+  // ── Panier (lignes détail_vente) — ajout depuis le catalogue ────────────────
+  isInCart(produitId: number): boolean {
+    return this.detailVente.controls.some(c => c.get('produit')?.value === produitId);
+  }
+
+  cartQty(produitId: number): number {
+    const ctrl = this.detailVente.controls.find(c => c.get('produit')?.value === produitId);
+    return Number(ctrl?.get('quantite')?.value) || 0;
+  }
+
+  ajouterAuPanier(produit: any): void {
+    if ((produit.stock_disponible ?? 0) <= 0) {
+      this.toastr.warning(`${produit.nom} — rupture de stock`);
+      return;
+    }
+    const idx = this.detailVente.controls.findIndex(c => c.get('produit')?.value === produit.id);
+    if (idx >= 0) {
+      const ctrl = this.detailVente.at(idx);
+      const qte = Number(ctrl.get('quantite')?.value) || 0;
+      if (qte < produit.stock_disponible) {
+        ctrl.patchValue({ quantite: qte + 1 });
+        this.calculerMontantTotal();
+      } else {
+        this.toastr.warning(`Stock max atteint (${produit.stock_disponible})`);
+      }
+      return;
+    }
+    const ligne = this.createDetailVente();
+    this.detailVente.push(ligne);
+    ligne.patchValue({
+      produit: produit.id,
+      prix_unitaire_vente: produit.prix_effectif ?? produit.prix_vente,
+      image: produit.imageUrl,
+      stock: produit.stock_disponible,
+      nom: produit.nom,
+      quantite: 1,
+    });
+    this.calculerMontantTotal();
   }
 
   onProduitsBoutiqueChange(): void {
@@ -663,8 +780,8 @@ calculerMontantTotalApresRemise(): void {
         next: (response: any) => {
           //response.data.boutique = this.currentUser?.boutique || null;
          
-          this.initForm(); // Réinitialiser le formulaire
-          this.addDetailVente(); // Ajouter une ligne par défaut après réinitialisation
+          this.initForm(); // Réinitialiser le formulaire (panier vide)
+          this.showPayModal = false;
           //this.toastr.success('Enregistrement effectué avec succès');
           
 
@@ -738,7 +855,7 @@ calculerMontantTotalApresRemise(): void {
           this.editVenteId  = null;
           this.editVenteData = null;
           this.initForm();
-          this.addDetailVente();
+          this.showPayModal = false;
 
           Swal.fire({
             title: 'Vente modifiée avec succès',
@@ -799,6 +916,8 @@ calculerMontantTotalApresRemise(): void {
       if (this.venteForm.get('statut')?.value === 'non_payer') {
         this.venteForm.patchValue({ statut: 'payer' });
       }
+      this.venteForm.patchValue({ montant_recu: this.venteForm.get('montant_total_apres_remise')?.value });
+      this.calculerMonnaieRendue();
     }
   }
 
@@ -818,29 +937,9 @@ calculerMontantTotalApresRemise(): void {
           this.toastr.warning('Produit non trouvé pour ce code-barres');
           return;
         }
-        // Check if already in list
-        const existe = this.detail_vente.value.some((d: any) => d.produit === produit.id);
-        if (existe) {
-          // Increment quantity
-          const idx = this.detail_vente.value.findIndex((d: any) => d.produit === produit.id);
-          const ctrl = this.detail_vente.at(idx);
-          ctrl.patchValue({ quantite: (Number(ctrl.get('quantite')?.value) || 0) + 1 });
-          this.calculerMontantTotal();
-          this.toastr.info(`Quantité mise à jour pour ${produit.nom}`);
-        } else {
-          const ligne = this.createDetailVente();
-          this.detail_vente.push(ligne);
-          ligne.patchValue({
-            produit: produit.id,
-            prix_unitaire_vente: produit.prix_effectif ?? produit.prix_vente,
-            image: produit.imageUrl,
-            stock: produit.stock_disponible,
-            nom: produit.nom,
-            quantite: 1
-          });
-          this.calculerMontantTotal();
-          this.toastr.success(`${produit.nom} ajouté`);
-        }
+        const dejaPresent = this.isInCart(produit.id);
+        this.ajouterAuPanier(produit);
+        this.toastr.success(dejaPresent ? `Quantité mise à jour pour ${produit.nom}` : `${produit.nom} ajouté`);
       },
       error: () => {
         this.scanLoading = false;
@@ -848,6 +947,30 @@ calculerMontantTotalApresRemise(): void {
       }
     });
   }
+
+  // ── Modal d'encaissement ─────────────────────────────────────────────────────
+  openPayModal(): void {
+    if (this.detailVente.length === 0) {
+      this.toastr.warning('Le panier est vide');
+      return;
+    }
+    if (this.caisseActivee && !this.activeSessionId) {
+      Swal.fire({
+        title: 'Caisse non ouverte',
+        text: 'Vous devez ouvrir une session de caisse avant de pouvoir encaisser.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+    if (!this.isCredit) {
+      this.venteForm.patchValue({ montant_recu: this.venteForm.get('montant_total_apres_remise')?.value });
+      this.calculerMonnaieRendue();
+    }
+    this.showPayModal = true;
+  }
+
+  closePayModal(): void { this.showPayModal = false; }
 
   imprimerRecu(urlRecuPdf: string) {
     const url = urlRecuPdf;

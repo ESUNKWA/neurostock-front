@@ -56,17 +56,6 @@ export default class HomeComponent implements OnInit, OnDestroy {
           this.router.navigateByUrl('/pos/vente');
           return;
         }
-        // Restaurant users: redirect to restaurant layout unless admin explicitly chose gestion mode
-        if (user?.boutique?.type === 'restaurant') {
-          if (sessionStorage.getItem('force_gestion_mode')) {
-            sessionStorage.removeItem('force_gestion_mode');
-          } else {
-            const url = this.router.url;
-            if (url === '/dashboard' || url === '/') {
-              this.router.navigateByUrl('/restaurant/commandes');
-            }
-          }
-        }
       })
     );
     this.subs.push(this.alerteService.count$.subscribe(n => this.alerteCount = n));

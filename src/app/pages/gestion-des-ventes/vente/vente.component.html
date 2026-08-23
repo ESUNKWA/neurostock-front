@@ -12,245 +12,470 @@
     </nav>
   </div>
   <a routerLink="/gestion-des-ventes/historique-ventes" class="vt-header-back">
-    <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-md-inline">Retour</span>
+    <i class="bi bi-arrow-left me-md-1"></i><span class="d-none d-md-inline">Retour</span>
   </a>
 </div>
 
-<section class="section">
+<!-- Blocage caisse -->
+@if (caisseLoaded && caisseActivee && !activeSessionId) {
+  <div class="vt-caisse-alert">
+    <i class="bi bi-lock-fill fs-5"></i>
+    <div>
+      <strong>Caisse non ouverte</strong>
+      <div class="small mt-1 opacity-75">
+        Ouvrez une session de caisse avant d'enregistrer une vente.
+        <a routerLink="/caisse" class="fw-semibold ms-1">Aller à la caisse →</a>
+      </div>
+    </div>
+  </div>
+}
 
-  <!-- Blocage caisse -->
-  @if (caisseLoaded && caisseActivee && !activeSessionId) {
-    <div class="vt-caisse-alert">
-      <i class="bi bi-lock-fill fs-5"></i>
-      <div>
-        <strong>Caisse non ouverte</strong>
-        <div class="small mt-1 opacity-75">
-          Ouvrez une session de caisse avant d'enregistrer une vente.
-          <a routerLink="/caisse" class="fw-semibold ms-1">Aller à la caisse →</a>
+<form novalidate [formGroup]="venteForm" (ngSubmit)="onSubmit()">
+
+  <!-- ── Barre d'onglets mobile (catalogue / panier) ─────────────────────── -->
+  <div class="vt-mobile-tabbar d-lg-none">
+    <button type="button" class="vt-mobile-tab" [class.active]="mobileTab === 'catalog'"
+            (click)="switchMobileTab('catalog')">
+      <i class="bi bi-grid-3x3-gap me-1"></i>Produits
+    </button>
+    <button type="button" class="vt-mobile-tab position-relative" [class.active]="mobileTab === 'cart'"
+            (click)="switchMobileTab('cart')">
+      <i class="bi bi-cart3 me-1"></i>Panier
+      @if (detailVente.length > 0) {
+        <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem">{{ detailVente.length }}</span>
+      }
+    </button>
+  </div>
+
+  <div class="vt-screen">
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         GAUCHE — Catalogue
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="vt-catalog d-flex flex-column flex-grow-1 overflow-hidden"
+         [class.mobile-hidden]="mobileTab === 'cart'">
+
+      <!-- Topbar : boutique + recherche + scanner -->
+      <div class="vt-topbar border-bottom">
+
+        <!-- Boutique : sélecteur (admin/responsable multi-boutiques) ou label fixe -->
+        @if (canSelectBoutique && boutiquesStructure.length > 1) {
+          <div class="vt-topbar-boutique-select d-none d-md-block">
+            <nz-select style="width:170px"
+              [(ngModel)]="selectedProduitsBoutique"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onProduitsBoutiqueChange()"
+              nzShowSearch nzPlaceHolder="Point de vente…">
+              @for (b of boutiquesStructure; track b.id) {
+                <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
+              }
+            </nz-select>
+          </div>
+        } @else {
+          <div class="vt-topbar-boutique d-none d-md-flex align-items-center gap-2">
+            <i class="bi bi-shop text-success" style="font-size:.95rem"></i>
+            <span class="fw-semibold text-truncate" style="font-size:.82rem;max-width:140px">
+              {{ currentUser?.boutique?.nom }}
+            </span>
+          </div>
+        }
+
+        <!-- Recherche produit -->
+        <div class="vt-search-field input-group flex-grow-1">
+          <span class="input-group-text border-end-0 bg-white">
+            <i class="bi bi-search text-success" style="font-size:.8rem"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 shadow-none"
+                 style="font-size:.82rem"
+                 placeholder="Rechercher un produit…"
+                 [(ngModel)]="searchQuery" [ngModelOptions]="{standalone: true}" (ngModelChange)="applyFilter()">
+          @if (searchQuery) {
+            <button type="button" class="btn btn-outline-secondary border-start-0 py-1 px-2"
+                    (click)="searchQuery=''; applyFilter()">
+              <i class="bi bi-x-lg" style="font-size:.75rem"></i>
+            </button>
+          }
+        </div>
+
+        <!-- Scanner code-barres -->
+        <div class="vt-scanner-field input-group d-none d-lg-flex" style="max-width:220px">
+          <span class="input-group-text vt-scanner-icon-wrap border-end-0 bg-white">
+            <i class="bi" [ngClass]="scanLoading ? 'bi-arrow-repeat vt-spin' : 'bi-upc-scan'"
+               style="font-size:.85rem"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 shadow-none"
+                 style="font-size:.82rem"
+                 placeholder="Code-barres…"
+                 [(ngModel)]="barcodeInput" [ngModelOptions]="{standalone: true}"
+                 (keydown)="onScanBarcode($event)" [disabled]="scanLoading">
+        </div>
+
+      </div>
+
+      <!-- Catégories + toggle de vue -->
+      <div class="vt-categories-bar bg-white border-bottom px-3 py-2 d-flex align-items-center gap-2">
+        <div class="vt-categories flex-grow-1">
+          <button type="button" class="btn btn-sm rounded-pill me-1"
+                  [class.btn-success]="selectedCategoryId === null"
+                  [class.btn-outline-secondary]="selectedCategoryId !== null"
+                  (click)="selectCategory(null)">Tous</button>
+          @for (c of categories; track c.id) {
+            <button type="button" class="btn btn-sm rounded-pill me-1"
+                    [class.btn-success]="selectedCategoryId === c.id"
+                    [class.btn-outline-secondary]="selectedCategoryId !== c.id"
+                    (click)="selectCategory(c.id)">{{ c.nom }}</button>
+          }
+        </div>
+        <div class="vt-view-toggle d-flex flex-shrink-0">
+          <button type="button" class="vt-view-btn" [class.active]="viewMode === 'grid'"
+                  title="Vue grille" (click)="viewMode = 'grid'">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+          </button>
+          <button type="button" class="vt-view-btn" [class.active]="viewMode === 'list'"
+                  title="Vue liste" (click)="viewMode = 'list'">
+            <i class="bi bi-list-ul"></i>
+          </button>
         </div>
       </div>
+
+      <!-- Zone produits -->
+      <div class="vt-products flex-grow-1 overflow-auto" [class.p-3]="viewMode === 'grid'">
+
+        @if (produitsLoading) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-success"></div>
+            <p class="text-muted small mt-2">Chargement des produits…</p>
+          </div>
+        }
+
+        @if (!produitsLoading && filtered.length === 0) {
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-search display-3 d-block mb-3 opacity-25"></i>
+            <p>Aucun produit trouvé</p>
+          </div>
+        }
+
+        @if (!produitsLoading && filtered.length > 0) {
+
+          <!-- Mode grille -->
+          @if (viewMode === 'grid') {
+            <div class="vt-product-grid">
+              @for (p of pagedFiltered; track p.id) {
+                <div class="vt-product-card card border-0 shadow-sm"
+                     [class.out-of-stock]="(p.stock_disponible ?? 0) <= 0"
+                     [class.in-cart]="isInCart(p.id)"
+                     (click)="ajouterAuPanier(p)">
+                  <div class="vt-product-img">
+                    @if (productImage(p)) {
+                      <img [src]="productImage(p)" [alt]="p.nom">
+                    } @else {
+                      <i class="bi bi-box-seam vt-product-icon"></i>
+                    }
+                    <span class="vt-stock-badge badge bg-{{ stockBadge(p) }}">{{ p.stock_disponible ?? 0 }}</span>
+                    @if (isInCart(p.id)) {
+                      <span class="vt-incart-badge"><i class="bi bi-check-lg"></i></span>
+                    }
+                    @if (p.en_promo) {
+                      <span class="badge bg-danger position-absolute top-0 start-0 m-1" style="font-size:.6rem">PROMO</span>
+                    }
+                  </div>
+                  <div class="vt-product-body text-center">
+                    <p class="vt-product-name">{{ p.nom }}</p>
+                    @if (p.en_promo) {
+                      <p class="vt-product-price mb-0">
+                        <span class="text-decoration-line-through text-muted" style="font-size:.75em">{{ p.prix_vente | number:'1.0-0':'fr' }}</span>
+                        <span class="text-danger fw-bold">{{ p.prix_effectif | number:'1.0-0':'fr' }}</span><small>F</small>
+                      </p>
+                    } @else {
+                      <p class="vt-product-price">{{ p.prix_vente | number:'1.0-0':'fr' }}<small>F</small></p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Mode liste -->
+          @if (viewMode === 'list') {
+            <table class="vt-list-table w-100">
+              <thead>
+                <tr>
+                  <th class="vt-lt-img"></th>
+                  <th>Produit</th>
+                  <th class="vt-lt-price text-end">Prix unitaire</th>
+                  <th class="vt-lt-stock text-center">Stock</th>
+                  <th class="vt-lt-qty text-center">Panier</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of pagedFiltered; track p.id) {
+                  <tr class="vt-list-row"
+                      [class.vt-list-row--oos]="(p.stock_disponible ?? 0) <= 0"
+                      [class.vt-list-row--incart]="isInCart(p.id)"
+                      (click)="ajouterAuPanier(p)">
+                    <td class="vt-lt-img">
+                      <div class="vt-lt-thumb">
+                        @if (productImage(p)) {
+                          <img [src]="productImage(p)" [alt]="p.nom">
+                        } @else {
+                          <i class="bi bi-box-seam"></i>
+                        }
+                      </div>
+                    </td>
+                    <td class="vt-lt-name">
+                      <span class="fw-semibold">{{ p.nom }}</span>
+                      @if (p.reference) {
+                        <span class="d-block text-muted" style="font-size:.68rem">{{ p.reference }}</span>
+                      }
+                    </td>
+                    <td class="vt-lt-price text-end fw-bold" style="white-space:nowrap">
+                      @if (p.en_promo) {
+                        <span class="text-decoration-line-through text-muted small">{{ p.prix_vente | number:'1.0-0':'fr' }}</span>
+                        <span class="text-danger">{{ p.prix_effectif | number:'1.0-0':'fr' }}</span>
+                        <span class="badge bg-danger" style="font-size:.55rem">PROMO</span>
+                      } @else {
+                        {{ p.prix_vente | number:'1.0-0':'fr' }}
+                      }
+                      <span class="vt-lt-currency">FCFA</span>
+                    </td>
+                    <td class="vt-lt-stock text-center">
+                      <span class="badge bg-{{ stockBadge(p) }}" style="font-size:.65rem;min-width:28px">{{ p.stock_disponible ?? 0 }}</span>
+                    </td>
+                    <td class="vt-lt-qty text-center" (click)="$event.stopPropagation()">
+                      @if (isInCart(p.id)) {
+                        <span class="vt-lt-qty-badge"><i class="bi bi-check-circle-fill me-1"></i>{{ cartQty(p.id) }}</span>
+                      } @else {
+                        <span class="vt-lt-add-hint text-muted"><i class="bi bi-plus-circle"></i></span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          @if (totalPages > 1) {
+            <div class="d-flex align-items-center justify-content-between px-2 py-2 flex-wrap gap-2">
+              <span class="text-muted small">
+                {{ (page - 1) * pageSize + 1 }}–{{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} / {{ filtered.length }}
+              </span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === 1" (click)="goToPage(page - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                @for (p of pageNumbers; track p) {
+                  @if (p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)) {
+                    <button type="button" class="btn btn-sm" [class.btn-success]="p === page" [class.btn-outline-secondary]="p !== page" (click)="goToPage(p)">{{ p }}</button>
+                  } @else if (p === page - 2 || p === page + 2) {
+                    <span class="px-1 text-muted">…</span>
+                  }
+                }
+                <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="page === totalPages" (click)="goToPage(page + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+
+        }
+      </div>
+    </div><!-- /catalog -->
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         DROITE — Panier
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="vt-cart d-flex flex-column border-start bg-white"
+         [class.mobile-hidden]="mobileTab === 'catalog'">
+
+      <!-- Cart header -->
+      <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between">
+        <span class="fw-bold">
+          <i class="bi bi-cart3 text-success me-2"></i>Panier
+          @if (detailVente.length > 0) {
+            <span class="badge bg-success rounded-pill ms-1" style="font-size:.7rem">{{ detailVente.length }}</span>
+          }
+        </span>
+        @if (detailVente.length > 0) {
+          <button type="button" class="btn btn-link btn-sm text-danger p-0 text-decoration-none" (click)="viderPanier()">
+            <i class="bi bi-trash me-1"></i>Vider
+          </button>
+        }
+      </div>
+
+      <!-- Cart lines -->
+      <div class="vt-cart-lines flex-grow-1 overflow-auto" formArrayName="detail_vente">
+
+        @if (detailVente.length === 0) {
+          <div class="text-center py-5 text-muted px-3">
+            <i class="bi bi-cart-x display-4 d-block mb-2 opacity-25"></i>
+            <p class="small">Touchez un produit<br>pour l'ajouter au panier</p>
+          </div>
+        }
+
+        @for (detail of detailVente.controls; track $index) {
+          <div [formGroupName]="$index" class="vt-cart-line px-3 py-2 border-bottom"
+               [class.vt-cart-line-error]="detail.get('quantite')?.errors?.['stockExceeded']">
+            <div class="d-flex align-items-start gap-2">
+              <div class="vt-cart-thumb flex-shrink-0">
+                @if (detail.get('image')?.value) {
+                  <img [src]="detail.get('image')?.value" alt="">
+                } @else {
+                  <i class="bi bi-box-seam"></i>
+                }
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-truncate" style="font-size:.85rem">{{ detail.get('nom')?.value }}</div>
+                <div class="text-muted" style="font-size:.75rem">
+                  {{ detail.get('prix_unitaire_vente')?.value | number:'1.0-0':'fr' }} FCFA / unité
+                </div>
+                @if (detail.get('quantite')?.errors?.['stockExceeded']) {
+                  <div class="vt-err">Quantité insuffisante (stock : {{ detail.get('stock')?.value }})</div>
+                }
+              </div>
+              <button type="button" class="btn btn-link text-danger p-0 flex-shrink-0" (click)="removeDetailVente($index)">
+                <i class="bi bi-x-lg" style="font-size:.75rem"></i>
+              </button>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="qty-stepper d-flex align-items-center">
+                <button type="button" class="btn btn-outline-secondary btn-qty" (click)="decrementQty($index)">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <span class="qty-value">{{ detail.get('quantite')?.value }}</span>
+                <button type="button" class="btn btn-outline-secondary btn-qty" (click)="incrementQty($index)"
+                        [disabled]="detail.get('stock')?.value != null && (detail.get('quantite')?.value || 0) >= detail.get('stock')?.value">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+              <span class="fw-bold text-success" style="font-size:.9rem">
+                {{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire_vente || 0)) | number:'1.0-0':'fr' }}
+                <small class="fw-normal text-muted">FCFA</small>
+              </span>
+            </div>
+          </div>
+        }
+      </div><!-- /cart lines -->
+
+      <!-- Cart footer -->
+      <div class="vt-cart-footer border-top px-3 py-3">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="form-label small mb-0 text-muted flex-shrink-0">Remise</label>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control text-end" formControlName="remise"
+                   thousandSeparator (input)="calculerMontantTotalApresRemise()" placeholder="0">
+            <span class="input-group-text">FCFA</span>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between small text-muted mb-2">
+          <span>Sous-total</span>
+          <span>{{ venteForm.get('montant_total')?.value | number:'1.0-0':'fr' }} FCFA</span>
+        </div>
+        @if ((venteForm.get('remise')?.value || 0) > 0) {
+          <div class="d-flex justify-content-between small text-danger mb-2">
+            <span>Remise</span>
+            <span>− {{ venteForm.get('remise')?.value | number:'1.0-0':'fr' }} FCFA</span>
+          </div>
+        }
+        <div class="d-flex justify-content-between fw-bold mb-3">
+          <span class="fs-5">Total TTC</span>
+          <span class="fs-5 text-success">{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <small class="fw-normal fs-6 text-muted">FCFA</small></span>
+        </div>
+
+        <button type="button" class="btn btn-success w-100 fw-bold py-3"
+                style="font-size:1.1rem;letter-spacing:.03em"
+                [disabled]="detailVente.length === 0"
+                (click)="openPayModal()">
+          <i class="bi bi-cash-register me-2"></i>{{ isEditMode ? 'CONTINUER' : 'ENCAISSER' }}
+        </button>
+
+        @if (caisseActivee && !activeSessionId) {
+          <a routerLink="/caisse" class="d-flex align-items-center gap-2 justify-content-center
+             mt-2 px-3 py-2 rounded-2 text-decoration-none vt-caisse-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Session caisse non ouverte — Ouvrir</span>
+            <i class="bi bi-arrow-right-short"></i>
+          </a>
+        }
+      </div>
+    </div><!-- /cart -->
+
+  </div><!-- /vt-screen -->
+
+  <!-- Floating cart button (mobile only) -->
+  @if (detailVente.length > 0 && mobileTab === 'catalog') {
+    <div class="vt-mobile-cart-fab d-lg-none" (click)="switchMobileTab('cart')">
+      <i class="bi bi-cart3 me-2"></i>
+      <span>Voir le panier ({{ detailVente.length }})</span>
+      <span class="ms-auto fw-bold">{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} FCFA</span>
     </div>
   }
 
-  <form novalidate [formGroup]="venteForm" (ngSubmit)="onSubmit()">
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MODAL — Encaissement
+       ══════════════════════════════════════════════════════════════════════ -->
+  @if (showPayModal) {
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.55)">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px">
+        <div class="modal-content mf-modal mf-modal--emerald">
 
-    <!-- ── Barre d'onglets mobile ─────────────────────────────────── -->
-    <div class="mob-nav d-lg-none">
-      <button type="button" class="mob-tab" [class.active]="activeTab === 'produits'" (click)="setTab('produits')">
-        <i class="bi bi-bag-check"></i>
-        <span>Produits</span>
-        <span class="mob-tab-badge">{{ detailVente.length }}</span>
-      </button>
-      <button type="button" class="mob-tab" [class.active]="activeTab === 'paiement'" (click)="setTab('paiement')">
-        <i class="bi bi-wallet2"></i>
-        <span>Paiement</span>
-      </button>
-      <button type="button" class="mob-tab" [class.active]="activeTab === 'client'" (click)="setTab('client')">
-        <i class="bi bi-person"></i>
-        <span>Client</span>
-      </button>
-      @if (canSelectVendeur) {
-        <button type="button" class="mob-tab" [class.active]="activeTab === 'vendeur'" (click)="setTab('vendeur')">
-          <i class="bi bi-person-badge"></i>
-          <span>Vendeur</span>
-        </button>
-      }
-    </div>
-
-    <div class="row g-3">
-
-      <!-- ── Produits ───────────────────────────────────────────────── -->
-      <div class="col-lg-8 d-flex flex-column gap-3 mob-sec" [class.mob-sec-active]="activeTab === 'produits'">
-
-        <div class="vt-card">
-          <!-- Card header -->
-          <div class="vt-card-header">
-            <span class="vt-card-title">
-              <i class="bi bi-bag-check"></i>
-              Produits
-              <span class="vt-badge">{{ detailVente.length }}</span>
-            </span>
-            <!-- Sélecteur boutique (admin / responsable avec plusieurs boutiques) -->
-            @if (canSelectBoutique && boutiquesStructure.length > 1) {
-              <nz-select style="width:180px;flex-shrink:0"
-                [(ngModel)]="selectedProduitsBoutique"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="onProduitsBoutiqueChange()"
-                nzShowSearch nzPlaceHolder="Point de vente…">
-                @for (b of boutiquesStructure; track b.id) {
-                  <nz-option [nzValue]="b.id" [nzLabel]="b.nom"></nz-option>
-                }
-              </nz-select>
-            }
-            <!-- Scanner -->
-            <div class="vt-scanner-wrap">
-              <i class="bi" [ngClass]="scanLoading ? 'bi-arrow-repeat vt-spin' : 'bi-upc-scan'"
-                style="color:#047857;padding:0 .5rem;font-size:.95rem"></i>
-              <input type="text" class="vt-scanner-input" placeholder="Code-barres…"
-                     [(ngModel)]="barcodeInput" [ngModelOptions]="{standalone: true}"
-                     (keydown)="onScanBarcode($event)" [disabled]="scanLoading"
-                     autocomplete="off">
+          <div class="mf-header">
+            <div class="mf-header-icon"><i class="bi bi-cash-register"></i></div>
+            <div>
+              <div class="mf-header-title">{{ isEditMode ? 'Modifier la vente' : 'Encaissement' }}</div>
+              <div class="mf-header-subtitle">Choisissez le mode de paiement et confirmez</div>
             </div>
+            <button type="button" class="btn-close btn-close-white ms-auto" (click)="closePayModal()" [disabled]="isSubmitting"></button>
           </div>
 
-          <!-- Lignes -->
-          <div class="vt-lines-wrap" formArrayName="detail_vente">
+          <div class="modal-body pt-2">
 
-            <!-- Header colonnes (desktop uniquement — géré par SCSS) -->
-            <div class="vt-lines-head">
-              <span></span>
-              <span></span>
-              <span>Produit</span>
-              <span class="text-center">Prix unit.</span>
-              <span class="text-center">Quantité</span>
-              <span class="text-end">Sous-total</span>
-              <span></span>
+            <!-- Total recap -->
+            <div class="vt-pay-total-banner rounded-3 mb-4 p-3 d-flex justify-content-between align-items-center">
+              <span class="text-white-50 fw-semibold">Total à encaisser</span>
+              <span class="text-white fw-bold fs-3">{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <small class="fs-6 fw-normal text-white-50">FCFA</small></span>
             </div>
 
-            @for (detail of detailVente.controls; track $index) {
-              <div [formGroupName]="$index" class="vt-line"
-                [class.vt-line-error]="detail.get('quantite')?.errors?.['stockExceeded']">
-
-                <!-- Num -->
-                <div class="vt-line-num">{{ $index + 1 }}</div>
-
-                <!-- Miniature (cellule indépendante) -->
-                <div class="vt-thumb-cell">
-                  @if (detail.get('image')?.value) {
-                    <div class="vt-thumb">
-                      <img [src]="detail.get('image')?.value" alt="">
-                      <span class="vt-stock-dot"
-                        [class.vt-stock-ok]="(detail.get('stock')?.value || 0) > 5"
-                        [class.vt-stock-low]="(detail.get('stock')?.value || 0) <= 5 && (detail.get('stock')?.value || 0) > 0"
-                        [class.vt-stock-zero]="(detail.get('stock')?.value || 0) === 0">
-                        {{ detail.get('stock')?.value }}
-                      </span>
-                    </div>
-                  } @else {
-                    <div class="vt-thumb-placeholder"><i class="bi bi-box-seam"></i></div>
-                  }
-                </div>
-
-                <!-- Select produit -->
-                <div class="vt-line-produit">
-                  <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher un produit…"
-                    formControlName="produit"
-                    [ngClass]="{'is-invalid': isSubmitting && detail.get('produit')?.errors}">
-                    @for (p of produits; track p.id) {
-                      <nz-option [nzLabel]="p.nom" [nzValue]="p.id"></nz-option>
-                    }
-                  </nz-select>
-                  @if (detail.get('produit')?.value && detail.get('stock')?.value != null) {
-                    <div class="vt-stock-info"
-                      [class.vt-stock-ok]="detail.get('stock')?.value > 5"
-                      [class.vt-stock-low]="detail.get('stock')?.value <= 5 && detail.get('stock')?.value > 0"
-                      [class.vt-stock-zero]="detail.get('stock')?.value === 0">
-                      <i class="bi bi-boxes"></i>
-                      Stock disponible : <strong>{{ detail.get('stock')?.value }}</strong>
-                      @if (detail.get('quantite')?.errors?.['stockExceeded']) {
-                        <span class="vt-stock-exceeded">— Quantité insuffisante</span>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <!-- Prix -->
-                <div class="vt-line-prix">
-                  <label class="vt-label d-lg-none">Prix unit.</label>
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0">F</span>
-                    <input type="text" class="form-control vt-input text-end" formControlName="prix_unitaire_vente"
-                      thousandSeparator (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': isSubmitting && detail.get('prix_unitaire_vente')?.errors}">
-                  </div>
-                </div>
-
-                <!-- Qty stepper -->
-                <div class="vt-line-qty">
-                  <label class="vt-label d-lg-none">Quantité</label>
-                  <div class="qty-stepper">
-                    <button type="button" class="qty-btn" (click)="decrementQty($index)">−</button>
-                    <input type="number" class="qty-input" formControlName="quantite" min="1"
-                      [max]="detail.get('stock')?.value ?? undefined"
-                      (input)="onPrixOuQuantiteChange()"
-                      [ngClass]="{'is-invalid': detail.get('quantite')?.errors?.['stockExceeded'] || (isSubmitting && detail.get('quantite')?.errors)}">
-                    <button type="button" class="qty-btn" (click)="incrementQty($index)"
-                      [disabled]="detail.get('stock')?.value != null && (detail.get('quantite')?.value || 0) >= detail.get('stock')?.value">+</button>
-                  </div>
-                </div>
-
-                <!-- Sous-total -->
-                <div class="vt-line-sub">
-                  <span class="vt-sub-amount">{{ ((detail.value.quantite || 0) * (detail.value.prix_unitaire_vente || 0)) | number:'1.0-0':'fr' }}</span>
-                  <span class="vt-sub-cur">F</span>
-                </div>
-
-                <!-- Supprimer -->
-                <button type="button" class="vt-del-btn" (click)="removeDetailVente($index)"
-                  [disabled]="detailVente.length === 1">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-
-              </div>
-            }
-
-            @if (detailVente.length === 0) {
-              <div class="vt-empty">
-                <i class="bi bi-bag display-5 opacity-25 d-block mb-3"></i>
-                Aucun produit ajouté
-              </div>
-            }
-
-          </div>
-
-          <!-- Footer : ajouter + mini total -->
-          <div class="vt-card-footer">
-            <button type="button" class="vt-btn-add" (click)="addDetailVente()">
-              <i class="bi bi-plus-circle me-1"></i> Ajouter
-            </button>
-            <div class="vt-mini-total">
-              <div class="vt-mini-row">
-                <span>Sous-total</span>
-                <span>{{ venteForm.get('montant_total')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
-              </div>
-              @if ((venteForm.get('remise')?.value || 0) > 0) {
-                <div class="vt-mini-row vt-mini-remise">
-                  <span>Remise</span>
-                  <span>− {{ venteForm.get('remise')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
-                </div>
-              }
-              <div class="vt-mini-row vt-mini-main">
-                <span>Total à payer</span>
-                <span>{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <small>F</small></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Panneau latéral ────────────────────────────────────────── -->
-      <div class="col-lg-4 d-flex flex-column gap-3">
-
-        <!-- Paiement -->
-        <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'paiement'">
-          <div class="vt-panel-header"><i class="bi bi-wallet2"></i> Paiement</div>
-          <div class="vt-panel-body">
-
+            <!-- Mode de paiement -->
             <div class="mb-3">
-              <label class="vt-label">Mode de paiement</label>
-              <div class="pay-pills">
-                @for (mode of modesPaiement; track mode.value) {
-                  <button type="button" class="pay-pill"
-                    [class.active]="venteForm.get('mode_paiement')?.value === mode.value"
-                    (click)="setModePaiement(mode.value)">
-                    <i class="bi {{ payIcons[mode.value] }}"></i>
-                    <span>{{ mode.label }}</span>
+              <label class="form-label fw-semibold small text-muted text-uppercase mb-2">Mode de paiement</label>
+              <div class="d-flex flex-wrap gap-2">
+                @for (m of modesPaiement; track m.value) {
+                  <button type="button" class="btn btn-sm vt-pay-mode-btn"
+                          [class.active]="venteForm.get('mode_paiement')?.value === m.value"
+                          (click)="setModePaiement(m.value)">
+                    <i class="bi {{ payIcons[m.value] }} me-1"></i>{{ m.label }}
                   </button>
                 }
               </div>
             </div>
 
+            <!-- Statut du paiement -->
+            @if (!isCredit) {
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-muted text-uppercase mb-2">Statut</label>
+                <div class="stat-pills">
+                  <button type="button" class="stat-pill stat-paid"
+                          [class.active]="venteForm.get('statut')?.value === 'payer'"
+                          (click)="venteForm.patchValue({statut:'payer'})">
+                    <i class="bi bi-check-circle-fill"></i> Payé
+                  </button>
+                  <button type="button" class="stat-pill stat-unpaid"
+                          [class.active]="venteForm.get('statut')?.value === 'non_payer'"
+                          (click)="venteForm.patchValue({statut:'non_payer'})">
+                    <i class="bi bi-x-circle-fill"></i> Non payé
+                  </button>
+                  <button type="button" class="stat-pill stat-partial"
+                          [class.active]="venteForm.get('statut')?.value === 'partiel'"
+                          (click)="venteForm.patchValue({statut:'partiel'})">
+                    <i class="bi bi-dash-circle-fill"></i> Partiel
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Mixte breakdown -->
             @if (isMixte) {
               <div class="vt-mixte-panel mb-3" formGroupName="details_paiement">
                 <p class="vt-mixte-label">Répartition du paiement</p>
@@ -262,125 +487,56 @@
                 ]; track mode.key) {
                   <div class="input-group input-group-sm mb-1">
                     <span class="input-group-text" style="min-width:96px;font-size:.78rem">{{ mode.label }}</span>
-                    <input type="number" class="form-control vt-input" [formControlName]="mode.key"
-                      min="0" placeholder="0" (input)="calculerMonnaieRendue()">
+                    <input type="number" class="form-control" [formControlName]="mode.key"
+                           min="0" placeholder="0" (input)="calculerMonnaieRendue()">
                     <span class="input-group-text">F</span>
                   </div>
                 }
                 <div class="mt-2 small fw-semibold"
-                  [class.text-success]="totalDetailsPaiement === (venteForm.get('montant_total_apres_remise')?.value || 0)"
-                  [class.text-danger]="totalDetailsPaiement !== (venteForm.get('montant_total_apres_remise')?.value || 0)">
+                     [class.text-success]="totalDetailsPaiement === (venteForm.get('montant_total_apres_remise')?.value || 0)"
+                     [class.text-danger]="totalDetailsPaiement !== (venteForm.get('montant_total_apres_remise')?.value || 0)">
                   Total : {{ totalDetailsPaiement | number:'1.0-0':'fr' }}
                   / {{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} FCFA
                 </div>
               </div>
             }
 
-            <div class="mb-3">
-              <label class="vt-label">Statut</label>
-              <div class="stat-pills">
-                <button type="button" class="stat-pill stat-paid"
-                  [class.active]="venteForm.get('statut')?.value === 'payer'"
-                  (click)="venteForm.patchValue({statut:'payer'})">
-                  <i class="bi bi-check-circle-fill"></i> Payé
-                </button>
-                <button type="button" class="stat-pill stat-unpaid"
-                  [class.active]="venteForm.get('statut')?.value === 'non_payer'"
-                  (click)="venteForm.patchValue({statut:'non_payer'})">
-                  <i class="bi bi-x-circle-fill"></i> Non payé
-                </button>
-                <button type="button" class="stat-pill stat-partial"
-                  [class.active]="venteForm.get('statut')?.value === 'partiel'"
-                  (click)="venteForm.patchValue({statut:'partiel'})">
-                  <i class="bi bi-dash-circle-fill"></i> Partiel
-                </button>
+            <!-- Montant reçu -->
+            @if (!isCredit && !isMixte) {
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Montant reçu <span class="text-danger">*</span></label>
+                <div class="input-group input-group-lg">
+                  <input type="text" class="form-control text-end fw-bold" formControlName="montant_recu"
+                         thousandSeparator (input)="calculerMonnaieRendue()" style="font-size:1.2rem">
+                  <span class="input-group-text fw-semibold">FCFA</span>
+                </div>
               </div>
-            </div>
 
-            <div class="row g-2 mb-3">
-              <div class="col-5">
-                <label class="vt-label">Remise (FCFA)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">−</span>
-                  <input type="text" class="form-control vt-input" formControlName="remise"
-                    thousandSeparator (input)="calculerMontantTotalApresRemise()" placeholder="0">
+              @if ((venteForm.get('montant_recu')?.value ?? 0) > 0) {
+                <div class="alert py-2 mb-3 d-flex justify-content-between align-items-center"
+                     [class.alert-info]="(venteForm.get('monnaie_rendu')?.value || 0) >= 0"
+                     [class.alert-danger]="(venteForm.get('monnaie_rendu')?.value || 0) < 0">
+                  <span class="fw-semibold">Monnaie à rendre</span>
+                  <span class="fw-bold fs-5">{{ venteForm.get('monnaie_rendu')?.value | number:'1.0-0':'fr' }} FCFA</span>
                 </div>
-              </div>
-              <div class="col-7">
-                <label class="vt-label fw-semibold">Montant reçu <span class="text-danger">*</span></label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text vt-accent-prefix">FCFA</span>
-                  <input type="text" class="form-control vt-input fw-bold"
-                    formControlName="montant_recu" thousandSeparator (input)="calculerMonnaieRendue()"
-                    placeholder="0">
-                </div>
-              </div>
-            </div>
+              }
+            }
 
-            @if ((venteForm.get('montant_recu')?.value ?? 0) > 0) {
-              <div class="vt-monnaie"
-                [class.vt-monnaie-ok]="(venteForm.get('monnaie_rendu')?.value || 0) >= 0"
-                [class.vt-monnaie-err]="(venteForm.get('monnaie_rendu')?.value || 0) < 0">
-                <div class="vt-monnaie-label">Monnaie à rendre</div>
-                <div class="vt-monnaie-val">
-                  {{ venteForm.get('monnaie_rendu')?.value | number:'1.0-0':'fr' }}
-                  <span class="vt-monnaie-cur">FCFA</span>
-                </div>
+            @if (isCredit) {
+              <div class="alert alert-warning py-2 mb-3 small">
+                <i class="bi bi-hourglass-split me-1"></i>
+                La vente sera enregistrée en statut <strong>non payé</strong>. Le montant sera à recouvrer.
               </div>
             }
 
-            <div>
-              <label class="vt-label">Note</label>
-              <textarea class="form-control form-control-sm vt-input" formControlName="description"
-                rows="2" style="resize:vertical" placeholder="Remarque…"></textarea>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Client -->
-        <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'client'">
-          <div class="vt-panel-header"><i class="bi bi-person"></i> Client</div>
-          <div class="vt-panel-body d-flex flex-column gap-2">
-            <div>
-              <label class="vt-label">Client existant</label>
-              <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Rechercher…"
-                [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="onClientSelect($event)">
-                @for (c of clients; track c.id) {
-                  <nz-option
-                    [nzLabel]="c.nom + (c.prenoms ? ' ' + c.prenoms : '') + (c.telephone ? ' — ' + c.telephone : '')"
-                    [nzValue]="c.id">
-                  </nz-option>
-                }
-              </nz-select>
-            </div>
-            <div formGroupName="clientdata" class="row g-2">
-              <div class="col-12">
-                <input type="text" class="form-control form-control-sm vt-input" formControlName="nom"
-                  placeholder="Nom du client">
-              </div>
-              <div class="col-6">
-                <input type="tel" class="form-control form-control-sm vt-input" formControlName="telephone"
-                  placeholder="Téléphone">
-              </div>
-              <div class="col-6">
-                <input type="email" class="form-control form-control-sm vt-input" formControlName="email"
-                  placeholder="Email">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Vendeur -->
-        @if (canSelectVendeur) {
-          <div class="vt-panel mob-sec" [class.mob-sec-active]="activeTab === 'vendeur'">
-            <div class="vt-panel-header"><i class="bi bi-person-badge"></i> Vendeur</div>
-            <div class="vt-panel-body d-flex flex-column gap-2">
-              <div>
-                <label class="vt-label">Vendeur</label>
-                <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Attribuer à…"
-                  formControlName="vendeur_tel">
+            <!-- Vendeur (admin / responsable / gérant) -->
+            @if (canSelectVendeur) {
+              <div class="border-top pt-3 mt-1">
+                <p class="small fw-semibold text-muted mb-2">
+                  <i class="bi bi-person-badge me-1"></i>Vendeur <span class="fw-normal">(optionnel)</span>
+                </p>
+                <nz-select class="w-100" nzShowSearch nzAllowClear
+                           formControlName="vendeur_tel" nzPlaceHolder="Attribuer à…">
                   @for (v of vendeurs; track v.id) {
                     <nz-option
                       [nzLabel]="(v.nom || '') + (v.prenoms ? ' ' + v.prenoms : '') + ' — ' + (v.telephone || '')"
@@ -394,44 +550,65 @@
                   <small class="text-muted" style="font-size:.72rem">Vide = attribué à votre compte</small>
                 }
               </div>
+            }
+
+            <!-- Client (optionnel) -->
+            <div class="border-top pt-3 mt-3">
+              <p class="small fw-semibold text-muted mb-2">
+                <i class="bi bi-person me-1"></i>Client <span class="fw-normal">(optionnel)</span>
+              </p>
+              @if (clients.length > 0) {
+                <nz-select class="w-100 mb-2" nzShowSearch nzAllowClear
+                           nzPlaceHolder="Sélectionner un client existant…"
+                           [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}"
+                           (ngModelChange)="onClientSelect($event)">
+                  @for (c of clients; track c.id) {
+                    <nz-option
+                      [nzLabel]="c.nom + (c.prenoms ? ' ' + c.prenoms : '') + (c.telephone ? ' — ' + c.telephone : '')"
+                      [nzValue]="c.id">
+                    </nz-option>
+                  }
+                </nz-select>
+              }
+              <div formGroupName="clientdata" class="row g-2">
+                <div class="col-12">
+                  <input type="text" class="form-control form-control-sm" formControlName="nom" placeholder="Nom du client">
+                </div>
+                <div class="col-6">
+                  <input type="tel" class="form-control form-control-sm" formControlName="telephone" placeholder="Téléphone">
+                </div>
+                <div class="col-6">
+                  <input type="email" class="form-control form-control-sm" formControlName="email" placeholder="Email">
+                </div>
+              </div>
             </div>
+
+            <!-- Note -->
+            <div class="mt-3">
+              <label class="form-label small text-muted mb-1">Note</label>
+              <textarea class="form-control form-control-sm" formControlName="description"
+                        rows="2" style="resize:vertical" placeholder="Remarque…"></textarea>
+            </div>
+
+          </div><!-- /modal-body -->
+
+          <div class="mf-footer">
+            <button type="submit" class="btn mf-btn-save" [disabled]="isSubmitting || (caisseActivee && !activeSessionId)">
+              @if (isSubmitting) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              } @else {
+                <i class="bi bi-check2-circle me-1"></i>
+              }
+              {{ isEditMode ? 'Modifier la vente' : 'Valider la vente' }}
+            </button>
+            <button type="button" class="btn mf-btn-cancel" (click)="closePayModal()" [disabled]="isSubmitting">
+              <i class="bi bi-x-lg"></i> Annuler
+            </button>
           </div>
-        }
 
+        </div>
       </div>
     </div>
+  }
 
-    <!-- ── Actions desktop ───────────────────────────────────────────── -->
-    <div class="vt-actions d-none d-lg-flex">
-      <a routerLink="/gestion-des-ventes/historique-ventes" class="vt-btn-back">
-        <i class="bi bi-arrow-left me-1"></i> Annuler
-      </a>
-      <button type="submit" class="vt-btn-save" [disabled]="loading || (caisseActivee && !activeSessionId)">
-        @if (loading) {
-          <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement…
-        } @else {
-          <i class="bi bi-check-lg me-1"></i>
-          {{ isEditMode ? 'Modifier la vente' : 'Enregistrer la vente' }}
-        }
-      </button>
-    </div>
-
-    <!-- ── Barre de bas de page mobile (sticky) ──────────────────────── -->
-    <div class="mob-bottom d-lg-none">
-      <div class="mob-total-info">
-        <div class="mob-total-label">Total à payer</div>
-        <div class="mob-total-val">{{ venteForm.get('montant_total_apres_remise')?.value | number:'1.0-0':'fr' }} <span>FCFA</span></div>
-      </div>
-      <button type="submit" class="vt-btn-save mob-save-btn"
-        [disabled]="loading || (caisseActivee && !activeSessionId)">
-        @if (loading) {
-          <span class="spinner-border spinner-border-sm"></span>
-        } @else {
-          <i class="bi bi-check-lg"></i>
-        }
-        {{ isEditMode ? 'Modifier' : 'Enregistrer' }}
-      </button>
-    </div>
-
-  </form>
-</section>
+</form>

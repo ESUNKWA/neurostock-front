@@ -81,10 +81,6 @@ export default class LoginComponent implements OnInit {
     'dashboard':            '/dashboard',
     'pos':                  '/pos/vente',
     'ekwatech':             '/ekwatech',
-    'restaurant-admin':     '/restaurant/commandes',
-    'restaurant-serveur':   '/restaurant/commandes',
-    'restaurant-caissier':  '/restaurant/commandes',
-    'restaurant-cuisine':   '/restaurant/commandes',
   };
 
   private homeUrl(): string {

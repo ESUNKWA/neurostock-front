@@ -10,7 +10,6 @@ export type ModuleCode =
   | 'retours_produits'
   | 'caisse'
   | 'ia'
-  | 'restauration'
   | 'clients'
   | 'fournisseurs'
   | 'prix_achat_optionnel';
@@ -22,7 +21,6 @@ export const MODULE_LABELS: Record<ModuleCode, string> = {
   retours_produits: 'Retours produits',
   caisse: 'Gestion de caisse',
   ia: 'Analyse IA',
-  restauration: 'Restauration',
   clients: 'Gestion des clients',
   fournisseurs: 'Gestion des fournisseurs',
   prix_achat_optionnel: 'Prix d\'achat non obligatoire à l\'approvisionnement',

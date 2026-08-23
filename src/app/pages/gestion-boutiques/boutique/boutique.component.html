@@ -71,9 +71,6 @@
                           <div class="flex-grow-1 min-w-0">
                             <div class="mc-title d-flex align-items-center gap-2">
                               {{ boutique.nom }}
-                              @if (boutique.type === 'restaurant') {
-                                <span class="badge bg-primary" style="font-size:.65rem;"><i class="bi bi-cup-hot"></i></span>
-                              }
                               @if (boutique.type === 'entrepot') {
                                 <span class="badge bg-success" style="font-size:.65rem;"><i class="bi bi-box-seam"></i></span>
                               }
@@ -119,9 +116,7 @@
                             <div class="mc-popup-row">
                               <span class="mc-row-label">Type</span>
                               <span class="mc-row-value">
-                                @if (mobileDetailItem.type === 'restaurant') {
-                                  <span class="badge bg-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
-                                } @else if (mobileDetailItem.type === 'entrepot') {
+                                @if (mobileDetailItem.type === 'entrepot') {
                                   <span class="badge bg-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                                 } @else {
                                   <span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>
@@ -173,16 +168,6 @@
                   <div>
                     <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Point de vente classique</div>
                     <small class="text-muted">Commerce, épicerie, superette…</small>
-                  </div>
-                </label>
-                <label class="d-flex align-items-center gap-2 cursor-pointer"
-                       style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
-                       [style.border-color]="f['type'].value === 'restaurant' ? '#0d6efd' : '#dee2e6'"
-                       [style.background]="f['type'].value === 'restaurant' ? '#eff6ff' : '#fff'">
-                  <input type="radio" formControlName="type" value="restaurant" class="form-check-input mt-0">
-                  <div>
-                    <div class="fw-semibold"><i class="bi bi-cup-hot me-1"></i>Restaurant / Maquis</div>
-                    <small class="text-muted">Service en salle, prise de commande…</small>
                   </div>
                 </label>
                 <label class="d-flex align-items-center gap-2 cursor-pointer"

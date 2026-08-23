@@ -203,31 +203,6 @@ $transition: 0.25s ease;
   text-align: center;
 }
 
-// ── Mode Restaurant ──────────────────────────────────────────────────────────
-.header-restaurant-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
-  background: #fff4ed;
-  border: 1px solid #fed7aa;
-  color: #c2410c;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-
-  i { font-size: 0.9rem; }
-
-  &:hover {
-    background: #e85d04;
-    border-color: #e85d04;
-    color: #fff;
-  }
-}
-
 // ── User button ───────────────────────────────────────────────────────────────
 .user-btn {
   display: flex;

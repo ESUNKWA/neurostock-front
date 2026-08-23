@@ -31,23 +31,18 @@ export default class EkConfigurationsEcranComponent implements OnInit {
   readonly BOUTIQUE_TYPES = [
     { value: null,         label: '* (toutes)' },
     { value: 'boutique',   label: 'Point de vente' },
-    { value: 'restaurant', label: 'Restaurant' },
     { value: 'entrepot',   label: 'Entrepôt' },
     { value: 'departement',label: 'Département' },
   ];
 
   readonly PROFILS = [
     'super_admin','responsable_structure', 'admin', 'gerant', 'magasinier',
-    'caissier', 'vendeur', 'serveur', 'cuisiner', 'user',
+    'caissier', 'vendeur', 'user',
   ];
 
   readonly ECRANS = [
     { value: 'dashboard',            label: 'Dashboard (gestion stock)' },
     { value: 'pos',                  label: 'POS — Caisse / Vente' },
-    { value: 'restaurant-admin',     label: 'Restaurant — Admin / Gérant' },
-    { value: 'restaurant-serveur',   label: 'Restaurant — Serveur' },
-    { value: 'restaurant-caissier',  label: 'Restaurant — Caissier' },
-    { value: 'restaurant-cuisine',   label: 'Restaurant — Cuisine' },
     { value: 'ekwatech',             label: 'Ekwatech Super Admin' },
   ];
 

@@ -151,66 +151,7 @@
           </div>
         </div>
 
-        <!-- Bandeau IA -->
-        @if (resumeJournalier && !isLoadingResume) {
-          <div class="mob-ia-strip">
-            <span class="mob-ia-icon"><i class="bi bi-stars"></i></span>
-            <span class="mob-ia-text">
-              @if (resumeJournalier.top_produits?.length) {
-                <strong>{{ resumeJournalier.top_produits[0].nom }}</strong> · meilleure vente ({{ resumeJournalier.top_produits[0].quantite_vendue }} unités)
-              } @else {
-                Analyse IA disponible
-              }
-            </span>
-            @if (alertesCount > 0) {
-              <span class="mob-ia-alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ alertesCount }}</span>
-            }
-          </div>
-        }
-
-
-        <!-- Mini stats aujourd'hui -->
-        <div class="mob-section-title">Aujourd'hui en bref</div>
-        <div class="mob-mini-row">
-          <div class="mob-mini-item mob-mini--amber">
-            <div class="mob-mini-label">Achats</div>
-            <div class="mob-mini-value">{{ stats.dash.achat?.total_achat_jr | number:'1.0-0':'fr' }} F</div>
-            <div class="mob-mini-sub">{{ stats.dash.achat?.nbre_achat_jr || 0 }} achat(s)</div>
-          </div>
-          <div class="mob-mini-item mob-mini--purple">
-            <div class="mob-mini-label">Commandes</div>
-            <div class="mob-mini-value">{{ stats.dash.commandes_client?.prevues_aujourd_hui || 0 }}</div>
-            <div class="mob-mini-sub">prévue(s)</div>
-          </div>
-          <div class="mob-mini-item mob-mini--red">
-            <div class="mob-mini-label">Retours</div>
-            <div class="mob-mini-value">{{ stats.dash.retour?.nbre_retour_jr || 0 }}</div>
-            <div class="mob-mini-sub">{{ stats.dash.retour?.montant_retour_jr | number:'1.0-0':'fr' }} F</div>
-          </div>
-        </div>
-
-        <!-- Modes de paiement du jour -->
-        @let modes = modeEntries(stats.dash?.vente?.mode_paiement_jr);
-        @if (modes.length) {
-          <div class="mob-section-title">Paiements du jour</div>
-          <div class="mob-pay-card">
-            @let totalModes = stats.dash.vente?.total_vente_jr || 1;
-            @for (m of modes; track m.mode) {
-              <div class="mob-pay-row">
-                <span class="mob-pay-label">{{ m.label }}</span>
-                <div class="mob-pay-bar-wrap"><div class="mob-pay-bar" [style.width.%]="(m.val / totalModes) * 100"></div></div>
-                <span class="mob-pay-val">{{ m.val | number:'1.0-0':'fr' }} F</span>
-              </div>
-            }
-          </div>
-        }
-        <!-- Graphique Chiffre d'affaires -->
-        <div class="mob-section-title"><i class="bi bi-bar-chart-line me-1"></i> Chiffre d'affaires &mdash; {{ today | date:'yyyy' }}</div>
-        <div class="mob-chart-card">
-          <canvas id="myChartMob" style="max-height:200px;"></canvas>
-        </div>
-
-        <!-- Alertes en temps réel -->
+        <!-- Alertes en temps réel (remontées en priorité : actionnables) -->
         <div class="mob-section-title" [class.mob-section-title--alert]="alertesCount > 0">
           <span class="bell-wrapper" [class.ringing]="alertesCount > 0">
             <i class="bi bi-bell" [class.text-danger]="alertesCount > 0"></i>
@@ -266,6 +207,65 @@
               </div>
             }
           }
+        </div>
+
+        <!-- Bandeau IA -->
+        @if (moduleService.hasModule('ia') && resumeJournalier && !isLoadingResume) {
+          <div class="mob-ia-strip">
+            <span class="mob-ia-icon"><i class="bi bi-stars"></i></span>
+            <span class="mob-ia-text">
+              @if (resumeJournalier.top_produits?.length) {
+                <strong>{{ resumeJournalier.top_produits[0].nom }}</strong> · meilleure vente ({{ resumeJournalier.top_produits[0].quantite_vendue }} unités)
+              } @else {
+                Analyse IA disponible
+              }
+            </span>
+            @if (alertesCount > 0) {
+              <span class="mob-ia-alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ alertesCount }}</span>
+            }
+          </div>
+        }
+
+
+        <!-- Mini stats aujourd'hui -->
+        <div class="mob-section-title">Aujourd'hui en bref</div>
+        <div class="mob-mini-row">
+          <div class="mob-mini-item mob-mini--amber">
+            <div class="mob-mini-label">Achats</div>
+            <div class="mob-mini-value">{{ stats.dash.achat?.total_achat_jr | number:'1.0-0':'fr' }} F</div>
+            <div class="mob-mini-sub">{{ stats.dash.achat?.nbre_achat_jr || 0 }} achat(s)</div>
+          </div>
+          <div class="mob-mini-item mob-mini--purple">
+            <div class="mob-mini-label">Commandes</div>
+            <div class="mob-mini-value">{{ stats.dash.commandes_client?.prevues_aujourd_hui || 0 }}</div>
+            <div class="mob-mini-sub">prévue(s)</div>
+          </div>
+          <div class="mob-mini-item mob-mini--red">
+            <div class="mob-mini-label">Retours</div>
+            <div class="mob-mini-value">{{ stats.dash.retour?.nbre_retour_jr || 0 }}</div>
+            <div class="mob-mini-sub">{{ stats.dash.retour?.montant_retour_jr | number:'1.0-0':'fr' }} F</div>
+          </div>
+        </div>
+
+        <!-- Modes de paiement du jour -->
+        @let modes = modeEntries(stats.dash?.vente?.mode_paiement_jr);
+        @if (modes.length) {
+          <div class="mob-section-title">Paiements du jour</div>
+          <div class="mob-pay-card">
+            @let totalModes = stats.dash.vente?.total_vente_jr || 1;
+            @for (m of modes; track m.mode) {
+              <div class="mob-pay-row">
+                <span class="mob-pay-label">{{ m.label }}</span>
+                <div class="mob-pay-bar-wrap"><div class="mob-pay-bar" [style.width.%]="(m.val / totalModes) * 100"></div></div>
+                <span class="mob-pay-val">{{ m.val | number:'1.0-0':'fr' }} F</span>
+              </div>
+            }
+          </div>
+        }
+        <!-- Graphique Chiffre d'affaires -->
+        <div class="mob-section-title"><i class="bi bi-bar-chart-line me-1"></i> Chiffre d'affaires &mdash; {{ today | date:'yyyy' }}</div>
+        <div class="mob-chart-card">
+          <canvas id="myChartMob" style="max-height:200px;"></canvas>
         </div>
 
       }
@@ -494,13 +494,13 @@
   </div>
 
   <!-- ── Barre IA insights ── -->
-  @if (isLoadingResume) {
+  @if (moduleService.hasModule('ia') && isLoadingResume) {
     <div class="db-ia-bar mb-4">
       <span class="db-ia-icon"><i class="bi bi-stars"></i></span>
       <span class="db-ia-content text-muted small">Analyse IA en cours…</span>
     </div>
   }
-  @if (resumeJournalier && !isLoadingResume) {
+  @if (moduleService.hasModule('ia') && resumeJournalier && !isLoadingResume) {
     <div class="db-ia-bar mb-4">
       <span class="db-ia-icon"><i class="bi bi-stars"></i></span>
       <span class="db-ia-content">

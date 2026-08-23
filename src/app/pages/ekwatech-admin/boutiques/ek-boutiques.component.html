@@ -80,9 +80,7 @@
                   </td>
                   <td class="fw-semibold">{{ b.nom }}</td>
                   <td>
-                    @if (boutiqueType(b) === 'restaurant') {
-                      <span class="badge bg-primary-subtle text-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>
-                    } @else if (boutiqueType(b) === 'entrepot') {
+                    @if (boutiqueType(b) === 'entrepot') {
                       <span class="badge bg-success-subtle text-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>
                     } @else {
                       <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>
@@ -204,16 +202,6 @@
                 <div>
                   <div class="fw-semibold"><i class="bi bi-shop me-1"></i>Point de vente classique</div>
                   <small class="text-muted">Commerce, épicerie, superette…</small>
-                </div>
-              </label>
-              <label class="d-flex align-items-center gap-2"
-                     style="padding:10px 18px;border:2px solid #dee2e6;border-radius:10px;cursor:pointer;flex:1;transition:all .15s;"
-                     [style.border-color]="form.type === 'restaurant' ? '#0d6efd' : '#dee2e6'"
-                     [style.background]="form.type === 'restaurant' ? '#eff6ff' : '#fff'">
-                <input type="radio" [(ngModel)]="form.type" name="type" value="restaurant" class="form-check-input mt-0">
-                <div>
-                  <div class="fw-semibold"><i class="bi bi-cup-hot me-1"></i>Restaurant / Maquis</div>
-                  <small class="text-muted">Service en salle, prise de commande…</small>
                 </div>
               </label>
               <label class="d-flex align-items-center gap-2"

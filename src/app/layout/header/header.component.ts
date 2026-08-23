@@ -5,7 +5,6 @@ import { AlerteService } from '../../services/alerte/alerte.service';
 import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoaderService } from '../../services/loader/loader.service';
-import { ModuleService } from '../../services/modules/module.service';
 
 @Component({
   selector: 'app-header',
@@ -26,7 +25,6 @@ export class HeaderComponent implements OnInit {
     private router: Router,
     private toastr: ToastrService,
     private loaderService: LoaderService,
-    private moduleService: ModuleService,
   ) {}
 
   ngOnInit(): void {
@@ -55,12 +53,6 @@ export class HeaderComponent implements OnInit {
       || this.currentUser?.structure?.nom
       || this.currentUser?.structure?.[0]?.nom
       || null;
-  }
-
-  get hasRestaurantAccess(): boolean {
-    if (!this.moduleService.hasModule('restauration')) return false;
-    const code = this.currentUser?.profil?.code?.toLowerCase();
-    return code === 'admin' || code === 'responsable_structure' || code === 'gerant';
   }
 
   logout() {

@@ -61,7 +61,8 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
 
   searchQuery        = '';
   selectedCategoryId: number | null = null;
-  viewMode: 'grid' | 'list' = 'grid';
+  // Sur mobile, la vue tableau est plus lisible qu'une grille de cartes : c'est le défaut sous 768px.
+  viewMode: 'grid' | 'list' = window.innerWidth < 768 ? 'list' : 'grid';
 
   page = 1;
   readonly pageSize = 20;

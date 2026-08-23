@@ -1,4 +1,175 @@
-<div class="p-4" style="max-width:700px">
+<!-- ═══════════════════════════════════════════════════════════════
+     MOBILE  (d-md-none)
+══════════════════════════════════════════════════════════════ -->
+<div class="d-md-none">
+
+  <!-- En-tête gradient -->
+  <div class="abo-mob-hd">
+    <div class="abo-mob-hd-icon"><i class="bi bi-calendar-check"></i></div>
+    <div class="flex-grow-1 min-w-0">
+      <div class="abo-mob-hd-title">Mon abonnement</div>
+      <div class="abo-mob-hd-sub">Détails et renouvellement</div>
+    </div>
+    @if (isEnAttente && !loading) {
+      <span class="badge bg-warning text-dark" style="font-size:.65rem">
+        <i class="bi bi-hourglass-split me-1"></i>En attente
+      </span>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Chargement…</p>
+    </div>
+  }
+
+  @if (enAttenteValidation && !loading) {
+    <div class="abo-mob-card text-center py-4">
+      <div class="display-5 mb-2">⏳</div>
+      <h6 class="fw-bold mb-2">Validation en cours</h6>
+      <p class="text-muted small mb-0">
+        Votre demande de renouvellement a bien été envoyée.
+        L'accès sera rétabli dès validation par l'administrateur.
+      </p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger mx-3">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+    </div>
+  }
+
+  @if (abonnement && !loading) {
+
+    <!-- Statut hero -->
+    <div class="abo-mob-hero" [class]="statutClass">
+      <div class="abo-mob-hero-top">
+        <div class="abo-mob-hero-emoji">
+          @if (abonnement.statut === 'actif') { ✅ }
+          @else if (abonnement.statut === 'expire') { ⛔ }
+          @else if (abonnement.statut === 'en_attente') { ⏳ }
+          @else { ⏸️ }
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="abo-mob-hero-plan">{{ planLabel }}</div>
+          <span class="badge px-2 py-1"
+                [class.bg-success-subtle]="abonnement.statut === 'actif'"
+                [class.text-success]="abonnement.statut === 'actif'"
+                [class.bg-danger-subtle]="abonnement.statut === 'expire'"
+                [class.text-danger]="abonnement.statut === 'expire'"
+                [class.bg-warning-subtle]="abonnement.statut === 'suspendu' || abonnement.statut === 'en_attente'"
+                [class.text-warning]="abonnement.statut === 'suspendu' || abonnement.statut === 'en_attente'">
+            @if (abonnement.statut === 'en_attente') { En attente }
+            @else { {{ abonnement.statut | titlecase }} }
+          </span>
+        </div>
+      </div>
+      <div class="abo-mob-hero-jours">
+        <span class="abo-mob-jours-val" [class]="joursClass">{{ abonnement.jours_restants ?? '—' }}</span>
+        <span class="abo-mob-jours-lbl">jour(s) restant(s)</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    @if (canSubscribe && !loading) {
+      <button class="abo-mob-cta" (click)="openModal()">
+        <i class="bi bi-arrow-repeat me-2"></i>
+        {{ abonnement?.statut === 'actif' ? 'Renouveler mon abonnement' : 'Souscrire à un plan' }}
+      </button>
+    }
+    @if (abonnement?.id && !loading) {
+      <div class="abo-mob-actions-row">
+        <button class="abo-mob-action-btn" (click)="showFacture = true">
+          <i class="bi bi-receipt"></i> Facture
+        </button>
+        <button class="abo-mob-action-btn" (click)="downloadContrat()" [disabled]="contratLoading">
+          @if (contratLoading) {
+            <span class="spinner-border spinner-border-sm"></span>
+          } @else {
+            <i class="bi bi-file-earmark-text"></i>
+          }
+          Contrat
+        </button>
+      </div>
+    }
+
+    <!-- Alertes -->
+    @if (abonnement.renouvellement_en_attente && abonnement.statut === 'actif') {
+      <div class="alert alert-info mx-3">
+        <i class="bi bi-hourglass-split me-2"></i>
+        Renouvellement <strong>en attente de validation</strong>. Vous pouvez continuer à utiliser
+        l'application jusqu'à la fin de votre abonnement en cours.
+      </div>
+    }
+    @if (abonnement.statut === 'en_attente') {
+      <div class="alert alert-warning mx-3">
+        <i class="bi bi-hourglass-split me-2"></i>
+        Souscription <strong>en attente de validation</strong> par l'administrateur.
+      </div>
+    } @else if (abonnement.statut !== 'actif' || abonnement.jours_restants <= 7) {
+      <div class="alert mx-3"
+           [class.alert-danger]="abonnement.statut !== 'actif' || abonnement.jours_restants <= 3"
+           [class.alert-warning]="abonnement.statut === 'actif' && abonnement.jours_restants > 3">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @if (abonnement.statut === 'expire') {
+          Abonnement expiré. Souscrivez pour continuer à utiliser l'application.
+        } @else if (abonnement.statut === 'suspendu') {
+          Abonnement suspendu. Contactez votre administrateur.
+        } @else {
+          Expire dans <strong>{{ abonnement.jours_restants }}</strong> jour(s).
+        }
+      </div>
+    }
+
+    <!-- Détails -->
+    <div class="abo-mob-section-title"><i class="bi bi-info-circle me-1"></i>Informations</div>
+    <div class="abo-mob-card">
+      <div class="abo-mob-row">
+        <span class="abo-mob-row-lbl">Plan</span>
+        <span class="abo-mob-row-val">{{ planLabel }}</span>
+      </div>
+      <div class="abo-mob-row">
+        <span class="abo-mob-row-lbl">Début</span>
+        <span class="abo-mob-row-val">{{ abonnement.date_debut | date:'dd MMM yyyy':'':'fr' }}</span>
+      </div>
+      <div class="abo-mob-row">
+        <span class="abo-mob-row-lbl">Expiration</span>
+        <span class="abo-mob-row-val" [class]="joursClass">{{ abonnement.date_fin | date:'dd MMM yyyy':'':'fr' }}</span>
+      </div>
+      @if (abonnement.montant) {
+        <div class="abo-mob-row">
+          <span class="abo-mob-row-lbl">Montant payé</span>
+          <span class="abo-mob-row-val fw-bold text-success">{{ abonnement.montant | number:'1.0-0':'fr' }} {{ abonnement.devise ?? 'XOF' }}</span>
+        </div>
+      }
+      @if (abonnement.boutiques_supplementaires > 0) {
+        <div class="abo-mob-row abo-mob-row--last">
+          <span class="abo-mob-row-lbl">Points de vente sup.</span>
+          <span class="badge bg-warning-subtle text-warning">{{ abonnement.boutiques_supplementaires }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!abonnement && !loading && !error) {
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-calendar-x display-3 d-block mb-3 opacity-25"></i>
+      <p class="mb-3 px-4">Aucun abonnement actif pour votre compte.</p>
+      <button class="abo-mob-cta abo-mob-cta--inline" (click)="openModal()">
+        <i class="bi bi-plus-circle me-2"></i>Souscrire maintenant
+      </button>
+    </div>
+  }
+
+  <div style="height:24px"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DESKTOP  (d-none d-md-block)
+══════════════════════════════════════════════════════════════ -->
+<div class="d-none d-md-block p-4" style="max-width:700px">
   <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
     <div>
       <h4 class="fw-bold mb-1">Mon abonnement</h4>
@@ -274,6 +445,76 @@
 }
 
 <style>
+  /* ── Mon abonnement — mobile ─────────────────────────────────────────── */
+  .abo-mob-hd {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 16px; margin-bottom: 14px;
+    background: linear-gradient(135deg, #0B4332, #1e7a5a);
+    color: #fff;
+  }
+  .abo-mob-hd-icon {
+    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    background: rgba(255,255,255,.15);
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+  }
+  .abo-mob-hd-title { font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
+  .abo-mob-hd-sub { font-size: .75rem; opacity: .8; margin-top: 2px; }
+
+  .abo-mob-hero {
+    margin: 0 12px 14px; padding: 16px; border-radius: 14px;
+    background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border-left: 4px solid #adb5bd;
+  }
+  .abo-mob-hero.border-success { border-left-color: #198754; }
+  .abo-mob-hero.border-danger  { border-left-color: #dc3545; }
+  .abo-mob-hero.border-warning { border-left-color: #ffc107; }
+  .abo-mob-hero.border-secondary { border-left-color: #6c757d; }
+  .abo-mob-hero-top { display: flex; align-items: center; gap: 12px; }
+  .abo-mob-hero-emoji { font-size: 2rem; line-height: 1; }
+  .abo-mob-hero-plan { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .abo-mob-hero-jours {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e9ecef;
+  }
+  .abo-mob-jours-val { font-size: 1.6rem; font-weight: 800; }
+  .abo-mob-jours-lbl { font-size: .75rem; color: #6c757d; }
+
+  .abo-mob-cta {
+    display: flex; align-items: center; justify-content: center;
+    width: calc(100% - 24px); margin: 0 12px 10px;
+    padding: 13px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #0B4332, #1e7a5a); color: #fff;
+    font-weight: 600; font-size: .92rem;
+    box-shadow: 0 3px 10px rgba(11,67,50,.25);
+  }
+  .abo-mob-cta:active { transform: scale(.98); }
+  .abo-mob-cta--inline { width: auto; margin: 0 auto; padding: 11px 22px; }
+
+  .abo-mob-actions-row { display: flex; gap: 10px; margin: 0 12px 14px; }
+  .abo-mob-action-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 11px; border: 1.5px solid #dee2e6; border-radius: 10px;
+    background: #fff; color: #495057; font-size: .82rem; font-weight: 600;
+  }
+  .abo-mob-action-btn:active { background: #f8f9fa; }
+
+  .abo-mob-section-title {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    color: #6c757d; margin: 4px 16px 8px;
+  }
+
+  .abo-mob-card {
+    margin: 0 12px 14px; padding: 4px 16px; border-radius: 14px;
+    background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .abo-mob-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 0; border-bottom: 1px solid #f1f3f5;
+  }
+  .abo-mob-row--last { border-bottom: none; }
+  .abo-mob-row-lbl { font-size: .8rem; color: #6c757d; }
+  .abo-mob-row-val { font-size: .85rem; font-weight: 600; color: #212529; text-align: right; }
+
   .plan-card { border-color: #dee2e6 !important; transition: all .15s; }
   .plan-card.selected { border-color: var(--bs-primary) !important; background: #e7f1ff; }
   .plan-card:hover { border-color: var(--bs-primary) !important; }

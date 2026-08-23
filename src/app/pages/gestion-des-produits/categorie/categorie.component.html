@@ -240,9 +240,8 @@
                       <span class="badge ms-2"
                         [ngClass]="{
                           'bg-warning text-dark': b.type === 'entrepot',
-                          'bg-info text-dark': b.type === 'restaurant',
                           'bg-secondary': b.type === 'boutique'
-                        }">{{ b.type === 'restaurant' ? 'Restaurant' : b.type === 'entrepot' ? 'Entrepôt' : 'Point de vente' }}</span>
+                        }">{{ b.type === 'entrepot' ? 'Entrepôt' : 'Point de vente' }}</span>
                     }
                   </label>
                 </div>

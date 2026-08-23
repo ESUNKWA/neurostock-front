@@ -31,7 +31,7 @@ export default class EkModulesComponent implements OnInit {
 
   readonly ALL_CODES: ModuleCode[] = [
     'commandes_fournisseurs', 'devis', 'commandes_clients',
-    'retours_produits', 'caisse', 'ia', 'restauration',
+    'retours_produits', 'caisse', 'ia',
     'clients', 'fournisseurs', 'prix_achat_optionnel',
   ];
 

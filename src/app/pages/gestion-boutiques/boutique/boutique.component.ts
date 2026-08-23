@@ -383,7 +383,6 @@ export class BoutiqueComponent {
               className: 'd-none d-sm-table-cell',
               render: (data: any) => {
                 const t = (data ?? '').toLowerCase().trim();
-                if (t === 'restaurant') return `<span class="badge bg-primary"><i class="bi bi-cup-hot me-1"></i>Restaurant</span>`;
                 if (t === 'entrepot' || t === 'entrepôt') return `<span class="badge bg-success"><i class="bi bi-box-seam me-1"></i>Entrepôt</span>`;
                 return `<span class="badge bg-secondary"><i class="bi bi-shop me-1"></i>Point de vente</span>`;
               }
