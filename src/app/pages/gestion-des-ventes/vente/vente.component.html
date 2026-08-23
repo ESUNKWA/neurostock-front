@@ -441,7 +441,7 @@
             <div class="mb-3">
               <label class="form-label fw-semibold small text-muted text-uppercase mb-2">Mode de paiement</label>
               <div class="d-flex flex-wrap gap-2">
-                @for (m of modesPaiement; track m.value) {
+                @for (m of modesPaiementDisponibles; track m.value) {
                   <button type="button" class="btn btn-sm vt-pay-mode-btn"
                           [class.active]="venteForm.get('mode_paiement')?.value === m.value"
                           (click)="setModePaiement(m.value)">
@@ -479,18 +479,15 @@
             @if (isMixte) {
               <div class="vt-mixte-panel mb-3" formGroupName="details_paiement">
                 <p class="vt-mixte-label">Répartition du paiement</p>
-                @for (mode of [
-                  {key:'espece',label:'Espèces'},{key:'carte',label:'Carte'},
-                  {key:'orange_money',label:'Orange Money'},{key:'wave',label:'Wave'},
-                  {key:'mtn_money',label:'MTN Money'},{key:'moov_money',label:'Moov Money'},
-                  {key:'dajmo',label:'Dajmo'},{key:'credit',label:'Crédit'}
-                ]; track mode.key) {
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" style="min-width:96px;font-size:.78rem">{{ mode.label }}</span>
-                    <input type="number" class="form-control" [formControlName]="mode.key"
-                           min="0" placeholder="0" (input)="calculerMonnaieRendue()">
-                    <span class="input-group-text">F</span>
-                  </div>
+                @for (mode of modesPaiementDisponibles; track mode.value) {
+                  @if (mode.value !== 'mixte') {
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text" style="min-width:96px;font-size:.78rem">{{ mode.label }}</span>
+                      <input type="number" class="form-control" [formControlName]="mode.value"
+                             min="0" placeholder="0" (input)="calculerMonnaieRendue()">
+                      <span class="input-group-text">F</span>
+                    </div>
+                  }
                 }
                 <div class="mt-2 small fw-semibold"
                      [class.text-success]="totalDetailsPaiement === (venteForm.get('montant_total_apres_remise')?.value || 0)"

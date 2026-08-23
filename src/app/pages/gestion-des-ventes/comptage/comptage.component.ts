@@ -9,6 +9,7 @@ import { ProduitService } from '../../../services/gestion-des-produits/produit.s
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { CaisseService } from '../../../services/gestion-des-caisses/caisse.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { isEntrepot } from '../../../helpers/boutique-type.util';
 
 interface LigneComptage {
   produit: any;
@@ -111,7 +112,7 @@ export default class ComptageComponent implements OnInit {
   }
 
   get boutiquesSansEntrepot(): any[] {
-    return this.boutiquesStructure.filter((b: any) => (b?.type ?? '').toLowerCase() !== 'entrepot');
+    return this.boutiquesStructure.filter((b: any) => !isEntrepot(b));
   }
 
   onProduitsBoutiqueChange(): void {

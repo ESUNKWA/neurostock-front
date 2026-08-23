@@ -10,6 +10,7 @@ import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { UserService } from '../../../services/user/user.service';
 import Swal from 'sweetalert2';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { isEntrepot } from '../../../helpers/boutique-type.util';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -30,7 +31,7 @@ export default class HistoriqueVentesComponent implements OnInit, OnDestroy {
 
   // Une vente ne se fait jamais à l'entrepôt (stock central) : on l'exclut du filtre.
   get boutiquesSansEntrepot(): any[] {
-    return this.boutiques.filter((b: any) => (b.type ?? '').toLowerCase().trim() !== 'entrepot');
+    return this.boutiques.filter((b: any) => !isEntrepot(b));
   }
   users: any[] = [];
   utilisateurId: number | null = null;

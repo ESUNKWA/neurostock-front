@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
 import { ModuleService, ModuleCode } from '../../services/modules/module.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { BoutiqueService } from '../../services/boutique/boutique.service';
+import { hasEntrepot } from '../../helpers/boutique-type.util';
 
 interface NavModule { label: string; icon: string; lien: string; color: string; bg: string; module?: ModuleCode; alwaysVisibleFor?: string[]; }
 
@@ -22,15 +24,20 @@ export class MobileNavComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private moduleService = inject(ModuleService);
   private authService = inject(AuthService);
+  private boutiqueService = inject(BoutiqueService);
   private navSub!: Subscription;
   private userSub!: Subscription;
   private modulesSub!: Subscription;
+
+  // Cf. sidebar.component.ts : "Transferts"/"Rapp. transf." n'ont de sens que pour
+  // une structure ayant au moins un entrepôt.
+  private structureHasEntrepot = false;
 
   private readonly ALL_MODULES: NavModule[] = [
     { label: 'Points de vente', icon: 'bi-shop',             lien: '/structure/boutiques',                              color: '#c2410c', bg: '#ffedd5' },
     { label: 'Ventes',          icon: 'bi-receipt',           lien: '/gestion-des-ventes/historique-ventes',             color: '#059669', bg: '#d1fae5' },
     { label: 'Produits',        icon: 'bi-box-seam',          lien: '/gestion-des-produits/produit',                     color: '#8b5cf6', bg: '#ede9fe' },
-    { label: 'Appro.',          icon: 'bi-cart4',             lien: '/gestion-des-approvisionnements/approvisionnement', color: '#d97706', bg: '#fef3c7' },
+    { label: 'Appro.',          icon: 'bi-cart4',             lien: '/gestion-des-approvisionnements/historique-approvisionnements', color: '#d97706', bg: '#fef3c7' },
     { label: 'Caisse',          icon: 'bi-cash-coin',         lien: '/caisse',                                           color: '#0369a1', bg: '#e0f2fe', module: 'caisse' },
     { label: 'Clients',         icon: 'bi-people',            lien: '/clients/list',                                     color: '#0891b2', bg: '#cffafe', module: 'clients' },
     { label: 'Devis',           icon: 'bi-file-earmark-text', lien: '/gestion-des-devis/historique',                     color: '#4f46e5', bg: '#e0e7ff', module: 'devis' },
@@ -64,6 +71,7 @@ export class MobileNavComponent implements OnInit, OnDestroy {
     this.userSub = this.authService.currentUser$.subscribe((user: any) => {
       this.role = user?.profil?.code?.toLowerCase() ?? '';
       this.isResponsableStructure = this.role === 'responsable_structure';
+      this.loadStructureBoutiques(user);
       this.rebuildModules();
     });
 
@@ -73,10 +81,28 @@ export class MobileNavComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadStructureBoutiques(user: any): void {
+    const code = this.role;
+    const structureId = user?.structure_id ?? user?.structure?.id ?? user?.boutique?.structure_id;
+
+    const onLoaded = (list: any[]) => {
+      this.structureHasEntrepot = hasEntrepot(list);
+      this.rebuildModules();
+    };
+
+    if (code === 'admin') {
+      this.boutiqueService.find().subscribe({ next: (r: any) => onLoaded(r?.data ?? []), error: () => onLoaded([]) });
+    } else if (structureId) {
+      this.boutiqueService.findByStructure(structureId).subscribe({ next: (r: any) => onLoaded(r?.data ?? []), error: () => onLoaded([]) });
+    } else {
+      onLoaded(user?.boutique ? [user.boutique] : []);
+    }
+  }
+
   private rebuildModules(): void {
-    const disponibles = this.ALL_MODULES.filter(m =>
-      !m.module || this.moduleService.hasModule(m.module) || m.alwaysVisibleFor?.includes(this.role)
-    );
+    const disponibles = this.ALL_MODULES
+      .filter(m => !m.module || this.moduleService.hasModule(m.module) || m.alwaysVisibleFor?.includes(this.role))
+      .filter(m => this.structureHasEntrepot || (m.label !== 'Transferts' && m.label !== 'Rapp. transf.'));
 
     if (!this.isResponsableStructure) {
       this.modules = disponibles;

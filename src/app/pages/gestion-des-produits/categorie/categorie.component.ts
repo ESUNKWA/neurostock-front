@@ -11,6 +11,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../helpers/file-import-preview';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { filterEntrepots, isEntrepot } from '../../../helpers/boutique-type.util';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -86,15 +87,14 @@ export default class CategorieComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Boutiques de type entrepôt uniquement. */
+  /** Boutiques de type entrepôt, ou à défaut toutes les boutiques (structure sans entrepôt). */
   get entrepots(): any[] {
-    const list = this.boutiques.filter(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    const list = filterEntrepots(this.boutiques);
     return list.length ? list : this.boutiques;
   }
 
   private selectEntrepot(): void {
-    const e = this.boutiques.find(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
-    const target = e ?? this.boutiques[0];
+    const target = this.boutiques.find(isEntrepot) ?? this.boutiques[0];
     if (target) {
       this.selectedBoutiqueId = String(target.id);
       this.loadCategories();

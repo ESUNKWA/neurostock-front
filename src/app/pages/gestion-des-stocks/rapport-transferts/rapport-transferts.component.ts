@@ -7,6 +7,7 @@ import { TransfertStockService } from '../../../services/gestion-des-stocks/tran
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { filterEntrepots, isEntrepot } from '../../../helpers/boutique-type.util';
 
 interface LigneRapport {
   produit_nom: string;
@@ -61,7 +62,7 @@ export default class RapportTransfertsComponent implements OnInit {
     obs.subscribe({
       next: (r: any) => {
         this.boutiques = r?.data ?? [];
-        this.entrepots = this.boutiques.filter((b: any) => b.type === 'entrepot');
+        this.entrepots = filterEntrepots(this.boutiques);
         if (this.entrepots.length === 1) {
           this.filtres.boutique_source = this.entrepots[0].id;
         }
@@ -70,7 +71,7 @@ export default class RapportTransfertsComponent implements OnInit {
   }
 
   get boutiquesDestination(): any[] {
-    return this.boutiques.filter((b: any) => b.type !== 'entrepot');
+    return this.boutiques.filter((b: any) => !isEntrepot(b));
   }
 
   charger(): void {

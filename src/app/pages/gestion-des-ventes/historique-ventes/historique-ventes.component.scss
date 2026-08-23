@@ -441,7 +441,7 @@
   margin-left: auto;
 }
 
-.hv-mob-print {
+.hv-mob-icon-btn {
   width: 30px;
   height: 30px;
   border-radius: 7px;
@@ -462,6 +462,13 @@
     color: #16a34a;
     border-color: #bbf7d0;
     &:hover { background: #dcfce7; }
+  }
+
+  &.hv-mob-regularize {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+    &:hover { background: #d1fae5; }
   }
 }
 

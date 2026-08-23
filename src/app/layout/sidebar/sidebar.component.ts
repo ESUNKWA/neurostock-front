@@ -4,6 +4,8 @@ import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/ro
 import { Menu } from './menu';
 import { AuthService } from '../../services/auth/auth.service';
 import { ModuleService, ModuleCode } from '../../services/modules/module.service';
+import { BoutiqueService } from '../../services/boutique/boutique.service';
+import { hasEntrepot } from '../../helpers/boutique-type.util';
 
 @Component({
   selector: 'app-sidebar',
@@ -22,7 +24,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
   private moduleService = inject(ModuleService);
+  private boutiqueService = inject(BoutiqueService);
   private bodyObserver?: MutationObserver;
+
+  // Dérivé de la liste des boutiques de la structure : conditionne l'affichage
+  // du menu "Transferts stock" (sans objet pour un petit commerce sans entrepôt).
+  private structureHasEntrepot = false;
 
   constructor(private router: Router) {
     this.router.events.subscribe((event) => {
@@ -36,7 +43,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user?.profil) {
         this.currentUserProfile = user.profil.code?.toLowerCase() || '';
-        this.filteredMenu = this.buildMenu(user);
+        this.loadStructureBoutiques(user);
       } else {
         this.filteredMenu = this.menu;
       }
@@ -71,12 +78,50 @@ export class SidebarComponent implements OnInit, OnDestroy {
     document.body.classList.remove('sidebar-mobile-open');
   }
 
+  /** Charge les boutiques de la structure pour savoir si elle a un entrepôt, puis (re)construit le menu. */
+  private loadStructureBoutiques(user: any): void {
+    const code = this.currentUserProfile;
+    const structureId = user?.structure_id ?? user?.structure?.id ?? user?.boutique?.structure_id;
+
+    const onLoaded = (list: any[]) => {
+      this.structureHasEntrepot = hasEntrepot(list);
+      this.filteredMenu = this.buildMenu(user);
+    };
+
+    if (code === 'admin') {
+      this.boutiqueService.find().subscribe({
+        next: (r: any) => onLoaded(r?.data ?? []),
+        error: () => onLoaded([]),
+      });
+    } else if (structureId) {
+      this.boutiqueService.findByStructure(structureId).subscribe({
+        next: (r: any) => onLoaded(r?.data ?? []),
+        error: () => onLoaded([]),
+      });
+    } else {
+      onLoaded(user?.boutique ? [user.boutique] : []);
+    }
+  }
+
   private buildMenu(user: any): any[] {
     const role = user.profil.code?.toLowerCase() || '';
-    const byRole = this.filterMenuByRole(this.menu, role, user);
+    let byRole = this.filterMenuByRole(this.menu, role, user);
+    if (!this.structureHasEntrepot) {
+      byRole = this.hideTransfertsStock(byRole);
+    }
     // super_admin voit tout sans restriction de modules
     if (role === 'super_admin') return byRole;
     return this.filterMenuByModules(byRole);
+  }
+
+  /** "Transferts stock" n'a de sens que pour une structure ayant au moins un entrepôt. */
+  private hideTransfertsStock(menu: any[]): any[] {
+    return menu
+      .map((section: any) => ({
+        ...section,
+        menu: (section.menu ?? []).filter((item: any) => item.libelle !== 'Transferts stock'),
+      }))
+      .filter((section: any) => (section.menu?.length ?? 0) > 0 || !section.titre);
   }
 
   private filterMenuByModules(menu: any[]): any[] {

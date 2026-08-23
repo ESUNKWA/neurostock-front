@@ -8,6 +8,7 @@ import { TransfertStockService } from '../../../services/gestion-des-stocks/tran
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { filterEntrepots, isEntrepot } from '../../../helpers/boutique-type.util';
 
 declare var $: any;
 
@@ -69,7 +70,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
     obs.subscribe({
       next: (r: any) => {
         this.boutiques = r?.data ?? [];
-        this.entrepots = this.boutiques.filter((b: any) => b.type === 'entrepot');
+        this.entrepots = filterEntrepots(this.boutiques);
         if (this.boutiques.length === 1) {
           this.filterBoutiqueId = this.boutiques[0].id;
         }
@@ -438,7 +439,7 @@ export default class TransfertsComponent implements OnInit, OnDestroy {
   }
 
   get boutiquesDestination(): any[] {
-    return this.boutiques.filter((b: any) => b.type !== 'entrepot' && b.id !== this.form.boutique_source);
+    return this.boutiques.filter((b: any) => !isEntrepot(b) && b.id !== this.form.boutique_source);
   }
 
   private fermerModal(id: string): void {

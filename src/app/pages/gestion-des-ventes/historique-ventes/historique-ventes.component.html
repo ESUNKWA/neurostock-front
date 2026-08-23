@@ -187,11 +187,15 @@
             <span class="hv-mob-remise">Remise − {{ v.remise | number:'1.0-0':'fr' }} F</span>
           }
           <span class="hv-mob-total">{{ (v.montant_total_apres_remise ?? v.montant_total) | number:'1.0-0':'fr' }} F CFA</span>
-          <button class="hv-mob-print" (click)="printVenteThermique(v)" title="Imprimer">
-            <i class="bi bi-printer"></i>
-          </button>
+          @if (statut === 'non_payer') {
+            <button class="hv-mob-icon-btn hv-mob-regularize"
+                    (click)="openRegularModal(v); $event.stopPropagation()"
+                    title="Régulariser le paiement">
+              <i class="bi bi-cash-coin"></i>
+            </button>
+          }
           @if (v.client?.telephone) {
-            <button class="hv-mob-print hv-mob-whatsapp"
+            <button class="hv-mob-icon-btn hv-mob-whatsapp"
                     (click)="envoyerRecuWhatsapp(v); $event.stopPropagation()"
                     [disabled]="sendingWhatsapp[v.id]"
                     title="Envoyer par WhatsApp">

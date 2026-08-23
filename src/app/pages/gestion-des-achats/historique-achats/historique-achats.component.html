@@ -35,13 +35,13 @@
           <div class="row g-2 align-items-end mb-3 hac-filter-row">
             @if (currentUser.profil.code.toLowerCase() === 'admin' || currentUser.profil.code.toLowerCase() === 'responsable_structure') {
               <div class="col-auto">
-                <label class="form-label small mb-1">Entrepôt</label>
-                <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Sélectionner un entrepôt">
-                  @for (entrepot of entrepots; track entrepot.id) {
-                    <input type="radio" class="btn-check" name="hacEntrepotRadio" [id]="'hac-entrepot-' + entrepot.id"
-                      [value]="entrepot.id" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
+                <label class="form-label small mb-1">{{ libelleFiltreBoutique }}</label>
+                <div class="d-flex flex-wrap gap-2" role="radiogroup" [attr.aria-label]="'Sélectionner un ' + libelleFiltreBoutique">
+                  @for (b of boutiquesFiltre; track b.id) {
+                    <input type="radio" class="btn-check" name="hacEntrepotRadio" [id]="'hac-entrepot-' + b.id"
+                      [value]="b.id" [(ngModel)]="idBoutique" [ngModelOptions]="{standalone: true}"
                       (ngModelChange)="onBoutiqueChange($event)" autocomplete="off">
-                    <label class="btn btn-sm btn-outline-primary" [for]="'hac-entrepot-' + entrepot.id">{{ entrepot.nom }}</label>
+                    <label class="btn btn-sm btn-outline-primary" [for]="'hac-entrepot-' + b.id">{{ b.nom }}</label>
                   }
                 </div>
               </div>

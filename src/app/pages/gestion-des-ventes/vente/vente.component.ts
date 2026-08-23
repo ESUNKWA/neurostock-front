@@ -38,6 +38,7 @@ export default class VenteComponent implements OnInit {
     { value: 'credit',       label: 'Crédit (à recouvrer)' },
     { value: 'mixte',        label: 'Paiement mixte' },
   ];
+  modesPaiementActifs: string[] | null = null;
   statuts: string[] = ['payer', 'non_payer', 'partiel'];
   barcodeInput = '';
   scanLoading = false;
@@ -595,6 +596,8 @@ calculerMontantTotalApresRemise(): void {
     // Synchroniser le champ boutique du formulaire
     this.venteForm?.patchValue({ boutique: this.selectedProduitsBoutique });
 
+    this.loadModesPaiement();
+
     this.produitsLoading = true;
     this.produitService.getProduits({ boutique: this.selectedProduitsBoutique })
       .pipe(finalize(() => { this.produitsLoading = false; }))
@@ -612,6 +615,33 @@ calculerMontantTotalApresRemise(): void {
         },
         error: (error: any) => { console.log('error', error); }
       });
+  }
+
+  // ── Modes de paiement activés pour la boutique sélectionnée ─────────────────
+  loadModesPaiement(): void {
+    const boutiqueId = this.selectedProduitsBoutique;
+    if (!boutiqueId) { this.modesPaiementActifs = null; return; }
+    this.boutiqueService.findOne(boutiqueId).subscribe({
+      next: (r: any) => {
+        const b = r?.data || r;
+        const actifs: string[] = Array.isArray(b?.modes_paiement) && b.modes_paiement.length > 0
+          ? b.modes_paiement
+          : this.modesPaiement.map(m => m.value);
+        this.modesPaiementActifs = actifs;
+
+        // Si le mode sélectionné n'est plus disponible pour cette boutique, basculer sur le premier actif
+        const modeActuel = this.venteForm?.get('mode_paiement')?.value;
+        if (modeActuel && !actifs.includes(modeActuel) && this.modesPaiementDisponibles.length > 0) {
+          this.setModePaiement(this.modesPaiementDisponibles[0].value);
+        }
+      },
+      error: () => { this.modesPaiementActifs = null; }
+    });
+  }
+
+  get modesPaiementDisponibles(): { value: string; label: string }[] {
+    if (!this.modesPaiementActifs) return this.modesPaiement;
+    return this.modesPaiement.filter(m => this.modesPaiementActifs!.includes(m.value));
   }
 
   // ── Catalogue — recherche / catégories / pagination ─────────────────────────

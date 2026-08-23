@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { BoutiqueService } from '../../../services/boutique/boutique.service';
+import { filterEntrepots, filterPointsDeVente, hasEntrepot } from '../../../helpers/boutique-type.util';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -71,7 +72,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
-            this.selectDefaultEntrepot();
+            this.selectDefaultBoutique();
           }
         },
         error: (error: any) => {
@@ -83,7 +84,7 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           if (response.status === 'success' && response.data) {
             this.boutiques = response.data;
-            this.selectDefaultEntrepot();
+            this.selectDefaultBoutique();
           }
         },
         error: (error: any) => {
@@ -92,12 +93,19 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
       });
     } else {
       this.boutiques[0] = this.currentUser.boutique;
+      this.idBoutique = this.currentUser.boutique?.id ?? 0;
+      this.loadAchats();
     }
   }
 
-  private selectDefaultEntrepot(): void {
-    if (!this.idBoutique && this.entrepots.length > 0) {
-      this.idBoutique = this.entrepots[0].id;
+  /** Boutiques éligibles pour filtrer l'historique : les entrepôts s'il y en a, sinon les points de vente. */
+  get boutiquesFiltre(): any[] {
+    return hasEntrepot(this.boutiques) ? this.entrepots : filterPointsDeVente(this.boutiques);
+  }
+
+  private selectDefaultBoutique(): void {
+    if (!this.idBoutique && this.boutiquesFiltre.length > 0) {
+      this.idBoutique = this.boutiquesFiltre[0].id;
     }
     this.loadAchats();
   }
@@ -111,7 +119,12 @@ export default class HistoriqueAchatsComponent implements OnInit, OnDestroy {
   }
 
   get entrepots(): any[] {
-    return this.boutiques.filter((b: any) => (b?.type ?? '').toLowerCase() === 'entrepot');
+    return filterEntrepots(this.boutiques);
+  }
+
+  /** Libellé du filtre boutique, selon que la structure a un entrepôt ou non. */
+  get libelleFiltreBoutique(): string {
+    return hasEntrepot(this.boutiques) ? 'Entrepôt' : 'Point de vente';
   }
 
   onBoutiqueChange(value: any): void {

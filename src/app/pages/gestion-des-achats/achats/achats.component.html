@@ -61,8 +61,8 @@
 
               @if (currentUser?.profil?.code?.toLowerCase() === 'admin' || currentUser?.profil?.code?.toLowerCase() === 'responsable_structure') {
                 <div class="col-md-4">
-                  <label class="ac-label">Stock central (entrepôt) <span class="text-danger">*</span></label>
-                  <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner un entrepôt"
+                  <label class="ac-label">Destination ({{ libelleDestinationAppro }}) <span class="text-danger">*</span></label>
+                  <nz-select class="w-100" formControlName="boutique" nzShowSearch [nzAllowClear]="true" [nzPlaceHolder]="'Sélectionner un ' + libelleDestinationAppro"
                     (ngModelChange)="onBoutiqueChange($event)"
                     [ngClass]="{'is-invalid': isSubmitting && f['boutique'].errors}">
                     @for (b of boutiques; track b.id) {

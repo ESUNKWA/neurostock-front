@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { DashService } from '../../services/dash/dash.service';
 import { BoutiqueService } from '../../services/boutique/boutique.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { isEntrepot } from '../../helpers/boutique-type.util';
 
 declare var $: any;
 
@@ -80,7 +81,7 @@ export default class RecetteComponent implements OnInit, OnDestroy {
   }
 
   get boutiquesSansEntrepot(): any[] {
-    return this.boutiques.filter((b: any) => (b?.type ?? '').toLowerCase() !== 'entrepot');
+    return this.boutiques.filter((b: any) => !isEntrepot(b));
   }
 
   ngOnInit(): void {

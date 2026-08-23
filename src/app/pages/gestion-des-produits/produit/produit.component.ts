@@ -13,6 +13,7 @@ import { ThousandSeparatorDirective } from '../../../helpers/thousand-separator.
 import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../helpers/file-import-preview';
 import { PrevisionService } from '../../../services/analyse-ia/prevision.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { filterEntrepots, isEntrepot } from '../../../helpers/boutique-type.util';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -359,8 +360,7 @@ export default class ProduitComponent implements OnInit, OnDestroy {
 
   /** Retourne l'ID du premier entrepôt dans la liste, ou null. */
   private entrepotId(): number | null {
-    const e = this.boutiques.find(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
-    return e?.id ?? null;
+    return this.boutiques.find(isEntrepot)?.id ?? null;
   }
 
   /** ID par défaut pour l'ajout de produits : entrepôt en priorité, sinon boutique du user. */
@@ -368,9 +368,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     return this.entrepotId() ?? this.currentUser?.boutique_id ?? this.boutiques[0]?.id ?? null;
   }
 
-  /** Boutiques de type entrepôt uniquement (pour le select verrouillé). */
+  /** Boutiques de type entrepôt, ou à défaut toutes les boutiques (structure sans entrepôt). */
   get entrepots(): any[] {
-    const list = this.boutiques.filter(b => (b.type ?? '').toLowerCase().trim() === 'entrepot');
+    const list = filterEntrepots(this.boutiques);
     return list.length ? list : this.boutiques;
   }
 

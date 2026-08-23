@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AchatsService } from '../../../services/gestion-des-achats/achats.service';
 import { ModuleService } from '../../../services/modules/module.service';
 import { NzOptionComponent, NzSelectModule } from "ng-zorro-antd/select";
+import { filterEntrepots, filterPointsDeVente, hasEntrepot, isEntrepot } from '../../../helpers/boutique-type.util';
 
 interface LigneApprovisionnement {
   produit: any;
@@ -278,12 +279,27 @@ export default class AchatsComponent implements OnInit {
     this.calculerMontantTotal();
   }
 
+  /**
+   * Détermine, pour une structure donnée, les boutiques éligibles à recevoir un
+   * approvisionnement : les entrepôts si la structure en possède au moins un
+   * (flux Fournisseur → Entrepôt → Boutique), sinon les points de vente
+   * directement (flux Fournisseur → Boutique, pour les petits commerces sans
+   * entrepôt). Voir helpers/boutique-type.util.ts.
+   */
+  private boutiquesEligiblesAppro(structure: any[]): any[] {
+    return hasEntrepot(structure) ? filterEntrepots(structure) : filterPointsDeVente(structure);
+  }
+
+  /** Libellé du sélecteur de destination, selon que la structure a un entrepôt ou non. */
+  get libelleDestinationAppro(): string {
+    return this.boutiques.length > 0 && isEntrepot(this.boutiques[0]) ? 'entrepôt' : 'point de vente';
+  }
+
   loadBoutiques(): void {
     const code = this.currentUser.profil.code.toLowerCase();
-    const onlyEntrepots = (list: any[]) => list.filter((b: any) => b.type === 'entrepot');
 
     const afterLoad = (list: any[]) => {
-      this.boutiques = onlyEntrepots(list);
+      this.boutiques = this.boutiquesEligiblesAppro(list);
       if (this.boutiques.length === 1) {
         const b = this.boutiques[0];
         this.achatForm.patchValue({ boutique: b.id });
@@ -308,16 +324,30 @@ export default class AchatsComponent implements OnInit {
         error: (error: any) => console.error('Erreur lors du chargement des boutiques:', error)
       });
     } else {
+      // Rôles liés à une boutique précise (gérant, magasinier…) : il faut connaître
+      // toute la structure pour savoir si l'appro doit passer par un entrepôt (auquel
+      // cas seul le responsable de l'entrepôt approvisionne, puis transfère) ou si,
+      // faute d'entrepôt, cette boutique s'approvisionne directement.
       const b = this.currentUser.boutique;
-      if (b?.type === 'entrepot') {
-        this.boutiques = [b];
-        this.achatForm.patchValue({ boutique: b.id });
-        this.selectedBoutique = String(b.id);
-        if (Array.isArray(b.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
-        this.loadProduits();
-      } else {
-        this.boutiques = [];
-      }
+      const structureId = this.currentUser.structure_id ?? this.currentUser.structure?.id ?? b?.structure_id;
+      if (!b || !structureId) { this.boutiques = []; return; }
+
+      this.boutiqueService.findByStructure(structureId).subscribe({
+        next: (response: any) => {
+          const structure = (response.status === 'success' && response.data) ? response.data : [b];
+          const eligible = isEntrepot(b) || !hasEntrepot(structure);
+          if (eligible) {
+            this.boutiques = [b];
+            this.achatForm.patchValue({ boutique: b.id });
+            this.selectedBoutique = String(b.id);
+            if (Array.isArray(b.modes_paiement)) this.modesPaiementActifs = b.modes_paiement;
+            this.loadProduits();
+          } else {
+            this.boutiques = [];
+          }
+        },
+        error: (error: any) => console.error('Erreur lors du chargement des boutiques:', error)
+      });
     }
   }
 
@@ -340,11 +370,10 @@ export default class AchatsComponent implements OnInit {
   }
 
   loadProduits(): void {
-    // `selectedBoutique` est déjà restreint à l'entrepôt par loadBoutiques()
-    // (pour un utilisateur non admin/responsable_structure, elle n'est
-    // renseignée que si sa propre boutique est de type 'entrepot'). On ne
-    // doit donc jamais retomber sur currentUser.boutique_id ici, sous peine
-    // de charger les produits d'une boutique classique lors de l'appro.
+    // `selectedBoutique` est déjà restreinte par loadBoutiques() à la boutique
+    // éligible pour l'appro (l'entrepôt si la structure en a un, sinon le point
+    // de vente lui-même — cf. boutiquesEligiblesAppro()). On ne doit donc jamais
+    // retomber sur currentUser.boutique_id ici sans passer par ce filtre.
     if (!this.selectedBoutique) {
       this.produits = [];
       return;

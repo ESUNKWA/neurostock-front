@@ -12,6 +12,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { PrevisionService } from '../../services/analyse-ia/prevision.service';
 import { DeviceService } from '../../services/device/device.service';
 import { ModuleService } from '../../services/modules/module.service';
+import { isEntrepot } from '../../helpers/boutique-type.util';
 
 declare var $: any;
 
@@ -51,7 +52,7 @@ export default class DashboardComponent implements OnInit, OnDestroy {
 
   // Le tableau de bord ne concerne que les boutiques de vente — l'entrepôt (stock central) n'y figure pas.
   get boutiquesSansEntrepot(): any[] {
-    return this.boutiques.filter((b: any) => (b.type ?? '').toLowerCase().trim() !== 'entrepot');
+    return this.boutiques.filter((b: any) => !isEntrepot(b));
   }
 
   private sseSource: EventSource | null = null;
