@@ -37,6 +37,7 @@ export class MobileNavComponent implements OnInit, OnDestroy {
     { label: 'Points de vente', icon: 'bi-shop',             lien: '/structure/boutiques',                              color: '#c2410c', bg: '#ffedd5' },
     { label: 'Ventes',          icon: 'bi-receipt',           lien: '/gestion-des-ventes/historique-ventes',             color: '#059669', bg: '#d1fae5' },
     { label: 'Produits',        icon: 'bi-box-seam',          lien: '/gestion-des-produits/produit',                     color: '#8b5cf6', bg: '#ede9fe' },
+    { label: 'Catégories',      icon: 'bi-tags',               lien: '/gestion-des-produits/categorie',                   color: '#a21caf', bg: '#fae8ff' },
     { label: 'Appro.',          icon: 'bi-cart4',             lien: '/gestion-des-approvisionnements/historique-approvisionnements', color: '#d97706', bg: '#fef3c7' },
     { label: 'Caisse',          icon: 'bi-cash-coin',         lien: '/caisse',                                           color: '#0369a1', bg: '#e0f2fe', module: 'caisse' },
     { label: 'Clients',         icon: 'bi-people',            lien: '/clients/list',                                     color: '#0891b2', bg: '#cffafe', module: 'clients' },
@@ -56,7 +57,7 @@ export class MobileNavComponent implements OnInit, OnDestroy {
   // tâches opérationnelles du quotidien ensuite. Les autres rôles gardent l'ordre par défaut.
   private readonly PRIORITE_RESPONSABLE_STRUCTURE = [
     'Points de vente', 'Ventes', 'Recette', 'Utilisateurs', 'Abonnement',
-    'Appro.', 'Fournisseurs', 'Produits', 'Clients', 'Devis', 'Commandes', 'Caisse',
+    'Appro.', 'Fournisseurs', 'Produits', 'Catégories', 'Clients', 'Devis', 'Commandes', 'Caisse',
     'Transferts', 'Rapp. transf.', 'Retours', 'Analyse IA',
   ];
 
