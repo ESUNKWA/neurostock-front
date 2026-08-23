@@ -189,6 +189,9 @@
   gap: 12px;
   padding: 0 16px;
   margin-bottom: 24px;
+
+  // 3 cartes : la dernière occupe toute la largeur de sa ligne
+  .rec-kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 .rec-kpi-card {

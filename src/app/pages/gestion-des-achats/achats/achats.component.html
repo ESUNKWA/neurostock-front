@@ -7,14 +7,14 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0" style="font-size:.75rem;opacity:.85">
           <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-white opacity-75">Accueil</a></li>
-          <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/historique" class="text-white opacity-75">Approvisionnements</a></li>
+          <li class="breadcrumb-item"><a routerLink="/gestion-des-approvisionnements/historique-approvisionnements" class="text-white opacity-75">Approvisionnements</a></li>
           <li class="breadcrumb-item active text-white">{{ isEditMode ? 'Modification' : 'Nouveau' }}</li>
         </ol>
       </nav>
     </div>
   </div>
   <div class="ms-auto d-flex gap-2 align-items-center">
-    <a routerLink="/gestion-des-approvisionnements/historique" class="btn btn-sm"
+    <a routerLink="/gestion-des-approvisionnements/historique-approvisionnements" class="btn btn-sm"
        style="background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:8px">
       <i class="bi bi-arrow-left me-1"></i> Retour
     </a>
@@ -277,7 +277,7 @@
 
     <!-- ── Actions ─────────────────────────────────────────────────────────── -->
     <div class="ac-actions">
-      <a routerLink="/gestion-des-approvisionnements/historique" class="btn ac-btn-back">
+      <a routerLink="/gestion-des-approvisionnements/historique-approvisionnements" class="btn ac-btn-back">
         <i class="bi bi-arrow-left me-1"></i> Retour
       </a>
       <button type="submit" class="btn ac-btn-save" [disabled]="loading">

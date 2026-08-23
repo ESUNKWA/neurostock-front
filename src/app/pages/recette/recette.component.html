@@ -84,12 +84,6 @@
         <div class="rec-kpi-lbl">Remises</div>
         <div class="rec-kpi-unit">XOF</div>
       </div>
-      <div class="rec-kpi-card rec-kpi--teal">
-        <div class="rec-kpi-ico"><i class="bi bi-graph-up-arrow"></i></div>
-        <div class="rec-kpi-val">{{ recette.benefice_estime | number:'1.0-0':'fr' }}</div>
-        <div class="rec-kpi-lbl">Bénéfice estimé</div>
-        <div class="rec-kpi-unit">XOF</div>
-      </div>
     </div>
 
     <!-- Modes de paiement -->
@@ -285,7 +279,7 @@
 
   @if (recette && !loading) {
     <div class="row g-3 mb-4">
-      <div class="col-sm-6 col-xl-3">
+      <div class="col-sm-6 col-xl-4">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body d-flex align-items-center gap-3">
             <div class="rounded-3 p-3 bg-success-subtle"><i class="bi bi-cash-stack text-success fs-4"></i></div>
@@ -296,7 +290,7 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-6 col-xl-3">
+      <div class="col-sm-6 col-xl-4">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body d-flex align-items-center gap-3">
             <div class="rounded-3 p-3 bg-primary-subtle"><i class="bi bi-receipt text-primary fs-4"></i></div>
@@ -307,24 +301,13 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-6 col-xl-3">
+      <div class="col-sm-6 col-xl-4">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body d-flex align-items-center gap-3">
             <div class="rounded-3 p-3 bg-warning-subtle"><i class="bi bi-tags text-warning fs-4"></i></div>
             <div>
               <div class="text-muted small">Remises accordées</div>
               <div class="fw-bold fs-5">{{ recette.total_remises | number:'1.0-0':'fr' }} <span class="text-muted fw-normal" style="font-size:.8rem">XOF</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body d-flex align-items-center gap-3">
-            <div class="rounded-3 p-3" style="background:#f0fdfa"><i class="bi bi-graph-up-arrow fs-4" style="color:#0d9488"></i></div>
-            <div>
-              <div class="text-muted small">Bénéfice estimé</div>
-              <div class="fw-bold fs-5" style="color:#0d9488">{{ recette.benefice_estime | number:'1.0-0':'fr' }} <span class="fw-normal" style="font-size:.8rem;color:#94a3b8">XOF</span></div>
             </div>
           </div>
         </div>

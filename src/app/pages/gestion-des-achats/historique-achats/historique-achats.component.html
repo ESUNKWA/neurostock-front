@@ -144,6 +144,11 @@
                     <span class="mc-row-value">{{ mobileDetailItem.date_achat | date:'dd/MM/yyyy' }}</span>
                   </div>
                 </div>
+                <div class="mc-popup-footer">
+                  <button class="hac-mob-edit-btn" (click)="editAchat(mobileDetailItem); mobileDetailItem = null">
+                    <i class="bi bi-pencil-square me-1"></i> Modifier
+                  </button>
+                </div>
               </div>
             </div>
           }
