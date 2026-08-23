@@ -96,54 +96,12 @@
             </div>
           }
 
-          <!-- Formulaire de credentials DB -->
-          @if (!validerResult) {
-            <p class="text-muted small mb-3">
-              Renseignez les credentials de la base de données PostgreSQL à provisionner pour cette structure.
-            </p>
-            <div class="row g-3">
-              <div class="col-md-8">
-                <label class="form-label fw-semibold small">Nom de la base de données <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" [(ngModel)]="validerForm.database" placeholder="Ex : GESTION_STOCK_5_DB">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small">Hôte</label>
-                <input type="text" class="form-control" [(ngModel)]="validerForm.host" placeholder="localhost">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Utilisateur DB <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" [(ngModel)]="validerForm.username" placeholder="postgres">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Mot de passe DB <span class="text-danger">*</span></label>
-                <input type="password" class="form-control" [(ngModel)]="validerForm.password" placeholder="••••••••">
-              </div>
-            </div>
-
-            <div class="alert alert-info border-0 mt-3 mb-0 small">
-              <i class="bi bi-info-circle me-1"></i>
-              Le système créera la base si elle n'existe pas et synchronisera le schéma,
-              puis créera la structure, le point de vente et le compte responsable automatiquement.
-            </div>
-          }
         </div>
 
         <div class="modal-footer border-0 pt-0">
-          @if (!validerResult) {
-            <button class="btn btn-secondary btn-sm" (click)="closeValiderModal()">Annuler</button>
-            <button class="btn btn-success btn-sm" (click)="submitValider()"
-              [disabled]="!validerFormValid || isValiding">
-              @if (isValiding) {
-                <span class="spinner-border spinner-border-sm me-2"></span>Validation en cours…
-              } @else {
-                <i class="bi bi-check-lg me-1"></i>Valider et provisionner
-              }
-            </button>
-          } @else {
-            <button class="btn btn-primary btn-sm" (click)="closeValiderModal()">
-              <i class="bi bi-check-lg me-1"></i>Fermer
-            </button>
-          }
+          <button class="btn btn-primary btn-sm" (click)="closeValiderModal()">
+            <i class="bi bi-check-lg me-1"></i>Fermer
+          </button>
         </div>
 
       </div>

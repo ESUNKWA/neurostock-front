@@ -17,11 +17,9 @@ export interface CreateInscriptionDto {
   responsable_password: string;
 }
 
+/** Hôte/port/identifiants viennent du .env backend — seul le nom de la base est saisi. */
 export interface ValiderInscriptionDto {
-  username: string;
-  password: string;
   database: string;
-  host?: string;
 }
 
 @Injectable({ providedIn: 'root' })

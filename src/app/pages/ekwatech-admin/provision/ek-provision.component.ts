@@ -23,10 +23,6 @@ export default class EkProvisionComponent implements OnInit {
 
   form: TenantProvisionDto = {
     structureId: 0,
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: '',
     database: '',
     adminNom: '',
     adminPrenoms: '',
@@ -61,18 +57,13 @@ export default class EkProvisionComponent implements OnInit {
   }
 
   onStructureChange(): void {
-    const s = this.structures.find(x => x.id === +this.form.structureId);
-    if (s && !this.form.database) {
+    if (this.form.structureId && !this.form.database) {
       this.form.database = `GESTION_STOCK_${this.form.structureId}_DB`;
     }
   }
 
   get isValid(): boolean {
     return !!this.form.structureId
-      && !!this.form.host
-      && !!this.form.port
-      && !!this.form.username
-      && !!this.form.password
       && !!this.form.database
       && !!this.form.adminNom
       && !!this.form.adminPrenoms
@@ -87,7 +78,7 @@ export default class EkProvisionComponent implements OnInit {
 
     Swal.fire({
       title: 'Provisionner ce tenant ?',
-      html: `La base <strong>${this.form.database}</strong> sera créée sur <strong>${this.form.host}:${this.form.port}</strong> pour la structure <strong>${structureName}</strong>.`,
+      html: `La base <strong>${this.form.database}</strong> sera créée et configurée (paramètres serveur) pour la structure <strong>${structureName}</strong>.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Provisionner',
@@ -97,12 +88,12 @@ export default class EkProvisionComponent implements OnInit {
       if (!result.isConfirmed) return;
 
       this.isSubmitting = true;
-      this.tenantSvc.provision({ ...this.form, structureId: +this.form.structureId, port: +this.form.port })
+      this.tenantSvc.provision({ ...this.form, structureId: +this.form.structureId })
         .pipe(finalize(() => (this.isSubmitting = false)))
         .subscribe({
           next: () => {
             this.toastr.success(`Tenant "${structureName}" provisionné avec succès`);
-            this.form = { structureId: 0, host: 'localhost', port: 5432, username: 'postgres', password: '', database: '', adminNom: '', adminPrenoms: '', adminTelephone: '', adminEmail: '', adminPassword: '' };
+            this.form = { structureId: 0, database: '', adminNom: '', adminPrenoms: '', adminTelephone: '', adminEmail: '', adminPassword: '' };
           },
           error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors du provisionnement'),
         });

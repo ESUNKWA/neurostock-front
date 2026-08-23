@@ -4,6 +4,9 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { HttpClientService } from '../../../services/http-client/http-client.service';
+import { environnement } from '../../../environnement/environnement';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-edit-user-info',
@@ -15,11 +18,14 @@ export class EditUserInfoComponent implements OnInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
+  private http = inject(HttpClientService);
+  private readonly API = environnement.API_URL;
 
   user: any;
   passwordForm: FormGroup;
   isPasswordFormVisible = false;
   submitted = false;
+  saving = false;
 
   constructor() {
     this.passwordForm = this.fb.group({
@@ -38,7 +44,6 @@ export class EditUserInfoComponent implements OnInit {
   getCurrentUser() {
     this.authService.currentUser$.subscribe((user) => {
       this.user = user;
-      console.log('user', this.user);
     });
   }
 
@@ -68,12 +73,22 @@ export class EditUserInfoComponent implements OnInit {
     }
 
     const { currentPassword, newPassword } = this.passwordForm.value;
-    
-    // TODO: Implémenter la logique de changement de mot de passe
-    console.log('Changement de mot de passe:', { currentPassword, newPassword });
-    
-    // Exemple de succès
-    this.toastr.success('Mot de passe modifié avec succès');
-    this.togglePasswordForm();
+
+    this.saving = true;
+    this.http
+      .patch(`${this.API}/authentication/change-password`, {
+        ancien_mot_de_passe: currentPassword,
+        nouveau_mot_de_passe: newPassword,
+      })
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Mot de passe modifié avec succès');
+          this.togglePasswordForm();
+        },
+        error: (err: any) => {
+          this.toastr.error(err?.error?.message || 'Erreur lors du changement de mot de passe');
+        },
+      });
   }
 }

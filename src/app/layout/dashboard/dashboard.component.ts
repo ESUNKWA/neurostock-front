@@ -29,21 +29,9 @@ Chart.register(...registerables);
 export default class DashboardComponent implements OnInit, OnDestroy {
 
   stats: any;
-   // Exemple de chiffre d'affaires par mois
-  ventesParMois = [
-    { mois: 'Janvier', montant: 1200 },
-    { mois: 'Février', montant: 150000 },
-    { mois: 'Mars', montant: 90000 },
-    { mois: 'Avril', montant: 200000 },
-    { mois: 'Mai', montant: 180000 },
-    { mois: 'Juin', montant: 220000 },
-    { mois: 'Juillet', montant: 250000 },
-    { mois: 'Août', montant: 300000 },
-    { mois: 'Septembre', montant: 270000 },
-    { mois: 'Octobre', montant: 310000 },
-    { mois: 'Novembre', montant: 280000 },
-    { mois: 'Décembre', montant: 350000 }
-  ];
+  // Chiffre d'affaires par mois — peuplé depuis l'API (cf. applyStats()), vide tant
+  // que les statistiques réelles n'ont pas été chargées.
+  ventesParMois: { mois: string; montant: number }[] = [];
 
 
   boutiques: any = [];

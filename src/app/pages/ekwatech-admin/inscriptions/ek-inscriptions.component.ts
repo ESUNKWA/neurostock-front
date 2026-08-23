@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
-import { InscriptionService, ValiderInscriptionDto } from '../../../services/inscription/inscription.service';
+import { InscriptionService } from '../../../services/inscription/inscription.service';
 
 declare var $: any;
 
@@ -25,13 +25,6 @@ export default class EkInscriptionsComponent implements OnInit, OnDestroy {
   isValiding = false;
   validerTarget: any = null;
   validerResult: any = null;
-
-  validerForm: ValiderInscriptionDto = {
-    host: 'localhost',
-    username: 'postgres',
-    password: '',
-    database: '',
-  };
 
   constructor(
     private inscriptionSvc: InscriptionService,
@@ -160,45 +153,51 @@ export default class EkInscriptionsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /* ── Validation ────────────────────────────────────────────── */
+  /* ── Validation ─────────────────────────────────────────────────────────────
+     Hôte/port/identifiants viennent du .env backend : seul le nom de la base
+     tenant est demandé ici, via un prompt (pas de formulaire de credentials). */
   openValider(ins: any): void {
-    this.validerTarget = ins;
-    this.validerResult = null;
-    this.validerForm = {
-      host: 'localhost',
-      username: 'postgres',
-      password: '',
-      database: `GESTION_STOCK_${ins.id ?? ''}_DB`,
-    };
-    this.showValiderModal = true;
+    Swal.fire({
+      title: 'Valider cette inscription ?',
+      html: `<div class="text-start">
+               <strong>${ins.structure_nom}</strong><br>
+               <small class="text-muted">Responsable : ${ins.responsable_prenoms || ''} ${ins.responsable_nom}</small>
+             </div>`,
+      icon: 'question',
+      input: 'text',
+      inputLabel: 'Nom de la base de données',
+      inputValue: `GESTION_STOCK_${ins.id}_DB`,
+      inputValidator: (value) => !value ? 'Le nom de la base est requis' : undefined,
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-check-lg me-1"></i> Valider et provisionner',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#198754',
+    }).then(result => {
+      if (!result.isConfirmed) return;
+
+      this.validerTarget = ins;
+      this.validerResult = null;
+      this.isValiding = true;
+      this.inscriptionSvc.valider(ins.id, { database: result.value })
+        .pipe(finalize(() => (this.isValiding = false)))
+        .subscribe({
+          next: (r: any) => {
+            this.validerResult = r?.data ?? r;
+            this.showValiderModal = true;
+            this.toastr.success('Inscription validée avec succès');
+            this.load();
+          },
+          error: (e: any) => {
+            this.toastr.error(e?.error?.message || 'Erreur lors de la validation');
+          },
+        });
+    });
   }
 
   closeValiderModal(): void {
     this.showValiderModal = false;
     this.validerTarget = null;
     this.validerResult = null;
-  }
-
-  get validerFormValid(): boolean {
-    return !!(this.validerForm.username && this.validerForm.password && this.validerForm.database);
-  }
-
-  submitValider(): void {
-    if (!this.validerFormValid || !this.validerTarget) return;
-
-    this.isValiding = true;
-    this.inscriptionSvc.valider(this.validerTarget.id, this.validerForm)
-      .pipe(finalize(() => (this.isValiding = false)))
-      .subscribe({
-        next: (r: any) => {
-          this.validerResult = r?.data ?? r;
-          this.toastr.success('Inscription validée avec succès');
-          this.load();
-        },
-        error: (e: any) => {
-          this.toastr.error(e?.error?.message || 'Erreur lors de la validation');
-        },
-      });
   }
 
   /* ── Rejet ─────────────────────────────────────────────────── */

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClientService } from '../http-client/http-client.service';
 import { environnement } from '../../environnement/environnement';
 
+/**
+ * Les paramètres de connexion à la base (hôte, port, identifiants) sont résolus
+ * exclusivement côté backend (.env) — jamais saisis ni transmis depuis le frontend.
+ * Seul le nom de la base tenant reste choisi via l'interface.
+ */
 export interface TenantProvisionDto {
   structureId: number;
-  host: string;
-  port: number;
-  username: string;
-  password: string;
   database: string;
   // Admin du tenant — créé automatiquement lors du provisionnement
   adminNom: string;

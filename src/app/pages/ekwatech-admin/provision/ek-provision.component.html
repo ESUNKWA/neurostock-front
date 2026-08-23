@@ -37,42 +37,15 @@
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-database"></i></span>
               <input type="text" class="form-control font-monospace"
-                     placeholder="GESTION_STOCK_1"
+                     placeholder="GESTION_STOCK_1_DB"
                      [(ngModel)]="form.database" name="database">
             </div>
             <div class="form-text">Sera créée automatiquement si elle n'existe pas.</div>
           </div>
 
-          <!-- Host + Port -->
-          <div class="row g-2 mb-3">
-            <div class="col-8">
-              <label class="form-label fw-semibold small">Hôte <span class="text-danger">*</span></label>
-              <input type="text" class="form-control font-monospace"
-                     placeholder="localhost"
-                     [(ngModel)]="form.host" name="host">
-            </div>
-            <div class="col-4">
-              <label class="form-label fw-semibold small">Port <span class="text-danger">*</span></label>
-              <input type="number" class="form-control font-monospace"
-                     placeholder="5432"
-                     [(ngModel)]="form.port" name="port">
-            </div>
-          </div>
-
-          <!-- Username + Password -->
-          <div class="row g-2 mb-4">
-            <div class="col-6">
-              <label class="form-label fw-semibold small">Utilisateur DB <span class="text-danger">*</span></label>
-              <input type="text" class="form-control font-monospace"
-                     placeholder="postgres"
-                     [(ngModel)]="form.username" name="username">
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-semibold small">Mot de passe DB <span class="text-danger">*</span></label>
-              <input type="password" class="form-control font-monospace"
-                     placeholder="••••••••"
-                     [(ngModel)]="form.password" name="password">
-            </div>
+          <div class="alert alert-light border small mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-shield-lock-fill text-primary"></i>
+            <span>L'hôte, le port et les identifiants de connexion sont déterminés automatiquement par le serveur (configuration <code>.env</code>).</span>
           </div>
 
           <!-- Admin du tenant -->
@@ -139,12 +112,12 @@
         </div>
       </div>
 
-      <div class="card border-0 shadow-sm border-start border-4 border-warning">
+      <div class="card border-0 shadow-sm border-start border-4 border-success">
         <div class="card-body small">
-          <p class="fw-semibold text-warning mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Attention</p>
+          <p class="fw-semibold text-success mb-1"><i class="bi bi-shield-check me-1"></i>Sécurité</p>
           <p class="text-muted mb-0">
-            Le mot de passe est transmis au backend pour établir la connexion initiale.
-            Utilisez un compte PostgreSQL dédié avec les permissions minimales requises.
+            Les identifiants de connexion à la base ne transitent jamais par le frontend :
+            ils sont lus directement depuis la configuration du serveur backend.
           </p>
         </div>
       </div>
