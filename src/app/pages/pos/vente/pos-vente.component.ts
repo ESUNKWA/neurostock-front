@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } fr
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { finalize, firstValueFrom } from 'rxjs';
+import { Subject, Subscription, finalize, firstValueFrom } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ProduitService } from '../../../services/gestion-des-produits/produit.service';
+import { CategorieService } from '../../../services/gestion-des-produits/categorie.service';
 import { VentesService } from '../../../services/gestion-des-ventes/ventes.service';
 import { ClientService } from '../../../services/gestion-des-clients/client.service';
 import { CaisseService } from '../../../services/gestion-des-caisses/caisse.service';
@@ -54,8 +56,10 @@ interface CartSession {
 export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('scannerInput') scannerInputRef!: ElementRef<HTMLInputElement>;
   currentUser: any;
+  // Résultats de la recherche/catégorie en cours (déjà paginés côté serveur — voir fetchProduits()).
+  // Rien n'est chargé par défaut : le catalogue reste vide tant que le vendeur ne recherche
+  // pas, ne scanne pas ou ne clique pas sur une catégorie (évite de précharger tout le catalogue).
   produits:  any[] = [];
-  filtered:  any[] = [];
   categories: { id: number; nom: string }[] = [];
   clients:   any[] = [];
 
@@ -65,7 +69,24 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   viewMode: 'grid' | 'list' = window.innerWidth < 768 ? 'list' : 'grid';
 
   page = 1;
+  totalPages = 1;
+  totalCount = 0;
   readonly pageSize = 20;
+  // true dès qu'une recherche/catégorie/scan a été déclenché — distingue l'état
+  // initial vide ("recherchez un produit") du "aucun résultat" après une vraie recherche.
+  hasSearched = false;
+  // true dès qu'une catégorie (y compris "Tous") a été cliquée explicitement — permet
+  // de garder les résultats affichés même si le champ de recherche redevient vide.
+  private catalogBrowseActive = false;
+
+  private readonly searchSubject = new Subject<void>();
+  private searchSub?: Subscription;
+  private fetchSub?: Subscription;
+
+  // Alias conservés pour le template : `produits` est déjà la page courante
+  // renvoyée par le serveur (filtrage + pagination côté serveur désormais).
+  get filtered(): any[] { return this.produits; }
+  get pagedFiltered(): any[] { return this.produits; }
 
   // ── Multi-session cart ────────────────────────────────────────────────────
   sessions: CartSession[] = [];
@@ -175,6 +196,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   constructor(
     private authService:  AuthService,
     private produitSvc:   ProduitService,
+    private categorieSvc: CategorieService,
     private ventesSvc:    VentesService,
     private clientSvc:    ClientService,
     private caisseSvc:    CaisseService,
@@ -193,10 +215,16 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
 
   ngOnInit(): void {
     this.sessions = [this.createSession()];
+
+    // Débounce de la recherche texte : une seule requête serveur ~300ms après
+    // la dernière frappe (runFetchProduits() annule elle-même toute requête en vol).
+    this.searchSub = this.searchSubject.pipe(debounceTime(300))
+      .subscribe(() => this.handleSearchOrCategoryChange());
+
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
       if (u) {
-        this.loadProduits();
+        this.loadCategories();
         this.loadClients();
         this.loadCaisse();
         this.loadTotalJour();
@@ -222,6 +250,8 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
 
   ngOnDestroy(): void {
     this.stopRealtime();
+    this.searchSub?.unsubscribe();
+    this.fetchSub?.unsubscribe();
   }
 
   // ── Synchronisation temps réel du stock entre caissiers ────────────────────
@@ -249,17 +279,36 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   // Rafraîchit les quantités en stock sans spinner ni clignotement du catalogue.
-  // Met à jour les objets produits en place pour que les lignes déjà présentes
-  // dans le panier (qui référencent ces mêmes objets) restent synchronisées.
+  // Le catalogue n'étant plus préchargé en entier (recherche à la demande), on ne
+  // demande au serveur que les produits réellement affichés ou déjà au panier
+  // (toutes sessions confondues) — pas tout le catalogue de la boutique.
   private refreshStockSilent(): void {
     if (!this.boutiqueId) return;
-    this.produitSvc.getProduits({ boutique: this.boutiqueId }).subscribe({
+
+    const ids = new Set<number>();
+    for (const p of this.produits) ids.add(p.id);
+    for (const s of this.sessions) {
+      for (const l of s.cart) ids.add(l.produit.id);
+    }
+    if (ids.size === 0) return;
+
+    this.produitSvc.getProduits({ boutique: this.boutiqueId, ids: Array.from(ids).join(',') }).subscribe({
       next: (r: any) => {
         const frais: any[] = r?.data ?? (Array.isArray(r) ? r : []);
         const parId = new Map(frais.map(p => [p.id, p]));
+
         for (const p of this.produits) {
           const maj = parId.get(p.id);
           if (maj) p.stock_disponible = maj.stock_disponible;
+        }
+        // Met aussi à jour les lignes déjà au panier : contrairement à avant, un
+        // produit ajouté via scan n'est pas forcément le même objet que celui du
+        // catalogue affiché, donc on le synchronise explicitement ici.
+        for (const s of this.sessions) {
+          for (const l of s.cart) {
+            const maj = parId.get(l.produit.id);
+            if (maj) l.produit.stock_disponible = maj.stock_disponible;
+          }
         }
       },
     });
@@ -365,50 +414,102 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   // ── Products ──────────────────────────────────────────────────────────────
+  // Rien n'est chargé au démarrage : le catalogue peut compter des milliers de
+  // références, donc on ne récupère que ce que le vendeur recherche/scanne/filtre,
+  // toujours paginé côté serveur (voir ProduitService#findAll côté backend).
 
-  loadProduits(): void {
+  /** Liste des catégories de la boutique — indépendante du catalogue produits,
+   *  pour que les chips restent utilisables même sans recherche en cours. */
+  private loadCategories(): void {
     if (!this.boutiqueId) return;
+    this.categorieSvc.getCategoriesByBoutik(this.boutiqueId).subscribe({
+      next: (r: any) => {
+        this.categories = (r?.data ?? []).map((c: any) => ({ id: c.id, nom: c.nom }));
+      },
+    });
+  }
+
+  private buildProduitsQuery(): Record<string, any> {
+    const params: Record<string, any> = {
+      boutique: this.boutiqueId,
+      page: this.page,
+      limit: this.pageSize,
+    };
+    const q = this.searchQuery.trim();
+    if (q) params['search'] = q;
+    if (this.selectedCategoryId != null) params['categorie'] = this.selectedCategoryId;
+    return params;
+  }
+
+  /** Exécute (ou remplace) la requête produits en cours — annule automatiquement
+   *  une requête précédente encore en vol pour éviter qu'une réponse tardive
+   *  n'écrase un résultat plus récent (ex : frappe rapide dans la recherche). */
+  private runFetchProduits(): void {
+    if (!this.boutiqueId) return;
+    this.hasSearched = true;
     this.loading = true;
-    this.produitSvc.getProduits({ boutique: this.boutiqueId })
+    this.fetchSub?.unsubscribe();
+    this.fetchSub = this.produitSvc.getProduits(this.buildProduitsQuery())
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (r: any) => {
-          this.produits = r?.data ?? (Array.isArray(r) ? r : []);
-          const catMap = new Map<number, string>();
-          for (const p of this.produits) {
-            if (p.categorie?.id) catMap.set(p.categorie.id, p.categorie.nom);
-          }
-          this.categories = Array.from(catMap, ([id, nom]) => ({ id, nom }));
-          this.applyFilter();
+          this.produits   = r?.data ?? (Array.isArray(r) ? r : []);
+          this.totalCount = r?.pagination?.total ?? this.produits.length;
+          this.totalPages = Math.max(1, r?.pagination?.totalPages ?? 1);
+        },
+        error: () => {
+          this.produits   = [];
+          this.totalCount = 0;
+          this.totalPages = 1;
+          this.toastr.error('Erreur lors du chargement des produits');
         },
       });
   }
 
-  applyFilter(): void {
-    const q = this.searchQuery.toLowerCase().trim();
-    this.filtered = this.produits.filter(p => {
-      const matchSearch = !q
-        || p.nom?.toLowerCase().includes(q)
-        || p.code_barre?.toLowerCase().includes(q);
-      const matchCat = !this.selectedCategoryId
-        || p.categorie?.id === this.selectedCategoryId;
-      return matchSearch && matchCat;
-    });
+  /** Revient à l'état initial (catalogue vide, "recherchez/scannez un produit") —
+   *  utilisé quand il n'y a plus ni texte de recherche ni catégorie active, pour
+   *  ne pas retomber sur "tous les produits" juste parce que le champ est vide. */
+  private resetToEmptyState(): void {
+    this.fetchSub?.unsubscribe();
+    this.loading      = false;
+    this.hasSearched  = false;
+    this.produits     = [];
+    this.totalCount   = 0;
+    this.totalPages   = 1;
+  }
+
+  /** Point d'entrée unique après un changement de recherche texte : ne lance une
+   *  requête que s'il y a un vrai critère (texte tapé ou catégorie déjà active) —
+   *  sinon revient à l'état vide plutôt que d'afficher tout le catalogue. */
+  private handleSearchOrCategoryChange(): void {
+    const hasQuery = this.searchQuery.trim().length > 0;
+    if (!hasQuery && !this.catalogBrowseActive) {
+      this.resetToEmptyState();
+      return;
+    }
+    this.runFetchProduits();
+  }
+
+  /** Frappe dans la barre de recherche : débouncée pour ne pas interroger le
+   *  serveur à chaque caractère (voir le pipeline sur searchSubject dans ngOnInit). */
+  onSearchChange(): void {
     this.page = 1;
+    this.searchSubject.next();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.page = 1;
+    this.handleSearchOrCategoryChange();
   }
 
   selectCategory(id: number | null): void {
     this.selectedCategoryId = id;
-    this.applyFilter();
-  }
-
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
-  }
-
-  get pagedFiltered(): any[] {
-    const start = (this.page - 1) * this.pageSize;
-    return this.filtered.slice(start, start + this.pageSize);
+    // Cliquer sur une catégorie (y compris "Tous") est une navigation explicite :
+    // ça doit afficher des résultats même sans texte de recherche.
+    this.catalogBrowseActive = true;
+    this.page = 1;
+    this.runFetchProduits();
   }
 
   get pageNumbers(): number[] {
@@ -416,7 +517,10 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   goToPage(p: number): void {
-    this.page = Math.min(Math.max(1, p), this.totalPages);
+    const next = Math.min(Math.max(1, p), this.totalPages);
+    if (next === this.page) return;
+    this.page = next;
+    this.runFetchProduits();
   }
 
   productImage(p: any): string {
@@ -656,6 +760,22 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
     else this.removeFromCart(i);
   }
 
+  // Saisie directe de la quantité (évite de cliquer 50 fois sur +)
+  setQty(i: number, value: number | string): void {
+    const l = this.cart[i];
+    let qty = Math.floor(Number(value));
+
+    if (!Number.isFinite(qty) || qty < 1) qty = 1;
+
+    const stock = l.produit.stock_disponible;
+    if (stock != null && qty > stock) {
+      qty = stock;
+      this.toastr.warning(`Stock max : ${stock}`);
+    }
+
+    l.quantite = qty;
+  }
+
   clearCart(): void {
     if (this.cart.length === 0) return;
     Swal.fire({
@@ -815,7 +935,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
             this.clientNom = '';
             this.clientTel = '';
           }
-          this.loadProduits();   // refresh stock
+          this.refreshStockSilent();   // refresh stock
           this.loadTotalJour();  // refresh total du jour
 
           const venteId = res?.data?.idVente;
@@ -932,7 +1052,7 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
     }).pipe(finalize(() => (this.retourSubmitting = false))).subscribe({
       next: (r: any) => {
         this.retourResult = r?.data ?? r;
-        this.loadProduits(); // rafraîchir le stock
+        this.refreshStockSilent(); // rafraîchir le stock
         this.toastr.success('Retour enregistré');
       },
       error: (e: any) => this.toastr.error(e?.error?.message || 'Erreur lors du retour'),

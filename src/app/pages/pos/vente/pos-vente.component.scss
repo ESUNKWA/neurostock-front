@@ -437,11 +437,12 @@
 
 .pos-product-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.3rem;
 
-  @media (max-width: 1400px) { grid-template-columns: repeat(7, 1fr); }
-  @media (max-width: 1100px) { grid-template-columns: repeat(6, 1fr); }
+  @media (max-width: 1800px) { grid-template-columns: repeat(5, 1fr); }
+  @media (max-width: 1400px) { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 1100px) { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 768px)  { grid-template-columns: repeat(4, 1fr); }
   @media (max-width: 480px)  { grid-template-columns: repeat(3, 1fr); }
 }
@@ -560,9 +561,14 @@
 // ── Right: cart ───────────────────────────────────────────────────────────────
 
 .pos-cart {
-  width: 340px;
-  min-width: 300px;
+  width: 50%;
+  min-width: 420px;
+  max-width: 720px;
   flex-shrink: 0;
+
+  @media (max-width: 1100px) {
+    min-width: 360px;
+  }
 }
 
 .pos-cart-lines {
@@ -570,8 +576,8 @@
 }
 
 .pos-cart-thumb {
-  width: 36px;
-  height: 36px;
+  width: 46px;
+  height: 46px;
   border-radius: .25rem;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -604,8 +610,8 @@
 .btn-qty {
   border: none !important;
   border-radius: 0 !important;
-  padding: 2px 8px;
-  font-size: .75rem;
+  padding: 3px 12px;
+  font-size: .9rem;
   line-height: 1.6;
   color: var(--bs-secondary);
   background: transparent;
@@ -614,11 +620,37 @@
 }
 
 .qty-value {
-  min-width: 28px;
+  min-width: 36px;
   text-align: center;
-  font-size: .85rem;
+  font-size: 1rem;
   font-weight: 700;
-  padding: 0 4px;
+  padding: 0 6px;
+}
+
+// Saisie directe de la quantité (évite de cliquer N fois sur +)
+.qty-input {
+  width: 46px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0 2px;
+  color: #212529;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--bs-primary);
+    border-radius: 3px;
+  }
 }
 
 // Cart footer
