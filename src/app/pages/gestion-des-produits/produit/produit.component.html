@@ -400,16 +400,9 @@
                             <div class="col-md-3">
                                 <label class="prd-label" for="unite_mesure">Unité de mesure</label>
                                 <nz-select class="w-100" formControlName="unite_mesure" nzShowSearch [nzAllowClear]="true" nzPlaceHolder="Sélectionner...">
-                                    <nz-option nzValue="pièce" nzLabel="Pièce"></nz-option>
-                                    <nz-option nzValue="kg" nzLabel="Kilogramme (kg)"></nz-option>
-                                    <nz-option nzValue="g" nzLabel="Gramme (g)"></nz-option>
-                                    <nz-option nzValue="litre" nzLabel="Litre (L)"></nz-option>
-                                    <nz-option nzValue="cl" nzLabel="Centilitre (cl)"></nz-option>
-                                    <nz-option nzValue="carton" nzLabel="Carton"></nz-option>
-                                    <nz-option nzValue="sachet" nzLabel="Sachet"></nz-option>
-                                    <nz-option nzValue="boite" nzLabel="Boîte"></nz-option>
-                                    <nz-option nzValue="paire" nzLabel="Paire"></nz-option>
-                                    <nz-option nzValue="m" nzLabel="Mètre (m)"></nz-option>
+                                    @for (u of unitesMesure; track u.value) {
+                                        <nz-option [nzValue]="u.value" [nzLabel]="u.label"></nz-option>
+                                    }
                                 </nz-select>
                             </div>
                             <div class="col-md-3 d-none d-md-block">
@@ -763,18 +756,30 @@
             <table class="table table-bordered table-sm table-striped">
               <thead class="table-light" style="position: sticky; top: 0;">
                 <tr>
-                  @for (col of importPreview.columns; track col) {
+                  @for (col of importColonnesAffichees; track col) {
                     <th>{{ col }}</th>
                   }
+                  <th>Unité de mesure</th>
                   <th>Fournisseur</th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of importPreview.rows; track $index) {
                   <tr>
-                    @for (col of importPreview.columns; track col) {
+                    @for (col of importColonnesAffichees; track col) {
                       <td>{{ row[col] }}</td>
                     }
+                    <td style="min-width:160px">
+                      <select class="form-select form-select-sm" [(ngModel)]="row.uniteMesure" [ngModelOptions]="{standalone: true}">
+                        @if (!estUniteMesureConnue(row.uniteMesure)) {
+                          <!-- Unité libre lue dans le fichier : conservée telle quelle à l'import -->
+                          <option [ngValue]="row.uniteMesure">{{ row.uniteMesure }} (fichier)</option>
+                        }
+                        @for (u of unitesMesure; track u.value) {
+                          <option [ngValue]="u.value">{{ u.label }}</option>
+                        }
+                      </select>
+                    </td>
                     <td style="min-width:180px">
                       <select class="form-select form-select-sm" [(ngModel)]="row.fournisseurId" [ngModelOptions]="{standalone: true}">
                         <option [ngValue]="null">— Aucun —</option>

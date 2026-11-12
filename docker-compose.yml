@@ -1,0 +1,18 @@
+# Front NeuroStock (Angular servi par nginx) — autonome, indépendant de l'API.
+#   cp .env.example .env   (puis régler API_URL)
+#   docker compose up -d --build
+# Front : http://localhost:8080
+# Changer d'API : modifier API_URL dans .env puis `docker compose up -d` (pas de rebuild).
+name: neurostock-front
+
+services:
+  front:
+    build:
+      context: .
+      target: runtime
+    image: neurostock-front:latest
+    restart: unless-stopped
+    environment:
+      API_URL: ${API_URL:-http://localhost:3000}
+    ports:
+      - "${FRONT_PORT:-8080}:80"

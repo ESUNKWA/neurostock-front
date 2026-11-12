@@ -56,9 +56,9 @@ interface CartSession {
 export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('scannerInput') scannerInputRef!: ElementRef<HTMLInputElement>;
   currentUser: any;
-  // Résultats de la recherche/catégorie en cours (déjà paginés côté serveur — voir fetchProduits()).
-  // Rien n'est chargé par défaut : le catalogue reste vide tant que le vendeur ne recherche
-  // pas, ne scanne pas ou ne clique pas sur une catégorie (évite de précharger tout le catalogue).
+  // Résultats de la recherche/catégorie en cours (déjà paginés côté serveur — voir runFetchProduits()).
+  // Par défaut, la première page de tous les produits ("Tous") est affichée dès que la
+  // boutique est connue ; seule la page courante est chargée, jamais tout le catalogue.
   produits:  any[] = [];
   categories: { id: number; nom: string }[] = [];
   clients:   any[] = [];
@@ -75,9 +75,11 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   // true dès qu'une recherche/catégorie/scan a été déclenché — distingue l'état
   // initial vide ("recherchez un produit") du "aucun résultat" après une vraie recherche.
   hasSearched = false;
-  // true dès qu'une catégorie (y compris "Tous") a été cliquée explicitement — permet
-  // de garder les résultats affichés même si le champ de recherche redevient vide.
-  private catalogBrowseActive = false;
+  // Navigation dans le catalogue active ("Tous" par défaut) — garde les résultats
+  // affichés même si le champ de recherche redevient vide.
+  private catalogBrowseActive = true;
+  // Évite de recharger (et de réinitialiser le filtre) à chaque émission de currentUser$.
+  private catalogueInitialise = false;
 
   private readonly searchSubject = new Subject<void>();
   private searchSub?: Subscription;
@@ -225,6 +227,11 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
       this.currentUser = u;
       if (u) {
         this.loadCategories();
+        // Affiche par défaut la première page de tous les produits (une seule fois).
+        if (!this.catalogueInitialise && this.boutiqueId) {
+          this.catalogueInitialise = true;
+          this.runFetchProduits();
+        }
         this.loadClients();
         this.loadCaisse();
         this.loadTotalJour();
@@ -414,9 +421,9 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   // ── Products ──────────────────────────────────────────────────────────────
-  // Rien n'est chargé au démarrage : le catalogue peut compter des milliers de
-  // références, donc on ne récupère que ce que le vendeur recherche/scanne/filtre,
-  // toujours paginé côté serveur (voir ProduitService#findAll côté backend).
+  // Au démarrage, seule la première page de "Tous" est chargée : le catalogue peut
+  // compter des milliers de références, donc tout reste paginé côté serveur
+  // (voir ProduitService#findAll côté backend).
 
   /** Liste des catégories de la boutique — indépendante du catalogue produits,
    *  pour que les chips restent utilisables même sans recherche en cours. */
@@ -478,9 +485,9 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
     this.totalPages   = 1;
   }
 
-  /** Point d'entrée unique après un changement de recherche texte : ne lance une
-   *  requête que s'il y a un vrai critère (texte tapé ou catégorie déjà active) —
-   *  sinon revient à l'état vide plutôt que d'afficher tout le catalogue. */
+  /** Point d'entrée unique après un changement de recherche texte. La navigation
+   *  catalogue étant active par défaut ("Tous"), un champ vidé réaffiche la liste
+   *  paginée de la catégorie courante ; l'état vide ne sert plus que de garde-fou. */
   private handleSearchOrCategoryChange(): void {
     const hasQuery = this.searchQuery.trim().length > 0;
     if (!hasQuery && !this.catalogBrowseActive) {
@@ -585,55 +592,51 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
 
   printThermique(venteId: number): void {
     const token = this.authService.getToken();
-    const url = `/api/pdf/generate/facture/${venteId}/thermique/print?token=${token}`;
+    // API_URL : '/api' en dev (proxy ng serve), URL absolue du backend en prod —
+    // le nginx du front ne proxifie pas /api, une URL relative renverrait index.html.
+    const url = `${environnement.API_URL}/pdf/generate/facture/${venteId}/thermique/print?token=${token}`;
 
-    console.group(`[printThermique] venteId=${venteId}`);
-    console.log('URL:', url);
-    console.log('token présent:', !!token, '| longueur:', token?.length ?? 0);
-
-    // Fetch de diagnostic — vérifier ce que le serveur renvoie réellement
+    // Le backend est sur une autre origine en prod : on ne peut pas appeler print()
+    // sur une iframe cross-origin. On récupère donc le HTML et on l'injecte dans une
+    // iframe same-origin (srcdoc) avant d'imprimer.
     fetch(url)
       .then(async res => {
-        const text = await res.text();
-        console.log('HTTP status:', res.status, res.statusText);
-        console.log('Content-Type:', res.headers.get('content-type'));
-        console.log('Taille réponse (chars):', text.length);
-        console.log('Aperçu réponse (300 premiers chars):', text.slice(0, 300));
-        if (text.length === 0) {
-          console.error('[printThermique] La réponse du serveur est VIDE — le reçu sera blanc');
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
       })
-      .catch(err => console.error('[printThermique] Erreur fetch diagnostic:', err));
+      .then(html => {
+        // Retire le script d'auto-impression ajouté par le backend (on imprime nous-mêmes)
+        const cleaned = html.replace(/<script>window\.onload[\s\S]*?<\/script>/, '');
+        const iframe = document.createElement('iframe');
+        // Hors écran, largeur du rouleau (le ticket fait 72 mm), jamais cliquable.
+        iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:80mm;height:0;border:0;opacity:0;pointer-events:none;';
+        iframe.onload = () => {
+          this.ajusterHauteurPageTicket(iframe.contentDocument);
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          setTimeout(() => iframe.remove(), 2000);
+        };
+        iframe.srcdoc = cleaned;
+        document.body.appendChild(iframe);
+      })
+      .catch(err => {
+        console.error('[printThermique] Échec de récupération du reçu:', err);
+        this.toastr.error("Impossible de charger le reçu pour l'impression");
+      });
+  }
 
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;';
-    document.body.appendChild(iframe);
-
-    iframe.onerror = (e) => {
-      console.error('[printThermique] iframe onerror:', e);
-    };
-
-    iframe.onload = () => {
-      console.log('iframe chargé');
-      try {
-        const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
-        const bodyHtml = doc?.body?.innerHTML ?? '';
-        console.log('Taille HTML dans iframe (chars):', bodyHtml.length);
-        console.log('Aperçu HTML iframe (300 chars):', bodyHtml.slice(0, 300));
-        if (bodyHtml.length === 0) {
-          console.error('[printThermique] Le body de l\'iframe est VIDE');
-        }
-      } catch (e) {
-        console.warn('[printThermique] Impossible de lire le contenu iframe (cross-origin?):', e);
-      }
-      console.log('contentWindow disponible:', !!iframe.contentWindow);
-      console.groupEnd();
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 2000);
-    };
-
-    iframe.src = url;
-    console.log('iframe.src défini, en attente du chargement…');
+  /** Fixe la page d'impression à la hauteur exacte du ticket (72 mm × hauteur du contenu).
+   *  Sans cela, le navigateur utilise le format du pilote (ex. 297 mm) et le blanc restant
+   *  se retrouve en tête du ticket suivant sur le rouleau. */
+  private ajusterHauteurPageTicket(doc: Document | null): void {
+    if (!doc?.documentElement || !doc.head) return;
+    const hauteurPx = doc.documentElement.scrollHeight;
+    if (!hauteurPx) return;
+    // 96 px = 25,4 mm en CSS ; +1 mm de marge pour éviter une 2e page due aux arrondis
+    const hauteurMm = Math.ceil((hauteurPx * 25.4) / 96) + 1;
+    const style = doc.createElement('style');
+    style.textContent = `@page { size: 72mm ${hauteurMm}mm; margin: 0; }`;
+    doc.head.appendChild(style);
   }
 
   // ── Rapport journalier SMS ────────────────────────────────────────────────
@@ -939,6 +942,12 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
           this.loadTotalJour();  // refresh total du jour
 
           const venteId = res?.data?.idVente;
+          // L'impression thermique ne doit démarrer qu'une fois SweetAlert entièrement
+          // fermé (didClose). La promesse Swal se résout dès le DÉBUT de l'animation de
+          // fermeture ; si la boîte d'impression s'ouvre pendant cette animation, elle
+          // bloque le rendu, l'événement animationend n'arrive jamais et le calque
+          // transparent .swal2-container reste au-dessus de la page → plus aucun clic.
+          let imprimerThermique = false;
           Swal.fire({
             icon: 'success',
             title: 'Vente enregistrée !',
@@ -950,14 +959,17 @@ export default class PosVenteComponent implements OnInit, AfterViewInit, OnDestr
             cancelButtonText: 'Fermer',
             confirmButtonColor: '#198754',
             denyButtonColor: '#0d6efd',
-            preConfirm: () => true,
+            // preConfirm s'exécute toujours avant la fermeture : le choix est donc connu
+            // quand didClose est appelé, quel que soit l'ordre des callbacks internes.
+            preConfirm: () => { imprimerThermique = true; return true; },
             preDeny: () =>
               firstValueFrom(this.ventesSvc.imprimerRecu(venteId))
                 .catch(() => Swal.showValidationMessage('Impossible de générer le reçu A4')),
+            didClose: () => {
+              if (imprimerThermique) this.printThermique(venteId);
+            },
           }).then(r => {
-            if (r.isConfirmed) {
-              this.printThermique(venteId);
-            } else if (r.isDenied && r.value?.path) {
+            if (r.isDenied && r.value?.path) {
               window.open(r.value.path, '_blank');
             }
           });

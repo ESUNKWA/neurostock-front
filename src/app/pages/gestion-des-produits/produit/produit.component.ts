@@ -14,6 +14,12 @@ import { parseFileToRows, FilePreview, downloadXlsxTemplate } from '../../../hel
 import { PrevisionService } from '../../../services/analyse-ia/prevision.service';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { filterEntrepots, isEntrepot } from '../../../helpers/boutique-type.util';
+import {
+  COLONNES_UNITE_MESURE,
+  UNITES_MESURE,
+  estUniteMesureConnue,
+  uniteMesureDepuisFichier,
+} from '../../../helpers/unites-mesure';
 
 declare var $: any;
 declare var bootstrap: any;
@@ -50,6 +56,14 @@ export default class ProduitComponent implements OnInit, OnDestroy {
   importBoutiqueId: number | string | null = null;
   importCategorieId: number | null = null;
   currentUser: any;
+
+  readonly unitesMesure = UNITES_MESURE;
+  readonly estUniteMesureConnue = estUniteMesureConnue;
+
+  /** Colonnes du fichier affichées dans l'aperçu : l'unité est remplacée par sa liste déroulante. */
+  get importColonnesAffichees(): string[] {
+    return (this.importPreview?.columns ?? []).filter(c => !COLONNES_UNITE_MESURE.includes(c));
+  }
 
   cataloguePdfLoading = false;
 
@@ -755,6 +769,9 @@ export default class ProduitComponent implements OnInit, OnDestroy {
         ? this.fournisseurs.find((f: any) => (f.nom ?? '').trim().toLowerCase() === nomFournisseur)
         : null;
       row.fournisseurId = match?.id ?? null;
+
+      // Unité présélectionnée depuis le fichier (colonne "unite_mesure" ou "Unité"), sinon « pièce ».
+      row.uniteMesure = uniteMesureDepuisFichier(row['unite_mesure'] ?? row['Unité']);
     }
 
     this.isParsingFile = false;
@@ -774,9 +791,14 @@ export default class ProduitComponent implements OnInit, OnDestroy {
     }
 
     const fournisseurIds = (this.importPreview?.rows ?? []).map((row: any) => row.fournisseurId ?? null);
+    // Seules les unités de la liste sont envoyées ; une unité libre venant du fichier
+    // est transmise à null et l'API reprend alors la valeur du fichier.
+    const unites = (this.importPreview?.rows ?? []).map((row: any) =>
+      estUniteMesureConnue(row.uniteMesure) ? row.uniteMesure : null
+    );
 
     this.isImporting = true;
-    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId, this.importCategorieId ?? undefined, fournisseurIds).pipe(first()).subscribe({
+    this.produitService.importProduits(this.pendingImportFile, +this.importBoutiqueId, this.importCategorieId ?? undefined, fournisseurIds, unites).pipe(first()).subscribe({
       next: (response: any) => {
         this.isImporting = false;
         const data = response?.data ?? response;

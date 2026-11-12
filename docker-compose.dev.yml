@@ -1,0 +1,23 @@
+# Surcharge dev : code source monté + hot reload (ng serve).
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Front : http://localhost:4200
+services:
+  front:
+    build:
+      target: dev
+    image: neurostock-front:dev
+    restart: "no"
+    ports: !override
+      - "${FRONT_DEV_PORT:-4200}:4200"
+    volumes:
+      - .:/app
+      - /app/node_modules          # node_modules Linux du conteneur, pas celui de l'hôte
+      - /app/.angular
+    configs:
+      - source: runtime-config     # remplace public/config.js dans le conteneur uniquement
+        target: /app/public/config.js
+
+configs:
+  runtime-config:
+    content: |
+      window.__env = { API_URL: '${API_URL:-http://localhost:3000}' };

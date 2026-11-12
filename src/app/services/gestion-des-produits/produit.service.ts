@@ -46,10 +46,11 @@ export class ProduitService {
     return `${this.API_URL}/produit/${id}/etiquette?copies=${copies}`;
   }
 
-  importProduits(file: File, boutiqueId: number, categorieId?: number, fournisseurIds?: (number | null)[]) {
+  importProduits(file: File, boutiqueId: number, categorieId?: number, fournisseurIds?: (number | null)[], unites?: (string | null)[]) {
     const formData = new FormData();
     formData.append('file', file);
     if (fournisseurIds) formData.append('fournisseurs', JSON.stringify(fournisseurIds));
+    if (unites) formData.append('unites', JSON.stringify(unites));
     let url = `${this.API_URL}/produit/import?boutique=${boutiqueId}`;
     if (categorieId) url += `&categorie=${categorieId}`;
     return this.http.post(url, formData, {});
